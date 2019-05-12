@@ -94,6 +94,7 @@ type guiState struct {
 	Updating         bool
 	Panels           *panelStates
 	SubProcessOutput string
+	MainWriterID     int
 }
 
 // NewGui builds a new gui handler
@@ -107,6 +108,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 			Containers: &containerPanelState{SelectedLine: -1},
 			Menu:       &menuPanelState{SelectedLine: 0},
 		},
+		MainWriterID: 0,
 	}
 
 	gui := &Gui{
@@ -127,6 +129,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 
 func (gui *Gui) scrollUpMain(g *gocui.Gui, v *gocui.View) error {
 	mainView, _ := g.View("main")
+	mainView.Autoscroll = false
 	ox, oy := mainView.Origin()
 	newOy := int(math.Max(0, float64(oy-gui.Config.GetUserConfig().GetInt("gui.scrollHeight"))))
 	return mainView.SetOrigin(ox, newOy)
@@ -143,6 +146,8 @@ func (gui *Gui) scrollDownMain(g *gocui.Gui, v *gocui.View) error {
 	if y < len(mainView.BufferLines()) {
 		return mainView.SetOrigin(ox, oy+gui.Config.GetUserConfig().GetInt("gui.scrollHeight"))
 	}
+
+	mainView.Autoscroll = true
 	return nil
 }
 
@@ -190,6 +195,9 @@ func (gui *Gui) onFocusChange() error {
 func (gui *Gui) onFocusLost(v *gocui.View, newView *gocui.View) error {
 	if v == nil {
 		return nil
+	}
+	if v.Name() == "containers" {
+		gui.State.MainWriterID++
 	}
 	gui.Log.Info(v.Name() + " focus lost")
 	return nil
@@ -242,12 +250,12 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 	}
 
-	usableSpace := height - 7
+	usableSpace := height - 4
 	extraSpace := usableSpace - (usableSpace/3)*3
 
 	vHeights := map[string]int{
 		"status":     3,
-		"containers": (usableSpace / 3) + extraSpace,
+		"containers": (usableSpace) + extraSpace,
 		"options":    1,
 	}
 
@@ -338,7 +346,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 
 		// doing this here because it'll only happen once
-		if err := gui.loadNewRepo(); err != nil {
+		if err := gui.loadNewDirectory(); err != nil {
 			return err
 		}
 	}
@@ -390,7 +398,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	return gui.resizeCurrentPopupPanel(g)
 }
 
-func (gui *Gui) loadNewRepo() error {
+func (gui *Gui) loadNewDirectory() error {
 	gui.Updater.CheckForNewUpdate(gui.onBackgroundUpdateCheckFinish, false)
 
 	gui.waitForIntro.Done()
@@ -469,7 +477,7 @@ func (gui *Gui) Run() error {
 	go func() {
 		gui.waitForIntro.Wait()
 		// TODO: see if this is right
-		gui.goEvery(time.Second*10, gui.refreshContainers)
+		// gui.goEvery(time.Second*10, gui.refreshContainers)
 		gui.goEvery(time.Millisecond*50, gui.renderAppStatus)
 	}()
 

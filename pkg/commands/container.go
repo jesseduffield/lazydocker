@@ -9,32 +9,34 @@ import (
 // Container : A git Container
 type Container struct {
 	Name          string
+	ServiceName   string
 	ID            string
-	State         string
 	Container     types.Container
 	DisplayString string
 }
 
 // GetDisplayStrings returns the dispaly string of Container
-func (b *Container) GetDisplayStrings(isFocused bool) []string {
-	displayName := utils.ColoredString(b.Name, b.GetColor())
+func (c *Container) GetDisplayStrings(isFocused bool) []string {
+	displayName := utils.ColoredString(c.Name, c.GetColor())
 
-	return []string{displayName}
+	return []string{c.ServiceName, displayName}
 }
 
 // GetColor Container color
-func (b *Container) GetColor() color.Attribute {
-	return color.FgWhite
-
-	// todo: change color based on state.
-
-	switch b.State {
-	case "feature":
-		return color.FgGreen
-	case "bugfix":
-		return color.FgYellow
-	case "hotfix":
+func (c *Container) GetColor() color.Attribute {
+	switch c.Container.State {
+	case "exited":
 		return color.FgRed
+	case "created":
+		return color.FgCyan
+	case "running":
+		return color.FgGreen
+	case "paused":
+		return color.FgYellow
+	case "dead":
+		return color.FgRed
+	case "restarting":
+		return color.FgBlue
 	default:
 		return color.FgWhite
 	}

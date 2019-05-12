@@ -3,7 +3,9 @@ package commands
 import (
 	"context"
 	"fmt"
+	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/jesseduffield/lazydocker/pkg/config"
@@ -38,16 +40,22 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Localize
 
 // GetContainers returns a slice of docker containers
 func (c *DockerCommand) GetContainers() ([]*Container, error) {
-	containers, err := c.Client.ContainerList(context.Background(), types.ContainerListOptions{})
+	containers, err := c.Client.ContainerList(context.Background(), types.ContainerListOptions{All: true})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	ownContainers := make([]*Container, len(containers))
 
 	for i, container := range containers {
-		fmt.Printf("%s %s\n", container.ID[:10], container.Image)
-		ownContainers[i] = &Container{ID: container.ID, Name: "test", Container: container}
+		c.Log.Warn(spew.Sdump(container))
+		c.Log.Warn(fmt.Sprintf("%s %s\n", container.ID[:10], container.Image))
+		serviceName, ok := container.Labels["com.docker.compose.service"]
+		if !ok {
+			serviceName = ""
+			c.Log.Warn("Could not get service name from docker container")
+		}
+		ownContainers[i] = &Container{ID: container.ID, Name: strings.TrimLeft(container.Names[0], "/"), ServiceName: serviceName, Container: container}
 	}
 
 	return ownContainers, nil
