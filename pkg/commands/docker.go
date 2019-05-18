@@ -61,6 +61,7 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 			ServiceName: serviceName,
 			Container:   container,
 			Client:      c.Client,
+			OSCommand:   c.OSCommand,
 		}
 	}
 

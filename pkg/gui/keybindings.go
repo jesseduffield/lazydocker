@@ -172,6 +172,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:     gui.handleContainerRestart,
 			Description: gui.Tr.SLocalize("restartContainer"),
 		},
+		{
+			ViewName:    "containers",
+			Key:         'a',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleContainerAttach,
+			Description: gui.Tr.SLocalize("attachContainer"),
+		},
 	}
 
 	// TODO: add more views here

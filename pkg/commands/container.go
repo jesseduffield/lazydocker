@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"os/exec"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -19,6 +20,7 @@ type Container struct {
 	Container     types.Container
 	DisplayString string
 	Client        *client.Client
+	OSCommand     *OSCommand
 }
 
 // GetDisplayStrings returns the dispaly string of Container
@@ -73,4 +75,10 @@ func (c *Container) Stop() error {
 // Restart restarts the container
 func (c *Container) Restart() error {
 	return c.Client.ContainerRestart(context.Background(), c.ID, nil)
+}
+
+// Attach attaches the container
+func (c *Container) Attach() *exec.Cmd {
+	cmd := c.OSCommand.PrepareSubProcess("docker", "attach", "--sig-proxy=false", c.ID)
+	return cmd
 }

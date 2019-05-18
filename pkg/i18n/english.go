@@ -806,5 +806,9 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 			ID:    "nextContext",
 			Other: "next context",
 		},
+		&i18n.Message{
+			ID:    "attachContainer",
+			Other: "attach to container",
+		},
 	)
 }

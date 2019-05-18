@@ -384,3 +384,18 @@ func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
 		return gui.refreshContainers()
 	})
 }
+
+func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
+	container, err := gui.getSelectedContainer(g)
+	if err != nil {
+		return nil
+	}
+
+	subProcess := container.Attach()
+	if subProcess != nil {
+		gui.SubProcess = subProcess
+		return gui.Errors.ErrSubProcess
+	}
+
+	return nil
+}
