@@ -479,6 +479,7 @@ func (gui *Gui) Run() error {
 		// TODO: see if this is right
 		// gui.goEvery(time.Second*10, gui.refreshContainers)
 		gui.goEvery(time.Millisecond*50, gui.renderAppStatus)
+		gui.goEvery(time.Millisecond*10, gui.reRender)
 	}()
 
 	g.SetManager(gocui.ManagerFunc(gui.layout), gocui.ManagerFunc(gui.getFocusLayout()))
@@ -489,6 +490,13 @@ func (gui *Gui) Run() error {
 
 	err = g.MainLoop()
 	return err
+}
+
+func (gui *Gui) reRender() error {
+	gui.g.Update(func(g *gocui.Gui) error {
+		return nil
+	})
+	return nil
 }
 
 // RunWithSubprocesses loops, instantiating a new gocui.Gui with each iteration

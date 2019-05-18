@@ -1,14 +1,11 @@
 package gui
 
 import (
-	"bufio"
-	"context"
 	"fmt"
-	"io"
+	"os/exec"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/docker/docker/api/types"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
@@ -71,54 +68,32 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View, alreadySelect
 	// 	return err
 	// }
 
-	logsReader, err := gui.DockerCommand.Client.ContainerLogs(context.Background(), container.Container.ID, types.ContainerLogsOptions{
-		ShowStdout: true,
-		ShowStderr: true,
-		Follow:     true,
-		Tail:       "20",
-		Timestamps: true,
-	})
-	if err != nil {
-		return err
-	}
-
 	mainView := gui.getMainView()
 
 	gui.State.MainWriterID++
 	writerID := gui.State.MainWriterID
 	mainView.Clear()
-	gui.Log.Warn(writerID)
+	mainView.SetOrigin(0, 0)
+	mainView.SetCursor(0, 0)
+	mainView.Autoscroll = true
+
+	var cmd *exec.Cmd
+	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=60m --timestamps " + container.ID)
+
+	cmd.Stdout = mainView
+	cmd.Start()
 
 	go func() {
-		defer logsReader.Close()
-
-		time.Sleep(time.Second / 10)
-
-		rd := bufio.NewReader(logsReader)
 		for {
+			time.Sleep(time.Second / 100)
 			if gui.State.MainWriterID != writerID {
+				cmd.Process.Kill()
 				return
 			}
-
-			line, err := rd.ReadString('\n')
-			if err != nil {
-				if err == io.EOF {
-					return
-				}
-
-				gui.Log.Errorf("read file line error: %v", err)
-				return
-			}
-			gui.g.Update(func(g *gocui.Gui) error {
-				mainView.Write([]byte(line))
-				return nil
-			})
 		}
 	}()
 
 	return nil
-
-	// return gui.renderString(g, "main", string(data))
 }
 
 func (gui *Gui) refreshContainers() error {
