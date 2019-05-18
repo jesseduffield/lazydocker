@@ -82,9 +82,15 @@ type menuPanelState struct {
 	SelectedLine int
 }
 
+type mainPanelState struct {
+	ObjectKey string
+	WriterID  int
+}
+
 type panelStates struct {
 	Containers *containerPanelState
 	Menu       *menuPanelState
+	Main       *mainPanelState
 }
 
 type guiState struct {
@@ -95,7 +101,6 @@ type guiState struct {
 	Updating         bool
 	Panels           *panelStates
 	SubProcessOutput string
-	MainWriterID     int
 }
 
 // NewGui builds a new gui handler
@@ -108,8 +113,11 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		Panels: &panelStates{
 			Containers: &containerPanelState{SelectedLine: -1, ContextIndex: 0},
 			Menu:       &menuPanelState{SelectedLine: 0},
+			Main: &mainPanelState{
+				WriterID:  0,
+				ObjectKey: "",
+			},
 		},
-		MainWriterID: 0,
 	}
 
 	gui := &Gui{
@@ -200,7 +208,7 @@ func (gui *Gui) onFocusLost(v *gocui.View, newView *gocui.View) error {
 		return nil
 	}
 	if v.Name() == "containers" {
-		gui.State.MainWriterID++
+		gui.State.Panels.Main.WriterID++
 	}
 	gui.Log.Info(v.Name() + " focus lost")
 	return nil
@@ -479,6 +487,7 @@ func (gui *Gui) Run() error {
 		gui.waitForIntro.Wait()
 		gui.goEvery(time.Millisecond*50, gui.renderAppStatus)
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
+		gui.goEvery(time.Millisecond*500, gui.refreshContainers)
 	}()
 
 	g.SetManager(gocui.ManagerFunc(gui.layout), gocui.ManagerFunc(gui.getFocusLayout()))
@@ -530,34 +539,10 @@ func (gui *Gui) RunWithSubprocesses() error {
 // adapted from https://blog.kowalczyk.info/article/wOYk/advanced-command-execution-in-go-with-osexec.html
 func (gui *Gui) runCommand(cmd *exec.Cmd) (string, error) {
 	var stdoutBuf bytes.Buffer
-	stdoutIn, _ := cmd.StdoutPipe()
-	stderrIn, _ := cmd.StderrPipe()
+	cmd.Stdout = io.MultiWriter(os.Stdout, &stdoutBuf)
+	cmd.Stderr = io.MultiWriter(os.Stderr, &stdoutBuf)
 
-	stdout := io.MultiWriter(os.Stdout, &stdoutBuf)
-	stderr := io.MultiWriter(os.Stderr, &stdoutBuf)
-	err := cmd.Start()
-	if err != nil {
-		return "", err
-	}
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	go func() {
-		if _, err := io.Copy(stdout, stdoutIn); err != nil {
-			gui.Log.Error(err)
-		}
-
-		wg.Done()
-	}()
-
-	if _, err := io.Copy(stderr, stderrIn); err != nil {
-		return "", err
-	}
-
-	wg.Wait()
-
-	if err := cmd.Wait(); err != nil {
+	if err := cmd.Run(); err != nil {
 		// not handling the error explicitly because usually we're going to see it
 		// in the output anyway
 		gui.Log.Error(err)

@@ -44,7 +44,7 @@ func (gui *Gui) handleContainersFocus(g *gocui.Gui, v *gocui.View) error {
 	newSelectedLine := cy - oy
 
 	if newSelectedLine > len(gui.State.Containers)-1 || len(utils.Decolorise(gui.State.Containers[newSelectedLine].Name)) < cx {
-		return gui.handleContainerSelect(gui.g, v, false)
+		return gui.handleContainerSelect(gui.g, v)
 	}
 
 	gui.State.Panels.Containers.SelectedLine = newSelectedLine
@@ -52,11 +52,11 @@ func (gui *Gui) handleContainersFocus(g *gocui.Gui, v *gocui.View) error {
 	if prevSelectedLine == newSelectedLine && gui.currentViewName() == v.Name() {
 		return gui.handleContainerPress(gui.g, v)
 	} else {
-		return gui.handleContainerSelect(gui.g, v, true)
+		return gui.handleContainerSelect(gui.g, v)
 	}
 }
 
-func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View, alreadySelected bool) error {
+func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 	if _, err := gui.g.SetCurrentView(v.Name()); err != nil {
 		return err
 	}
@@ -69,14 +69,21 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View, alreadySelect
 		return gui.renderString(g, "main", gui.Tr.SLocalize("NoChangedContainers"))
 	}
 
+	key := container.ID + "-" + gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex]
+	if gui.State.Panels.Main.ObjectKey == key {
+		return nil
+	} else {
+		gui.State.Panels.Main.ObjectKey = key
+	}
+
 	if err := gui.focusPoint(0, gui.State.Panels.Containers.SelectedLine, len(gui.State.Containers), v); err != nil {
 		return err
 	}
 
 	mainView := gui.getMainView()
 
-	gui.State.MainWriterID++
-	writerID := gui.State.MainWriterID
+	gui.State.Panels.Main.WriterID++
+	writerID := gui.State.Panels.Main.WriterID
 
 	mainView.Clear()
 	mainView.SetOrigin(0, 0)
@@ -150,7 +157,7 @@ func (gui *Gui) renderStats(mainView *gocui.View, container *commands.Container,
 				gui.createErrorPanel(gui.g, err.Error())
 			}
 
-			if gui.State.MainWriterID != writerID {
+			if gui.State.Panels.Main.WriterID != writerID {
 				stream.Body.Close()
 				return
 			}
@@ -177,7 +184,7 @@ func (gui *Gui) renderLogs(mainView *gocui.View, container *commands.Container, 
 	go func() {
 		for {
 			time.Sleep(time.Second / 100)
-			if gui.State.MainWriterID != writerID {
+			if gui.State.Panels.Main.WriterID != writerID {
 				cmd.Process.Kill()
 				return
 			}
@@ -188,8 +195,6 @@ func (gui *Gui) renderLogs(mainView *gocui.View, container *commands.Container, 
 }
 
 func (gui *Gui) refreshContainers() error {
-	selectedContainer, _ := gui.getSelectedContainer(gui.g)
-
 	containersView := gui.getContainersView()
 	if containersView == nil {
 		// if the containersView hasn't been instantiated yet we just return
@@ -217,9 +222,7 @@ func (gui *Gui) refreshContainers() error {
 		fmt.Fprint(containersView, list)
 
 		if containersView == g.CurrentView() {
-			newSelectedContainer, _ := gui.getSelectedContainer(gui.g)
-			alreadySelected := newSelectedContainer.Name == selectedContainer.Name
-			return gui.handleContainerSelect(g, containersView, alreadySelected)
+			return gui.handleContainerSelect(g, containersView)
 		}
 		return nil
 	})
@@ -246,7 +249,7 @@ func (gui *Gui) handleContainersNextLine(g *gocui.Gui, v *gocui.View) error {
 	panelState := gui.State.Panels.Containers
 	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.State.Containers), false)
 
-	return gui.handleContainerSelect(gui.g, v, false)
+	return gui.handleContainerSelect(gui.g, v)
 }
 
 func (gui *Gui) handleContainersPrevLine(g *gocui.Gui, v *gocui.View) error {
@@ -257,7 +260,7 @@ func (gui *Gui) handleContainersPrevLine(g *gocui.Gui, v *gocui.View) error {
 	panelState := gui.State.Panels.Containers
 	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.State.Containers), true)
 
-	return gui.handleContainerSelect(gui.g, v, false)
+	return gui.handleContainerSelect(gui.g, v)
 }
 
 func (gui *Gui) handleContainerPress(g *gocui.Gui, v *gocui.View) error {
@@ -272,7 +275,7 @@ func (gui *Gui) handleContainersPrevContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Containers.ContextIndex++
 	}
 
-	gui.handleContainerSelect(gui.g, v, false)
+	gui.handleContainerSelect(gui.g, v)
 
 	return nil
 }
@@ -285,7 +288,7 @@ func (gui *Gui) handleContainersNextContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Containers.ContextIndex--
 	}
 
-	gui.handleContainerSelect(gui.g, v, false)
+	gui.handleContainerSelect(gui.g, v)
 
 	return nil
 }

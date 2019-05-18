@@ -40,6 +40,7 @@ func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		panic(err)
 	}
+	gui.State.Panels.Main.ObjectKey = ""
 	return gui.switchFocus(g, v, focusedView)
 }
 
@@ -64,6 +65,7 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		panic(err)
 	}
+	gui.State.Panels.Main.ObjectKey = ""
 	return gui.switchFocus(g, v, focusedView)
 }
 
@@ -74,7 +76,7 @@ func (gui *Gui) newLineFocused(g *gocui.Gui, v *gocui.View) error {
 	case "status":
 		return gui.handleStatusSelect(g, v)
 	case "containers":
-		return gui.handleContainerSelect(g, v, true)
+		return gui.handleContainerSelect(g, v)
 	case "confirmation":
 		return nil
 	case "main":
