@@ -148,6 +148,11 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Key:      ']',
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleContainersNextContext,
+		}, {
+			ViewName: "containers",
+			Key:      'd',
+			Modifier: gocui.ModNone,
+			Handler:  gui.handleContainersRemoveMenu,
 		},
 	}
 

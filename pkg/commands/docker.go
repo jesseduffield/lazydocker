@@ -11,6 +11,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 )
 
 // DockerCommand is our main git interface
@@ -59,4 +60,55 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 	}
 
 	return ownContainers, nil
+}
+
+type removeContainerConfig struct {
+	// RemoveVolumes removes any volumes attached to the container
+	RemoveVolumes bool
+
+	// Force forces the container to be removed, even if it's running
+	Force bool
+}
+
+type RemoveContainerOption func(c *removeContainerConfig)
+
+// RemoveVolumes is an option to remove volumes attached to the container
+func RemoveVolumes(c *removeContainerConfig) {
+	c.RemoveVolumes = true
+}
+
+// Force is an option to remove volumes attached to the container
+func Force(c *removeContainerConfig) {
+	c.Force = true
+}
+
+// MustStopContainer tells us that we must stop the container before removing it
+const MustStopContainer = iota
+
+// RemoveContainer removes a container
+func (c *DockerCommand) RemoveContainer(containerID string, options ...RemoveContainerOption) error {
+	config := &removeContainerConfig{}
+	for _, option := range options {
+		option(config)
+	}
+	flags := ""
+	if config.RemoveVolumes {
+		flags += " --volumes "
+	}
+	if config.Force {
+		flags += " --force "
+	}
+
+	err := c.OSCommand.RunCommand(fmt.Sprintf("docker rm %s %s", flags, containerID))
+	if err != nil {
+		if strings.Contains(err.Error(), "Stop the container before attempting removal or force remove") {
+			return ComplexError{
+				Code:    MustStopContainer,
+				Message: err.Error(),
+				frame:   xerrors.Caller(1),
+			}
+		}
+		return err
+	}
+	return nil
 }

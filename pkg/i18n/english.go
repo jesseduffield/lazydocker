@@ -760,5 +760,23 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 			ID:    "resetTo",
 			Other: `reset to`,
 		},
+
+		// ALL LAZYDOCKER STUFF BELOW:
+		&i18n.Message{
+			ID:    "remove",
+			Other: `remove`,
+		},
+		&i18n.Message{
+			ID:    "removeWithVolumes",
+			Other: `remove with volumes`,
+		},
+		&i18n.Message{
+			ID:    "mustForceToRemove",
+			Other: "You cannot remove a running container unless you force it. Do you want to force it?",
+		},
+		&i18n.Message{
+			ID:    "Confirm",
+			Other: "Confirm",
+		},
 	)
 }

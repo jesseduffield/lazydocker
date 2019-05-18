@@ -8,10 +8,12 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"golang.org/x/xerrors"
 )
 
 // list panel functions
@@ -130,10 +132,12 @@ func (gui *Gui) renderStats(mainView *gocui.View, container *commands.Container,
 			var stats commands.ContainerStats
 			json.Unmarshal(data, &stats)
 
+			cpuUsageHistory = append(cpuUsageHistory, stats.CalculateContainerCPUPercentage())
 			if len(cpuUsageHistory) >= 20 {
 				cpuUsageHistory = cpuUsageHistory[1:]
 			}
 
+			memoryUsageHistory = append(memoryUsageHistory, stats.CalculateContainerMemoryUsage())
 			if len(memoryUsageHistory) >= 20 {
 				memoryUsageHistory = memoryUsageHistory[1:]
 			}
@@ -280,4 +284,67 @@ func (gui *Gui) handleContainersNextContext(g *gocui.Gui, v *gocui.View) error {
 	gui.handleContainerSelect(gui.g, v, true)
 
 	return nil
+}
+
+type removeOption struct {
+	description   string
+	command       string
+	configOptions []commands.RemoveContainerOption
+	runCommand    bool
+}
+
+// GetDisplayStrings is a function.
+func (r *removeOption) GetDisplayStrings(isFocused bool) []string {
+	return []string{r.description, color.New(color.FgRed).Sprint(r.command)}
+}
+
+func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
+	container, err := gui.getSelectedContainer(g)
+	if err != nil {
+		return nil
+	}
+
+	options := []*removeOption{
+		{
+			description: gui.Tr.SLocalize("remove"),
+			command:     "docker rm " + container.ID[1:10],
+			runCommand:  true,
+		},
+		{
+			description:   gui.Tr.SLocalize("removeWithVolumes"),
+			command:       "docker rm --volumes " + container.ID[1:10],
+			configOptions: []commands.RemoveContainerOption{commands.RemoveVolumes},
+			runCommand:    true,
+		},
+		{
+			description: gui.Tr.SLocalize("cancel"),
+			runCommand:  false,
+		},
+	}
+
+	handleMenuPress := func(index int) error {
+		if !options[index].runCommand {
+			return nil
+		}
+		configOptions := options[index].configOptions
+		if cerr := gui.DockerCommand.RemoveContainer(container.ID, configOptions...); cerr != nil {
+			var originalErr commands.ComplexError
+			if xerrors.As(cerr, &originalErr) {
+				if originalErr.Code == commands.MustStopContainer {
+					return gui.createConfirmationPanel(gui.g, v, gui.Tr.SLocalize("Confirm"), gui.Tr.SLocalize("mustForceToRemove"), func(g *gocui.Gui, v *gocui.View) error {
+						if err := gui.DockerCommand.RemoveContainer(container.ID, append(configOptions, commands.Force)...); err != nil {
+							return err
+						}
+						return gui.refreshContainers()
+					}, nil)
+				}
+			} else {
+				return gui.createErrorPanel(gui.g, err.Error())
+			}
+		}
+
+		return gui.refreshContainers()
+	}
+
+	return gui.createMenu("", options, len(options), handleMenuPress)
 }

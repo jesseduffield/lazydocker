@@ -152,8 +152,6 @@ func (s *ContainerStats) CalculateContainerMemoryUsage() float64 {
 
 // RenderStats returns a string containing the rendered stats of the container
 func (s *ContainerStats) RenderStats(viewWidth int, cpuUsageHistory []float64, memoryUsageHistory []float64) (string, error) {
-	percentMemory := s.CalculateContainerMemoryUsage()
-	memoryUsageHistory = append(memoryUsageHistory, percentMemory)
 	memoryGraph := asciigraph.Plot(
 		memoryUsageHistory,
 		asciigraph.Height(10),
@@ -163,22 +161,20 @@ func (s *ContainerStats) RenderStats(viewWidth int, cpuUsageHistory []float64, m
 		asciigraph.Caption(
 			fmt.Sprintf(
 				"%.2f%% Memory (%s/%s)",
-				percentMemory,
+				memoryUsageHistory[len(memoryUsageHistory)-1],
 				formatBinaryBytes(s.MemoryStats.Usage),
 				formatBinaryBytes(int(s.MemoryStats.Limit)),
 			),
 		),
 	)
 
-	percentageCPU := s.CalculateContainerCPUPercentage()
-	cpuUsageHistory = append(cpuUsageHistory, percentageCPU)
 	cpuGraph := asciigraph.Plot(
 		cpuUsageHistory,
 		asciigraph.Height(10),
 		asciigraph.Width(viewWidth-10),
 		asciigraph.Min(0),
 		asciigraph.Max(100),
-		asciigraph.Caption(fmt.Sprintf("%.2f%% CPU", percentageCPU)),
+		asciigraph.Caption(fmt.Sprintf("%.2f%% CPU", cpuUsageHistory[len(cpuUsageHistory)-1])),
 	)
 
 	pidsCount := fmt.Sprintf("PIDs: %d", s.PidsStats.Current)

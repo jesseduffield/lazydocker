@@ -17,9 +17,7 @@ type Container struct {
 
 // GetDisplayStrings returns the dispaly string of Container
 func (c *Container) GetDisplayStrings(isFocused bool) []string {
-	displayName := utils.ColoredString(c.Name, c.GetColor())
-
-	return []string{c.ServiceName, displayName}
+	return []string{utils.ColoredString(c.Container.State, c.GetColor()), utils.ColoredString(c.Name, color.FgWhite)}
 }
 
 // GetColor Container color
