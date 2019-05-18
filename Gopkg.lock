@@ -58,12 +58,11 @@
   revision = "9fd32a8b3d3d3f9d43c341bfe098430e07609480"
 
 [[projects]]
-  digest = "1:a3b08eb3ec49caec29db596d8f2aae79614413a8d2068d5082b92fa23b5b6d80"
+  digest = "1:8abef4b9ca2f94e008688685bf8fb7bb27e5c82b353a82ef9276a27b4a6d2020"
   name = "github.com/carlosms/asciigraph"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "b8c6bd8cace5d89062a57acb2012b0be08fb9525"
-  version = "v0.4.1"
+  revision = "22e3e1b9e3cd5ab4f79619cd65987f426d2d3dc4"
 
 [[projects]]
   branch = "master"

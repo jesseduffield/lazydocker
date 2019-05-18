@@ -9,6 +9,7 @@ import (
 
 // Plot returns ascii graph for a series.
 func Plot(series []float64, options ...Option) string {
+	var logMaximum float64
 	config := configure(config{
 		Offset: 3,
 	}, options)
@@ -18,6 +19,13 @@ func Plot(series []float64, options ...Option) string {
 	}
 
 	minimum, maximum := minMaxFloat64Slice(series)
+	if config.Min != nil && *config.Min < minimum {
+		minimum = *config.Min
+	}
+	if config.Max != nil && *config.Max > maximum {
+		maximum = *config.Max
+	}
+
 	interval := math.Abs(maximum - minimum)
 
 	if config.Height <= 0 {
@@ -32,7 +40,12 @@ func Plot(series []float64, options ...Option) string {
 		config.Offset = 3
 	}
 
-	ratio := float64(config.Height) / interval
+	var ratio float64
+	if interval != 0 {
+		ratio = float64(config.Height) / interval
+	} else {
+		ratio = 1
+	}
 	min2 := round(minimum * ratio)
 	max2 := round(maximum * ratio)
 
@@ -54,7 +67,10 @@ func Plot(series []float64, options ...Option) string {
 	}
 
 	precision := 2
-	logMaximum := math.Log10(math.Max(math.Abs(maximum), math.Abs(minimum))) //to find number of zeros after decimal
+	logMaximum = math.Log10(math.Max(math.Abs(maximum), math.Abs(minimum))) //to find number of zeros after decimal
+	if minimum == float64(0) && maximum == float64(0) {
+		logMaximum = float64(-1)
+	}
 
 	if logMaximum < 0 {
 		// negative log
@@ -74,7 +90,14 @@ func Plot(series []float64, options ...Option) string {
 
 	// axis and labels
 	for y := intmin2; y < intmax2+1; y++ {
-		label := fmt.Sprintf("%*.*f", maxWidth+1, precision, maximum-(float64(y-intmin2)*interval/float64(rows)))
+		var magnitude float64
+		if rows > 0 {
+			magnitude = maximum - (float64(y-intmin2) * interval / float64(rows))
+		} else {
+			magnitude = float64(y)
+		}
+
+		label := fmt.Sprintf("%*.*f", maxWidth+1, precision, magnitude)
 		w := y - intmin2
 		h := int(math.Max(float64(config.Offset)-float64(len(label)), 0))
 
@@ -99,12 +122,9 @@ func Plot(series []float64, options ...Option) string {
 		} else {
 			if y0 > y1 {
 				plot[rows-y1][x+config.Offset] = "╰"
-			} else {
-				plot[rows-y1][x+config.Offset] = "╭"
-			}
-			if y0 > y1 {
 				plot[rows-y0][x+config.Offset] = "╮"
 			} else {
+				plot[rows-y1][x+config.Offset] = "╭"
 				plot[rows-y0][x+config.Offset] = "╯"
 			}
 
