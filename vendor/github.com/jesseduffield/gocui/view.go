@@ -609,3 +609,8 @@ func Loader() cell {
 		chr: chr,
 	}
 }
+
+// IsTainted tells us if the view is tainted
+func (v *View) IsTainted() bool {
+	return v.tainted
+}

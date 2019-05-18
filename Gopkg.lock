@@ -58,6 +58,14 @@
   revision = "9fd32a8b3d3d3f9d43c341bfe098430e07609480"
 
 [[projects]]
+  digest = "1:a3b08eb3ec49caec29db596d8f2aae79614413a8d2068d5082b92fa23b5b6d80"
+  name = "github.com/carlosms/asciigraph"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "b8c6bd8cace5d89062a57acb2012b0be08fb9525"
+  version = "v0.4.1"
+
+[[projects]]
   branch = "master"
   digest = "1:cd7ba2b29e93e2a8384e813dfc80ebb0f85d9214762e6ca89bb55a58092eab87"
   name = "github.com/cloudfoundry/jibber_jabber"
@@ -230,11 +238,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:e087b537492d56140d17c9392139c3a6f72d8b6623caf4c1bf5feacdb69be8c1"
+  digest = "1:2dda3d7f919f7795fc5218b6d4edf54339119002cd2f580fe39224549eb687bf"
   name = "github.com/jesseduffield/gocui"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "9f871b6b9dffab4873d1388b15fcc987f372ca2e"
+  revision = "77d76180000321e6c543d0879c36016a15537682"
 
 [[projects]]
   branch = "master"
@@ -539,6 +547,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/carlosms/asciigraph",
     "github.com/cloudfoundry/jibber_jabber",
     "github.com/davecgh/go-spew/spew",
     "github.com/docker/docker/api/types",
