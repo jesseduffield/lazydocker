@@ -35,6 +35,7 @@ var OverlappingEdges = false
 type SentinelErrors struct {
 	ErrSubProcess   error
 	ErrNoContainers error
+	ErrNoImages     error
 }
 
 // GenerateSentinelErrors makes the sentinel errors for the gui. We're defining it here
@@ -50,7 +51,8 @@ type SentinelErrors struct {
 func (gui *Gui) GenerateSentinelErrors() {
 	gui.Errors = SentinelErrors{
 		ErrSubProcess:   errors.New(gui.Tr.SLocalize("RunningSubprocess")),
-		ErrNoContainers: errors.New(gui.Tr.SLocalize("NoChangedContainers")),
+		ErrNoContainers: errors.New(gui.Tr.SLocalize("NoContainers")),
+		ErrNoImages:     errors.New(gui.Tr.SLocalize("NoImages")),
 	}
 }
 
@@ -87,14 +89,21 @@ type mainPanelState struct {
 	WriterID  int
 }
 
+type imagePanelState struct {
+	SelectedLine int
+	ContextIndex int // for specifying if you are looking at logs/stats/config/etc
+}
+
 type panelStates struct {
 	Containers *containerPanelState
 	Menu       *menuPanelState
 	Main       *mainPanelState
+	Images     *imagePanelState
 }
 
 type guiState struct {
 	Containers       []*commands.Container
+	Images           []*commands.Image
 	MenuItemCount    int // can't store the actual list because it's of interface{} type
 	PreviousView     string
 	Platform         commands.Platform
@@ -112,6 +121,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		Platform:     *oSCommand.Platform,
 		Panels: &panelStates{
 			Containers: &containerPanelState{SelectedLine: -1, ContextIndex: 0},
+			Images:     &imagePanelState{SelectedLine: -1, ContextIndex: 0},
 			Menu:       &menuPanelState{SelectedLine: 0},
 			Main: &mainPanelState{
 				WriterID:  0,
@@ -207,7 +217,7 @@ func (gui *Gui) onFocusLost(v *gocui.View, newView *gocui.View) error {
 	if v == nil {
 		return nil
 	}
-	if v.Name() == "containers" {
+	if v.Name() == "containers" || v.Name() == "images" {
 		gui.State.Panels.Main.WriterID++
 	}
 	gui.Log.Info(v.Name() + " focus lost")
@@ -265,7 +275,8 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 
 	vHeights := map[string]int{
 		"status":     3,
-		"containers": usableSpace,
+		"containers": usableSpace/2 + usableSpace%2,
+		"images":     usableSpace / 2,
 		"options":    1,
 	}
 
@@ -277,6 +288,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		vHeights = map[string]int{
 			"status":     defaultHeight,
 			"containers": defaultHeight,
+			"images":     defaultHeight,
 			"options":    defaultHeight,
 		}
 		vHeights[currentCyclebleView] = height - defaultHeight*4 - 1
@@ -318,7 +330,17 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 		containersView.Highlight = true
 		containersView.Title = gui.Tr.SLocalize("ContainersTitle")
-		v.FgColor = gocui.ColorWhite
+		containersView.FgColor = gocui.ColorWhite
+	}
+
+	imagesView, err := g.SetViewBeneath("images", "containers", vHeights["images"])
+	if err != nil {
+		if err.Error() != "unknown view" {
+			return err
+		}
+		imagesView.Highlight = true
+		imagesView.Title = gui.Tr.SLocalize("ImagesTitle")
+		imagesView.FgColor = gocui.ColorWhite
 	}
 
 	if v, err := g.SetView("options", appStatusOptionsBoundary-1, height-2, optionsVersionBoundary-1, height, 0); err != nil {
@@ -387,6 +409,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 
 	listViews := map[*gocui.View]listViewState{
 		containersView: {selectedLine: gui.State.Panels.Containers.SelectedLine, lineCount: len(gui.State.Containers)},
+		imagesView:     {selectedLine: gui.State.Panels.Images.SelectedLine, lineCount: len(gui.State.Images)},
 	}
 
 	// menu view might not exist so we check to be safe

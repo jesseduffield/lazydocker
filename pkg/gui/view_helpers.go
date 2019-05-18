@@ -10,10 +10,13 @@ import (
 	"github.com/spkg/bom"
 )
 
-var cyclableViews = []string{"status", "containers"}
+var cyclableViews = []string{"status", "containers", "images"}
 
 func (gui *Gui) refreshSidePanels(g *gocui.Gui) error {
 	if err := gui.refreshContainers(); err != nil {
+		return err
+	}
+	if err := gui.refreshImages(); err != nil {
 		return err
 	}
 	return nil
@@ -77,6 +80,8 @@ func (gui *Gui) newLineFocused(g *gocui.Gui, v *gocui.View) error {
 		return gui.handleStatusSelect(g, v)
 	case "containers":
 		return gui.handleContainerSelect(g, v)
+	case "images":
+		return gui.handleImageSelect(g, v)
 	case "confirmation":
 		return nil
 	case "main":
@@ -215,6 +220,11 @@ func (gui *Gui) renderOptionsMap(optionsMap map[string]string) error {
 
 func (gui *Gui) getContainersView() *gocui.View {
 	v, _ := gui.g.View("containers")
+	return v
+}
+
+func (gui *Gui) getImagesView() *gocui.View {
+	v, _ := gui.g.View("images")
 	return v
 }
 

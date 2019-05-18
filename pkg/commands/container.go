@@ -9,10 +9,11 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 )
 
-// Container : A git Container
+// Container : A docker Container
 type Container struct {
 	Name          string
 	ServiceName   string
@@ -21,6 +22,7 @@ type Container struct {
 	DisplayString string
 	Client        *client.Client
 	OSCommand     *OSCommand
+	Log           *logrus.Entry
 }
 
 // GetDisplayStrings returns the dispaly string of Container

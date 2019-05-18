@@ -28,9 +28,6 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 			ID:    "LogTitle",
 			Other: "Log",
 		}, &i18n.Message{
-			ID:    "ContainersTitle",
-			Other: "Containers",
-		}, &i18n.Message{
 			ID:    "BranchesTitle",
 			Other: "Branches",
 		}, &i18n.Message{
@@ -150,9 +147,6 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 		}, &i18n.Message{
 			ID:    "checkout",
 			Other: "checkout",
-		}, &i18n.Message{
-			ID:    "NoChangedContainers",
-			Other: "No changed containers",
 		}, &i18n.Message{
 			ID:    "ContainerHasNoUnstagedChanges",
 			Other: "Container has no unstaged changes to add",
@@ -809,6 +803,22 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 		&i18n.Message{
 			ID:    "attachContainer",
 			Other: "attach to container",
+		},
+		&i18n.Message{
+			ID:    "ContainersTitle",
+			Other: "Containers",
+		},
+		&i18n.Message{
+			ID:    "ImagesTitle",
+			Other: "Images",
+		},
+		&i18n.Message{
+			ID:    "NoContainers",
+			Other: "No containers",
+		},
+		&i18n.Message{
+			ID:    "NoImages",
+			Other: "No images",
 		},
 	)
 }

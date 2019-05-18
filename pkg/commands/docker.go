@@ -2,7 +2,6 @@ package commands
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/davecgh/go-spew/spew"
@@ -48,8 +47,6 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 	ownContainers := make([]*Container, len(containers))
 
 	for i, container := range containers {
-		c.Log.Warn(spew.Sdump(container))
-		c.Log.Warn(fmt.Sprintf("%s %s\n", container.ID[:10], container.Image))
 		serviceName, ok := container.Labels["com.docker.compose.service"]
 		if !ok {
 			serviceName = ""
@@ -62,8 +59,40 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 			Container:   container,
 			Client:      c.Client,
 			OSCommand:   c.OSCommand,
+			Log:         c.Log,
 		}
 	}
 
 	return ownContainers, nil
+}
+
+// GetImages returns a slice of docker images
+func (c *DockerCommand) GetImages() ([]*Image, error) {
+	images, err := c.Client.ImageList(context.Background(), types.ImageListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	ownImages := make([]*Image, len(images))
+
+	for i, image := range images {
+		c.Log.Warn(spew.Sdump(image))
+
+		name := "none"
+		tags := image.RepoTags
+		if len(tags) > 0 {
+			name = tags[0]
+		}
+
+		ownImages[i] = &Image{
+			ID:        image.ID,
+			Name:      name,
+			Image:     image,
+			Client:    c.Client,
+			OSCommand: c.OSCommand,
+			Log:       c.Log,
+		}
+	}
+
+	return ownImages, nil
 }

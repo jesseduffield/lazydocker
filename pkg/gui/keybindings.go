@@ -179,10 +179,23 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:     gui.handleContainerAttach,
 			Description: gui.Tr.SLocalize("attachContainer"),
 		},
+		{
+			ViewName:    "images",
+			Key:         '[',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleImagesPrevContext,
+			Description: gui.Tr.SLocalize("previousContext"),
+		}, {
+			ViewName:    "images",
+			Key:         ']',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleImagesNextContext,
+			Description: gui.Tr.SLocalize("nextContext"),
+		},
 	}
 
 	// TODO: add more views here
-	for _, viewName := range []string{"status", "containers", "menu"} {
+	for _, viewName := range []string{"status", "containers", "images", "menu"} {
 		bindings = append(bindings, []*Binding{
 			{ViewName: viewName, Key: gocui.KeyTab, Modifier: gocui.ModNone, Handler: gui.nextView},
 			{ViewName: viewName, Key: gocui.KeyArrowLeft, Modifier: gocui.ModNone, Handler: gui.previousView},
@@ -199,6 +212,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	}{
 		"menu":       {prevLine: gui.handleMenuPrevLine, nextLine: gui.handleMenuNextLine, focus: gui.handleMenuSelect},
 		"containers": {prevLine: gui.handleContainersPrevLine, nextLine: gui.handleContainersNextLine, focus: gui.handleContainersFocus},
+		"images":     {prevLine: gui.handleImagesPrevLine, nextLine: gui.handleImagesNextLine, focus: gui.handleImagesFocus},
 	}
 
 	for viewName, functions := range listPanelMap {

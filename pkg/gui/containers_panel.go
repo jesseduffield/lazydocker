@@ -91,15 +91,15 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 
 	switch gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex] {
 	case "logs":
-		if err := gui.renderLogs(mainView, container, writerID); err != nil {
+		if err := gui.renderContainerLogs(mainView, container, writerID); err != nil {
 			return err
 		}
 	case "config":
-		if err := gui.renderConfig(mainView, container, writerID); err != nil {
+		if err := gui.renderContainerConfig(mainView, container, writerID); err != nil {
 			return err
 		}
 	case "stats":
-		if err := gui.renderStats(mainView, container, writerID); err != nil {
+		if err := gui.renderContainerStats(mainView, container, writerID); err != nil {
 			return err
 		}
 	default:
@@ -109,7 +109,7 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) renderConfig(mainView *gocui.View, container *commands.Container, writerID int) error {
+func (gui *Gui) renderContainerConfig(mainView *gocui.View, container *commands.Container, writerID int) error {
 	mainView.Autoscroll = false
 	mainView.Title = "Config"
 
@@ -122,7 +122,7 @@ func (gui *Gui) renderConfig(mainView *gocui.View, container *commands.Container
 	return nil
 }
 
-func (gui *Gui) renderStats(mainView *gocui.View, container *commands.Container, writerID int) error {
+func (gui *Gui) renderContainerStats(mainView *gocui.View, container *commands.Container, writerID int) error {
 	mainView.Autoscroll = false
 	mainView.Title = "Stats"
 
@@ -171,7 +171,7 @@ func (gui *Gui) renderStats(mainView *gocui.View, container *commands.Container,
 	return nil
 }
 
-func (gui *Gui) renderLogs(mainView *gocui.View, container *commands.Container, writerID int) error {
+func (gui *Gui) renderContainerLogs(mainView *gocui.View, container *commands.Container, writerID int) error {
 	mainView.Autoscroll = true
 	mainView.Title = "Logs"
 
