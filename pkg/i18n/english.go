@@ -778,5 +778,13 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 			ID:    "Confirm",
 			Other: "Confirm",
 		},
+		&i18n.Message{
+			ID:    "StopContainer",
+			Other: "Are you sure you want to stop this container?",
+		},
+		&i18n.Message{
+			ID:    "RestartingStatus",
+			Other: "restarting",
+		},
 	)
 }

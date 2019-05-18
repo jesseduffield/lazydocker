@@ -49,7 +49,7 @@ func (c *Container) GetColor() color.Attribute {
 // MustStopContainer tells us that we must stop the container before removing it
 const MustStopContainer = iota
 
-// Remove removes a container
+// Remove removes the container
 func (c *Container) Remove(options types.ContainerRemoveOptions) error {
 	if err := c.Client.ContainerRemove(context.Background(), c.ID, options); err != nil {
 		if strings.Contains(err.Error(), "Stop the container before attempting removal or force remove") {
@@ -63,4 +63,14 @@ func (c *Container) Remove(options types.ContainerRemoveOptions) error {
 	}
 
 	return nil
+}
+
+// Stop stops the container
+func (c *Container) Stop() error {
+	return c.Client.ContainerStop(context.Background(), c.ID, nil)
+}
+
+// Restart restarts the container
+func (c *Container) Restart() error {
+	return c.Client.ContainerRestart(context.Background(), c.ID, nil)
 }

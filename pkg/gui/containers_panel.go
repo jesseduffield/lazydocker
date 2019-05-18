@@ -202,6 +202,9 @@ func (gui *Gui) refreshContainers() error {
 	if len(gui.State.Containers) > 0 && gui.State.Panels.Containers.SelectedLine == -1 {
 		gui.State.Panels.Containers.SelectedLine = 0
 	}
+	if len(gui.State.Containers)-1 < gui.State.Panels.Containers.SelectedLine {
+		gui.State.Panels.Containers.SelectedLine = len(gui.State.Containers) - 1
+	}
 
 	gui.g.Update(func(g *gocui.Gui) error {
 
@@ -350,4 +353,34 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	return gui.createMenu("", options, len(options), handleMenuPress)
+}
+
+func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
+	container, err := gui.getSelectedContainer(g)
+	if err != nil {
+		return nil
+	}
+
+	return gui.createConfirmationPanel(gui.g, v, gui.Tr.SLocalize("Confirm"), gui.Tr.SLocalize("StopContainer"), func(g *gocui.Gui, v *gocui.View) error {
+		if err := container.Stop(); err != nil {
+			return gui.createErrorPanel(gui.g, err.Error())
+		}
+
+		return gui.refreshContainers()
+	}, nil)
+}
+
+func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
+	container, err := gui.getSelectedContainer(g)
+	if err != nil {
+		return nil
+	}
+
+	return gui.WithWaitingStatus(gui.Tr.SLocalize("RestartingStatus"), func() error {
+		if err := container.Restart(); err != nil {
+			return gui.createErrorPanel(gui.g, err.Error())
+		}
+
+		return gui.refreshContainers()
+	})
 }
