@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/docker/docker/api/types"
 	"github.com/fatih/color"
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
@@ -289,7 +290,7 @@ func (gui *Gui) handleContainersNextContext(g *gocui.Gui, v *gocui.View) error {
 type removeOption struct {
 	description   string
 	command       string
-	configOptions []commands.RemoveContainerOption
+	configOptions types.ContainerRemoveOptions
 	runCommand    bool
 }
 
@@ -306,14 +307,15 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 
 	options := []*removeOption{
 		{
-			description: gui.Tr.SLocalize("remove"),
-			command:     "docker rm " + container.ID[1:10],
-			runCommand:  true,
+			description:   gui.Tr.SLocalize("remove"),
+			command:       "docker rm " + container.ID[1:10],
+			configOptions: types.ContainerRemoveOptions{},
+			runCommand:    true,
 		},
 		{
 			description:   gui.Tr.SLocalize("removeWithVolumes"),
 			command:       "docker rm --volumes " + container.ID[1:10],
-			configOptions: []commands.RemoveContainerOption{commands.RemoveVolumes},
+			configOptions: types.ContainerRemoveOptions{RemoveVolumes: true},
 			runCommand:    true,
 		},
 		{
@@ -327,12 +329,13 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 			return nil
 		}
 		configOptions := options[index].configOptions
-		if cerr := gui.DockerCommand.RemoveContainer(container.ID, configOptions...); cerr != nil {
+		if cerr := gui.DockerCommand.RemoveContainer(container.ID, configOptions); cerr != nil {
 			var originalErr commands.ComplexError
 			if xerrors.As(cerr, &originalErr) {
 				if originalErr.Code == commands.MustStopContainer {
 					return gui.createConfirmationPanel(gui.g, v, gui.Tr.SLocalize("Confirm"), gui.Tr.SLocalize("mustForceToRemove"), func(g *gocui.Gui, v *gocui.View) error {
-						if err := gui.DockerCommand.RemoveContainer(container.ID, append(configOptions, commands.Force)...); err != nil {
+						configOptions.Force = true
+						if err := gui.DockerCommand.RemoveContainer(container.ID, configOptions); err != nil {
 							return err
 						}
 						return gui.refreshContainers()
