@@ -477,8 +477,6 @@ func (gui *Gui) Run() error {
 
 	go func() {
 		gui.waitForIntro.Wait()
-		// TODO: see if this is right
-		// gui.goEvery(time.Second*10, gui.refreshContainers)
 		gui.goEvery(time.Millisecond*50, gui.renderAppStatus)
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
 	}()
