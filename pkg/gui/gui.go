@@ -143,11 +143,13 @@ func (gui *Gui) scrollDownMain(g *gocui.Gui, v *gocui.View) error {
 		_, sy := mainView.Size()
 		y += sy
 	}
-	if y < len(mainView.BufferLines()) {
-		return mainView.SetOrigin(ox, oy+gui.Config.GetUserConfig().GetInt("gui.scrollHeight"))
-	}
+	// for some reason we can't work out whether we've hit the bottomq
+	// there is a large discrepancy in the origin's y value and the length of BufferLines
+	return mainView.SetOrigin(ox, oy+gui.Config.GetUserConfig().GetInt("gui.scrollHeight"))
+}
 
-	mainView.Autoscroll = true
+func (gui *Gui) autoScrollMain(g *gocui.Gui, v *gocui.View) error {
+	gui.getMainView().Autoscroll = true
 	return nil
 }
 
@@ -251,11 +253,10 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	}
 
 	usableSpace := height - 4
-	extraSpace := usableSpace - (usableSpace/3)*3
 
 	vHeights := map[string]int{
 		"status":     3,
-		"containers": (usableSpace) + extraSpace,
+		"containers": usableSpace,
 		"options":    1,
 	}
 

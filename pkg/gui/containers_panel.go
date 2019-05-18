@@ -72,13 +72,24 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View, alreadySelect
 
 	gui.State.MainWriterID++
 	writerID := gui.State.MainWriterID
+
 	mainView.Clear()
 	mainView.SetOrigin(0, 0)
 	mainView.SetCursor(0, 0)
+
+	if err := gui.renderLogs(mainView, container, writerID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (gui *Gui) renderLogs(mainView *gocui.View, container *commands.Container, writerID int) error {
+
 	mainView.Autoscroll = true
 
 	var cmd *exec.Cmd
-	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=60m --timestamps " + container.ID)
+	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=60m --timestamps --follow " + container.ID)
 
 	cmd.Stdout = mainView
 	cmd.Start()

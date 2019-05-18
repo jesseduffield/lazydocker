@@ -96,6 +96,11 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:  gui.scrollDownMain,
 		}, {
 			ViewName: "",
+			Key:      gocui.KeyEnd,
+			Modifier: gocui.ModNone,
+			Handler:  gui.autoScrollMain,
+		}, {
+			ViewName: "",
 			Key:      'x',
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleCreateOptionsMenu,
