@@ -138,6 +138,16 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Key:      gocui.MouseLeft,
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleDonate,
+		}, {
+			ViewName: "containers",
+			Key:      '[',
+			Modifier: gocui.ModNone,
+			Handler:  gui.handleContainersPrevContext,
+		}, {
+			ViewName: "containers",
+			Key:      ']',
+			Modifier: gocui.ModNone,
+			Handler:  gui.handleContainersNextContext,
 		},
 	}
 

@@ -75,6 +75,7 @@ type Gui struct {
 
 type containerPanelState struct {
 	SelectedLine int
+	ContextIndex int // for specifying if you are looking at logs/stats/config/etc
 }
 
 type menuPanelState struct {
@@ -105,7 +106,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		PreviousView: "containers",
 		Platform:     *oSCommand.Platform,
 		Panels: &panelStates{
-			Containers: &containerPanelState{SelectedLine: -1},
+			Containers: &containerPanelState{SelectedLine: -1, ContextIndex: 0},
 			Menu:       &menuPanelState{SelectedLine: 0},
 		},
 		MainWriterID: 0,
@@ -290,7 +291,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		if err.Error() != "unknown view" {
 			return err
 		}
-		v.Title = gui.Tr.SLocalize("DiffTitle")
 		v.Wrap = true
 		v.FgColor = gocui.ColorWhite
 	}

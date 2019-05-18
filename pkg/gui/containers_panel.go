@@ -1,16 +1,22 @@
 package gui
 
 import (
+	"encoding/json"
 	"fmt"
 	"os/exec"
 	"time"
 
+	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
 // list panel functions
+
+func (gui *Gui) getContainerContexts() []string {
+	return []string{"logs", "config"}
+}
 
 func (gui *Gui) getSelectedContainer(g *gocui.Gui) (*commands.Container, error) {
 	selectedLine := gui.State.Panels.Containers.SelectedLine
@@ -62,11 +68,6 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View, alreadySelect
 		return err
 	}
 
-	// data, err := json.MarshalIndent(&container.Container, "", "  ")
-	// if err != nil {
-	// 	return err
-	// }
-
 	mainView := gui.getMainView()
 
 	gui.State.MainWriterID++
@@ -76,16 +77,38 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View, alreadySelect
 	mainView.SetOrigin(0, 0)
 	mainView.SetCursor(0, 0)
 
-	if err := gui.renderLogs(mainView, container, writerID); err != nil {
-		return err
+	switch gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex] {
+	case "logs":
+		if err := gui.renderLogs(mainView, container, writerID); err != nil {
+			return err
+		}
+	case "config":
+		if err := gui.renderConfig(mainView, container, writerID); err != nil {
+			return err
+		}
+	default:
+		return errors.New("Unknown context for containers panel")
 	}
 
 	return nil
 }
 
-func (gui *Gui) renderLogs(mainView *gocui.View, container *commands.Container, writerID int) error {
+func (gui *Gui) renderConfig(mainView *gocui.View, container *commands.Container, writerID int) error {
+	mainView.Autoscroll = false
+	mainView.Title = "Config"
 
+	data, err := json.MarshalIndent(&container.Container, "", "  ")
+	if err != nil {
+		return err
+	}
+	gui.renderString(gui.g, "main", string(data))
+
+	return nil
+}
+
+func (gui *Gui) renderLogs(mainView *gocui.View, container *commands.Container, writerID int) error {
 	mainView.Autoscroll = true
+	mainView.Title = "Logs"
 
 	var cmd *exec.Cmd
 	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=60m --timestamps --follow " + container.ID)
@@ -177,5 +200,31 @@ func (gui *Gui) handleContainersPrevLine(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleContainerPress(g *gocui.Gui, v *gocui.View) error {
+	return nil
+}
+
+func (gui *Gui) handleContainersPrevContext(g *gocui.Gui, v *gocui.View) error {
+	contexts := gui.getContainerContexts()
+	if gui.State.Panels.Containers.ContextIndex >= len(contexts)-1 {
+		gui.State.Panels.Containers.ContextIndex = 0
+	} else {
+		gui.State.Panels.Containers.ContextIndex++
+	}
+
+	gui.handleContainerSelect(gui.g, v, true)
+
+	return nil
+}
+
+func (gui *Gui) handleContainersNextContext(g *gocui.Gui, v *gocui.View) error {
+	contexts := gui.getContainerContexts()
+	if gui.State.Panels.Containers.ContextIndex <= 0 {
+		gui.State.Panels.Containers.ContextIndex = len(contexts) - 1
+	} else {
+		gui.State.Panels.Containers.ContextIndex--
+	}
+
+	gui.handleContainerSelect(gui.g, v, true)
+
 	return nil
 }
