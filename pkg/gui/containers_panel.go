@@ -1,11 +1,15 @@
 package gui
 
 import (
+	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os/exec"
 	"time"
 
+	"github.com/carlosms/asciigraph"
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
@@ -15,7 +19,7 @@ import (
 // list panel functions
 
 func (gui *Gui) getContainerContexts() []string {
-	return []string{"logs", "config"}
+	return []string{"logs", "config", "stats"}
 }
 
 func (gui *Gui) getSelectedContainer(g *gocui.Gui) (*commands.Container, error) {
@@ -86,6 +90,10 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View, alreadySelect
 		if err := gui.renderConfig(mainView, container, writerID); err != nil {
 			return err
 		}
+	case "stats":
+		if err := gui.renderStats(mainView, container, writerID); err != nil {
+			return err
+		}
 	default:
 		return errors.New("Unknown context for containers panel")
 	}
@@ -102,6 +110,65 @@ func (gui *Gui) renderConfig(mainView *gocui.View, container *commands.Container
 		return err
 	}
 	gui.renderString(gui.g, "main", string(data))
+
+	return nil
+}
+
+func (gui *Gui) renderStats(mainView *gocui.View, container *commands.Container, writerID int) error {
+	mainView.Autoscroll = false
+	mainView.Title = "Stats"
+
+	stats, err := gui.DockerCommand.Client.ContainerStats(context.Background(), container.ID, true)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		cpuUsageHistory := []float64{}
+		memoryUsageHistory := []float64{}
+		scanner := bufio.NewScanner(stats.Body)
+		for scanner.Scan() {
+			data := scanner.Bytes()
+			var stats commands.ContainerStats
+			json.Unmarshal(data, &stats)
+
+			if len(cpuUsageHistory) >= 20 {
+				cpuUsageHistory = cpuUsageHistory[1:]
+			}
+
+			if len(memoryUsageHistory) >= 20 {
+				memoryUsageHistory = memoryUsageHistory[1:]
+			}
+
+			percentMemory := stats.CalculateContainerMemoryUsage()
+
+			memoryUsageHistory = append(memoryUsageHistory, percentMemory)
+			memoryGraph := asciigraph.Plot(
+				memoryUsageHistory,
+				asciigraph.Height(10),
+				asciigraph.Width(30),
+				asciigraph.Min(0),
+				asciigraph.Max(100),
+				asciigraph.Caption(fmt.Sprintf("%.2f%% Memory (%.2f/%.2f)", percentMemory, float64(stats.MemoryStats.Usage)/math.Pow(2, 20), float64(stats.MemoryStats.Limit)/math.Pow(2, 20))),
+			)
+
+			percentageCPU := stats.CalculateContainerCPUPercentage()
+
+			cpuUsageHistory = append(cpuUsageHistory, percentageCPU)
+			cpuGraph := asciigraph.Plot(
+				cpuUsageHistory,
+				asciigraph.Height(10),
+				asciigraph.Width(30),
+				asciigraph.Min(0),
+				asciigraph.Max(100),
+				asciigraph.Caption(fmt.Sprintf("%.2f%% CPU", percentageCPU)),
+			)
+
+			gui.renderString(gui.g, "main", fmt.Sprintf("%s\n%s", cpuGraph, memoryGraph))
+		}
+
+		stats.Body.Close()
+	}()
 
 	return nil
 }
