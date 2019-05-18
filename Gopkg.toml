@@ -31,10 +31,6 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/golang-collections/collections"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/jesseduffield/gocui"
 
 [[constraint]]
@@ -44,3 +40,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/spkg/bom"
+
+# [[constraint]]
+#   name = "github.com/docker/docker"
+#   version = "v17"

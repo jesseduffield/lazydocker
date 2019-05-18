@@ -24,7 +24,7 @@ type DockerCommand struct {
 
 // NewDockerCommand it runs git commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Localizer, config config.AppConfigurer) (*DockerCommand, error) {
-	cli, err := client.NewClientWithOpts(client.WithVersion("1.37"))
+	cli, err := client.NewEnvClient()
 	if err != nil {
 		return nil, err
 	}
