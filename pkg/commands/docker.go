@@ -11,7 +11,6 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/xerrors"
 )
 
 // DockerCommand is our main git interface
@@ -56,27 +55,14 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 			serviceName = ""
 			c.Log.Warn("Could not get service name from docker container")
 		}
-		ownContainers[i] = &Container{ID: container.ID, Name: strings.TrimLeft(container.Names[0], "/"), ServiceName: serviceName, Container: container}
+		ownContainers[i] = &Container{
+			ID:          container.ID,
+			Name:        strings.TrimLeft(container.Names[0], "/"),
+			ServiceName: serviceName,
+			Container:   container,
+			Client:      c.Client,
+		}
 	}
 
 	return ownContainers, nil
-}
-
-// MustStopContainer tells us that we must stop the container before removing it
-const MustStopContainer = iota
-
-// RemoveContainer removes a container
-func (c *DockerCommand) RemoveContainer(containerID string, options types.ContainerRemoveOptions) error {
-	if err := c.Client.ContainerRemove(context.Background(), containerID, options); err != nil {
-		if strings.Contains(err.Error(), "Stop the container before attempting removal or force remove") {
-			return ComplexError{
-				Code:    MustStopContainer,
-				Message: err.Error(),
-				frame:   xerrors.Caller(1),
-			}
-		}
-		return err
-	}
-
-	return nil
 }

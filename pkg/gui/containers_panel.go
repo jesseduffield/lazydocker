@@ -329,13 +329,13 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 			return nil
 		}
 		configOptions := options[index].configOptions
-		if cerr := gui.DockerCommand.RemoveContainer(container.ID, configOptions); cerr != nil {
+		if cerr := container.Remove(configOptions); cerr != nil {
 			var originalErr commands.ComplexError
 			if xerrors.As(cerr, &originalErr) {
 				if originalErr.Code == commands.MustStopContainer {
 					return gui.createConfirmationPanel(gui.g, v, gui.Tr.SLocalize("Confirm"), gui.Tr.SLocalize("mustForceToRemove"), func(g *gocui.Gui, v *gocui.View) error {
 						configOptions.Force = true
-						if err := gui.DockerCommand.RemoveContainer(container.ID, configOptions); err != nil {
+						if err := container.Remove(configOptions); err != nil {
 							return err
 						}
 						return gui.refreshContainers()
