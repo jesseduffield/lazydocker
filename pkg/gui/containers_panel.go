@@ -5,7 +5,6 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
@@ -160,16 +159,8 @@ func (gui *Gui) handleContainersNextLine(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	gui.Log.Warn("nexting")
-	gui.Log.Warn(spew.Sdump(gui.State.Panels.Containers))
-	gui.Log.Warn(len(gui.State.Containers))
-
 	panelState := gui.State.Panels.Containers
 	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.State.Containers), false)
-
-	gui.Log.Warn("nexting2")
-	gui.Log.Warn(spew.Sdump(gui.State.Panels.Containers))
-	gui.Log.Warn(len(gui.State.Containers))
 
 	return gui.handleContainerSelect(gui.g, v, false)
 }
