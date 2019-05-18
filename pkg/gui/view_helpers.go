@@ -186,6 +186,18 @@ func (gui *Gui) renderString(g *gocui.Gui, viewName, s string) error {
 	return nil
 }
 
+// reRenderString sets the view's content, without changing its origin
+func (gui *Gui) reRenderString(g *gocui.Gui, viewName, s string) error {
+	g.Update(func(*gocui.Gui) error {
+		v, err := g.View(viewName)
+		if err != nil {
+			return nil // return gracefully if view has been deleted
+		}
+		return gui.setViewContent(gui.g, v, s)
+	})
+	return nil
+}
+
 func (gui *Gui) optionsMapToString(optionsMap map[string]string) string {
 	optionsArray := make([]string, 0)
 	for key, description := range optionsMap {

@@ -5,11 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"os/exec"
 	"time"
 
-	"github.com/carlosms/asciigraph"
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
@@ -118,7 +116,7 @@ func (gui *Gui) renderStats(mainView *gocui.View, container *commands.Container,
 	mainView.Autoscroll = false
 	mainView.Title = "Stats"
 
-	stats, err := gui.DockerCommand.Client.ContainerStats(context.Background(), container.ID, true)
+	stream, err := gui.DockerCommand.Client.ContainerStats(context.Background(), container.ID, true)
 	if err != nil {
 		return err
 	}
@@ -126,7 +124,7 @@ func (gui *Gui) renderStats(mainView *gocui.View, container *commands.Container,
 	go func() {
 		cpuUsageHistory := []float64{}
 		memoryUsageHistory := []float64{}
-		scanner := bufio.NewScanner(stats.Body)
+		scanner := bufio.NewScanner(stream.Body)
 		for scanner.Scan() {
 			data := scanner.Bytes()
 			var stats commands.ContainerStats
@@ -140,34 +138,22 @@ func (gui *Gui) renderStats(mainView *gocui.View, container *commands.Container,
 				memoryUsageHistory = memoryUsageHistory[1:]
 			}
 
-			percentMemory := stats.CalculateContainerMemoryUsage()
+			width, _ := mainView.Size()
 
-			memoryUsageHistory = append(memoryUsageHistory, percentMemory)
-			memoryGraph := asciigraph.Plot(
-				memoryUsageHistory,
-				asciigraph.Height(10),
-				asciigraph.Width(30),
-				asciigraph.Min(0),
-				asciigraph.Max(100),
-				asciigraph.Caption(fmt.Sprintf("%.2f%% Memory (%.2f/%.2f)", percentMemory, float64(stats.MemoryStats.Usage)/math.Pow(2, 20), float64(stats.MemoryStats.Limit)/math.Pow(2, 20))),
-			)
+			contents, err := stats.RenderStats(width, cpuUsageHistory, memoryUsageHistory)
+			if err != nil {
+				gui.createErrorPanel(gui.g, err.Error())
+			}
 
-			percentageCPU := stats.CalculateContainerCPUPercentage()
+			if gui.State.MainWriterID != writerID {
+				stream.Body.Close()
+				return
+			}
 
-			cpuUsageHistory = append(cpuUsageHistory, percentageCPU)
-			cpuGraph := asciigraph.Plot(
-				cpuUsageHistory,
-				asciigraph.Height(10),
-				asciigraph.Width(30),
-				asciigraph.Min(0),
-				asciigraph.Max(100),
-				asciigraph.Caption(fmt.Sprintf("%.2f%% CPU", percentageCPU)),
-			)
-
-			gui.renderString(gui.g, "main", fmt.Sprintf("%s\n%s", cpuGraph, memoryGraph))
+			gui.reRenderString(gui.g, "main", contents)
 		}
 
-		stats.Body.Close()
+		stream.Body.Close()
 	}()
 
 	return nil
