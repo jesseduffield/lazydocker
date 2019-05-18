@@ -104,7 +104,13 @@ func (gui *Gui) renderImageConfig(mainView *gocui.View, Image *commands.Image, w
 	if err != nil {
 		return err
 	}
-	gui.renderString(gui.g, "main", string(data))
+
+	historyData, err := json.MarshalIndent(&Image.History, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	gui.renderString(gui.g, "main", string(data)+"\n"+string(historyData))
 
 	return nil
 }

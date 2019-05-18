@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
@@ -77,7 +76,12 @@ func (c *DockerCommand) GetImages() ([]*Image, error) {
 	ownImages := make([]*Image, len(images))
 
 	for i, image := range images {
-		c.Log.Warn(spew.Sdump(image))
+		// func (cli *Client) ImageHistory(ctx context.Context, imageID string) ([]image.HistoryResponseItem, error)
+
+		history, err := c.Client.ImageHistory(context.Background(), image.ID)
+		if err != nil {
+			return nil, err
+		}
 
 		name := "none"
 		tags := image.RepoTags
@@ -95,6 +99,7 @@ func (c *DockerCommand) GetImages() ([]*Image, error) {
 			Client:    c.Client,
 			OSCommand: c.OSCommand,
 			Log:       c.Log,
+			History:   history,
 		}
 	}
 

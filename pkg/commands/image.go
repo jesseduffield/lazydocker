@@ -16,6 +16,7 @@ type Image struct {
 	Tag       string
 	ID        string
 	Image     types.ImageSummary
+	History   []types.ImageHistory
 	Client    *client.Client
 	OSCommand *OSCommand
 	Log       *logrus.Entry
