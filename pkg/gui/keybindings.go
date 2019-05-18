@@ -192,6 +192,20 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:     gui.handleImagesNextContext,
 			Description: gui.Tr.SLocalize("nextContext"),
 		},
+		{
+			ViewName:    "images",
+			Key:         'd',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleImagesRemoveMenu,
+			Description: gui.Tr.SLocalize("removeImage"),
+		},
+		{
+			ViewName:    "images",
+			Key:         'D',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handlePruneImages,
+			Description: gui.Tr.SLocalize("pruneImages"),
+		},
 	}
 
 	// TODO: add more views here

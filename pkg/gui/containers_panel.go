@@ -293,7 +293,7 @@ func (gui *Gui) handleContainersNextContext(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-type removeOption struct {
+type removeContainerOption struct {
 	description   string
 	command       string
 	configOptions types.ContainerRemoveOptions
@@ -301,7 +301,7 @@ type removeOption struct {
 }
 
 // GetDisplayStrings is a function.
-func (r *removeOption) GetDisplayStrings(isFocused bool) []string {
+func (r *removeContainerOption) GetDisplayStrings(isFocused bool) []string {
 	return []string{r.description, color.New(color.FgRed).Sprint(r.command)}
 }
 
@@ -311,7 +311,7 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	options := []*removeOption{
+	options := []*removeContainerOption{
 		{
 			description:   gui.Tr.SLocalize("remove"),
 			command:       "docker rm " + container.ID[1:10],
@@ -339,7 +339,7 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 			var originalErr commands.ComplexError
 			if xerrors.As(cerr, &originalErr) {
 				if originalErr.Code == commands.MustStopContainer {
-					return gui.createConfirmationPanel(gui.g, v, gui.Tr.SLocalize("Confirm"), gui.Tr.SLocalize("mustForceToRemove"), func(g *gocui.Gui, v *gocui.View) error {
+					return gui.createConfirmationPanel(gui.g, v, gui.Tr.SLocalize("Confirm"), gui.Tr.SLocalize("mustForceToRemoveContainer"), func(g *gocui.Gui, v *gocui.View) error {
 						configOptions.Force = true
 						if err := container.Remove(configOptions); err != nil {
 							return err
@@ -348,7 +348,7 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 					}, nil)
 				}
 			} else {
-				return gui.createErrorPanel(gui.g, err.Error())
+				return gui.createErrorPanel(gui.g, cerr.Error())
 			}
 		}
 

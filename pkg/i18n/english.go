@@ -765,7 +765,7 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 			Other: `remove with volumes`,
 		},
 		&i18n.Message{
-			ID:    "mustForceToRemove",
+			ID:    "mustForceToRemoveContainer",
 			Other: "You cannot remove a running container unless you force it. Do you want to force it?",
 		},
 		&i18n.Message{
@@ -819,6 +819,30 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 		&i18n.Message{
 			ID:    "NoImages",
 			Other: "No images",
+		},
+		&i18n.Message{
+			ID:    "removeImage",
+			Other: "remove image",
+		},
+		&i18n.Message{
+			ID:    "removeWithoutPrune",
+			Other: "remove without deleting untagged parents",
+		},
+		&i18n.Message{
+			ID:    "mustForceToRemoveImage",
+			Other: "Regular image delete not allowed. Do you want to force remove this image?",
+		},
+		&i18n.Message{
+			ID:    "pruneImages",
+			Other: "prune unused images",
+		},
+		&i18n.Message{
+			ID:    "confirmPruneImages",
+			Other: "Are you sure you want to prune all unused images?",
+		},
+		&i18n.Message{
+			ID:    "PruningStatus",
+			Other: "pruning",
 		},
 	)
 }

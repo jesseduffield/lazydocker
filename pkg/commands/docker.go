@@ -6,6 +6,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
@@ -84,9 +85,12 @@ func (c *DockerCommand) GetImages() ([]*Image, error) {
 			name = tags[0]
 		}
 
+		nameParts := strings.Split(name, ":")
+
 		ownImages[i] = &Image{
 			ID:        image.ID,
-			Name:      name,
+			Name:      nameParts[0],
+			Tag:       nameParts[1],
 			Image:     image,
 			Client:    c.Client,
 			OSCommand: c.OSCommand,
@@ -95,4 +99,10 @@ func (c *DockerCommand) GetImages() ([]*Image, error) {
 	}
 
 	return ownImages, nil
+}
+
+// PruneImages prunes images
+func (c *DockerCommand) PruneImages() error {
+	_, err := c.Client.ImagesPrune(context.Background(), filters.Args{})
+	return err
 }

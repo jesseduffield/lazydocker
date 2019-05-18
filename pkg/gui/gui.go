@@ -291,7 +291,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			"images":     defaultHeight,
 			"options":    defaultHeight,
 		}
-		vHeights[currentCyclebleView] = height - defaultHeight*4 - 1
+		vHeights[currentCyclebleView] = height - defaultHeight*2 - 1
 	}
 
 	optionsVersionBoundary := width - max(len(utils.Decolorise(information)), 1)
