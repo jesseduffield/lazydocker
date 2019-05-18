@@ -74,7 +74,7 @@ func (gui *Gui) newLineFocused(g *gocui.Gui, v *gocui.View) error {
 	case "status":
 		return gui.handleStatusSelect(g, v)
 	case "containers":
-		return gui.handleContainerSelect(g, v, false)
+		return gui.handleContainerSelect(g, v, true)
 	case "confirmation":
 		return nil
 	case "main":

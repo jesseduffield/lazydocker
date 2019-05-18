@@ -272,7 +272,7 @@ func (gui *Gui) handleContainersPrevContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Containers.ContextIndex++
 	}
 
-	gui.handleContainerSelect(gui.g, v, true)
+	gui.handleContainerSelect(gui.g, v, false)
 
 	return nil
 }
@@ -285,7 +285,7 @@ func (gui *Gui) handleContainersNextContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Containers.ContextIndex--
 	}
 
-	gui.handleContainerSelect(gui.g, v, true)
+	gui.handleContainerSelect(gui.g, v, false)
 
 	return nil
 }
