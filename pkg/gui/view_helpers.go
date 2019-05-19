@@ -43,7 +43,7 @@ func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		panic(err)
 	}
-	gui.State.Panels.Main.ObjectKey = ""
+	gui.resetMainView()
 	return gui.switchFocus(g, v, focusedView)
 }
 
@@ -68,8 +68,13 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		panic(err)
 	}
-	gui.State.Panels.Main.ObjectKey = ""
+	gui.resetMainView()
 	return gui.switchFocus(g, v, focusedView)
+}
+
+func (gui *Gui) resetMainView() {
+	gui.State.Panels.Main.ObjectKey = ""
+	gui.getMainView().Wrap = true
 }
 
 func (gui *Gui) newLineFocused(g *gocui.Gui, v *gocui.View) error {
@@ -307,7 +312,7 @@ func (gui *Gui) refreshSelectedLine(line *int, total int) {
 func (gui *Gui) renderListPanel(v *gocui.View, items interface{}) error {
 	gui.g.Update(func(g *gocui.Gui) error {
 		isFocused := gui.g.CurrentView().Name() == v.Name()
-		list, err := utils.RenderList(items, isFocused)
+		list, err := utils.RenderList(items, utils.IsFocused(isFocused))
 		if err != nil {
 			return gui.createErrorPanel(gui.g, err.Error())
 		}

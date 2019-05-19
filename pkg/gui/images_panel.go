@@ -1,8 +1,9 @@
 package gui
 
 import (
-	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/fatih/color"
@@ -96,21 +97,25 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) renderImageConfig(mainView *gocui.View, Image *commands.Image, writerID int) error {
+func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image, writerID int) error {
 	mainView.Autoscroll = false
+	mainView.Wrap = false
 	mainView.Title = "Config"
 
-	data, err := json.MarshalIndent(&Image.Image, "", "  ")
+	output := ""
+	output += utils.WithPadding("ID: ", 10) + image.Image.ID + "\n"
+	output += utils.WithPadding("Tags: ", 10) + utils.ColoredString(strings.Join(image.Image.RepoTags, ", "), color.FgGreen) + "\n"
+	output += utils.WithPadding("Size: ", 10) + utils.FormatDecimalBytes(int(image.Image.Size)) + "\n"
+	output += utils.WithPadding("Created: ", 10) + fmt.Sprintf("%v", time.Unix(image.Image.Created, 0).Format(time.RFC1123)) + "\n"
+
+	history, err := image.RenderHistory()
 	if err != nil {
 		return err
 	}
 
-	historyData, err := json.MarshalIndent(&Image.History, "", "  ")
-	if err != nil {
-		return err
-	}
+	output += "\n\n" + history
 
-	gui.renderString(gui.g, "main", string(data)+"\n"+string(historyData))
+	gui.renderString(gui.g, "main", output)
 
 	return nil
 }
@@ -136,7 +141,7 @@ func (gui *Gui) refreshImages() error {
 
 		ImagesView.Clear()
 		isFocused := gui.g.CurrentView().Name() == "Images"
-		list, err := utils.RenderList(gui.State.Images, isFocused)
+		list, err := utils.RenderList(gui.State.Images, utils.IsFocused(isFocused))
 		if err != nil {
 			return err
 		}

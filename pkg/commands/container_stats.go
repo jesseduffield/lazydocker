@@ -162,8 +162,8 @@ func (s *ContainerStats) RenderStats(viewWidth int, cpuUsageHistory []float64, m
 			fmt.Sprintf(
 				"%.2f%% Memory (%s/%s)",
 				memoryUsageHistory[len(memoryUsageHistory)-1],
-				formatBinaryBytes(s.MemoryStats.Usage),
-				formatBinaryBytes(int(s.MemoryStats.Limit)),
+				utils.FormatBinaryBytes(s.MemoryStats.Usage),
+				utils.FormatBinaryBytes(int(s.MemoryStats.Limit)),
 			),
 		),
 	)
@@ -178,8 +178,8 @@ func (s *ContainerStats) RenderStats(viewWidth int, cpuUsageHistory []float64, m
 	)
 
 	pidsCount := fmt.Sprintf("PIDs: %d", s.PidsStats.Current)
-	dataReceived := fmt.Sprintf("Traffic received: %s", formatDecimalBytes(s.Networks.Eth0.RxBytes))
-	dataSent := fmt.Sprintf("Traffic sent: %s", formatDecimalBytes(s.Networks.Eth0.TxBytes))
+	dataReceived := fmt.Sprintf("Traffic received: %s", utils.FormatDecimalBytes(s.Networks.Eth0.RxBytes))
+	dataSent := fmt.Sprintf("Traffic sent: %s", utils.FormatDecimalBytes(s.Networks.Eth0.TxBytes))
 
 	originalJSON, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
@@ -196,30 +196,4 @@ func (s *ContainerStats) RenderStats(viewWidth int, cpuUsageHistory []float64, m
 	)
 
 	return contents, nil
-}
-
-func formatBinaryBytes(b int) string {
-	n := float64(b)
-	units := []string{"B", "kiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}
-	for _, unit := range units {
-		if n > math.Pow(2, 10) {
-			n = n / math.Pow(2, 10)
-		} else {
-			return fmt.Sprintf("%.2f%s", n, unit)
-		}
-	}
-	return "a lot"
-}
-
-func formatDecimalBytes(b int) string {
-	n := float64(b)
-	units := []string{"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"}
-	for _, unit := range units {
-		if n > math.Pow(10, 3) {
-			n = n / math.Pow(10, 3)
-		} else {
-			return fmt.Sprintf("%.2f%s", n, unit)
-		}
-	}
-	return "a lot"
 }

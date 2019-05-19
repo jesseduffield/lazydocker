@@ -54,7 +54,7 @@ func (gui *Gui) handleMenuClose(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) createMenu(title string, items interface{}, itemCount int, handlePress func(int) error) error {
 	isFocused := gui.g.CurrentView().Name() == "menu"
 	gui.State.MenuItemCount = itemCount
-	list, err := utils.RenderList(items, isFocused)
+	list, err := utils.RenderList(items, utils.IsFocused(isFocused))
 	if err != nil {
 		return err
 	}

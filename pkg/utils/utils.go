@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"reflect"
 	"regexp"
 	"strings"
@@ -95,10 +96,32 @@ type Displayable interface {
 	GetDisplayStrings(bool) []string
 }
 
+type RenderListConfig struct {
+	IsFocused bool
+	Header    []string
+}
+
+func IsFocused(isFocused bool) func(c *RenderListConfig) {
+	return func(c *RenderListConfig) {
+		c.IsFocused = isFocused
+	}
+}
+
+func WithHeader(header []string) func(c *RenderListConfig) {
+	return func(c *RenderListConfig) {
+		c.Header = header
+	}
+}
+
 // RenderList takes a slice of items, confirms they implement the Displayable
 // interface, then generates a list of their displaystrings to write to a panel's
 // buffer
-func RenderList(slice interface{}, isFocused bool) (string, error) {
+func RenderList(slice interface{}, options ...func(*RenderListConfig)) (string, error) {
+	config := &RenderListConfig{}
+	for _, option := range options {
+		option(config)
+	}
+
 	s := reflect.ValueOf(slice)
 	if s.Kind() != reflect.Slice {
 		return "", errors.New("RenderList given a non-slice type")
@@ -114,19 +137,22 @@ func RenderList(slice interface{}, isFocused bool) (string, error) {
 		displayables[i] = value
 	}
 
-	return renderDisplayableList(displayables, isFocused)
+	return renderDisplayableList(displayables, *config)
 }
 
 // renderDisplayableList takes a list of displayable items, obtains their display
 // strings via GetDisplayStrings() and then returns a single string containing
 // each item's string representation on its own line, with appropriate horizontal
 // padding between the item's own strings
-func renderDisplayableList(items []Displayable, isFocused bool) (string, error) {
+func renderDisplayableList(items []Displayable, config RenderListConfig) (string, error) {
 	if len(items) == 0 {
 		return "", nil
 	}
 
-	stringArrays := getDisplayStringArrays(items, isFocused)
+	stringArrays := getDisplayStringArrays(items, config.IsFocused)
+	if len(config.Header) > 0 {
+		stringArrays = append([][]string{config.Header}, stringArrays...)
+	}
 
 	if !displayArraysAligned(stringArrays) {
 		return "", errors.New("Each item must return the same number of strings to display")
@@ -227,4 +253,38 @@ func PrevIndex(numbers []int, currentNumber int) int {
 func AsJson(i interface{}) string {
 	bytes, _ := json.MarshalIndent(i, "", "    ")
 	return string(bytes)
+}
+
+func FormatBinaryBytes(b int) string {
+	n := float64(b)
+	units := []string{"B", "kiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}
+	for _, unit := range units {
+		if n > math.Pow(2, 10) {
+			n = n / math.Pow(2, 10)
+		} else {
+			val := fmt.Sprintf("%.2f%s", n, unit)
+			if val == "0.00B" {
+				return "0B"
+			}
+			return val
+		}
+	}
+	return "a lot"
+}
+
+func FormatDecimalBytes(b int) string {
+	n := float64(b)
+	units := []string{"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"}
+	for _, unit := range units {
+		if n > math.Pow(10, 3) {
+			n = n / math.Pow(10, 3)
+		} else {
+			val := fmt.Sprintf("%.2f%s", n, unit)
+			if val == "0.00B" {
+				return "0B"
+			}
+			return val
+		}
+	}
+	return "a lot"
 }

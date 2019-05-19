@@ -215,7 +215,7 @@ func (gui *Gui) refreshContainers() error {
 
 		containersView.Clear()
 		isFocused := gui.g.CurrentView().Name() == "containers"
-		list, err := utils.RenderList(gui.State.Containers, isFocused)
+		list, err := utils.RenderList(gui.State.Containers, utils.IsFocused(isFocused))
 		if err != nil {
 			return err
 		}

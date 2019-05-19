@@ -78,11 +78,6 @@ func (c *DockerCommand) GetImages() ([]*Image, error) {
 	for i, image := range images {
 		// func (cli *Client) ImageHistory(ctx context.Context, imageID string) ([]image.HistoryResponseItem, error)
 
-		history, err := c.Client.ImageHistory(context.Background(), image.ID)
-		if err != nil {
-			return nil, err
-		}
-
 		name := "none"
 		tags := image.RepoTags
 		if len(tags) > 0 {
@@ -99,7 +94,6 @@ func (c *DockerCommand) GetImages() ([]*Image, error) {
 			Client:    c.Client,
 			OSCommand: c.OSCommand,
 			Log:       c.Log,
-			History:   history,
 		}
 	}
 
