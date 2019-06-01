@@ -248,6 +248,8 @@ update:
   days: 14 # how often a update is checked for
 reporting: 'undetermined' # one of: 'on' | 'off' | 'undetermined'
 confirmOnQuit: false
+commandTemplates:
+  restartService: "docker-compose restart {{ .ServiceName }}"
 `)
 }
 

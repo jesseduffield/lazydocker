@@ -8,9 +8,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -374,11 +372,14 @@ func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	return gui.createConfirmationPanel(gui.g, v, gui.Tr.SLocalize("Confirm"), gui.Tr.SLocalize("StopContainer"), func(g *gocui.Gui, v *gocui.View) error {
-		if err := container.Stop(); err != nil {
-			return gui.createErrorPanel(gui.g, err.Error())
-		}
+		return gui.WithWaitingStatus(gui.Tr.SLocalize("StoppingStatus"), func() error {
+			if err := container.Stop(); err != nil {
+				return gui.createErrorPanel(gui.g, err.Error())
+			}
 
-		return gui.refreshContainers()
+			return gui.refreshContainers()
+		})
+
 	}, nil)
 }
 
@@ -405,7 +406,9 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 
 	gui.State.Panels.Main.WriterID++
 
-	// Create arbitrary command.
+	// c := container.Attach()
+
+	// // Create arbitrary command.
 	c := exec.Command("bash")
 
 	// Start the command with a pty.
@@ -413,20 +416,6 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		return err
 	}
-
-	// Handle pty size.
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGWINCH)
-	go func() {
-
-		for range ch {
-			x, y := gui.getMainView().Size()
-			if err := pty.Setsize(ptmx, &pty.Winsize{Cols: uint16(x), Rows: uint16(y), X: 0, Y: 0}); err != nil {
-				gui.Log.Error(err)
-			}
-		}
-	}()
-	ch <- syscall.SIGWINCH // Initial resize.
 
 	go func() {
 		// Set stdin in raw mode.
@@ -445,7 +434,7 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Main.ObjectKey = "attached-" + container.ID
 
 		scanner := bufio.NewScanner(ptmx)
-		scanner.Split(bufio.ScanRunes)
+		scanner.Split(bufio.ScanBytes)
 
 		content := ""
 		for scanner.Scan() {
@@ -464,4 +453,19 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 	}()
 
 	return nil
+}
+
+func (gui *Gui) handleServiceRestart(g *gocui.Gui, v *gocui.View) error {
+	container, err := gui.getSelectedContainer(g)
+	if err != nil {
+		return nil
+	}
+
+	return gui.WithWaitingStatus(gui.Tr.SLocalize("RestartingStatus"), func() error {
+		if err := container.RestartService(); err != nil {
+			return gui.createErrorPanel(gui.g, err.Error())
+		}
+
+		return gui.refreshContainers()
+	})
 }

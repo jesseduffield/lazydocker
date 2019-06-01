@@ -180,6 +180,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.SLocalize("attachContainer"),
 		},
 		{
+			ViewName:    "containers",
+			Key:         'R',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServiceRestart,
+			Description: gui.Tr.SLocalize("restartService"),
+		},
+		{
 			ViewName:    "images",
 			Key:         '[',
 			Modifier:    gocui.ModNone,

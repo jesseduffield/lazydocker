@@ -781,6 +781,10 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 			Other: "restarting",
 		},
 		&i18n.Message{
+			ID:    "StoppingStatus",
+			Other: "stopping",
+		},
+		&i18n.Message{
 			ID:    "removeContainer",
 			Other: "remove container",
 		},
@@ -791,6 +795,10 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 		&i18n.Message{
 			ID:    "restartContainer",
 			Other: "restart container",
+		},
+		&i18n.Message{
+			ID:    "restartService",
+			Other: "restart container's service",
 		},
 		&i18n.Message{
 			ID:    "previousContext",

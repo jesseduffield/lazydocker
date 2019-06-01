@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"math"
 	"reflect"
 	"regexp"
@@ -287,4 +289,10 @@ func FormatDecimalBytes(b int) string {
 		}
 	}
 	return "a lot"
+}
+
+func ApplyTemplate(str string, object interface{}) string {
+	var buf bytes.Buffer
+	template.Must(template.New("").Parse(str)).Execute(&buf, object)
+	return buf.String()
 }

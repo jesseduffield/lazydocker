@@ -15,19 +15,35 @@ import (
 
 // Container : A docker Container
 type Container struct {
-	Name          string
-	ServiceName   string
-	ID            string
-	Container     types.Container
-	DisplayString string
-	Client        *client.Client
-	OSCommand     *OSCommand
-	Log           *logrus.Entry
+	Name            string
+	ServiceName     string
+	ContainerNumber string // might make this an int in the future if need be
+	ProjectName     string
+	ID              string
+	Container       types.Container
+	DisplayString   string
+	Client          *client.Client
+	OSCommand       *OSCommand
+	Log             *logrus.Entry
+	Stats           ContainerCliStat
+}
+
+// ContainerCliStat is a stat object returned by the CLI docker stat command
+type ContainerCliStat struct {
+	BlockIO   string `json:"BlockIO"`
+	CPUPerc   string `json:"CPUPerc"`
+	Container string `json:"Container"`
+	ID        string `json:"ID"`
+	MemPerc   string `json:"MemPerc"`
+	MemUsage  string `json:"MemUsage"`
+	Name      string `json:"Name"`
+	NetIO     string `json:"NetIO"`
+	PIDs      string `json:"PIDs"`
 }
 
 // GetDisplayStrings returns the dispaly string of Container
 func (c *Container) GetDisplayStrings(isFocused bool) []string {
-	return []string{utils.ColoredString(c.Container.State, c.GetColor()), utils.ColoredString(c.Name, color.FgWhite)}
+	return []string{utils.ColoredString(c.Container.State, c.GetColor()), utils.ColoredString(c.Name, color.FgWhite), c.Stats.CPUPerc}
 }
 
 // GetColor Container color
@@ -79,8 +95,20 @@ func (c *Container) Restart() error {
 	return c.Client.ContainerRestart(context.Background(), c.ID, nil)
 }
 
+// RestartService restarts the container
+func (c *Container) RestartService() error {
+	templateString := c.OSCommand.Config.GetUserConfig().GetString("commandTemplates.restartService")
+	command := utils.ApplyTemplate(templateString, c)
+	return c.OSCommand.RunCommand(command)
+}
+
 // Attach attaches the container
 func (c *Container) Attach() *exec.Cmd {
 	cmd := c.OSCommand.PrepareSubProcess("docker", "attach", "--sig-proxy=false", c.ID)
 	return cmd
+}
+
+// Top returns process information
+func (c *Container) Top() (types.ContainerProcessList, error) {
+	return c.Client.ContainerTop(context.Background(), c.ID, []string{})
 }

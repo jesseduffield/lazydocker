@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -37,6 +38,40 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Localize
 	}, nil
 }
 
+// UpdateContainerStats takes a slice of containers and returns the same slice but with new stats added
+// TODO: consider using this for everything stats-related
+func (c *DockerCommand) UpdateContainerStats(containers []*Container) ([]*Container, error) {
+	// TODO: consider using a stream rather than polling
+	command := `docker stats --all --no-trunc --no-stream --format '{{json .}}'`
+	output, err := c.OSCommand.RunCommandWithOutput(command)
+	if err != nil {
+		return nil, err
+	}
+
+	jsonStats := "[" + strings.Join(
+		strings.Split(
+			strings.Trim(output, "\n"), "\n",
+		), ",",
+	) + "]"
+
+	c.Log.Warn(jsonStats)
+
+	var stats []ContainerCliStat
+	if err := json.Unmarshal([]byte(jsonStats), &stats); err != nil {
+		return nil, err
+	}
+
+	for _, stat := range stats {
+		for _, container := range containers {
+			if container.ID == stat.ID {
+				container.Stats = stat
+			}
+		}
+	}
+
+	return containers, nil
+}
+
 // GetContainers returns a slice of docker containers
 func (c *DockerCommand) GetContainers() ([]*Container, error) {
 	containers, err := c.Client.ContainerList(context.Background(), types.ContainerListOptions{All: true})
@@ -47,21 +82,23 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 	ownContainers := make([]*Container, len(containers))
 
 	for i, container := range containers {
-		serviceName, ok := container.Labels["com.docker.compose.service"]
-		if !ok {
-			serviceName = ""
-			c.Log.Warn("Could not get service name from docker container")
-		}
 		ownContainers[i] = &Container{
-			ID:          container.ID,
-			Name:        strings.TrimLeft(container.Names[0], "/"),
-			ServiceName: serviceName,
-			Container:   container,
-			Client:      c.Client,
-			OSCommand:   c.OSCommand,
-			Log:         c.Log,
+			ID:              container.ID,
+			Name:            strings.TrimLeft(container.Names[0], "/"),
+			ServiceName:     container.Labels["com.docker.compose.service"],
+			ProjectName:     container.Labels["com.docker.compose.project"],
+			ContainerNumber: container.Labels["com.docker.compose.container"],
+			Container:       container,
+			Client:          c.Client,
+			OSCommand:       c.OSCommand,
+			Log:             c.Log,
 		}
 	}
+
+	// ownContainers, err = c.UpdateContainerStats(ownContainers)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return ownContainers, nil
 }
