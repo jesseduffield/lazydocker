@@ -5,11 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"os"
 	"os/exec"
-	"strings"
-	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/fatih/color"
@@ -17,8 +13,6 @@ import (
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
-	"github.com/jesseduffield/pty"
-	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/xerrors"
 )
 
@@ -72,12 +66,6 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 		return gui.renderString(g, "main", gui.Tr.SLocalize("NoChangedContainers"))
-	}
-
-	// if we are in an attached state, we won't do anything here
-	// TODO: generalise
-	if strings.HasPrefix(gui.State.Panels.Main.ObjectKey, "attached-") {
-		return nil
 	}
 
 	key := container.ID + "-" + gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex]
@@ -189,17 +177,32 @@ func (gui *Gui) renderContainerLogs(mainView *gocui.View, container *commands.Co
 	var cmd *exec.Cmd
 	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=60m --timestamps --follow " + container.ID)
 
-	cmd.Stdout = mainView
-	cmd.Start()
+	r, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
 
 	go func() {
-		for {
-			time.Sleep(time.Second / 100)
-			if gui.State.Panels.Main.WriterID != writerID {
-				cmd.Process.Kill()
-				return
+		gui.State.MainProcessChan <- struct{}{}
+		gui.State.MainProcessMutex.Lock()
+		cmd.Start()
+
+		go func() {
+			<-gui.State.MainProcessChan
+			cmd.Process.Kill()
+		}()
+
+		go func() {
+			for {
+				s := bufio.NewScanner(r)
+				s.Split(bufio.ScanLines)
+				for s.Scan() {
+					mainView.Write(append(s.Bytes(), '\n'))
+				}
 			}
-		}
+		}()
+		cmd.Wait()
+		gui.State.MainProcessMutex.Unlock()
 	}()
 
 	return nil
@@ -404,55 +407,10 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	gui.State.Panels.Main.WriterID++
+	c := container.Attach()
 
-	// c := container.Attach()
-
-	// // Create arbitrary command.
-	c := exec.Command("bash")
-
-	// Start the command with a pty.
-	ptmx, err := pty.Start(c)
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		// Set stdin in raw mode.
-		oldState, err := terminal.MakeRaw(int(os.Stdin.Fd()))
-		if err != nil {
-			panic(err)
-		}
-		defer func() { _ = terminal.Restore(int(os.Stdin.Fd()), oldState) }() // Best effort.
-		defer func() { _ = ptmx.Close() }()                                   // Best effort.
-
-		go func() { _, _ = io.Copy(ptmx, os.Stdin) }()
-
-		mainView := gui.getMainView()
-		mainView.Clear()
-		mainView.Autoscroll = true
-		gui.State.Panels.Main.ObjectKey = "attached-" + container.ID
-
-		scanner := bufio.NewScanner(ptmx)
-		scanner.Split(bufio.ScanBytes)
-
-		content := ""
-		for scanner.Scan() {
-			content += scanner.Text()
-			gui.Log.Warn("content")
-			gui.Log.Warn(content)
-
-			gui.renderString(gui.g, "main", content)
-		}
-
-		// reset object key
-		gui.State.Panels.Main.ObjectKey = ""
-		gui.State.Panels.Main.WriterID++
-
-		gui.handleContainerSelect(gui.g, v)
-	}()
-
-	return nil
+	gui.SubProcess = c
+	return gui.Errors.ErrSubProcess
 }
 
 func (gui *Gui) handleServiceRestart(g *gocui.Gui, v *gocui.View) error {

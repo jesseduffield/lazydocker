@@ -1,9 +1,9 @@
 package gui
 
 import (
-	"bytes"
-	"io"
+	"fmt"
 	"math"
+	"strings"
 	"sync"
 
 	// "io"
@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/go-errors/errors"
 
 	// "strings"
@@ -110,6 +111,8 @@ type guiState struct {
 	Updating         bool
 	Panels           *panelStates
 	SubProcessOutput string
+	MainProcessMutex sync.Mutex
+	MainProcessChan  chan struct{}
 }
 
 // NewGui builds a new gui handler
@@ -128,7 +131,16 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 				ObjectKey: "",
 			},
 		},
+		MainProcessChan: make(chan struct{}),
 	}
+
+	go func() {
+		// setting up a goroutine for listening to the first stop signal on this channel
+		// because whenever something wants to lock the mutex, it tells the existing process to stop
+		// but on startup we don't have a process so we just mock it
+		// this is because we're using an unbuffered channel
+		<-initialState.MainProcessChan
+	}()
 
 	gui := &Gui{
 		Log:           log,
@@ -392,16 +404,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 	}
 
-	if gui.State.SubProcessOutput != "" {
-		output := gui.State.SubProcessOutput
-		gui.State.SubProcessOutput = ""
-		x, y := gui.g.Size()
-		// if we just came back from vim, we don't want vim's output to show up in our popup
-		if float64(len(output))*1.5 < float64(x*y) {
-			return gui.createMessagePanel(gui.g, nil, "Output", output)
-		}
-	}
-
 	type listViewState struct {
 		selectedLine int
 		lineCount    int
@@ -541,16 +543,9 @@ func (gui *Gui) RunWithSubprocesses() error {
 			if err == gocui.ErrQuit {
 				break
 			} else if err == gui.Errors.ErrSubProcess {
-				gui.SubProcess.Stdin = os.Stdin
-				output, err := gui.runCommand(gui.SubProcess)
-				if err != nil {
+				if err := gui.runCommand(); err != nil {
 					return err
 				}
-				gui.State.SubProcessOutput = output
-				gui.SubProcess.Stdout = ioutil.Discard
-				gui.SubProcess.Stderr = ioutil.Discard
-				gui.SubProcess.Stdin = nil
-				gui.SubProcess = nil
 			} else {
 				return err
 			}
@@ -559,20 +554,29 @@ func (gui *Gui) RunWithSubprocesses() error {
 	return nil
 }
 
-// adapted from https://blog.kowalczyk.info/article/wOYk/advanced-command-execution-in-go-with-osexec.html
-func (gui *Gui) runCommand(cmd *exec.Cmd) (string, error) {
-	var stdoutBuf bytes.Buffer
-	cmd.Stdout = io.MultiWriter(os.Stdout, &stdoutBuf)
-	cmd.Stderr = io.MultiWriter(os.Stderr, &stdoutBuf)
+func (gui *Gui) runCommand() error {
+	gui.SubProcess.Stdout = os.Stdout
+	gui.SubProcess.Stderr = os.Stdout
+	gui.SubProcess.Stdin = os.Stdin
 
-	if err := cmd.Run(); err != nil {
+	fmt.Fprintf(os.Stdout, "\n%s\n\n", utils.ColoredString("+ "+strings.Join(gui.SubProcess.Args, " "), color.FgBlue))
+
+	if err := gui.SubProcess.Run(); err != nil {
 		// not handling the error explicitly because usually we're going to see it
 		// in the output anyway
 		gui.Log.Error(err)
 	}
 
-	outStr := stdoutBuf.String()
-	return outStr, nil
+	gui.SubProcess.Stdout = ioutil.Discard
+	gui.SubProcess.Stderr = ioutil.Discard
+	gui.SubProcess.Stdin = nil
+	gui.SubProcess = nil
+
+	// fmt.Fprintf(os.Stdout, "\n%s", utils.ColoredString(gui.Tr.SLocalize("pressEnterToReturn"), color.FgGreen))
+
+	// fmt.Scanln() // wait for enter press
+
+	return nil
 }
 
 func (gui *Gui) quit(g *gocui.Gui, v *gocui.View) error {
