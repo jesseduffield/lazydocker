@@ -445,7 +445,7 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 			ID:    "ignoreContainer",
 			Other: `add to .gitignore`,
 		}, &i18n.Message{
-			ID:    "refreshContainers",
+			ID:    "refreshContainersAndServices",
 			Other: `refresh containers`,
 		}, &i18n.Message{
 			ID:    "mergeIntoCurrentBranch",
@@ -785,20 +785,20 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 			Other: "stopping",
 		},
 		&i18n.Message{
-			ID:    "removeContainer",
-			Other: "remove container",
+			ID:    "remove",
+			Other: "remove",
 		},
 		&i18n.Message{
-			ID:    "stopContainer",
-			Other: "stop container",
+			ID:    "removeService",
+			Other: "remove containers",
 		},
 		&i18n.Message{
-			ID:    "restartContainer",
-			Other: "restart container",
+			ID:    "stop",
+			Other: "stop",
 		},
 		&i18n.Message{
-			ID:    "restartService",
-			Other: "restart container's service",
+			ID:    "restart",
+			Other: "restart",
 		},
 		&i18n.Message{
 			ID:    "previousContext",
@@ -809,8 +809,8 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 			Other: "next context",
 		},
 		&i18n.Message{
-			ID:    "attachContainer",
-			Other: "attach to container",
+			ID:    "attach",
+			Other: "attach",
 		},
 		&i18n.Message{
 			ID:    "ContainersTitle",

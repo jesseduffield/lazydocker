@@ -156,35 +156,56 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Key:         'd',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersRemoveMenu,
-			Description: gui.Tr.SLocalize("removeContainer"),
+			Description: gui.Tr.SLocalize("remove"),
 		},
 		{
 			ViewName:    "containers",
 			Key:         's',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainerStop,
-			Description: gui.Tr.SLocalize("stopContainer"),
+			Description: gui.Tr.SLocalize("stop"),
 		},
 		{
 			ViewName:    "containers",
 			Key:         'r',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainerRestart,
-			Description: gui.Tr.SLocalize("restartContainer"),
+			Description: gui.Tr.SLocalize("restart"),
 		},
 		{
 			ViewName:    "containers",
 			Key:         'a',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainerAttach,
-			Description: gui.Tr.SLocalize("attachContainer"),
+			Description: gui.Tr.SLocalize("attach"),
 		},
 		{
-			ViewName:    "containers",
-			Key:         'R',
+			ViewName:    "services",
+			Key:         'd',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServiceRemoveMenu,
+			Description: gui.Tr.SLocalize("removeService"),
+		},
+		{
+			ViewName:    "services",
+			Key:         's',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServiceStop,
+			Description: gui.Tr.SLocalize("stop"),
+		},
+		{
+			ViewName:    "services",
+			Key:         'r',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceRestart,
-			Description: gui.Tr.SLocalize("restartService"),
+			Description: gui.Tr.SLocalize("restart"),
+		},
+		{
+			ViewName:    "services",
+			Key:         'a',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServiceAttach,
+			Description: gui.Tr.SLocalize("attach"),
 		},
 		{
 			ViewName:    "images",
@@ -216,7 +237,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	}
 
 	// TODO: add more views here
-	for _, viewName := range []string{"status", "containers", "images", "menu"} {
+	for _, viewName := range []string{"status", "services", "containers", "images", "menu"} {
 		bindings = append(bindings, []*Binding{
 			{ViewName: viewName, Key: gocui.KeyTab, Modifier: gocui.ModNone, Handler: gui.nextView},
 			{ViewName: viewName, Key: gocui.KeyArrowLeft, Modifier: gocui.ModNone, Handler: gui.previousView},
@@ -232,6 +253,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		focus    func(*gocui.Gui, *gocui.View) error
 	}{
 		"menu":       {prevLine: gui.handleMenuPrevLine, nextLine: gui.handleMenuNextLine, focus: gui.handleMenuSelect},
+		"services":   {prevLine: gui.handleServicesPrevLine, nextLine: gui.handleServicesNextLine, focus: gui.handleServicesFocus},
 		"containers": {prevLine: gui.handleContainersPrevLine, nextLine: gui.handleContainersNextLine, focus: gui.handleContainersFocus},
 		"images":     {prevLine: gui.handleImagesPrevLine, nextLine: gui.handleImagesNextLine, focus: gui.handleImagesFocus},
 	}

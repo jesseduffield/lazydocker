@@ -249,7 +249,8 @@ update:
 reporting: 'undetermined' # one of: 'on' | 'off' | 'undetermined'
 confirmOnQuit: false
 commandTemplates:
-  restartService: "docker-compose restart {{ .ServiceName }}"
+  restartService: "docker-compose restart {{ .Name }}"
+  dockerCompose: "apdev compose"
 `)
 }
 

@@ -18,6 +18,7 @@ import (
 type Container struct {
 	Name            string
 	ServiceName     string
+	ServiceID       string
 	ContainerNumber string // might make this an int in the future if need be
 	ProjectName     string
 	ID              string

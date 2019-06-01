@@ -81,24 +81,21 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 
 	mainView := gui.getMainView()
 
-	gui.State.Panels.Main.WriterID++
-	writerID := gui.State.Panels.Main.WriterID
-
 	mainView.Clear()
 	mainView.SetOrigin(0, 0)
 	mainView.SetCursor(0, 0)
 
 	switch gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex] {
 	case "logs":
-		if err := gui.renderContainerLogs(mainView, container, writerID); err != nil {
+		if err := gui.renderContainerLogs(mainView, container); err != nil {
 			return err
 		}
 	case "config":
-		if err := gui.renderContainerConfig(mainView, container, writerID); err != nil {
+		if err := gui.renderContainerConfig(mainView, container); err != nil {
 			return err
 		}
 	case "stats":
-		if err := gui.renderContainerStats(mainView, container, writerID); err != nil {
+		if err := gui.renderContainerStats(mainView, container); err != nil {
 			return err
 		}
 	default:
@@ -108,7 +105,7 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) renderContainerConfig(mainView *gocui.View, container *commands.Container, writerID int) error {
+func (gui *Gui) renderContainerConfig(mainView *gocui.View, container *commands.Container) error {
 	mainView.Autoscroll = false
 	mainView.Title = "Config"
 
@@ -116,12 +113,13 @@ func (gui *Gui) renderContainerConfig(mainView *gocui.View, container *commands.
 	if err != nil {
 		return err
 	}
-	gui.renderString(gui.g, "main", string(data))
 
-	return nil
+	return gui.T.NewTask(func(stop chan struct{}) {
+		gui.renderString(gui.g, "main", string(data))
+	})
 }
 
-func (gui *Gui) renderContainerStats(mainView *gocui.View, container *commands.Container, writerID int) error {
+func (gui *Gui) renderContainerStats(mainView *gocui.View, container *commands.Container) error {
 	mainView.Autoscroll = false
 	mainView.Title = "Stats"
 
@@ -130,7 +128,9 @@ func (gui *Gui) renderContainerStats(mainView *gocui.View, container *commands.C
 		return err
 	}
 
-	go func() {
+	return gui.T.NewTask(func(stop chan struct{}) {
+		defer stream.Body.Close()
+
 		cpuUsageHistory := []float64{}
 		memoryUsageHistory := []float64{}
 		scanner := bufio.NewScanner(stream.Body)
@@ -156,31 +156,28 @@ func (gui *Gui) renderContainerStats(mainView *gocui.View, container *commands.C
 				gui.createErrorPanel(gui.g, err.Error())
 			}
 
-			if gui.State.Panels.Main.WriterID != writerID {
-				stream.Body.Close()
+			select {
+			case <-stop:
 				return
+			default:
 			}
 
 			gui.reRenderString(gui.g, "main", contents)
 		}
-
-		stream.Body.Close()
-	}()
-
-	return nil
+	})
 }
 
-func (gui *Gui) renderContainerLogs(mainView *gocui.View, container *commands.Container, writerID int) error {
+func (gui *Gui) renderContainerLogs(mainView *gocui.View, container *commands.Container) error {
 	mainView.Autoscroll = true
 	mainView.Title = "Logs"
 
 	if container.Details.Config.AttachStdin {
-		return gui.renderLogsForTTYContainer(mainView, container, writerID)
+		return gui.renderLogsForTTYContainer(mainView, container)
 	}
-	return gui.renderLogsForRegularContainer(mainView, container, writerID)
+	return gui.renderLogsForRegularContainer(mainView, container)
 }
 
-func (gui *Gui) renderLogsForRegularContainer(mainView *gocui.View, container *commands.Container, writerID int) error {
+func (gui *Gui) renderLogsForRegularContainer(mainView *gocui.View, container *commands.Container) error {
 	var cmd *exec.Cmd
 	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=60m --timestamps --follow " + container.ID)
 
@@ -191,21 +188,29 @@ func (gui *Gui) renderLogsForRegularContainer(mainView *gocui.View, container *c
 	return nil
 }
 
-func (gui *Gui) runProcessWithLock(cmd *exec.Cmd) {
+func (gui *Gui) obtainLock() {
 	gui.State.MainProcessChan <- struct{}{}
 	gui.State.MainProcessMutex.Lock()
-	cmd.Start()
+}
 
-	go func() {
-		<-gui.State.MainProcessChan
-		cmd.Process.Kill()
-	}()
-
-	cmd.Wait()
+func (gui *Gui) releaseLock() {
 	gui.State.MainProcessMutex.Unlock()
 }
 
-func (gui *Gui) renderLogsForTTYContainer(mainView *gocui.View, container *commands.Container, writerID int) error {
+func (gui *Gui) runProcessWithLock(cmd *exec.Cmd) {
+	gui.T.NewTask(func(stop chan struct{}) {
+		cmd.Start()
+
+		go func() {
+			<-stop
+			cmd.Process.Kill()
+		}()
+
+		cmd.Wait()
+	})
+}
+
+func (gui *Gui) renderLogsForTTYContainer(mainView *gocui.View, container *commands.Container) error {
 	var cmd *exec.Cmd
 	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=60m --follow " + container.ID)
 
@@ -219,6 +224,7 @@ func (gui *Gui) renderLogsForTTYContainer(mainView *gocui.View, container *comma
 			s := bufio.NewScanner(r)
 			s.Split(bufio.ScanLines)
 			for s.Scan() {
+				// I might put a check on the stopped channel here. Would mean more code duplication though
 				mainView.Write(append(s.Bytes(), '\n'))
 			}
 		}
@@ -228,13 +234,13 @@ func (gui *Gui) renderLogsForTTYContainer(mainView *gocui.View, container *comma
 	return nil
 }
 
-func (gui *Gui) refreshContainers() error {
+func (gui *Gui) refreshContainersAndServices() error {
 	containersView := gui.getContainersView()
 	if containersView == nil {
 		// if the containersView hasn't been instantiated yet we just return
 		return nil
 	}
-	if err := gui.refreshStateContainers(); err != nil {
+	if err := gui.refreshStateContainersAndServices(); err != nil {
 		return err
 	}
 
@@ -245,8 +251,15 @@ func (gui *Gui) refreshContainers() error {
 		gui.State.Panels.Containers.SelectedLine = len(gui.State.Containers) - 1
 	}
 
-	gui.g.Update(func(g *gocui.Gui) error {
+	// doing the exact same thing for services
+	if len(gui.State.Services) > 0 && gui.State.Panels.Services.SelectedLine == -1 {
+		gui.State.Panels.Services.SelectedLine = 0
+	}
+	if len(gui.State.Services)-1 < gui.State.Panels.Services.SelectedLine {
+		gui.State.Panels.Services.SelectedLine = len(gui.State.Services) - 1
+	}
 
+	gui.g.Update(func(g *gocui.Gui) error {
 		containersView.Clear()
 		isFocused := gui.g.CurrentView().Name() == "containers"
 		list, err := utils.RenderList(gui.State.Containers, utils.IsFocused(isFocused))
@@ -258,19 +271,37 @@ func (gui *Gui) refreshContainers() error {
 		if containersView == g.CurrentView() {
 			return gui.handleContainerSelect(g, containersView)
 		}
+
+		// doing the exact same thing for services
+		if !gui.DockerCommand.InDockerComposeProject {
+			return nil
+		}
+		servicesView := gui.getServicesView()
+		servicesView.Clear()
+		isFocused = gui.g.CurrentView().Name() == "services"
+		list, err = utils.RenderList(gui.State.Containers, utils.IsFocused(isFocused))
+		if err != nil {
+			return err
+		}
+		fmt.Fprint(servicesView, list)
+
+		if servicesView == g.CurrentView() {
+			return gui.handleContainerSelect(g, servicesView)
+		}
 		return nil
 	})
 
 	return nil
 }
 
-func (gui *Gui) refreshStateContainers() error {
-	containers, err := gui.DockerCommand.GetContainers()
+func (gui *Gui) refreshStateContainersAndServices() error {
+	containers, services, err := gui.DockerCommand.GetContainersAndServices()
 	if err != nil {
 		return err
 	}
 
 	gui.State.Containers = containers
+	gui.State.Services = services
 
 	return nil
 }
@@ -346,22 +377,19 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 			description:   gui.Tr.SLocalize("remove"),
 			command:       "docker rm " + container.ID[1:10],
 			configOptions: types.ContainerRemoveOptions{},
-			runCommand:    true,
 		},
 		{
 			description:   gui.Tr.SLocalize("removeWithVolumes"),
 			command:       "docker rm --volumes " + container.ID[1:10],
 			configOptions: types.ContainerRemoveOptions{RemoveVolumes: true},
-			runCommand:    true,
 		},
 		{
 			description: gui.Tr.SLocalize("cancel"),
-			runCommand:  false,
 		},
 	}
 
 	handleMenuPress := func(index int) error {
-		if !options[index].runCommand {
+		if options[index].command == "" {
 			return nil
 		}
 		configOptions := options[index].configOptions
@@ -374,7 +402,7 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 						if err := container.Remove(configOptions); err != nil {
 							return err
 						}
-						return gui.refreshContainers()
+						return gui.refreshContainersAndServices()
 					}, nil)
 				}
 			} else {
@@ -382,7 +410,7 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 			}
 		}
 
-		return gui.refreshContainers()
+		return gui.refreshContainersAndServices()
 	}
 
 	return gui.createMenu("", options, len(options), handleMenuPress)
@@ -400,7 +428,7 @@ func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
 				return gui.createErrorPanel(gui.g, err.Error())
 			}
 
-			return gui.refreshContainers()
+			return gui.refreshContainersAndServices()
 		})
 
 	}, nil)
@@ -417,7 +445,7 @@ func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
 			return gui.createErrorPanel(gui.g, err.Error())
 		}
 
-		return gui.refreshContainers()
+		return gui.refreshContainersAndServices()
 	})
 }
 
@@ -431,19 +459,4 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 
 	gui.SubProcess = c
 	return gui.Errors.ErrSubProcess
-}
-
-func (gui *Gui) handleServiceRestart(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer(g)
-	if err != nil {
-		return nil
-	}
-
-	return gui.WithWaitingStatus(gui.Tr.SLocalize("RestartingStatus"), func() error {
-		if err := container.RestartService(); err != nil {
-			return gui.createErrorPanel(gui.g, err.Error())
-		}
-
-		return gui.refreshContainers()
-	})
 }

@@ -23,6 +23,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
+	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/updates"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
@@ -74,6 +75,12 @@ type Gui struct {
 	Updater       *updates.Updater
 	statusManager *statusManager
 	waitForIntro  sync.WaitGroup
+	T             *tasks.TaskManager
+}
+
+type servicePanelState struct {
+	SelectedLine int
+	ContextIndex int // for specifying if you are looking at logs/stats/config/etc
 }
 
 type containerPanelState struct {
@@ -87,7 +94,6 @@ type menuPanelState struct {
 
 type mainPanelState struct {
 	ObjectKey string
-	WriterID  int
 }
 
 type imagePanelState struct {
@@ -96,6 +102,7 @@ type imagePanelState struct {
 }
 
 type panelStates struct {
+	Services   *servicePanelState
 	Containers *containerPanelState
 	Menu       *menuPanelState
 	Main       *mainPanelState
@@ -103,6 +110,7 @@ type panelStates struct {
 }
 
 type guiState struct {
+	Services         []*commands.Service
 	Containers       []*commands.Container
 	Images           []*commands.Image
 	MenuItemCount    int // can't store the actual list because it's of interface{} type
@@ -123,11 +131,11 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		PreviousView: "containers",
 		Platform:     *oSCommand.Platform,
 		Panels: &panelStates{
+			Services:   &servicePanelState{SelectedLine: -1, ContextIndex: 0},
 			Containers: &containerPanelState{SelectedLine: -1, ContextIndex: 0},
 			Images:     &imagePanelState{SelectedLine: -1, ContextIndex: 0},
 			Menu:       &menuPanelState{SelectedLine: 0},
 			Main: &mainPanelState{
-				WriterID:  0,
 				ObjectKey: "",
 			},
 		},
@@ -151,6 +159,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		Tr:            tr,
 		Updater:       updater,
 		statusManager: &statusManager{},
+		T:             tasks.NewTaskManager(),
 	}
 
 	gui.GenerateSentinelErrors()
@@ -228,9 +237,6 @@ func (gui *Gui) onFocusChange() error {
 func (gui *Gui) onFocusLost(v *gocui.View, newView *gocui.View) error {
 	if v == nil {
 		return nil
-	}
-	if v.Name() == "containers" || v.Name() == "images" {
-		gui.State.Panels.Main.WriterID++
 	}
 	gui.Log.Info(v.Name() + " focus lost")
 	return nil
@@ -512,7 +518,7 @@ func (gui *Gui) Run() error {
 		gui.waitForIntro.Wait()
 		gui.goEvery(time.Millisecond*50, gui.renderAppStatus)
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
-		gui.goEvery(time.Millisecond*500, gui.refreshContainers)
+		gui.goEvery(time.Millisecond*500, gui.refreshContainersAndServices)
 	}()
 
 	g.SetManager(gocui.ManagerFunc(gui.layout), gocui.ManagerFunc(gui.getFocusLayout()))

@@ -13,7 +13,7 @@ import (
 var cyclableViews = []string{"status", "containers", "images"}
 
 func (gui *Gui) refreshSidePanels(g *gocui.Gui) error {
-	if err := gui.refreshContainers(); err != nil {
+	if err := gui.refreshContainersAndServices(); err != nil {
 		return err
 	}
 	if err := gui.refreshImages(); err != nil {
@@ -221,6 +221,11 @@ func (gui *Gui) optionsMapToString(optionsMap map[string]string) string {
 
 func (gui *Gui) renderOptionsMap(optionsMap map[string]string) error {
 	return gui.renderString(gui.g, "options", gui.optionsMapToString(optionsMap))
+}
+
+func (gui *Gui) getServicesView() *gocui.View {
+	v, _ := gui.g.View("services")
+	return v
 }
 
 func (gui *Gui) getContainersView() *gocui.View {

@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -10,16 +11,18 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
+	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
 // DockerCommand is our main git interface
 type DockerCommand struct {
-	Log       *logrus.Entry
-	OSCommand *OSCommand
-	Tr        *i18n.Localizer
-	Config    config.AppConfigurer
-	Client    *client.Client
+	Log                    *logrus.Entry
+	OSCommand              *OSCommand
+	Tr                     *i18n.Localizer
+	Config                 config.AppConfigurer
+	Client                 *client.Client
+	InDockerComposeProject bool
 }
 
 // NewDockerCommand it runs git commands
@@ -30,11 +33,12 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Localize
 	}
 
 	return &DockerCommand{
-		Log:       log,
-		OSCommand: osCommand,
-		Tr:        tr,
-		Config:    config,
-		Client:    cli,
+		Log:                    log,
+		OSCommand:              osCommand,
+		Tr:                     tr,
+		Config:                 config,
+		Client:                 cli,
+		InDockerComposeProject: true, // TODO: determine this at startup
 	}, nil
 }
 
@@ -72,7 +76,32 @@ func (c *DockerCommand) UpdateContainerStats(containers []*Container) ([]*Contai
 	return containers, nil
 }
 
-// GetContainers returns a slice of docker containers
+// GetContainersAndServices returns a slice of docker containers
+func (c *DockerCommand) GetContainersAndServices() ([]*Container, []*Service, error) {
+
+	containers, err := c.GetContainers()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	services, err := c.GetServices()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// find out which services have corresponding containers and assign them
+	for _, service := range services {
+		for _, container := range containers {
+			if container.ServiceID != "" && container.ServiceID == service.ID {
+				service.Container = container
+			}
+		}
+	}
+
+	return containers, services, nil
+}
+
+// GetContainers gets the docker containers
 func (c *DockerCommand) GetContainers() ([]*Container, error) {
 	containers, err := c.Client.ContainerList(context.Background(), types.ContainerListOptions{All: true})
 	if err != nil {
@@ -81,15 +110,12 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 
 	ownContainers := make([]*Container, len(containers))
 
-	ids := []string{}
-
 	for i, container := range containers {
-		ids = append(ids, container.ID)
-
 		ownContainers[i] = &Container{
 			ID:              container.ID,
 			Name:            strings.TrimLeft(container.Names[0], "/"),
 			ServiceName:     container.Labels["com.docker.compose.service"],
+			ServiceID:       container.Labels["com.docker.compose.config-hash"],
 			ProjectName:     container.Labels["com.docker.compose.project"],
 			ContainerNumber: container.Labels["com.docker.compose.container"],
 			Container:       container,
@@ -99,20 +125,7 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 		}
 	}
 
-	cmd := c.OSCommand.RunCustomCommand("docker inspect " + strings.Join(ids, " "))
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return nil, err
-	}
-
-	var details []*Details
-	if err := json.Unmarshal(output, &details); err != nil {
-		return nil, err
-	}
-
-	for i, container := range ownContainers {
-		container.Details = *details[i]
-	}
+	c.UpdateContainerDetails(ownContainers)
 
 	// ownContainers, err = c.UpdateContainerStats(ownContainers)
 	// if err != nil {
@@ -120,6 +133,61 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 	// }
 
 	return ownContainers, nil
+}
+
+// GetServices gets services
+func (c *DockerCommand) GetServices() ([]*Service, error) {
+	if !c.InDockerComposeProject {
+		return nil, nil
+	}
+
+	composeCommand := c.Config.GetUserConfig().GetString("commandTemplates.dockerCompose")
+	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --hash=*", composeCommand))
+	if err != nil {
+		return nil, err
+	}
+
+	// output looks like:
+	// service1 998d6d286b0499e0ff23d66302e720991a2asdkf9c30d0542034f610daf8a971
+	// service2 asdld98asdklasd9bccd02438de0994f8e19cbe691feb3755336ec5ca2c55971
+
+	lines := utils.SplitLines(output)
+	services := make([]*Service, len(lines))
+	for i, str := range lines {
+		arr := strings.Split(str, " ")
+		services[i] = &Service{
+			Name: arr[0],
+			ID:   arr[1],
+		}
+	}
+
+	return services, nil
+}
+
+// UpdateContainerDetails attaches the details returned from docker inspect to each of the containers
+// this contains a bit more info than what you get from the go-docker client
+func (c *DockerCommand) UpdateContainerDetails(containers []*Container) error {
+	ids := make([]string, len(containers))
+	for i, container := range containers {
+		ids[i] = container.ID
+	}
+
+	cmd := c.OSCommand.RunCustomCommand("docker inspect " + strings.Join(ids, " "))
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return err
+	}
+
+	var details []*Details
+	if err := json.Unmarshal(output, &details); err != nil {
+		return err
+	}
+
+	for i, container := range containers {
+		container.Details = *details[i]
+	}
+
+	return nil
 }
 
 // GetImages returns a slice of docker images

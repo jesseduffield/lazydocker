@@ -78,16 +78,13 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 
 	mainView := gui.getMainView()
 
-	gui.State.Panels.Main.WriterID++
-	writerID := gui.State.Panels.Main.WriterID
-
 	mainView.Clear()
 	mainView.SetOrigin(0, 0)
 	mainView.SetCursor(0, 0)
 
 	switch gui.getImageContexts()[gui.State.Panels.Images.ContextIndex] {
 	case "config":
-		if err := gui.renderImageConfig(mainView, Image, writerID); err != nil {
+		if err := gui.renderImageConfig(mainView, Image); err != nil {
 			return err
 		}
 	default:
@@ -97,25 +94,27 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image, writerID int) error {
+func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image) error {
 	mainView.Autoscroll = false
 	mainView.Wrap = false
 	mainView.Title = "Config"
 
-	output := ""
-	output += utils.WithPadding("ID: ", 10) + image.Image.ID + "\n"
-	output += utils.WithPadding("Tags: ", 10) + utils.ColoredString(strings.Join(image.Image.RepoTags, ", "), color.FgGreen) + "\n"
-	output += utils.WithPadding("Size: ", 10) + utils.FormatDecimalBytes(int(image.Image.Size)) + "\n"
-	output += utils.WithPadding("Created: ", 10) + fmt.Sprintf("%v", time.Unix(image.Image.Created, 0).Format(time.RFC1123)) + "\n"
+	gui.T.NewTask(func(stop chan struct{}) {
+		output := ""
+		output += utils.WithPadding("ID: ", 10) + image.Image.ID + "\n"
+		output += utils.WithPadding("Tags: ", 10) + utils.ColoredString(strings.Join(image.Image.RepoTags, ", "), color.FgGreen) + "\n"
+		output += utils.WithPadding("Size: ", 10) + utils.FormatDecimalBytes(int(image.Image.Size)) + "\n"
+		output += utils.WithPadding("Created: ", 10) + fmt.Sprintf("%v", time.Unix(image.Image.Created, 0).Format(time.RFC1123)) + "\n"
 
-	history, err := image.RenderHistory()
-	if err != nil {
-		return err
-	}
+		history, err := image.RenderHistory()
+		if err != nil {
+			gui.Log.Error(err)
+		}
 
-	output += "\n\n" + history
+		output += "\n\n" + history
 
-	gui.renderString(gui.g, "main", output)
+		gui.renderString(gui.g, "main", output)
+	})
 
 	return nil
 }
