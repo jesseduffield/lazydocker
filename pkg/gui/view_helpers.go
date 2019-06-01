@@ -10,7 +10,7 @@ import (
 	"github.com/spkg/bom"
 )
 
-var cyclableViews = []string{"status", "containers", "images"}
+var cyclableViews = []string{"status", "services", "containers", "images"}
 
 func (gui *Gui) refreshSidePanels(g *gocui.Gui) error {
 	if err := gui.refreshContainersAndServices(); err != nil {
@@ -83,6 +83,8 @@ func (gui *Gui) newLineFocused(g *gocui.Gui, v *gocui.View) error {
 		return gui.handleMenuSelect(g, v)
 	case "status":
 		return gui.handleStatusSelect(g, v)
+	case "services":
+		return gui.handleServiceSelect(g, v)
 	case "containers":
 		return gui.handleContainerSelect(g, v)
 	case "images":
@@ -100,8 +102,8 @@ func (gui *Gui) newLineFocused(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
 	previousView, err := g.View(gui.State.PreviousView)
 	if err != nil {
-		// always fall back to containers view if there's no 'previous' view stored
-		previousView, err = g.View("containers")
+		// always fall back to services view if there's no 'previous' view stored
+		previousView, err = g.View("services")
 		if err != nil {
 			gui.Log.Error(err)
 		}

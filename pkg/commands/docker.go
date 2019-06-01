@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -97,6 +98,19 @@ func (c *DockerCommand) GetContainersAndServices() ([]*Container, []*Service, er
 			}
 		}
 	}
+
+	// sort services first by whether they have a linked container, and second by alphabetical order
+	sort.Slice(services, func(i, j int) bool {
+		if services[i].Container != nil && services[j].Container == nil {
+			return true
+		}
+
+		if services[i].Container == nil && services[j].Container != nil {
+			return false
+		}
+
+		return services[i].Name < services[j].Name
+	})
 
 	return containers, services, nil
 }

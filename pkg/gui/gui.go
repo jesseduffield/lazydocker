@@ -128,7 +128,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 
 	initialState := guiState{
 		Containers:   make([]*commands.Container, 0),
-		PreviousView: "containers",
+		PreviousView: "services",
 		Platform:     *oSCommand.Platform,
 		Panels: &panelStates{
 			Services:   &servicePanelState{SelectedLine: -1, ContextIndex: 0},
@@ -291,10 +291,13 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 
 	usableSpace := height - 4
 
+	tallPanels := 3
+
 	vHeights := map[string]int{
-		"status":     3,
-		"containers": usableSpace/2 + usableSpace%2,
-		"images":     usableSpace / 2,
+		"status":     tallPanels,
+		"services":   usableSpace/tallPanels + usableSpace%tallPanels,
+		"containers": usableSpace / tallPanels,
+		"images":     usableSpace / tallPanels,
 		"options":    1,
 	}
 
@@ -305,11 +308,12 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 		vHeights = map[string]int{
 			"status":     defaultHeight,
+			"services":   defaultHeight,
 			"containers": defaultHeight,
 			"images":     defaultHeight,
 			"options":    defaultHeight,
 		}
-		vHeights[currentCyclebleView] = height - defaultHeight*2 - 1
+		vHeights[currentCyclebleView] = height - defaultHeight*tallPanels - 1
 	}
 
 	optionsVersionBoundary := width - max(len(utils.Decolorise(information)), 1)
@@ -341,7 +345,17 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		v.FgColor = gocui.ColorWhite
 	}
 
-	containersView, err := g.SetViewBeneath("containers", "status", vHeights["containers"])
+	servicesView, err := g.SetViewBeneath("services", "status", vHeights["services"])
+	if err != nil {
+		if err.Error() != "unknown view" {
+			return err
+		}
+		servicesView.Highlight = true
+		servicesView.Title = gui.Tr.SLocalize("ServicesTitle")
+		servicesView.FgColor = gocui.ColorWhite
+	}
+
+	containersView, err := g.SetViewBeneath("containers", "services", vHeights["containers"])
 	if err != nil {
 		if err.Error() != "unknown view" {
 			return err

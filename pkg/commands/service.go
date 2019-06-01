@@ -23,11 +23,11 @@ type Service struct {
 func (s *Service) GetDisplayStrings(isFocused bool) []string {
 
 	if s.Container == nil {
-		return []string{"", utils.ColoredString(s.Name, color.FgWhite)}
+		return []string{utils.ColoredString("none", color.FgBlack), utils.ColoredString(s.Name, color.FgWhite), ""}
 	}
 
 	cont := s.Container
-	return []string{utils.ColoredString(cont.Container.State, cont.GetColor()), utils.ColoredString(cont.Name, color.FgWhite), cont.Stats.CPUPerc}
+	return []string{utils.ColoredString(cont.Container.State, cont.GetColor()), utils.ColoredString(s.Name, color.FgWhite), cont.Stats.CPUPerc}
 }
 
 // Remove removes the service's containers

@@ -269,7 +269,9 @@ func (gui *Gui) refreshContainersAndServices() error {
 		fmt.Fprint(containersView, list)
 
 		if containersView == g.CurrentView() {
-			return gui.handleContainerSelect(g, containersView)
+			if err := gui.handleContainerSelect(g, containersView); err != nil {
+				return err
+			}
 		}
 
 		// doing the exact same thing for services
@@ -279,14 +281,14 @@ func (gui *Gui) refreshContainersAndServices() error {
 		servicesView := gui.getServicesView()
 		servicesView.Clear()
 		isFocused = gui.g.CurrentView().Name() == "services"
-		list, err = utils.RenderList(gui.State.Containers, utils.IsFocused(isFocused))
+		list, err = utils.RenderList(gui.State.Services, utils.IsFocused(isFocused))
 		if err != nil {
 			return err
 		}
 		fmt.Fprint(servicesView, list)
 
 		if servicesView == g.CurrentView() {
-			return gui.handleContainerSelect(g, servicesView)
+			return gui.handleServiceSelect(g, servicesView)
 		}
 		return nil
 	})
