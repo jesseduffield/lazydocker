@@ -174,13 +174,18 @@ func (gui *Gui) renderContainerLogs(mainView *gocui.View, container *commands.Co
 	mainView.Autoscroll = true
 	mainView.Title = "Logs"
 
+	if container.Details.Config.AttachStdin {
+		logs, err := gui.OSCommand.RunCommandWithOutput("docker logs --since=60m " + container.ID)
+		if err != nil {
+			return err
+		}
+		return gui.renderString(gui.g, "main", logs)
+	}
+
 	var cmd *exec.Cmd
 	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=60m --timestamps --follow " + container.ID)
 
-	r, err := cmd.StdoutPipe()
-	if err != nil {
-		return err
-	}
+	cmd.Stdout = mainView
 
 	go func() {
 		gui.State.MainProcessChan <- struct{}{}
@@ -192,15 +197,6 @@ func (gui *Gui) renderContainerLogs(mainView *gocui.View, container *commands.Co
 			cmd.Process.Kill()
 		}()
 
-		go func() {
-			for {
-				s := bufio.NewScanner(r)
-				s.Split(bufio.ScanLines)
-				for s.Scan() {
-					mainView.Write(append(s.Bytes(), '\n'))
-				}
-			}
-		}()
 		cmd.Wait()
 		gui.State.MainProcessMutex.Unlock()
 	}()

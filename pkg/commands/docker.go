@@ -81,7 +81,11 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 
 	ownContainers := make([]*Container, len(containers))
 
+	ids := []string{}
+
 	for i, container := range containers {
+		ids = append(ids, container.ID)
+
 		ownContainers[i] = &Container{
 			ID:              container.ID,
 			Name:            strings.TrimLeft(container.Names[0], "/"),
@@ -93,6 +97,21 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 			OSCommand:       c.OSCommand,
 			Log:             c.Log,
 		}
+	}
+
+	cmd := c.OSCommand.RunCustomCommand("docker inspect " + strings.Join(ids, " "))
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+
+	var details []*Details
+	if err := json.Unmarshal(output, &details); err != nil {
+		return nil, err
+	}
+
+	for i, container := range ownContainers {
+		container.Details = *details[i]
 	}
 
 	// ownContainers, err = c.UpdateContainerStats(ownContainers)
