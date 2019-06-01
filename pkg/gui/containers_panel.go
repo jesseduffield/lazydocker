@@ -175,32 +175,56 @@ func (gui *Gui) renderContainerLogs(mainView *gocui.View, container *commands.Co
 	mainView.Title = "Logs"
 
 	if container.Details.Config.AttachStdin {
-		logs, err := gui.OSCommand.RunCommandWithOutput("docker logs --since=60m " + container.ID)
-		if err != nil {
-			return err
-		}
-		return gui.renderString(gui.g, "main", logs)
+		return gui.renderLogsForTTYContainer(mainView, container, writerID)
 	}
+	return gui.renderLogsForRegularContainer(mainView, container, writerID)
+}
 
+func (gui *Gui) renderLogsForRegularContainer(mainView *gocui.View, container *commands.Container, writerID int) error {
 	var cmd *exec.Cmd
 	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=60m --timestamps --follow " + container.ID)
 
 	cmd.Stdout = mainView
 
+	go gui.runProcessWithLock(cmd)
+
+	return nil
+}
+
+func (gui *Gui) runProcessWithLock(cmd *exec.Cmd) {
+	gui.State.MainProcessChan <- struct{}{}
+	gui.State.MainProcessMutex.Lock()
+	cmd.Start()
+
 	go func() {
-		gui.State.MainProcessChan <- struct{}{}
-		gui.State.MainProcessMutex.Lock()
-		cmd.Start()
-
-		go func() {
-			<-gui.State.MainProcessChan
-			cmd.Process.Kill()
-		}()
-
-		cmd.Wait()
-		gui.State.MainProcessMutex.Unlock()
+		<-gui.State.MainProcessChan
+		cmd.Process.Kill()
 	}()
 
+	cmd.Wait()
+	gui.State.MainProcessMutex.Unlock()
+}
+
+func (gui *Gui) renderLogsForTTYContainer(mainView *gocui.View, container *commands.Container, writerID int) error {
+	var cmd *exec.Cmd
+	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=60m --follow " + container.ID)
+
+	r, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		for {
+			s := bufio.NewScanner(r)
+			s.Split(bufio.ScanLines)
+			for s.Scan() {
+				mainView.Write(append(s.Bytes(), '\n'))
+			}
+		}
+	}()
+
+	go gui.runProcessWithLock(cmd)
 	return nil
 }
 
