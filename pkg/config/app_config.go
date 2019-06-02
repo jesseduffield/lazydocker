@@ -77,40 +77,40 @@ func loadUserConfig(configDir string, base *UserConfig) (*UserConfig, error) {
 }
 
 type UserConfig struct {
-	Gui              GuiConfig
-	Reporting        string
-	ConfirmOnQuit    bool
-	CommandTemplates CommandTemplatesConfig
-	OS               OSConfig
-	Update           UpdateConfig
+	Gui              GuiConfig              `yaml:"gui,omitempty"`
+	Reporting        string                 `yaml:"reporting,omitempty"`
+	ConfirmOnQuit    bool                   `yaml:"confirmOnQuit,omitempty"`
+	CommandTemplates CommandTemplatesConfig `yaml:"commandTemplates,omitempty"`
+	OS               OSConfig               `yaml:"oS,omitempty"`
+	Update           UpdateConfig           `yaml:"update,omitempty"`
 }
 
 type ThemeConfig struct {
-	ActiveBorderColor   []string
-	InactiveBorderColor []string
-	OptionsTextColor    []string
+	ActiveBorderColor   []string `yaml:"activeBorderColor,omitempty"`
+	InactiveBorderColor []string `yaml:"inactiveBorderColor,omitempty"`
+	OptionsTextColor    []string `yaml:"optionsTextColor,omitempty"`
 }
 
 type GuiConfig struct {
-	ScrollHeight     int
-	ScrollPastBottom bool
-	MouseEvents      bool
-	Theme            ThemeConfig
+	ScrollHeight     int         `yaml:"scrollHeight,omitempty"`
+	ScrollPastBottom bool        `yaml:"scrollPastBottom,omitempty"`
+	MouseEvents      bool        `yaml:"mouseEvents,omitempty"`
+	Theme            ThemeConfig `yaml:"theme,omitempty"`
 }
 
 type CommandTemplatesConfig struct {
-	RestartService string
-	DockerCompose  string
-	StopService    string
+	RestartService string `yaml:"restartService,omitempty"`
+	DockerCompose  string `yaml:"dockerCompose,omitempty"`
+	StopService    string `yaml:"stopService,omitempty"`
 }
 
 type OSConfig struct {
-	OpenCommand     string
-	OpenLinkCommand string
+	OpenCommand     string `yaml:"openCommand,omitempty"`
+	OpenLinkCommand string `yaml:"openLinkCommand,omitempty"`
 }
 
 type UpdateConfig struct {
-	Method string
+	Method string `yaml:"method,omitempty"`
 }
 
 // GetDefaultConfig returns the application default configuration
@@ -140,18 +140,10 @@ func GetDefaultConfig() UserConfig {
 	}
 }
 
-// AppState stores data between runs of the app like when the last update check
-// was performed and which other repos have been checked out
-type AppState struct {
-	LastUpdateCheck int64
-}
-
-func getDefaultAppState() []byte {
-	return []byte(`
-    lastUpdateCheck: 0
-  `)
-}
-
+// WriteToUserConfig allows you to set a value on the user config to be saved
+// note that if you set a zero-value, it may be ignored e.g. a false or 0 or empty string
+// this is because we are using the omitempty yaml directive so that we don't write a heap
+// of zero values to the user's config.yml
 func (c *AppConfig) WriteToUserConfig(updateConfig func(*UserConfig) error) error {
 	userConfig, err := loadUserConfig(c.ConfigDir, &UserConfig{})
 	if err != nil {
