@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/acarl005/stripansi"
 	"github.com/docker/docker/api/types"
@@ -53,9 +54,13 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Localize
 	}, nil
 }
 
-// MonitorContainerStats monitors a stream of container stats and updates the containers as each new stats object is received
 func (c *DockerCommand) MonitorContainerStats() {
+	go c.MonitorCLIContainerStats()
+	go c.MonitorClientContainerStats()
+}
 
+// MonitorCLIContainerStats monitors a stream of container stats and updates the containers as each new stats object is received
+func (c *DockerCommand) MonitorCLIContainerStats() {
 	command := `docker stats --all --no-trunc --format '{{json .}}'`
 	cmd := c.OSCommand.RunCustomCommand(command)
 
@@ -80,7 +85,7 @@ func (c *DockerCommand) MonitorContainerStats() {
 		c.ContainerMutex.Lock()
 		for _, container := range c.Containers {
 			if container.ID == stats.ID {
-				container.StatHistory = append(container.StatHistory, stats)
+				container.CLIStats = stats
 			}
 		}
 		c.ContainerMutex.Unlock()
@@ -88,6 +93,52 @@ func (c *DockerCommand) MonitorContainerStats() {
 
 	cmd.Wait()
 
+	return
+}
+
+func (c *DockerCommand) MonitorClientContainerStats() {
+	// periodically loop through running containers and see if we need to create a monitor goroutine for any
+	// every second we check if we need to spawn a new goroutine
+	for range time.Tick(time.Second) {
+		for _, container := range c.Containers {
+			if !container.MonitoringStats {
+				go c.createClientStatMonitor(container)
+			}
+		}
+	}
+}
+
+func (c *DockerCommand) createClientStatMonitor(container *Container) {
+	container.MonitoringStats = true
+	stream, err := c.Client.ContainerStats(context.Background(), container.ID, true)
+	if err != nil {
+		c.ErrorChan <- err
+		return
+	}
+
+	defer stream.Body.Close()
+
+	scanner := bufio.NewScanner(stream.Body)
+	for scanner.Scan() {
+		data := scanner.Bytes()
+		var stats ContainerStats
+		json.Unmarshal(data, &stats)
+
+		recordedStats := RecordedStats{
+			ClientStats: stats,
+			DerivedStats: DerivedStats{
+				CPUPercentage:    stats.CalculateContainerCPUPercentage(),
+				MemoryPercentage: stats.CalculateContainerMemoryUsage(),
+			},
+		}
+
+		c.ContainerMutex.Lock()
+		// TODO: for now we never truncate the recorded stats, and we should
+		container.StatHistory = append(container.StatHistory, recordedStats)
+		c.ContainerMutex.Unlock()
+	}
+
+	container.MonitoringStats = false
 	return
 }
 
@@ -147,7 +198,7 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 	c.ContainerMutex.Lock()
 	defer c.ContainerMutex.Unlock()
 
-	currentContainers := c.Containers
+	existingContainers := c.Containers
 
 	containers, err := c.Client.ContainerList(context.Background(), types.ContainerListOptions{All: true})
 	if err != nil {
@@ -157,26 +208,35 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 	ownContainers := make([]*Container, len(containers))
 
 	for i, container := range containers {
-		ownContainers[i] = &Container{
-			ID:              container.ID,
-			Name:            strings.TrimLeft(container.Names[0], "/"),
-			ServiceName:     container.Labels["com.docker.compose.service"],
-			ServiceID:       container.Labels["com.docker.compose.config-hash"],
-			ProjectName:     container.Labels["com.docker.compose.project"],
-			ContainerNumber: container.Labels["com.docker.compose.container"],
-			Container:       container,
-			Client:          c.Client,
-			OSCommand:       c.OSCommand,
-			Log:             c.Log,
-		}
+		var newContainer *Container
 
-		// bring across old stats information
-		for _, currentContainer := range currentContainers {
-			if currentContainer.ID == container.ID {
-				ownContainers[i].StatHistory = currentContainer.StatHistory // might need to use pointers here in case we're deep copying everything
-				ownContainers[i].Details = currentContainer.Details
+		// check if we already data stored against the container
+		for _, existingContainer := range existingContainers {
+			if existingContainer.ID == container.ID {
+				newContainer = existingContainer
+				break
 			}
 		}
+
+		// initialise the container if it's completely new
+		if newContainer == nil {
+			newContainer = &Container{
+				ID:        container.ID,
+				Client:    c.Client,
+				OSCommand: c.OSCommand,
+				Log:       c.Log,
+				Config:    c.Config,
+			}
+		}
+
+		newContainer.Container = container
+		newContainer.Name = strings.TrimLeft(container.Names[0], "/")
+		newContainer.ServiceName = container.Labels["com.docker.compose.service"]
+		newContainer.ServiceID = container.Labels["com.docker.compose.config-hash"]
+		newContainer.ProjectName = container.Labels["com.docker.compose.project"]
+		newContainer.ContainerNumber = container.Labels["com.docker.compose.container"]
+
+		ownContainers[i] = newContainer
 	}
 
 	return ownContainers, nil

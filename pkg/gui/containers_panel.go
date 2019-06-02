@@ -2,10 +2,10 @@ package gui
 
 import (
 	"bufio"
-	"context"
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/fatih/color"
@@ -123,46 +123,22 @@ func (gui *Gui) renderContainerStats(mainView *gocui.View, container *commands.C
 	mainView.Autoscroll = false
 	mainView.Title = "Stats"
 
-	stream, err := gui.DockerCommand.Client.ContainerStats(context.Background(), container.ID, true)
-	if err != nil {
-		return err
-	}
-
 	return gui.T.NewTask(func(stop chan struct{}) {
-		defer stream.Body.Close()
-
-		cpuUsageHistory := []float64{}
-		memoryUsageHistory := []float64{}
-		scanner := bufio.NewScanner(stream.Body)
-		for scanner.Scan() {
-			data := scanner.Bytes()
-			var stats commands.ContainerStats
-			json.Unmarshal(data, &stats)
-
-			cpuUsageHistory = append(cpuUsageHistory, stats.CalculateContainerCPUPercentage())
-			if len(cpuUsageHistory) >= 20 {
-				cpuUsageHistory = cpuUsageHistory[1:]
-			}
-
-			memoryUsageHistory = append(memoryUsageHistory, stats.CalculateContainerMemoryUsage())
-			if len(memoryUsageHistory) >= 20 {
-				memoryUsageHistory = memoryUsageHistory[1:]
-			}
-
-			width, _ := mainView.Size()
-
-			contents, err := stats.RenderStats(width, cpuUsageHistory, memoryUsageHistory)
-			if err != nil {
-				gui.createErrorPanel(gui.g, err.Error())
-			}
-
+		tickChan := time.NewTicker(time.Second)
+		for {
 			select {
 			case <-stop:
 				return
-			default:
-			}
+			case <-tickChan.C:
+				width, _ := mainView.Size()
 
-			gui.reRenderString(gui.g, "main", contents)
+				contents, err := container.RenderStats(width)
+				if err != nil {
+					gui.createErrorPanel(gui.g, err.Error())
+				}
+
+				gui.reRenderString(gui.g, "main", contents)
+			}
 		}
 	})
 }

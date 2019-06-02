@@ -11,6 +11,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/fatih/color"
 	"github.com/go-errors/errors"
+	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
@@ -28,10 +29,21 @@ type Container struct {
 	DisplayString   string
 	Client          *client.Client
 	OSCommand       *OSCommand
+	Config          *config.AppConfig
 	Log             *logrus.Entry
-	Stats           ContainerCliStat
-	StatHistory     []ContainerCliStat
+	CLIStats        ContainerCliStat // for realtime we use the CLI, for long-term we use the client
+	StatHistory     []RecordedStats
 	Details         Details
+	MonitoringStats bool
+}
+type RecordedStats struct {
+	ClientStats  ContainerStats
+	DerivedStats DerivedStats
+}
+
+type DerivedStats struct {
+	CPUPercentage    float64
+	MemoryPercentage float64
 }
 
 type Details struct {
@@ -246,7 +258,7 @@ func (c *Container) GetDisplayStrings(isFocused bool) []string {
 
 // GetDisplayCPUPerc colors the cpu percentage based on how extreme it is
 func (c *Container) GetDisplayCPUPerc() string {
-	stats := c.GetStats()
+	stats := c.CLIStats
 
 	if stats.CPUPerc == "" {
 		return ""
@@ -340,12 +352,4 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 // Top returns process information
 func (c *Container) Top() (types.ContainerProcessList, error) {
 	return c.Client.ContainerTop(context.Background(), c.ID, []string{})
-}
-
-// GetStats gets the container's most recent stats
-func (c *Container) GetStats() ContainerCliStat {
-	if len(c.StatHistory) == 0 {
-		return ContainerCliStat{}
-	}
-	return c.StatHistory[len(c.StatHistory)-1]
 }

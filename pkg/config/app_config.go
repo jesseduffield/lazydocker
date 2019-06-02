@@ -83,6 +83,7 @@ type UserConfig struct {
 	CommandTemplates CommandTemplatesConfig `yaml:"commandTemplates,omitempty"`
 	OS               OSConfig               `yaml:"oS,omitempty"`
 	Update           UpdateConfig           `yaml:"update,omitempty"`
+	Stats            StatsConfig            `yaml:"stats,omitempty"`
 }
 
 type ThemeConfig struct {
@@ -114,6 +115,20 @@ type UpdateConfig struct {
 	Method string `yaml:"method,omitempty"`
 }
 
+// GraphConfig specifies how to make a graph of recorded container stats
+type GraphConfig struct {
+	Min      float64 `yaml:"min,omitempty"`
+	Max      float64 `yaml:"max,omitempty"`
+	Height   int     `yaml:"height,omitempty"`
+	Caption  string  `yaml:"caption,omitempty"`
+	StatPath string  `yaml:"statPath,omitempty"`
+	Color    string  `yaml:"color,omitempty"`
+}
+
+type StatsConfig struct {
+	Graphs []GraphConfig
+}
+
 // GetDefaultConfig returns the application default configuration
 func GetDefaultConfig() UserConfig {
 	return UserConfig{
@@ -138,6 +153,26 @@ func GetDefaultConfig() UserConfig {
 		OS: GetPlatformDefaultConfig(),
 		Update: UpdateConfig{
 			Method: "never",
+		},
+		Stats: StatsConfig{
+			Graphs: []GraphConfig{
+				{
+					Min:      0,
+					Max:      100,
+					Height:   10,
+					Caption:  "CPU (%)",
+					StatPath: "DerivedStats.CPUPercentage",
+					Color:    "blue",
+				},
+				{
+					Min:      0,
+					Max:      100,
+					Height:   10,
+					Caption:  "Memory (%)",
+					StatPath: "DerivedStats.MemoryPercentage",
+					Color:    "green",
+				},
+			},
 		},
 	}
 }

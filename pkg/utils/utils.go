@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-errors/errors"
+	"github.com/jesseduffield/gocui"
 
 	"github.com/fatih/color"
 )
@@ -295,4 +296,49 @@ func ApplyTemplate(str string, object interface{}) string {
 	var buf bytes.Buffer
 	template.Must(template.New("").Parse(str)).Execute(&buf, object)
 	return buf.String()
+}
+
+// GetGocuiAttribute gets the gocui color attribute from the string
+func GetGocuiAttribute(key string) gocui.Attribute {
+	colorMap := map[string]gocui.Attribute{
+		"default":   gocui.ColorDefault,
+		"black":     gocui.ColorBlack,
+		"red":       gocui.ColorRed,
+		"green":     gocui.ColorGreen,
+		"yellow":    gocui.ColorYellow,
+		"blue":      gocui.ColorBlue,
+		"magenta":   gocui.ColorMagenta,
+		"cyan":      gocui.ColorCyan,
+		"white":     gocui.ColorWhite,
+		"bold":      gocui.AttrBold,
+		"reverse":   gocui.AttrReverse,
+		"underline": gocui.AttrUnderline,
+	}
+	value, present := colorMap[key]
+	if present {
+		return value
+	}
+	return gocui.ColorWhite
+}
+
+// GetColorAttribute gets the color attribute from the string
+func GetColorAttribute(key string) color.Attribute {
+	colorMap := map[string]color.Attribute{
+		"default":   color.FgWhite,
+		"black":     color.FgBlack,
+		"red":       color.FgRed,
+		"green":     color.FgGreen,
+		"yellow":    color.FgYellow,
+		"blue":      color.FgBlue,
+		"magenta":   color.FgMagenta,
+		"cyan":      color.FgCyan,
+		"white":     color.FgWhite,
+		"bold":      color.Bold,
+		"underline": color.Underline,
+	}
+	value, present := colorMap[key]
+	if present {
+		return value
+	}
+	return color.FgWhite
 }
