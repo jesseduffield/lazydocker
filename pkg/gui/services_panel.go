@@ -186,7 +186,7 @@ func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	composeCommand := gui.Config.GetUserConfig().GetString("commandTemplates.dockerCompose")
+	composeCommand := gui.Config.UserConfig.CommandTemplates.DockerCompose
 
 	options := []*removeServiceOption{
 		{

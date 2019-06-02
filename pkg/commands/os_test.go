@@ -58,57 +58,6 @@ func TestOSCommandRunCommand(t *testing.T) {
 	}
 }
 
-// TestOSCommandOpenFile is a function.
-func TestOSCommandOpenFile(t *testing.T) {
-	type scenario struct {
-		filename string
-		command  func(string, ...string) *exec.Cmd
-		test     func(error)
-	}
-
-	scenarios := []scenario{
-		{
-			"test",
-			func(name string, arg ...string) *exec.Cmd {
-				return exec.Command("exit", "1")
-			},
-			func(err error) {
-				assert.Error(t, err)
-			},
-		},
-		{
-			"test",
-			func(name string, arg ...string) *exec.Cmd {
-				assert.Equal(t, "open", name)
-				assert.Equal(t, []string{"test"}, arg)
-				return exec.Command("echo")
-			},
-			func(err error) {
-				assert.NoError(t, err)
-			},
-		},
-		{
-			"filename with spaces",
-			func(name string, arg ...string) *exec.Cmd {
-				assert.Equal(t, "open", name)
-				assert.Equal(t, []string{"filename with spaces"}, arg)
-				return exec.Command("echo")
-			},
-			func(err error) {
-				assert.NoError(t, err)
-			},
-		},
-	}
-
-	for _, s := range scenarios {
-		OSCmd := NewDummyOSCommand()
-		OSCmd.command = s.command
-		OSCmd.Config.GetUserConfig().Set("os.openCommand", "open {{filename}}")
-
-		s.test(OSCmd.OpenFile(s.filename))
-	}
-}
-
 // TestOSCommandEditFile is a function.
 func TestOSCommandEditFile(t *testing.T) {
 	type scenario struct {

@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/jesseduffield/gocui"
@@ -22,11 +23,6 @@ func (gui *Gui) refreshStatus(g *gocui.Gui) error {
 	})
 
 	return nil
-}
-
-func (gui *Gui) handleCheckForUpdate(g *gocui.Gui, v *gocui.View) error {
-	gui.Updater.CheckForNewUpdate(gui.onUserUpdateCheckFinish, true)
-	return gui.createLoaderPanel(gui.g, v, gui.Tr.SLocalize("CheckingForUpdates"))
 }
 
 func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
@@ -51,11 +47,12 @@ func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleOpenConfig(g *gocui.Gui, v *gocui.View) error {
-	return gui.openFile(gui.Config.GetUserConfig().ConfigFileUsed())
+	filename := filepath.Join(gui.Config.ConfigDir, "config.yml")
+	return gui.openFile(filename)
 }
 
 func (gui *Gui) handleEditConfig(g *gocui.Gui, v *gocui.View) error {
-	filename := gui.Config.GetUserConfig().ConfigFileUsed()
+	filename := filepath.Join(gui.Config.ConfigDir, "config.yml")
 	return gui.editFile(filename)
 }
 

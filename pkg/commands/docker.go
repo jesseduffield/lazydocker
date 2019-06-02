@@ -21,13 +21,13 @@ type DockerCommand struct {
 	Log                    *logrus.Entry
 	OSCommand              *OSCommand
 	Tr                     *i18n.Localizer
-	Config                 config.AppConfigurer
+	Config                 *config.AppConfig
 	Client                 *client.Client
 	InDockerComposeProject bool
 }
 
 // NewDockerCommand it runs git commands
-func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Localizer, config config.AppConfigurer) (*DockerCommand, error) {
+func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Localizer, config *config.AppConfig) (*DockerCommand, error) {
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		return nil, err
@@ -155,7 +155,7 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 		return nil, nil
 	}
 
-	composeCommand := c.Config.GetUserConfig().GetString("commandTemplates.dockerCompose")
+	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
 	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --hash=*", composeCommand))
 	if err != nil {
 		return nil, err

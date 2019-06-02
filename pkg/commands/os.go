@@ -32,14 +32,14 @@ type Platform struct {
 type OSCommand struct {
 	Log                *logrus.Entry
 	Platform           *Platform
-	Config             config.AppConfigurer
+	Config             *config.AppConfig
 	command            func(string, ...string) *exec.Cmd
 	getGlobalGitConfig func(string) (string, error)
 	getenv             func(string) string
 }
 
 // NewOSCommand os command runner
-func NewOSCommand(log *logrus.Entry, config config.AppConfigurer) *OSCommand {
+func NewOSCommand(log *logrus.Entry, config *config.AppConfig) *OSCommand {
 	return &OSCommand{
 		Log:                log,
 		Platform:           getPlatform(),
@@ -154,7 +154,7 @@ func sanitisedCommandOutput(output []byte, err error) (string, error) {
 
 // OpenFile opens a file with the given
 func (c *OSCommand) OpenFile(filename string) error {
-	commandTemplate := c.Config.GetUserConfig().GetString("os.openCommand")
+	commandTemplate := c.Config.UserConfig.OS.OpenCommand
 	templateValues := map[string]string{
 		"filename": c.Quote(filename),
 	}
@@ -166,7 +166,7 @@ func (c *OSCommand) OpenFile(filename string) error {
 
 // OpenLink opens a file with the given
 func (c *OSCommand) OpenLink(link string) error {
-	commandTemplate := c.Config.GetUserConfig().GetString("os.openLinkCommand")
+	commandTemplate := c.Config.UserConfig.OS.OpenLinkCommand
 	templateValues := map[string]string{
 		"link": c.Quote(link),
 	}

@@ -292,7 +292,7 @@ func (c *Container) Restart() error {
 
 // RestartService restarts the container
 func (c *Container) RestartService() error {
-	templateString := c.OSCommand.Config.GetUserConfig().GetString("commandTemplates.restartService")
+	templateString := c.OSCommand.Config.UserConfig.CommandTemplates.RestartService
 	command := utils.ApplyTemplate(templateString, c)
 	return c.OSCommand.RunCommand(command)
 }

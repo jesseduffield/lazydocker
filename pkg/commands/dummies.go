@@ -6,8 +6,6 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-	yaml "gopkg.in/yaml.v2"
 )
 
 // This file exports dummy constructors for use by tests in other packages
@@ -26,9 +24,7 @@ func NewDummyAppConfig() *config.AppConfig {
 		BuildDate:   "",
 		Debug:       false,
 		BuildSource: "",
-		UserConfig:  viper.New(),
 	}
-	_ = yaml.Unmarshal([]byte{}, appConfig.AppState)
 	return appConfig
 }
 

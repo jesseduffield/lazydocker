@@ -116,12 +116,6 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleOpenConfig,
 			Description: gui.Tr.SLocalize("OpenConfig"),
-		}, {
-			ViewName:    "status",
-			Key:         'u',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleCheckForUpdate,
-			Description: gui.Tr.SLocalize("checkForUpdate"),
 		},
 		{
 			ViewName: "menu",

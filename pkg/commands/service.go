@@ -37,14 +37,14 @@ func (s *Service) Remove(options types.ContainerRemoveOptions) error {
 
 // Stop stops the service's containers
 func (s *Service) Stop() error {
-	templateString := s.OSCommand.Config.GetUserConfig().GetString("commandTemplates.stopService")
+	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.StopService
 	command := utils.ApplyTemplate(templateString, s)
 	return s.OSCommand.RunCommand(command)
 }
 
 // Restart restarts the service
 func (s *Service) Restart() error {
-	templateString := s.OSCommand.Config.GetUserConfig().GetString("commandTemplates.restartService")
+	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.RestartService
 	command := utils.ApplyTemplate(templateString, s)
 	return s.OSCommand.RunCommand(command)
 }

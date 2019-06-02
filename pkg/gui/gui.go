@@ -24,7 +24,6 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
-	"github.com/jesseduffield/lazydocker/pkg/updates"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -69,10 +68,9 @@ type Gui struct {
 	OSCommand     *commands.OSCommand
 	SubProcess    *exec.Cmd
 	State         guiState
-	Config        config.AppConfigurer
+	Config        *config.AppConfig
 	Tr            *i18n.Localizer
 	Errors        SentinelErrors
-	Updater       *updates.Updater
 	statusManager *statusManager
 	waitForIntro  sync.WaitGroup
 	T             *tasks.TaskManager
@@ -116,7 +114,6 @@ type guiState struct {
 	MenuItemCount    int // can't store the actual list because it's of interface{} type
 	PreviousView     string
 	Platform         commands.Platform
-	Updating         bool
 	Panels           *panelStates
 	SubProcessOutput string
 	MainProcessMutex sync.Mutex
@@ -124,7 +121,7 @@ type guiState struct {
 }
 
 // NewGui builds a new gui handler
-func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.Localizer, config config.AppConfigurer, updater *updates.Updater) (*Gui, error) {
+func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.Localizer, config *config.AppConfig) (*Gui, error) {
 
 	initialState := guiState{
 		Containers:   make([]*commands.Container, 0),
@@ -157,7 +154,6 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		State:         initialState,
 		Config:        config,
 		Tr:            tr,
-		Updater:       updater,
 		statusManager: &statusManager{},
 		T:             tasks.NewTaskManager(),
 	}
@@ -171,7 +167,7 @@ func (gui *Gui) scrollUpMain(g *gocui.Gui, v *gocui.View) error {
 	mainView, _ := g.View("main")
 	mainView.Autoscroll = false
 	ox, oy := mainView.Origin()
-	newOy := int(math.Max(0, float64(oy-gui.Config.GetUserConfig().GetInt("gui.scrollHeight"))))
+	newOy := int(math.Max(0, float64(oy-gui.Config.UserConfig.Gui.ScrollHeight)))
 	return mainView.SetOrigin(ox, newOy)
 }
 
@@ -179,13 +175,13 @@ func (gui *Gui) scrollDownMain(g *gocui.Gui, v *gocui.View) error {
 	mainView, _ := g.View("main")
 	ox, oy := mainView.Origin()
 	y := oy
-	if !gui.Config.GetUserConfig().GetBool("gui.scrollPastBottom") {
+	if !gui.Config.UserConfig.Gui.ScrollPastBottom {
 		_, sy := mainView.Size()
 		y += sy
 	}
 	// for some reason we can't work out whether we've hit the bottomq
 	// there is a large discrepancy in the origin's y value and the length of BufferLines
-	return mainView.SetOrigin(ox, oy+gui.Config.GetUserConfig().GetInt("gui.scrollHeight"))
+	return mainView.SetOrigin(ox, oy+gui.Config.UserConfig.Gui.ScrollHeight)
 }
 
 func (gui *Gui) autoScrollMain(g *gocui.Gui, v *gocui.View) error {
@@ -255,7 +251,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	g.Highlight = true
 	width, height := g.Size()
 
-	information := gui.Config.GetVersion()
+	information := gui.Config.Version
 
 	minimumHeight := 9
 	minimumWidth := 10
@@ -453,15 +449,13 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 }
 
 func (gui *Gui) loadNewDirectory() error {
-	gui.Updater.CheckForNewUpdate(gui.onBackgroundUpdateCheckFinish, false)
-
 	gui.waitForIntro.Done()
 
 	if err := gui.refreshSidePanels(gui.g); err != nil {
 		return err
 	}
 
-	if gui.Config.GetUserConfig().GetString("reporting") == "undetermined" {
+	if gui.Config.UserConfig.Reporting == "undetermined" {
 		if err := gui.promptAnonymousReporting(); err != nil {
 			return err
 		}
@@ -472,10 +466,16 @@ func (gui *Gui) loadNewDirectory() error {
 func (gui *Gui) promptAnonymousReporting() error {
 	return gui.createConfirmationPanel(gui.g, nil, gui.Tr.SLocalize("AnonymousReportingTitle"), gui.Tr.SLocalize("AnonymousReportingPrompt"), func(g *gocui.Gui, v *gocui.View) error {
 		gui.waitForIntro.Done()
-		return gui.Config.WriteToUserConfig("reporting", "on")
+		return gui.Config.WriteToUserConfig(func(userConfig *config.UserConfig) error {
+			userConfig.Reporting = "on"
+			return nil
+		})
 	}, func(g *gocui.Gui, v *gocui.View) error {
 		gui.waitForIntro.Done()
-		return gui.Config.WriteToUserConfig("reporting", "off")
+		return gui.Config.WriteToUserConfig(func(userConfig *config.UserConfig) error {
+			userConfig.Reporting = "off"
+			return nil
+		})
 	})
 }
 
@@ -512,7 +512,7 @@ func (gui *Gui) Run() error {
 	}
 	defer g.Close()
 
-	if gui.Config.GetUserConfig().GetBool("gui.mouseEvents") {
+	if gui.Config.UserConfig.Gui.MouseEvents {
 		g.Mouse = true
 	}
 
@@ -522,7 +522,7 @@ func (gui *Gui) Run() error {
 		return err
 	}
 
-	if gui.Config.GetUserConfig().GetString("reporting") == "undetermined" {
+	if gui.Config.UserConfig.Reporting == "undetermined" {
 		gui.waitForIntro.Add(2)
 	} else {
 		gui.waitForIntro.Add(1)
@@ -600,10 +600,7 @@ func (gui *Gui) runCommand() error {
 }
 
 func (gui *Gui) quit(g *gocui.Gui, v *gocui.View) error {
-	if gui.State.Updating {
-		return gui.createUpdateQuitConfirmation(g, v)
-	}
-	if gui.Config.GetUserConfig().GetBool("confirmOnQuit") {
+	if gui.Config.UserConfig.ConfirmOnQuit {
 		return gui.createConfirmationPanel(g, v, "", gui.Tr.SLocalize("ConfirmQuit"), func(g *gocui.Gui, v *gocui.View) error {
 			return gocui.ErrQuit
 		}, nil)
