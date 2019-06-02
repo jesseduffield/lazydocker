@@ -24,10 +24,11 @@ type DockerCommand struct {
 	Config                 *config.AppConfig
 	Client                 *client.Client
 	InDockerComposeProject bool
+	ErrorChan              chan error
 }
 
 // NewDockerCommand it runs git commands
-func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Localizer, config *config.AppConfig) (*DockerCommand, error) {
+func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Localizer, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		return nil, err
@@ -40,17 +41,19 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Localize
 		Config:                 config,
 		Client:                 cli,
 		InDockerComposeProject: true, // TODO: determine this at startup
+		ErrorChan:              errorChan,
 	}, nil
 }
 
 // UpdateContainerStats takes a slice of containers and returns the same slice but with new stats added
 // TODO: consider using this for everything stats-related
-func (c *DockerCommand) UpdateContainerStats(containers []*Container) ([]*Container, error) {
+func (c *DockerCommand) UpdateContainerStats(containers []*Container) {
 	// TODO: consider using a stream rather than polling
 	command := `docker stats --all --no-trunc --no-stream --format '{{json .}}'`
 	output, err := c.OSCommand.RunCommandWithOutput(command)
 	if err != nil {
-		return nil, err
+		c.ErrorChan <- err
+		return
 	}
 
 	jsonStats := "[" + strings.Join(
@@ -63,7 +66,8 @@ func (c *DockerCommand) UpdateContainerStats(containers []*Container) ([]*Contai
 
 	var stats []ContainerCliStat
 	if err := json.Unmarshal([]byte(jsonStats), &stats); err != nil {
-		return nil, err
+		c.ErrorChan <- err
+		return
 	}
 
 	for _, stat := range stats {
@@ -74,7 +78,9 @@ func (c *DockerCommand) UpdateContainerStats(containers []*Container) ([]*Contai
 		}
 	}
 
-	return containers, nil
+	c.Log.Warn("updated containers")
+
+	return
 }
 
 // GetContainersAndServices returns a slice of docker containers
@@ -147,10 +153,7 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 
 	c.UpdateContainerDetails(ownContainers)
 
-	// ownContainers, err = c.UpdateContainerStats(ownContainers)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	c.UpdateContainerStats(ownContainers)
 
 	return ownContainers, nil
 }

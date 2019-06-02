@@ -65,7 +65,7 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 		if err != gui.Errors.ErrNoContainers {
 			return err
 		}
-		return gui.renderString(g, "main", gui.Tr.SLocalize("NoChangedContainers"))
+		return nil
 	}
 
 	key := container.ID + "-" + gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex]
@@ -171,7 +171,7 @@ func (gui *Gui) renderContainerLogs(mainView *gocui.View, container *commands.Co
 	mainView.Autoscroll = true
 	mainView.Title = "Logs"
 
-	if container.Details.Config.AttachStdin {
+	if container.Details.Config.OpenStdin {
 		return gui.renderLogsForTTYContainer(mainView, container)
 	}
 	return gui.renderLogsForRegularContainer(mainView, container)

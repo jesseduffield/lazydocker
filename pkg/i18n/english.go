@@ -856,5 +856,9 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 			ID:    "PruningStatus",
 			Other: "pruning",
 		},
+		&i18n.Message{
+			ID:    "StopService",
+			Other: "Are you sure you want to stop this service's containers? (enter/esc)",
+		},
 	)
 }

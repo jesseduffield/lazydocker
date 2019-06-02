@@ -26,7 +26,7 @@ func (s *Service) GetDisplayStrings(isFocused bool) []string {
 	}
 
 	cont := s.Container
-	return []string{utils.ColoredString(cont.Container.State, cont.GetColor()), utils.ColoredString(s.Name, color.FgWhite), cont.Stats.CPUPerc}
+	return []string{utils.ColoredString(cont.Container.State, cont.GetColor()), utils.ColoredString(s.Name, color.FgWhite), cont.GetDisplayCPUPerc()}
 }
 
 // Remove removes the service's containers

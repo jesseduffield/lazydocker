@@ -74,6 +74,7 @@ type Gui struct {
 	statusManager *statusManager
 	waitForIntro  sync.WaitGroup
 	T             *tasks.TaskManager
+	ErrorChan     chan error
 }
 
 type servicePanelState struct {
@@ -118,10 +119,11 @@ type guiState struct {
 	SubProcessOutput string
 	MainProcessMutex sync.Mutex
 	MainProcessChan  chan struct{}
+	Stats            map[string]commands.ContainerStats
 }
 
 // NewGui builds a new gui handler
-func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.Localizer, config *config.AppConfig) (*Gui, error) {
+func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.Localizer, config *config.AppConfig, errorChan chan error) (*Gui, error) {
 
 	initialState := guiState{
 		Containers:   make([]*commands.Container, 0),
@@ -151,11 +153,13 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		Log:           log,
 		DockerCommand: dockerCommand,
 		OSCommand:     oSCommand,
+		// TODO: look into this warning
 		State:         initialState,
 		Config:        config,
 		Tr:            tr,
 		statusManager: &statusManager{},
 		T:             tasks.NewTaskManager(log),
+		ErrorChan:     errorChan,
 	}
 
 	gui.GenerateSentinelErrors()
@@ -535,6 +539,12 @@ func (gui *Gui) Run() error {
 		gui.goEvery(time.Millisecond*500, gui.refreshContainersAndServices)
 	}()
 
+	go func() {
+		for err := range gui.ErrorChan {
+			gui.createErrorPanel(gui.g, err.Error())
+		}
+	}()
+
 	g.SetManager(gocui.ManagerFunc(gui.layout), gocui.ManagerFunc(gui.getFocusLayout()))
 
 	if err = gui.keybindings(g); err != nil {
@@ -546,7 +556,11 @@ func (gui *Gui) Run() error {
 }
 
 func (gui *Gui) reRenderMain() error {
-	if gui.getMainView().IsTainted() {
+	mainView := gui.getMainView()
+	if mainView == nil {
+		return nil
+	}
+	if mainView.IsTainted() {
 		gui.g.Update(func(g *gocui.Gui) error {
 			return nil
 		})

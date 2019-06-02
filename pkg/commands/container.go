@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,6 +31,12 @@ type Container struct {
 	Log             *logrus.Entry
 	Stats           ContainerCliStat
 	Details         Details
+}
+
+type DetailsCollection struct {
+	InspectDetails Details
+	CLIStats       ContainerCliStat
+	ClientStats    ContainerStats
 }
 
 type Details struct {
@@ -239,7 +246,31 @@ type ContainerCliStat struct {
 
 // GetDisplayStrings returns the dispaly string of Container
 func (c *Container) GetDisplayStrings(isFocused bool) []string {
-	return []string{utils.ColoredString(c.Container.State, c.GetColor()), utils.ColoredString(c.Name, color.FgWhite), c.Stats.CPUPerc}
+	return []string{utils.ColoredString(c.Container.State, c.GetColor()), utils.ColoredString(c.Name, color.FgWhite), c.GetDisplayCPUPerc()}
+}
+
+// GetDisplayCPUPerc colors the cpu percentage based on how extreme it is
+func (c *Container) GetDisplayCPUPerc() string {
+	if c.Stats.CPUPerc == "" {
+		return ""
+	}
+
+	percentage, err := strconv.ParseFloat(strings.TrimSuffix(c.Stats.CPUPerc, "%"), 32)
+	if err != nil {
+		c.Log.Error(err)
+		return ""
+	}
+
+	var clr color.Attribute
+	if percentage > 90 {
+		clr = color.FgRed
+	} else if percentage > 50 {
+		clr = color.FgYellow
+	} else {
+		clr = color.FgWhite
+	}
+
+	return utils.ColoredString(c.Stats.CPUPerc, clr)
 }
 
 // GetColor Container color
@@ -301,7 +332,7 @@ func (c *Container) RestartService() error {
 // Attach attaches the container
 func (c *Container) Attach() (*exec.Cmd, error) {
 	// verify that we can in fact attach to this container
-	if !c.Details.Config.AttachStdin {
+	if !c.Details.Config.OpenStdin {
 		return nil, errors.New("Container does not support attaching. You must either run the service with the '-it' flag or use `stdin_open: true, tty: true` in the docker-compose.yml file")
 	}
 
