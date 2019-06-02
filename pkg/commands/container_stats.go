@@ -197,15 +197,38 @@ func (c *Container) RenderStats(viewWidth int) (string, error) {
 // PlotGraph returns the plotted graph based on the graph spec and the stat history
 func (c *Container) PlotGraph(spec config.GraphConfig, width int) (string, error) {
 	data := make([]float64, len(c.StatHistory))
+
+	max := spec.Max
+	min := spec.Min
 	for i, stats := range c.StatHistory {
 		value, err := lookup.LookupString(stats, spec.StatPath)
 		if err != nil {
-			return "", err
+			return "Could not find key: " + spec.StatPath, nil
 		}
 		floatValue, err := getFloat(value.Interface())
 		if err != nil {
 			return "", err
 		}
+		if spec.MinType == "" {
+			if i == 0 {
+				min = floatValue
+			} else {
+				if floatValue < min {
+					min = floatValue
+				}
+			}
+		}
+
+		if spec.MaxType == "" {
+			if i == 0 {
+				max = floatValue
+			} else {
+				if floatValue > max {
+					max = floatValue
+				}
+			}
+		}
+
 		data[i] = floatValue
 	}
 
@@ -213,8 +236,8 @@ func (c *Container) PlotGraph(spec config.GraphConfig, width int) (string, error
 		data,
 		asciigraph.Height(spec.Height),
 		asciigraph.Width(width),
-		asciigraph.Min(spec.Min),
-		asciigraph.Max(spec.Max),
+		asciigraph.Min(min),
+		asciigraph.Max(max),
 		asciigraph.Caption(spec.Caption),
 	), nil
 }

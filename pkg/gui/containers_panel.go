@@ -122,6 +122,7 @@ func (gui *Gui) renderContainerConfig(mainView *gocui.View, container *commands.
 func (gui *Gui) renderContainerStats(mainView *gocui.View, container *commands.Container) error {
 	mainView.Autoscroll = false
 	mainView.Title = "Stats"
+	mainView.Wrap = false
 
 	return gui.T.NewTickerTask(time.Second, func() {
 		width, _ := mainView.Size()

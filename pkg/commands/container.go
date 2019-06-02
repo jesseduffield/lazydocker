@@ -39,6 +39,7 @@ type Container struct {
 type RecordedStats struct {
 	ClientStats  ContainerStats
 	DerivedStats DerivedStats
+	RecordedAt   time.Time
 }
 
 type DerivedStats struct {
@@ -352,4 +353,19 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 // Top returns process information
 func (c *Container) Top() (types.ContainerProcessList, error) {
 	return c.Client.ContainerTop(context.Background(), c.ID, []string{})
+}
+
+// EraseOldHistory removes any history before the user-specified max duration
+func (c *Container) EraseOldHistory() {
+	c.Log.Warn(c.Config.UserConfig.Stats.MaxDuration)
+	if c.Config.UserConfig.Stats.MaxDuration == 0 {
+		return
+	}
+
+	for i, stat := range c.StatHistory {
+		if time.Since(stat.RecordedAt) < c.Config.UserConfig.Stats.MaxDuration {
+			c.StatHistory = c.StatHistory[i:]
+			return
+		}
+	}
 }

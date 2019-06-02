@@ -130,11 +130,12 @@ func (c *DockerCommand) createClientStatMonitor(container *Container) {
 				CPUPercentage:    stats.CalculateContainerCPUPercentage(),
 				MemoryPercentage: stats.CalculateContainerMemoryUsage(),
 			},
+			RecordedAt: time.Now(),
 		}
 
 		c.ContainerMutex.Lock()
-		// TODO: for now we never truncate the recorded stats, and we should
 		container.StatHistory = append(container.StatHistory, recordedStats)
+		container.EraseOldHistory()
 		c.ContainerMutex.Unlock()
 	}
 

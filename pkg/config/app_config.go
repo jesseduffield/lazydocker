@@ -3,6 +3,7 @@ package config
 import (
 	"io/ioutil"
 	"path/filepath"
+	"time"
 
 	"github.com/shibukawa/configdir"
 	yaml "gopkg.in/yaml.v2"
@@ -123,10 +124,14 @@ type GraphConfig struct {
 	Caption  string  `yaml:"caption,omitempty"`
 	StatPath string  `yaml:"statPath,omitempty"`
 	Color    string  `yaml:"color,omitempty"`
+	// MinType and MaxType are each one of "", "static". blank means the min/max of the data set will be used. "static" means the min/max specified will be used
+	MinType string `yaml:"minType,omitempty"`
+	MaxType string `yaml:"maxType,omitempty"`
 }
 
 type StatsConfig struct {
-	Graphs []GraphConfig
+	Graphs      []GraphConfig
+	MaxDuration time.Duration `yaml:"maxDuration,omitempty"`
 }
 
 // GetDefaultConfig returns the application default configuration
