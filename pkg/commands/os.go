@@ -1,12 +1,14 @@
 package commands
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/go-errors/errors"
 
@@ -58,9 +60,11 @@ func (c *OSCommand) SetCommand(cmd func(string, ...string) *exec.Cmd) {
 
 // RunCommandWithOutput wrapper around commands returning their output and error
 func (c *OSCommand) RunCommandWithOutput(command string) (string, error) {
-	c.Log.WithField("command", command).Info("RunCommand")
 	cmd := c.ExecutableFromString(command)
-	return sanitisedCommandOutput(cmd.CombinedOutput())
+	before := time.Now()
+	output, err := sanitisedCommandOutput(cmd.CombinedOutput())
+	c.Log.Warn(fmt.Sprintf("'%s': %s", command, time.Since(before)))
+	return output, err
 }
 
 // RunExecutableWithOutput runs an executable file and returns its output
@@ -77,7 +81,7 @@ func (c *OSCommand) RunExecutable(cmd *exec.Cmd) error {
 // ExecutableFromString takes a string like `git status` and returns an executable command for it
 func (c *OSCommand) ExecutableFromString(commandStr string) *exec.Cmd {
 	splitCmd := str.ToArgv(commandStr)
-	c.Log.Info(splitCmd)
+	// c.Log.Info(splitCmd)
 	return c.command(splitCmd[0], splitCmd[1:]...)
 }
 

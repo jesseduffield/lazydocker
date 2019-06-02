@@ -28,7 +28,7 @@ func (gui *Gui) getSelectedContainer(g *gocui.Gui) (*commands.Container, error) 
 		return &commands.Container{}, gui.Errors.ErrNoContainers
 	}
 
-	return gui.State.Containers[selectedLine], nil
+	return gui.DockerCommand.Containers[selectedLine], nil
 }
 
 func (gui *Gui) handleContainersFocus(g *gocui.Gui, v *gocui.View) error {
@@ -42,7 +42,7 @@ func (gui *Gui) handleContainersFocus(g *gocui.Gui, v *gocui.View) error {
 	prevSelectedLine := gui.State.Panels.Containers.SelectedLine
 	newSelectedLine := cy - oy
 
-	if newSelectedLine > len(gui.State.Containers)-1 || len(utils.Decolorise(gui.State.Containers[newSelectedLine].Name)) < cx {
+	if newSelectedLine > len(gui.DockerCommand.Containers)-1 || len(utils.Decolorise(gui.DockerCommand.Containers[newSelectedLine].Name)) < cx {
 		return gui.handleContainerSelect(gui.g, v)
 	}
 
@@ -75,7 +75,7 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Main.ObjectKey = key
 	}
 
-	if err := gui.focusPoint(0, gui.State.Panels.Containers.SelectedLine, len(gui.State.Containers), v); err != nil {
+	if err := gui.focusPoint(0, gui.State.Panels.Containers.SelectedLine, len(gui.DockerCommand.Containers), v); err != nil {
 		return err
 	}
 
@@ -109,7 +109,7 @@ func (gui *Gui) renderContainerConfig(mainView *gocui.View, container *commands.
 	mainView.Autoscroll = false
 	mainView.Title = "Config"
 
-	data, err := json.MarshalIndent(&container.Container, "", "  ")
+	data, err := json.MarshalIndent(&container.Details, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -242,25 +242,25 @@ func (gui *Gui) refreshContainersAndServices() error {
 		return err
 	}
 
-	if len(gui.State.Containers) > 0 && gui.State.Panels.Containers.SelectedLine == -1 {
+	if len(gui.DockerCommand.Containers) > 0 && gui.State.Panels.Containers.SelectedLine == -1 {
 		gui.State.Panels.Containers.SelectedLine = 0
 	}
-	if len(gui.State.Containers)-1 < gui.State.Panels.Containers.SelectedLine {
-		gui.State.Panels.Containers.SelectedLine = len(gui.State.Containers) - 1
+	if len(gui.DockerCommand.Containers)-1 < gui.State.Panels.Containers.SelectedLine {
+		gui.State.Panels.Containers.SelectedLine = len(gui.DockerCommand.Containers) - 1
 	}
 
 	// doing the exact same thing for services
-	if len(gui.State.Services) > 0 && gui.State.Panels.Services.SelectedLine == -1 {
+	if len(gui.DockerCommand.Services) > 0 && gui.State.Panels.Services.SelectedLine == -1 {
 		gui.State.Panels.Services.SelectedLine = 0
 	}
-	if len(gui.State.Services)-1 < gui.State.Panels.Services.SelectedLine {
-		gui.State.Panels.Services.SelectedLine = len(gui.State.Services) - 1
+	if len(gui.DockerCommand.Services)-1 < gui.State.Panels.Services.SelectedLine {
+		gui.State.Panels.Services.SelectedLine = len(gui.DockerCommand.Services) - 1
 	}
 
 	gui.g.Update(func(g *gocui.Gui) error {
 		containersView.Clear()
 		isFocused := gui.g.CurrentView().Name() == "containers"
-		list, err := utils.RenderList(gui.State.Containers, utils.IsFocused(isFocused))
+		list, err := utils.RenderList(gui.DockerCommand.Containers, utils.IsFocused(isFocused))
 		if err != nil {
 			return err
 		}
@@ -279,7 +279,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 		servicesView := gui.getServicesView()
 		servicesView.Clear()
 		isFocused = gui.g.CurrentView().Name() == "services"
-		list, err = utils.RenderList(gui.State.Services, utils.IsFocused(isFocused))
+		list, err = utils.RenderList(gui.DockerCommand.Services, utils.IsFocused(isFocused))
 		if err != nil {
 			return err
 		}
@@ -295,15 +295,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 }
 
 func (gui *Gui) refreshStateContainersAndServices() error {
-	containers, services, err := gui.DockerCommand.GetContainersAndServices(gui.State.Services)
-	if err != nil {
-		return err
-	}
-
-	gui.State.Containers = containers
-	gui.State.Services = services
-
-	return nil
+	return gui.DockerCommand.GetContainersAndServices()
 }
 
 func (gui *Gui) handleContainersNextLine(g *gocui.Gui, v *gocui.View) error {
@@ -312,7 +304,7 @@ func (gui *Gui) handleContainersNextLine(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	panelState := gui.State.Panels.Containers
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.State.Containers), false)
+	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.Containers), false)
 
 	return gui.handleContainerSelect(gui.g, v)
 }
@@ -323,7 +315,7 @@ func (gui *Gui) handleContainersPrevLine(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	panelState := gui.State.Panels.Containers
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.State.Containers), true)
+	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.Containers), true)
 
 	return gui.handleContainerSelect(gui.g, v)
 }

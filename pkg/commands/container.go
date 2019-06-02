@@ -30,13 +30,8 @@ type Container struct {
 	OSCommand       *OSCommand
 	Log             *logrus.Entry
 	Stats           ContainerCliStat
+	StatHistory     []ContainerCliStat
 	Details         Details
-}
-
-type DetailsCollection struct {
-	InspectDetails Details
-	CLIStats       ContainerCliStat
-	ClientStats    ContainerStats
 }
 
 type Details struct {
@@ -251,11 +246,13 @@ func (c *Container) GetDisplayStrings(isFocused bool) []string {
 
 // GetDisplayCPUPerc colors the cpu percentage based on how extreme it is
 func (c *Container) GetDisplayCPUPerc() string {
-	if c.Stats.CPUPerc == "" {
+	stats := c.GetStats()
+
+	if stats.CPUPerc == "" {
 		return ""
 	}
 
-	percentage, err := strconv.ParseFloat(strings.TrimSuffix(c.Stats.CPUPerc, "%"), 32)
+	percentage, err := strconv.ParseFloat(strings.TrimSuffix(stats.CPUPerc, "%"), 32)
 	if err != nil {
 		c.Log.Error(err)
 		return ""
@@ -270,7 +267,7 @@ func (c *Container) GetDisplayCPUPerc() string {
 		clr = color.FgWhite
 	}
 
-	return utils.ColoredString(c.Stats.CPUPerc, clr)
+	return utils.ColoredString(stats.CPUPerc, clr)
 }
 
 // GetColor Container color
@@ -343,4 +340,12 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 // Top returns process information
 func (c *Container) Top() (types.ContainerProcessList, error) {
 	return c.Client.ContainerTop(context.Background(), c.ID, []string{})
+}
+
+// GetStats gets the container's most recent stats
+func (c *Container) GetStats() ContainerCliStat {
+	if len(c.StatHistory) == 0 {
+		return ContainerCliStat{}
+	}
+	return c.StatHistory[len(c.StatHistory)-1]
 }

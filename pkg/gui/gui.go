@@ -109,9 +109,6 @@ type panelStates struct {
 }
 
 type guiState struct {
-	Services         []*commands.Service
-	Containers       []*commands.Container
-	Images           []*commands.Image
 	MenuItemCount    int // can't store the actual list because it's of interface{} type
 	PreviousView     string
 	Platform         commands.Platform
@@ -126,7 +123,6 @@ type guiState struct {
 func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.Localizer, config *config.AppConfig, errorChan chan error) (*Gui, error) {
 
 	initialState := guiState{
-		Containers:   make([]*commands.Container, 0),
 		PreviousView: "services",
 		Platform:     *oSCommand.Platform,
 		Panels: &panelStates{
@@ -430,8 +426,8 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	}
 
 	listViews := map[*gocui.View]listViewState{
-		containersView: {selectedLine: gui.State.Panels.Containers.SelectedLine, lineCount: len(gui.State.Containers)},
-		imagesView:     {selectedLine: gui.State.Panels.Images.SelectedLine, lineCount: len(gui.State.Images)},
+		containersView: {selectedLine: gui.State.Panels.Containers.SelectedLine, lineCount: len(gui.DockerCommand.Containers)},
+		imagesView:     {selectedLine: gui.State.Panels.Images.SelectedLine, lineCount: len(gui.DockerCommand.Images)},
 	}
 
 	// menu view might not exist so we check to be safe
@@ -501,6 +497,7 @@ func (gui *Gui) renderGlobalOptions() error {
 }
 
 func (gui *Gui) goEvery(interval time.Duration, function func() error) {
+	_ = function() // time.Tick doesn't run immediately so we'll do that here // TODO: maybe change
 	go func() {
 		for range time.Tick(interval) {
 			_ = function()
@@ -536,8 +533,11 @@ func (gui *Gui) Run() error {
 		gui.waitForIntro.Wait()
 		gui.goEvery(time.Millisecond*50, gui.renderAppStatus)
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
-		gui.goEvery(time.Millisecond*500, gui.refreshContainersAndServices)
+		gui.goEvery(time.Millisecond*100, gui.refreshContainersAndServices)
+		gui.goEvery(time.Millisecond*1000, gui.DockerCommand.UpdateContainerDetails)
 	}()
+
+	go gui.DockerCommand.MonitorContainerStats()
 
 	go func() {
 		for err := range gui.ErrorChan {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/fatih/color"
@@ -90,8 +89,6 @@ func (i *Image) RenderHistory() (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	i.Log.Warn(spew.Sdump(history))
 
 	layers := make([]*Layer, len(history))
 	for i, layer := range history {

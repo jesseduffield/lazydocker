@@ -23,7 +23,7 @@ func (gui *Gui) getSelectedService(g *gocui.Gui) (*commands.Service, error) {
 		return &commands.Service{}, errors.New("no service selected")
 	}
 
-	return gui.State.Services[selectedLine], nil
+	return gui.DockerCommand.Services[selectedLine], nil
 }
 
 func (gui *Gui) handleServicesFocus(g *gocui.Gui, v *gocui.View) error {
@@ -37,7 +37,7 @@ func (gui *Gui) handleServicesFocus(g *gocui.Gui, v *gocui.View) error {
 	prevSelectedLine := gui.State.Panels.Services.SelectedLine
 	newSelectedLine := cy - oy
 
-	if newSelectedLine > len(gui.State.Services)-1 || len(utils.Decolorise(gui.State.Services[newSelectedLine].Name)) < cx {
+	if newSelectedLine > len(gui.DockerCommand.Services)-1 || len(utils.Decolorise(gui.DockerCommand.Services[newSelectedLine].Name)) < cx {
 		return gui.handleServiceSelect(gui.g, v)
 	}
 
@@ -67,7 +67,7 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Main.ObjectKey = key
 	}
 
-	if err := gui.focusPoint(0, gui.State.Panels.Services.SelectedLine, len(gui.State.Services), v); err != nil {
+	if err := gui.focusPoint(0, gui.State.Panels.Services.SelectedLine, len(gui.DockerCommand.Services), v); err != nil {
 		return err
 	}
 
@@ -137,7 +137,7 @@ func (gui *Gui) handleServicesNextLine(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	panelState := gui.State.Panels.Services
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.State.Services), false)
+	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.Services), false)
 
 	return gui.handleServiceSelect(gui.g, v)
 }
@@ -148,7 +148,7 @@ func (gui *Gui) handleServicesPrevLine(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	panelState := gui.State.Panels.Services
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.State.Services), true)
+	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.Services), true)
 
 	return gui.handleServiceSelect(gui.g, v)
 }

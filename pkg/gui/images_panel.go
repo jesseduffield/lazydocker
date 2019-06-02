@@ -25,7 +25,7 @@ func (gui *Gui) getSelectedImage(g *gocui.Gui) (*commands.Image, error) {
 		return &commands.Image{}, gui.Errors.ErrNoImages
 	}
 
-	return gui.State.Images[selectedLine], nil
+	return gui.DockerCommand.Images[selectedLine], nil
 }
 
 func (gui *Gui) handleImagesFocus(g *gocui.Gui, v *gocui.View) error {
@@ -39,7 +39,7 @@ func (gui *Gui) handleImagesFocus(g *gocui.Gui, v *gocui.View) error {
 	prevSelectedLine := gui.State.Panels.Images.SelectedLine
 	newSelectedLine := cy - oy
 
-	if newSelectedLine > len(gui.State.Images)-1 || len(utils.Decolorise(gui.State.Images[newSelectedLine].Name)) < cx {
+	if newSelectedLine > len(gui.DockerCommand.Images)-1 || len(utils.Decolorise(gui.DockerCommand.Images[newSelectedLine].Name)) < cx {
 		return gui.handleImageSelect(gui.g, v)
 	}
 
@@ -72,7 +72,7 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Main.ObjectKey = key
 	}
 
-	if err := gui.focusPoint(0, gui.State.Panels.Images.SelectedLine, len(gui.State.Images), v); err != nil {
+	if err := gui.focusPoint(0, gui.State.Panels.Images.SelectedLine, len(gui.DockerCommand.Images), v); err != nil {
 		return err
 	}
 
@@ -129,18 +129,18 @@ func (gui *Gui) refreshImages() error {
 		return err
 	}
 
-	if len(gui.State.Images) > 0 && gui.State.Panels.Images.SelectedLine == -1 {
+	if len(gui.DockerCommand.Images) > 0 && gui.State.Panels.Images.SelectedLine == -1 {
 		gui.State.Panels.Images.SelectedLine = 0
 	}
-	if len(gui.State.Images)-1 < gui.State.Panels.Images.SelectedLine {
-		gui.State.Panels.Images.SelectedLine = len(gui.State.Images) - 1
+	if len(gui.DockerCommand.Images)-1 < gui.State.Panels.Images.SelectedLine {
+		gui.State.Panels.Images.SelectedLine = len(gui.DockerCommand.Images) - 1
 	}
 
 	gui.g.Update(func(g *gocui.Gui) error {
 
 		ImagesView.Clear()
 		isFocused := gui.g.CurrentView().Name() == "Images"
-		list, err := utils.RenderList(gui.State.Images, utils.IsFocused(isFocused))
+		list, err := utils.RenderList(gui.DockerCommand.Images, utils.IsFocused(isFocused))
 		if err != nil {
 			return err
 		}
@@ -161,7 +161,7 @@ func (gui *Gui) refreshStateImages() error {
 		return err
 	}
 
-	gui.State.Images = Images
+	gui.DockerCommand.Images = Images
 
 	return nil
 }
@@ -172,7 +172,7 @@ func (gui *Gui) handleImagesNextLine(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	panelState := gui.State.Panels.Images
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.State.Images), false)
+	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.Images), false)
 
 	return gui.handleImageSelect(gui.g, v)
 }
@@ -183,7 +183,7 @@ func (gui *Gui) handleImagesPrevLine(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	panelState := gui.State.Panels.Images
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.State.Images), true)
+	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.Images), true)
 
 	return gui.handleImageSelect(gui.g, v)
 }

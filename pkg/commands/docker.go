@@ -1,12 +1,15 @@
 package commands
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 
+	"github.com/acarl005/stripansi"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
@@ -25,6 +28,11 @@ type DockerCommand struct {
 	Client                 *client.Client
 	InDockerComposeProject bool
 	ErrorChan              chan error
+	ContainerMutex         sync.Mutex
+	ServiceMutex           sync.Mutex
+	Services               []*Service
+	Containers             []*Container
+	Images                 []*Image
 }
 
 // NewDockerCommand it runs git commands
@@ -45,50 +53,54 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Localize
 	}, nil
 }
 
-// UpdateContainerStats takes a slice of containers and returns the same slice but with new stats added
-// TODO: consider using this for everything stats-related
-func (c *DockerCommand) UpdateContainerStats(containers []*Container) {
-	// TODO: consider using a stream rather than polling
-	command := `docker stats --all --no-trunc --no-stream --format '{{json .}}'`
-	output, err := c.OSCommand.RunCommandWithOutput(command)
+// MonitorContainerStats monitors a stream of container stats and updates the containers as each new stats object is received
+func (c *DockerCommand) MonitorContainerStats() {
+
+	command := `docker stats --all --no-trunc --format '{{json .}}'`
+	cmd := c.OSCommand.RunCustomCommand(command)
+
+	r, err := cmd.StdoutPipe()
 	if err != nil {
 		c.ErrorChan <- err
 		return
 	}
 
-	jsonStats := "[" + strings.Join(
-		strings.Split(
-			strings.Trim(output, "\n"), "\n",
-		), ",",
-	) + "]"
+	cmd.Start()
 
-	c.Log.Warn(jsonStats)
-
-	var stats []ContainerCliStat
-	if err := json.Unmarshal([]byte(jsonStats), &stats); err != nil {
-		c.ErrorChan <- err
-		return
-	}
-
-	for _, stat := range stats {
-		for _, container := range containers {
-			if container.ID == stat.ID {
-				container.Stats = stat
+	scanner := bufio.NewScanner(r)
+	scanner.Split(bufio.ScanLines)
+	for scanner.Scan() {
+		var stats ContainerCliStat
+		// need to strip ANSI codes because uses escape sequences to clear the screen with each refresh
+		cleanString := stripansi.Strip(scanner.Text())
+		if err := json.Unmarshal([]byte(cleanString), &stats); err != nil {
+			c.ErrorChan <- err
+			return
+		}
+		c.ContainerMutex.Lock()
+		for _, container := range c.Containers {
+			if container.ID == stats.ID {
+				container.StatHistory = append(container.StatHistory, stats)
 			}
 		}
+		c.ContainerMutex.Unlock()
 	}
 
-	c.Log.Warn("updated containers")
+	cmd.Wait()
 
 	return
 }
 
 // GetContainersAndServices returns a slice of docker containers
-func (c *DockerCommand) GetContainersAndServices(currentServices []*Service) ([]*Container, []*Service, error) {
+func (c *DockerCommand) GetContainersAndServices() error {
+	c.ServiceMutex.Lock()
+	defer c.ServiceMutex.Unlock()
+
+	currentServices := c.Services
 
 	containers, err := c.GetContainers()
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 
 	var services []*Service
@@ -98,7 +110,7 @@ func (c *DockerCommand) GetContainersAndServices(currentServices []*Service) ([]
 	} else {
 		services, err = c.GetServices()
 		if err != nil {
-			return nil, nil, err
+			return err
 		}
 	}
 
@@ -124,11 +136,19 @@ func (c *DockerCommand) GetContainersAndServices(currentServices []*Service) ([]
 		return services[i].Name < services[j].Name
 	})
 
-	return containers, services, nil
+	c.Containers = containers
+	c.Services = services
+
+	return nil
 }
 
 // GetContainers gets the docker containers
 func (c *DockerCommand) GetContainers() ([]*Container, error) {
+	c.ContainerMutex.Lock()
+	defer c.ContainerMutex.Unlock()
+
+	currentContainers := c.Containers
+
 	containers, err := c.Client.ContainerList(context.Background(), types.ContainerListOptions{All: true})
 	if err != nil {
 		return nil, err
@@ -149,11 +169,15 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 			OSCommand:       c.OSCommand,
 			Log:             c.Log,
 		}
+
+		// bring across old stats information
+		for _, currentContainer := range currentContainers {
+			if currentContainer.ID == container.ID {
+				ownContainers[i].StatHistory = currentContainer.StatHistory // might need to use pointers here in case we're deep copying everything
+				ownContainers[i].Details = currentContainer.Details
+			}
+		}
 	}
-
-	c.UpdateContainerDetails(ownContainers)
-
-	c.UpdateContainerStats(ownContainers)
 
 	return ownContainers, nil
 }
@@ -191,7 +215,12 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 
 // UpdateContainerDetails attaches the details returned from docker inspect to each of the containers
 // this contains a bit more info than what you get from the go-docker client
-func (c *DockerCommand) UpdateContainerDetails(containers []*Container) error {
+func (c *DockerCommand) UpdateContainerDetails() error {
+	c.ContainerMutex.Lock()
+	defer c.ContainerMutex.Unlock()
+
+	containers := c.Containers
+
 	ids := make([]string, len(containers))
 	for i, container := range containers {
 		ids[i] = container.ID
