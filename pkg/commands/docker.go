@@ -168,10 +168,16 @@ func (c *DockerCommand) GetContainersAndServices() error {
 
 	// find out which services have corresponding containers and assign them
 	for _, service := range services {
+		foundMatch := false
 		for _, container := range containers {
 			if container.ServiceID != "" && container.ServiceID == service.ID {
+				foundMatch = true
 				service.Container = container
+				break
 			}
+		}
+		if !foundMatch {
+			service.Container = nil
 		}
 	}
 

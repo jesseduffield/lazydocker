@@ -202,6 +202,20 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.SLocalize("attach"),
 		},
 		{
+			ViewName:    "services",
+			Key:         '[',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServicesPrevContext,
+			Description: gui.Tr.SLocalize("previousContext"),
+		},
+		{
+			ViewName:    "services",
+			Key:         ']',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServicesNextContext,
+			Description: gui.Tr.SLocalize("nextContext"),
+		},
+		{
 			ViewName:    "images",
 			Key:         '[',
 			Modifier:    gocui.ModNone,

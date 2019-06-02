@@ -115,7 +115,11 @@ func (gui *Gui) renderServiceConfig(mainView *gocui.View, service *commands.Serv
 }
 
 func (gui *Gui) renderServiceStats(mainView *gocui.View, service *commands.Service) error {
-	return nil
+	if service.Container == nil {
+		return nil
+	}
+
+	return gui.renderContainerStats(mainView, service.Container)
 }
 
 func (gui *Gui) renderServiceLogs(mainView *gocui.View, service *commands.Service) error {

@@ -298,6 +298,8 @@ func (c *Container) GetColor() color.Attribute {
 		return color.FgRed
 	case "restarting":
 		return color.FgBlue
+	case "removing":
+		return color.FgMagenta
 	default:
 		return color.FgWhite
 	}

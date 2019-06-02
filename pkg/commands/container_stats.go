@@ -238,7 +238,7 @@ func (c *Container) PlotGraph(spec config.GraphConfig, width int) (string, error
 		asciigraph.Width(width),
 		asciigraph.Min(min),
 		asciigraph.Max(max),
-		asciigraph.Caption(spec.Caption),
+		asciigraph.Caption(fmt.Sprintf("%s: %0.2f (%v)", spec.Caption, data[len(data)-1], time.Since(c.StatHistory[0].RecordedAt))),
 	), nil
 }
 
