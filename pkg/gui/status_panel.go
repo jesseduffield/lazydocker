@@ -7,15 +7,10 @@ import (
 	"github.com/jesseduffield/gocui"
 )
 
-func (gui *Gui) refreshStatus(g *gocui.Gui) error {
-	v, err := g.View("status")
-	if err != nil {
-		panic(err)
-	}
-	// for some reason if this isn't wrapped in an update the clear seems to
-	// be applied after the other things or something like that; the panel's
-	// contents end up cleared
-	g.Update(func(*gocui.Gui) error {
+func (gui *Gui) refreshStatus() error {
+	v := gui.getStatusView()
+
+	gui.g.Update(func(*gocui.Gui) error {
 		v.Clear()
 		fmt.Fprint(v, "lazydocker")
 		return nil

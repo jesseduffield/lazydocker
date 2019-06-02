@@ -155,7 +155,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		Config:        config,
 		Tr:            tr,
 		statusManager: &statusManager{},
-		T:             tasks.NewTaskManager(),
+		T:             tasks.NewTaskManager(log),
 	}
 
 	gui.GenerateSentinelErrors()
@@ -415,7 +415,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			return err
 		}
 
-		if err := gui.switchFocus(gui.g, nil, gui.getContainersView()); err != nil {
+		if err := gui.switchFocus(gui.g, nil, gui.getServicesView()); err != nil {
 			return err
 		}
 	}

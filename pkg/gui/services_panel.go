@@ -119,7 +119,16 @@ func (gui *Gui) renderServiceStats(mainView *gocui.View, service *commands.Servi
 }
 
 func (gui *Gui) renderServiceLogs(mainView *gocui.View, service *commands.Service) error {
-	return nil
+	service, err := gui.getSelectedService(gui.g)
+	if err != nil {
+		return nil
+	}
+
+	if service.Container == nil {
+		return nil
+	}
+
+	return gui.renderContainerLogs(gui.getMainView(), service.Container)
 }
 
 func (gui *Gui) handleServicesNextLine(g *gocui.Gui, v *gocui.View) error {
@@ -255,7 +264,10 @@ func (gui *Gui) handleServiceAttach(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	c := service.Attach()
+	c, err := service.Attach()
+	if err != nil {
+		return gui.createErrorPanel(gui.g, err.Error())
+	}
 
 	gui.SubProcess = c
 	return gui.Errors.ErrSubProcess

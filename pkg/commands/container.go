@@ -9,6 +9,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/fatih/color"
+	"github.com/go-errors/errors"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
@@ -298,9 +299,14 @@ func (c *Container) RestartService() error {
 }
 
 // Attach attaches the container
-func (c *Container) Attach() *exec.Cmd {
+func (c *Container) Attach() (*exec.Cmd, error) {
+	// verify that we can in fact attach to this container
+	if !c.Details.Config.AttachStdin {
+		return nil, errors.New("Container does not support attaching. You must either run the service with the '-it' flag or use `stdin_open: true, tty: true` in the docker-compose.yml file")
+	}
+
 	cmd := c.OSCommand.PrepareSubProcess("docker", "attach", "--sig-proxy=false", c.ID)
-	return cmd
+	return cmd, nil
 }
 
 // Top returns process information

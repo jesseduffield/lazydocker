@@ -102,6 +102,7 @@ type CommandTemplatesConfig struct {
 	RestartService string `yaml:"restartService,omitempty"`
 	DockerCompose  string `yaml:"dockerCompose,omitempty"`
 	StopService    string `yaml:"stopService,omitempty"`
+	ServiceLogs    string `yaml:"serviceLogs,omitempty"`
 }
 
 type OSConfig struct {
@@ -132,6 +133,7 @@ func GetDefaultConfig() UserConfig {
 			RestartService: "docker-compose restart {{ .Name }}",
 			DockerCompose:  "apdev compose",
 			StopService:    "apdev stop {{ .Name }}",
+			ServiceLogs:    "apdev logs {{ .Name }}",
 		},
 		OS: GetPlatformDefaultConfig(),
 		Update: UpdateConfig{

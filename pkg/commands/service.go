@@ -11,12 +11,11 @@ import (
 
 // Service : A docker Service
 type Service struct {
-	Name          string
-	ID            string
-	DisplayString string
-	OSCommand     *OSCommand
-	Log           *logrus.Entry
-	Container     *Container
+	Name      string
+	ID        string
+	OSCommand *OSCommand
+	Log       *logrus.Entry
+	Container *Container
 }
 
 // GetDisplayStrings returns the dispaly string of Container
@@ -50,7 +49,7 @@ func (s *Service) Restart() error {
 }
 
 // Attach attaches to the service
-func (s *Service) Attach() *exec.Cmd {
+func (s *Service) Attach() (*exec.Cmd, error) {
 	// TODO: if you have a custom command for attaching to a service here is the place to use it
 
 	return s.Container.Attach()

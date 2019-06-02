@@ -78,16 +78,22 @@ func (c *DockerCommand) UpdateContainerStats(containers []*Container) ([]*Contai
 }
 
 // GetContainersAndServices returns a slice of docker containers
-func (c *DockerCommand) GetContainersAndServices() ([]*Container, []*Service, error) {
+func (c *DockerCommand) GetContainersAndServices(currentServices []*Service) ([]*Container, []*Service, error) {
 
 	containers, err := c.GetContainers()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	services, err := c.GetServices()
-	if err != nil {
-		return nil, nil, err
+	var services []*Service
+	// we only need to get these services once because they won't change in the runtime of the program
+	if currentServices != nil {
+		services = currentServices
+	} else {
+		services, err = c.GetServices()
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
 	// find out which services have corresponding containers and assign them
@@ -170,8 +176,10 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	for i, str := range lines {
 		arr := strings.Split(str, " ")
 		services[i] = &Service{
-			Name: arr[0],
-			ID:   arr[1],
+			Name:      arr[0],
+			ID:        arr[1],
+			OSCommand: c.OSCommand,
+			Log:       c.Log,
 		}
 	}
 

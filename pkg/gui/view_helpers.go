@@ -19,6 +19,10 @@ func (gui *Gui) refreshSidePanels(g *gocui.Gui) error {
 	if err := gui.refreshImages(); err != nil {
 		return err
 	}
+	if err := gui.refreshStatus(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -242,6 +246,11 @@ func (gui *Gui) getImagesView() *gocui.View {
 
 func (gui *Gui) getMainView() *gocui.View {
 	v, _ := gui.g.View("main")
+	return v
+}
+
+func (gui *Gui) getStatusView() *gocui.View {
+	v, _ := gui.g.View("status")
 	return v
 }
 

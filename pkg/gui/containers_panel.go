@@ -220,13 +220,11 @@ func (gui *Gui) renderLogsForTTYContainer(mainView *gocui.View, container *comma
 	}
 
 	go func() {
-		for {
-			s := bufio.NewScanner(r)
-			s.Split(bufio.ScanLines)
-			for s.Scan() {
-				// I might put a check on the stopped channel here. Would mean more code duplication though
-				mainView.Write(append(s.Bytes(), '\n'))
-			}
+		s := bufio.NewScanner(r)
+		s.Split(bufio.ScanLines)
+		for s.Scan() {
+			// I might put a check on the stopped channel here. Would mean more code duplication though
+			mainView.Write(append(s.Bytes(), '\n'))
 		}
 	}()
 
@@ -297,7 +295,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 }
 
 func (gui *Gui) refreshStateContainersAndServices() error {
-	containers, services, err := gui.DockerCommand.GetContainersAndServices()
+	containers, services, err := gui.DockerCommand.GetContainersAndServices(gui.State.Services)
 	if err != nil {
 		return err
 	}
@@ -457,7 +455,10 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	c := container.Attach()
+	c, err := container.Attach()
+	if err != nil {
+		return gui.createErrorPanel(gui.g, err.Error())
+	}
 
 	gui.SubProcess = c
 	return gui.Errors.ErrSubProcess
