@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -52,4 +53,20 @@ func (t *Task) Stop() {
 	t.stop <- struct{}{}
 	<-t.notifyStopped
 	return
+}
+
+// NewTickerTask is a convenience function for making a new task that repeats some action once per e.g. second
+func (t *TaskManager) NewTickerTask(duration time.Duration, f func()) error {
+	return t.NewTask(func(stop chan struct{}) {
+		tickChan := time.NewTicker(time.Second)
+		f() // calling f first so that we're not waiting for the first tick
+		for {
+			select {
+			case <-stop:
+				return
+			case <-tickChan.C:
+				f()
+			}
+		}
+	})
 }

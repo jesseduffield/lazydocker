@@ -123,23 +123,15 @@ func (gui *Gui) renderContainerStats(mainView *gocui.View, container *commands.C
 	mainView.Autoscroll = false
 	mainView.Title = "Stats"
 
-	return gui.T.NewTask(func(stop chan struct{}) {
-		tickChan := time.NewTicker(time.Second)
-		for {
-			select {
-			case <-stop:
-				return
-			case <-tickChan.C:
-				width, _ := mainView.Size()
+	return gui.T.NewTickerTask(time.Second, func() {
+		width, _ := mainView.Size()
 
-				contents, err := container.RenderStats(width)
-				if err != nil {
-					gui.createErrorPanel(gui.g, err.Error())
-				}
-
-				gui.reRenderString(gui.g, "main", contents)
-			}
+		contents, err := container.RenderStats(width)
+		if err != nil {
+			gui.createErrorPanel(gui.g, err.Error())
 		}
+
+		gui.reRenderString(gui.g, "main", contents)
 	})
 }
 
