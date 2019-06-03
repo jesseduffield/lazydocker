@@ -151,6 +151,7 @@ func (gui *Gui) renderLogsForRegularContainer(mainView *gocui.View, container *c
 	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=60m --timestamps --follow " + container.ID)
 
 	cmd.Stdout = mainView
+	cmd.Stderr = mainView
 
 	go gui.runProcessWithLock(cmd)
 
