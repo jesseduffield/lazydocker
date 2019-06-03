@@ -1,9 +1,7 @@
 package gui
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/signal"
@@ -37,38 +35,16 @@ func (gui *Gui) RunWithSubprocesses() error {
 func (gui *Gui) runCommand() error {
 	gui.SubProcess.Stdout = os.Stdout
 	gui.SubProcess.Stderr = os.Stdout
-	// gui.SubProcess.Stdin = os.Stdin
-
-	reader := bufio.NewReader(os.Stdin)
+	gui.SubProcess.Stdin = os.Stdin
 
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
 
 	go func() {
+		signal.Notify(c, os.Interrupt)
 		<-c
+		signal.Stop(c)
+
 		gui.SubProcess.Process.Kill()
-	}()
-
-	w, err := gui.SubProcess.StdinPipe()
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		for {
-			input, err := reader.ReadByte()
-			gui.Log.Warn("byte received")
-			gui.Log.Warn(input)
-			if input == 3 {
-				gui.SubProcess.Process.Kill()
-				break
-			}
-			if err != nil && err == io.EOF {
-				gui.SubProcess.Process.Kill()
-				break
-			}
-			w.Write([]byte{input})
-		}
 	}()
 
 	fmt.Fprintf(os.Stdout, "\n%s\n\n", utils.ColoredString("+ "+strings.Join(gui.SubProcess.Args, " "), color.FgBlue))
@@ -78,6 +54,8 @@ func (gui *Gui) runCommand() error {
 		// in the output anyway
 		gui.Log.Error(err)
 	}
+
+	signal.Stop(c)
 
 	gui.SubProcess.Stdout = ioutil.Discard
 	gui.SubProcess.Stderr = ioutil.Discard

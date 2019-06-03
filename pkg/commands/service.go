@@ -67,6 +67,7 @@ func (s *Service) ViewLogs() (*exec.Cmd, error) {
 	command := utils.ApplyTemplate(templateString, s)
 
 	cmd := s.OSCommand.ExecutableFromString(command)
+	// so long as this is commented in, the child process does not receive the interrupt
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,
 		Pgid:    0,
