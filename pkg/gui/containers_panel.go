@@ -208,8 +208,31 @@ func (gui *Gui) refreshContainersAndServices() error {
 		// if the containersView hasn't been instantiated yet we just return
 		return nil
 	}
+
+	// keep track of current service selected so that we can reposition our cursor if it moves position in the list
+	sl := gui.State.Panels.Services.SelectedLine
+	var selectedService *commands.Service
+	if len(gui.DockerCommand.Services) > 0 {
+		selectedService = gui.DockerCommand.Services[sl]
+	}
+
 	if err := gui.refreshStateContainersAndServices(); err != nil {
 		return err
+	}
+
+	// see if our selected service has moved
+	if selectedService != nil {
+		for i, service := range gui.DockerCommand.Services {
+			if service.ID == selectedService.ID {
+				if i == sl {
+					break
+				}
+				gui.State.Panels.Services.SelectedLine = i
+				if err := gui.focusPoint(0, i, len(gui.DockerCommand.Services), gui.getServicesView()); err != nil {
+					return err
+				}
+			}
+		}
 	}
 
 	if len(gui.DockerCommand.Containers) > 0 && gui.State.Panels.Containers.SelectedLine == -1 {

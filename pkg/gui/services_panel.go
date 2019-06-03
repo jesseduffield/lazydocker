@@ -17,7 +17,7 @@ func (gui *Gui) getServiceContexts() []string {
 	return []string{"logs", "config", "stats"}
 }
 
-func (gui *Gui) getSelectedService(g *gocui.Gui) (*commands.Service, error) {
+func (gui *Gui) getSelectedService() (*commands.Service, error) {
 	selectedLine := gui.State.Panels.Services.SelectedLine
 	if selectedLine == -1 {
 		return &commands.Service{}, errors.New("no service selected")
@@ -55,7 +55,7 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 
-	service, err := gui.getSelectedService(g)
+	service, err := gui.getSelectedService()
 	if err != nil {
 		return err
 	}
@@ -123,7 +123,7 @@ func (gui *Gui) renderServiceStats(mainView *gocui.View, service *commands.Servi
 }
 
 func (gui *Gui) renderServiceLogs(mainView *gocui.View, service *commands.Service) error {
-	service, err := gui.getSelectedService(gui.g)
+	service, err := gui.getSelectedService()
 	if err != nil {
 		return nil
 	}
@@ -194,7 +194,7 @@ func (r *removeServiceOption) GetDisplayStrings(isFocused bool) []string {
 }
 
 func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
-	service, err := gui.getSelectedService(g)
+	service, err := gui.getSelectedService()
 	if err != nil {
 		return nil
 	}
@@ -232,7 +232,7 @@ func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleServiceStop(g *gocui.Gui, v *gocui.View) error {
-	service, err := gui.getSelectedService(g)
+	service, err := gui.getSelectedService()
 	if err != nil {
 		return nil
 	}
@@ -250,7 +250,7 @@ func (gui *Gui) handleServiceStop(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleServiceRestart(g *gocui.Gui, v *gocui.View) error {
-	service, err := gui.getSelectedService(g)
+	service, err := gui.getSelectedService()
 	if err != nil {
 		return nil
 	}
@@ -265,7 +265,7 @@ func (gui *Gui) handleServiceRestart(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleServiceAttach(g *gocui.Gui, v *gocui.View) error {
-	service, err := gui.getSelectedService(g)
+	service, err := gui.getSelectedService()
 	if err != nil {
 		return nil
 	}
