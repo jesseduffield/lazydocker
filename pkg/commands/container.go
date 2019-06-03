@@ -359,7 +359,6 @@ func (c *Container) Top() (types.ContainerProcessList, error) {
 
 // EraseOldHistory removes any history before the user-specified max duration
 func (c *Container) EraseOldHistory() {
-	c.Log.Warn(c.Config.UserConfig.Stats.MaxDuration)
 	if c.Config.UserConfig.Stats.MaxDuration == 0 {
 		return
 	}
