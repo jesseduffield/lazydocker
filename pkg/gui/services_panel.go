@@ -278,3 +278,18 @@ func (gui *Gui) handleServiceAttach(g *gocui.Gui, v *gocui.View) error {
 	gui.SubProcess = c
 	return gui.Errors.ErrSubProcess
 }
+
+func (gui *Gui) handleServiceViewLogs(g *gocui.Gui, v *gocui.View) error {
+	service, err := gui.getSelectedService()
+	if err != nil {
+		return nil
+	}
+
+	c, err := service.ViewLogs()
+	if err != nil {
+		return gui.createErrorPanel(gui.g, err.Error())
+	}
+
+	gui.SubProcess = c
+	return gui.Errors.ErrSubProcess
+}

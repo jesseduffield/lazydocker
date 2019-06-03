@@ -101,10 +101,11 @@ type GuiConfig struct {
 }
 
 type CommandTemplatesConfig struct {
-	RestartService string `yaml:"restartService,omitempty"`
-	DockerCompose  string `yaml:"dockerCompose,omitempty"`
-	StopService    string `yaml:"stopService,omitempty"`
-	ServiceLogs    string `yaml:"serviceLogs,omitempty"`
+	RestartService  string `yaml:"restartService,omitempty"`
+	DockerCompose   string `yaml:"dockerCompose,omitempty"`
+	StopService     string `yaml:"stopService,omitempty"`
+	ServiceLogs     string `yaml:"serviceLogs,omitempty"`
+	ViewServiceLogs string `yaml:"viewServiceLogs,omitempty"`
 }
 
 type OSConfig struct {

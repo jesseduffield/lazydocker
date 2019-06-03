@@ -817,6 +817,10 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 			Other: "attach",
 		},
 		&i18n.Message{
+			ID:    "viewLogs",
+			Other: "view logs",
+		},
+		&i18n.Message{
 			ID:    "ServicesTitle",
 			Other: "Services",
 		},

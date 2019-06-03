@@ -2,6 +2,7 @@ package commands
 
 import (
 	"os/exec"
+	"syscall"
 
 	"github.com/docker/docker/api/types"
 	"github.com/fatih/color"
@@ -58,4 +59,18 @@ func (s *Service) Attach() (*exec.Cmd, error) {
 // Top returns process information
 func (s *Service) Top() (types.ContainerProcessList, error) {
 	return s.Container.Top()
+}
+
+// ViewLogs attaches to a subprocess viewing the service's logs
+func (s *Service) ViewLogs() (*exec.Cmd, error) {
+	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.ViewServiceLogs
+	command := utils.ApplyTemplate(templateString, s)
+
+	cmd := s.OSCommand.ExecutableFromString(command)
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+		Pgid:    0,
+	}
+
+	return cmd, nil
 }

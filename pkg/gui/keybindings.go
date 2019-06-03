@@ -64,12 +64,14 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Key:      'q',
 			Modifier: gocui.ModNone,
 			Handler:  gui.quit,
-		}, {
-			ViewName: "",
-			Key:      gocui.KeyCtrlC,
-			Modifier: gocui.ModNone,
-			Handler:  gui.quit,
-		}, {
+		},
+		// {
+		// 	ViewName: "",
+		// 	Key:      gocui.KeyCtrlC,
+		// 	Modifier: gocui.ModNone,
+		// 	Handler:  gui.quit,
+		// },
+		{
 			ViewName: "",
 			Key:      gocui.KeyEsc,
 			Modifier: gocui.ModNone,
@@ -200,6 +202,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceAttach,
 			Description: gui.Tr.SLocalize("attach"),
+		},
+		{
+			ViewName:    "services",
+			Key:         'm',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServiceViewLogs,
+			Description: gui.Tr.SLocalize("viewLogs"),
 		},
 		{
 			ViewName:    "services",
