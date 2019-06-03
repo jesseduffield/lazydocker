@@ -355,24 +355,30 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 			return nil
 		}
 		configOptions := options[index].configOptions
-		if cerr := container.Remove(configOptions); cerr != nil {
-			var originalErr commands.ComplexError
-			if xerrors.As(cerr, &originalErr) {
-				if originalErr.Code == commands.MustStopContainer {
-					return gui.createConfirmationPanel(gui.g, v, gui.Tr.SLocalize("Confirm"), gui.Tr.SLocalize("mustForceToRemoveContainer"), func(g *gocui.Gui, v *gocui.View) error {
-						configOptions.Force = true
-						if err := container.Remove(configOptions); err != nil {
-							return err
-						}
-						return gui.refreshContainersAndServices()
-					}, nil)
-				}
-			} else {
-				return gui.createErrorPanel(gui.g, cerr.Error())
-			}
-		}
 
-		return gui.refreshContainersAndServices()
+		return gui.WithWaitingStatus(gui.Tr.SLocalize("RemovingStatus"), func() error {
+			if cerr := container.Remove(configOptions); cerr != nil {
+				var originalErr commands.ComplexError
+				if xerrors.As(cerr, &originalErr) {
+					if originalErr.Code == commands.MustStopContainer {
+						return gui.createConfirmationPanel(gui.g, v, gui.Tr.SLocalize("Confirm"), gui.Tr.SLocalize("mustForceToRemoveContainer"), func(g *gocui.Gui, v *gocui.View) error {
+							return gui.WithWaitingStatus(gui.Tr.SLocalize("RemovingStatus"), func() error {
+								configOptions.Force = true
+								if err := container.Remove(configOptions); err != nil {
+									return err
+								}
+								return gui.refreshContainersAndServices()
+							})
+						}, nil)
+					}
+				} else {
+					return gui.createErrorPanel(gui.g, cerr.Error())
+				}
+			}
+
+			return gui.refreshContainersAndServices()
+		})
+
 	}
 
 	return gui.createMenu("", options, len(options), handleMenuPress)

@@ -785,6 +785,10 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 			Other: "stopping",
 		},
 		&i18n.Message{
+			ID:    "RemovingStatus",
+			Other: "removing",
+		},
+		&i18n.Message{
 			ID:    "remove",
 			Other: "remove",
 		},

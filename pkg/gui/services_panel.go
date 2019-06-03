@@ -219,11 +219,13 @@ func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		if options[index].command == "" {
 			return nil
 		}
-		if err := gui.OSCommand.RunCommand(options[index].command); err != nil {
-			return gui.createErrorPanel(gui.g, err.Error())
-		}
+		return gui.WithWaitingStatus(gui.Tr.SLocalize("RemovingStatus"), func() error {
+			if err := gui.OSCommand.RunCommand(options[index].command); err != nil {
+				return gui.createErrorPanel(gui.g, err.Error())
+			}
 
-		return gui.refreshContainersAndServices()
+			return gui.refreshContainersAndServices()
+		})
 	}
 
 	return gui.createMenu("", options, len(options), handleMenuPress)

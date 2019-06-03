@@ -330,11 +330,15 @@ func (c *DockerCommand) GetImages() ([]*Image, error) {
 		}
 
 		nameParts := strings.Split(name, ":")
+		tag := ""
+		if len(nameParts) > 1 {
+			tag = nameParts[1]
+		}
 
 		ownImages[i] = &Image{
 			ID:        image.ID,
 			Name:      nameParts[0],
-			Tag:       nameParts[1],
+			Tag:       tag,
 			Image:     image,
 			Client:    c.Client,
 			OSCommand: c.OSCommand,
