@@ -344,6 +344,8 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		servicesView.Highlight = true
 		servicesView.Title = gui.Tr.SLocalize("ServicesTitle")
 		servicesView.FgColor = gocui.ColorWhite
+
+		gui.focusPoint(0, gui.State.Panels.Services.SelectedLine, len(gui.DockerCommand.Services), servicesView)
 	}
 
 	containersView, err := g.SetViewBeneath("containers", "services", vHeights["containers"])
@@ -354,6 +356,8 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		containersView.Highlight = true
 		containersView.Title = gui.Tr.SLocalize("ContainersTitle")
 		containersView.FgColor = gocui.ColorWhite
+
+		gui.focusPoint(0, gui.State.Panels.Containers.SelectedLine, len(gui.DockerCommand.Containers), containersView)
 	}
 
 	imagesView, err := g.SetViewBeneath("images", "containers", vHeights["images"])
@@ -364,6 +368,8 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		imagesView.Highlight = true
 		imagesView.Title = gui.Tr.SLocalize("ImagesTitle")
 		imagesView.FgColor = gocui.ColorWhite
+
+		gui.focusPoint(0, gui.State.Panels.Images.SelectedLine, len(gui.DockerCommand.Images), imagesView)
 	}
 
 	if v, err := g.SetView("options", appStatusOptionsBoundary-1, height-2, optionsVersionBoundary-1, height, 0); err != nil {
