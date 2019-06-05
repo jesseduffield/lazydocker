@@ -99,7 +99,7 @@ func (gui *Gui) newLineFocused(g *gocui.Gui, v *gocui.View) error {
 		v.Highlight = false
 		return nil
 	default:
-		panic(gui.Tr.SLocalize("NoViewMachingNewLineFocusedSwitchStatement"))
+		panic(gui.Tr.NoViewMachingNewLineFocusedSwitchStatement)
 	}
 }
 
@@ -280,7 +280,6 @@ func (gui *Gui) resizePopupPanel(g *gocui.Gui, v *gocui.View) error {
 	if vx0 == x0 && vy0 == y0 && vx1 == x1 && vy1 == y1 {
 		return nil
 	}
-	gui.Log.Info(gui.Tr.SLocalize("resizingPopupPanel"))
 	_, err := g.SetView(v.Name(), x0, y0, x1, y1, 0)
 	return err
 }

@@ -66,7 +66,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			if err.Error() != "unknown view" {
 				return err
 			}
-			v.Title = gui.Tr.SLocalize("NotEnoughSpace")
+			v.Title = gui.Tr.NotEnoughSpace
 			v.Wrap = true
 			_, _ = g.SetViewOnTop("limit")
 		}
@@ -142,7 +142,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		if err.Error() != "unknown view" {
 			return err
 		}
-		v.Title = gui.Tr.SLocalize("StatusTitle")
+		v.Title = gui.Tr.StatusTitle
 		v.FgColor = gocui.ColorWhite
 	}
 
@@ -152,7 +152,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			return err
 		}
 		servicesView.Highlight = true
-		servicesView.Title = gui.Tr.SLocalize("ServicesTitle")
+		servicesView.Title = gui.Tr.ServicesTitle
 		servicesView.FgColor = gocui.ColorWhite
 
 		gui.focusPoint(0, gui.State.Panels.Services.SelectedLine, len(gui.DockerCommand.Services), servicesView)
@@ -164,7 +164,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			return err
 		}
 		containersView.Highlight = true
-		containersView.Title = gui.Tr.SLocalize("ContainersTitle")
+		containersView.Title = gui.Tr.ContainersTitle
 		containersView.FgColor = gocui.ColorWhite
 
 		gui.focusPoint(0, gui.State.Panels.Containers.SelectedLine, len(gui.DockerCommand.Containers), containersView)
@@ -176,7 +176,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			return err
 		}
 		imagesView.Highlight = true
-		imagesView.Title = gui.Tr.SLocalize("ImagesTitle")
+		imagesView.Title = gui.Tr.ImagesTitle
 		imagesView.FgColor = gocui.ColorWhite
 
 		gui.focusPoint(0, gui.State.Panels.Images.SelectedLine, len(gui.DockerCommand.Images), imagesView)

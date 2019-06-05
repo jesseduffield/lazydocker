@@ -20,7 +20,7 @@ type App struct {
 	OSCommand     *commands.OSCommand
 	DockerCommand *commands.DockerCommand
 	Gui           *gui.Gui
-	Tr            *i18n.Localizer
+	Tr            i18n.TranslationSet
 	ErrorChan     chan error
 }
 
@@ -33,7 +33,7 @@ func NewApp(config *config.AppConfig) (*App, error) {
 	}
 	var err error
 	app.Log = log.NewLogger(config, "23432119147a4367abf7c0de2aa99a2d")
-	app.Tr := i18n.NewTranslationSet(logger)
+	app.Tr = i18n.NewTranslationSet(app.Log)
 	app.OSCommand = commands.NewOSCommand(app.Log, config)
 
 	// here is the place to make use of the docker-compose.yml file in the current directory

@@ -203,15 +203,15 @@ func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 
 	options := []*removeServiceOption{
 		{
-			description: gui.Tr.SLocalize("remove"),
+			description: gui.Tr.Remove,
 			command:     fmt.Sprintf("%s rm --stop --force %s", composeCommand, service.Name),
 		},
 		{
-			description: gui.Tr.SLocalize("removeWithVolumes"),
+			description: gui.Tr.RemoveWithVolumes,
 			command:     fmt.Sprintf("%s rm --stop --force -v %s", composeCommand, service.Name),
 		},
 		{
-			description: gui.Tr.SLocalize("cancel"),
+			description: gui.Tr.Cancel,
 		},
 	}
 
@@ -219,7 +219,7 @@ func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		if options[index].command == "" {
 			return nil
 		}
-		return gui.WithWaitingStatus(gui.Tr.SLocalize("RemovingStatus"), func() error {
+		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 			if err := gui.OSCommand.RunCommand(options[index].command); err != nil {
 				return gui.createErrorPanel(gui.g, err.Error())
 			}
@@ -237,8 +237,8 @@ func (gui *Gui) handleServiceStop(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	return gui.createConfirmationPanel(gui.g, v, gui.Tr.SLocalize("Confirm"), gui.Tr.SLocalize("StopService"), func(g *gocui.Gui, v *gocui.View) error {
-		return gui.WithWaitingStatus(gui.Tr.SLocalize("StoppingStatus"), func() error {
+	return gui.createConfirmationPanel(gui.g, v, gui.Tr.Confirm, gui.Tr.StopService, func(g *gocui.Gui, v *gocui.View) error {
+		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
 			if err := service.Stop(); err != nil {
 				return gui.createErrorPanel(gui.g, err.Error())
 			}
@@ -255,7 +255,7 @@ func (gui *Gui) handleServiceRestart(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	return gui.WithWaitingStatus(gui.Tr.SLocalize("RestartingStatus"), func() error {
+	return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
 		if err := service.Restart(); err != nil {
 			return gui.createErrorPanel(gui.g, err.Error())
 		}

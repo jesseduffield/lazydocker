@@ -130,16 +130,6 @@ func (gui *Gui) createPopupPanel(g *gocui.Gui, currentView *gocui.View, title, p
 }
 
 func (gui *Gui) setKeyBindings(g *gocui.Gui, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
-	actions := gui.Tr.TemplateLocalize(
-		"CloseConfirm",
-		Teml{
-			"keyBindClose":   "esc",
-			"keyBindConfirm": "enter",
-		},
-	)
-	if err := gui.renderString(g, "options", actions); err != nil {
-		return err
-	}
 	if err := g.SetKeybinding("confirmation", gocui.KeyEnter, gocui.ModNone, gui.wrappedConfirmationFunction(handleConfirm)); err != nil {
 		return err
 	}
@@ -168,7 +158,7 @@ func (gui *Gui) createSpecificErrorPanel(message string, nextView *gocui.View, w
 
 	colorFunction := color.New(color.FgRed).SprintFunc()
 	coloredMessage := colorFunction(strings.TrimSpace(message))
-	return gui.createConfirmationPanel(gui.g, nextView, gui.Tr.SLocalize("Error"), coloredMessage, nil, nil)
+	return gui.createConfirmationPanel(gui.g, nextView, gui.Tr.ErrorTitle, coloredMessage, nil, nil)
 }
 
 func (gui *Gui) createErrorPanel(g *gocui.Gui, message string) error {

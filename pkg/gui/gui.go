@@ -44,14 +44,11 @@ type SentinelErrors struct {
 // localising things in the code.
 func (gui *Gui) GenerateSentinelErrors() {
 	gui.Errors = SentinelErrors{
-		ErrSubProcess:   errors.New(gui.Tr.SLocalize("RunningSubprocess")),
-		ErrNoContainers: errors.New(gui.Tr.SLocalize("NoContainers")),
-		ErrNoImages:     errors.New(gui.Tr.SLocalize("NoImages")),
+		ErrSubProcess:   errors.New(gui.Tr.RunningSubprocess),
+		ErrNoContainers: errors.New(gui.Tr.NoContainers),
+		ErrNoImages:     errors.New(gui.Tr.NoImages),
 	}
 }
-
-// Teml is short for template used to make the required map[string]interface{} shorter when using gui.Tr.SLocalize and gui.Tr.TemplateLocalize
-type Teml i18n.Teml
 
 // Gui wraps the gocui Gui object which handles rendering and events
 type Gui struct {
@@ -62,7 +59,7 @@ type Gui struct {
 	SubProcess    *exec.Cmd
 	State         guiState
 	Config        *config.AppConfig
-	Tr            *i18n.Localizer
+	Tr            i18n.TranslationSet
 	Errors        SentinelErrors
 	statusManager *statusManager
 	waitForIntro  sync.WaitGroup
@@ -111,7 +108,7 @@ type guiState struct {
 }
 
 // NewGui builds a new gui handler
-func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.Localizer, config *config.AppConfig, errorChan chan error) (*Gui, error) {
+func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
 
 	initialState := guiState{
 		PreviousView: "services",
@@ -172,7 +169,7 @@ func (gui *Gui) loadNewDirectory() error {
 }
 
 func (gui *Gui) promptAnonymousReporting() error {
-	return gui.createConfirmationPanel(gui.g, nil, gui.Tr.SLocalize("AnonymousReportingTitle"), gui.Tr.SLocalize("AnonymousReportingPrompt"), func(g *gocui.Gui, v *gocui.View) error {
+	return gui.createConfirmationPanel(gui.g, nil, gui.Tr.AnonymousReportingTitle, gui.Tr.AnonymousReportingPrompt, func(g *gocui.Gui, v *gocui.View) error {
 		gui.waitForIntro.Done()
 		return gui.Config.WriteToUserConfig(func(userConfig *config.UserConfig) error {
 			userConfig.Reporting = "on"
@@ -197,10 +194,10 @@ func (gui *Gui) renderAppStatus() error {
 
 func (gui *Gui) renderGlobalOptions() error {
 	return gui.renderOptionsMap(map[string]string{
-		"PgUp/PgDn": gui.Tr.SLocalize("scroll"),
-		"← → ↑ ↓":   gui.Tr.SLocalize("navigate"),
-		"esc/q":     gui.Tr.SLocalize("close"),
-		"x":         gui.Tr.SLocalize("menu"),
+		"PgUp/PgDn": gui.Tr.Scroll,
+		"← → ↑ ↓":   gui.Tr.Navigate,
+		"esc/q":     gui.Tr.Close,
+		"x":         gui.Tr.Menu,
 	})
 }
 
@@ -278,7 +275,7 @@ func (gui *Gui) reRenderMain() error {
 
 func (gui *Gui) quit(g *gocui.Gui, v *gocui.View) error {
 	if gui.Config.UserConfig.ConfirmOnQuit {
-		return gui.createConfirmationPanel(g, v, "", gui.Tr.SLocalize("ConfirmQuit"), func(g *gocui.Gui, v *gocui.View) error {
+		return gui.createConfirmationPanel(g, v, "", gui.Tr.ConfirmQuit, func(g *gocui.Gui, v *gocui.View) error {
 			return gocui.ErrQuit
 		}, nil)
 	}
@@ -291,7 +288,7 @@ func (gui *Gui) handleDonate(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	cx, _ := v.Cursor()
-	if cx > len(gui.Tr.SLocalize("Donate")) {
+	if cx > len(gui.Tr.Donate) {
 		return nil
 	}
 	return gui.OSCommand.OpenLink("https://donorbox.org/lazydocker")
@@ -327,7 +324,7 @@ func (gui *Gui) runSyncOrAsyncCommand(sub *exec.Cmd, err error) (bool, error) {
 }
 
 func (gui *Gui) handleCustomCommand(g *gocui.Gui, v *gocui.View) error {
-	return gui.createPromptPanel(g, v, gui.Tr.SLocalize("CustomCommand"), func(g *gocui.Gui, v *gocui.View) error {
+	return gui.createPromptPanel(g, v, gui.Tr.CustomCommandTitle, func(g *gocui.Gui, v *gocui.View) error {
 		command := gui.trimmedContent(v)
 		gui.SubProcess = gui.OSCommand.RunCustomCommand(command)
 		return gui.Errors.ErrSubProcess

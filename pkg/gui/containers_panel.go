@@ -350,17 +350,17 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 
 	options := []*removeContainerOption{
 		{
-			description:   gui.Tr.SLocalize("remove"),
+			description:   gui.Tr.Remove,
 			command:       "docker rm " + container.ID[1:10],
 			configOptions: types.ContainerRemoveOptions{},
 		},
 		{
-			description:   gui.Tr.SLocalize("removeWithVolumes"),
+			description:   gui.Tr.RemoveWithVolumes,
 			command:       "docker rm --volumes " + container.ID[1:10],
 			configOptions: types.ContainerRemoveOptions{RemoveVolumes: true},
 		},
 		{
-			description: gui.Tr.SLocalize("cancel"),
+			description: gui.Tr.Cancel,
 		},
 	}
 
@@ -370,13 +370,13 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		}
 		configOptions := options[index].configOptions
 
-		return gui.WithWaitingStatus(gui.Tr.SLocalize("RemovingStatus"), func() error {
+		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 			if cerr := container.Remove(configOptions); cerr != nil {
 				var originalErr commands.ComplexError
 				if xerrors.As(cerr, &originalErr) {
 					if originalErr.Code == commands.MustStopContainer {
-						return gui.createConfirmationPanel(gui.g, v, gui.Tr.SLocalize("Confirm"), gui.Tr.SLocalize("mustForceToRemoveContainer"), func(g *gocui.Gui, v *gocui.View) error {
-							return gui.WithWaitingStatus(gui.Tr.SLocalize("RemovingStatus"), func() error {
+						return gui.createConfirmationPanel(gui.g, v, gui.Tr.Confirm, gui.Tr.MustForceToRemoveContainer, func(g *gocui.Gui, v *gocui.View) error {
+							return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 								configOptions.Force = true
 								if err := container.Remove(configOptions); err != nil {
 									return err
@@ -404,8 +404,8 @@ func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	return gui.createConfirmationPanel(gui.g, v, gui.Tr.SLocalize("Confirm"), gui.Tr.SLocalize("StopContainer"), func(g *gocui.Gui, v *gocui.View) error {
-		return gui.WithWaitingStatus(gui.Tr.SLocalize("StoppingStatus"), func() error {
+	return gui.createConfirmationPanel(gui.g, v, gui.Tr.Confirm, gui.Tr.StopContainer, func(g *gocui.Gui, v *gocui.View) error {
+		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
 			if err := container.Stop(); err != nil {
 				return gui.createErrorPanel(gui.g, err.Error())
 			}
@@ -422,7 +422,7 @@ func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	return gui.WithWaitingStatus(gui.Tr.SLocalize("RestartingStatus"), func() error {
+	return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
 		if err := container.Restart(); err != nil {
 			return gui.createErrorPanel(gui.g, err.Error())
 		}

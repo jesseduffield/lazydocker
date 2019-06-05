@@ -11,8 +11,7 @@ type TranslationSet struct {
 	Execute                                    string
 	Scroll                                     string
 	Close                                      string
-	Error                                      string
-	ResizingPopupPanel                         string
+	ErrorTitle                                 string
 	RunningSubprocess                          string
 	NoViewMachingNewLineFocusedSwitchStatement string
 	OpenConfig                                 string
@@ -23,7 +22,7 @@ type TranslationSet struct {
 	ErrorOccurred                              string
 	Donate                                     string
 	Cancel                                     string
-	CustomCommand                              string
+	CustomCommandTitle                         string
 	Remove                                     string
 	RemoveWithVolumes                          string
 	MustForceToRemoveContainer                 string
@@ -55,52 +54,58 @@ type TranslationSet struct {
 
 func englishSet() TranslationSet {
 	return TranslationSet{
-		NotEnoughSpace:     "Not enough space to render panels",
-		StatusTitle:        "Status",
-		Navigate:           "navigate",
-		Menu:               "menu",
-		Execute:            "execute",
-		Scroll:             "scroll",
-		Close:              "close",
-		Error:              "Error",
-		ResizingPopupPanel: "resizing popup panel",
-		RunningSubprocess:  "running subprocess",
+		PruningStatus:    "pruning",
+		RemovingStatus:   "removing",
+		RestartingStatus: "restarting",
+		StoppingStatus:   "stopping",
+
+		RunningSubprocess:                          "running subprocess",
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
-		OpenConfig:                 "open config container",
-		EditConfig:                 "edit config container",
-		AnonymousReportingTitle:    "Help make lazydocker better",
-		AnonymousReportingPrompt:   "Would you like to enable anonymous reporting data to help improve lazydocker? (enter/esc)",
+
+		ErrorOccurred: "An error occurred! Please create an issue at https://github.com/jesseduffield/lazydocker/issues",
+		Donate:        "Donate",
+		Confirm:       "Confirm",
+
+		Navigate:           "navigate",
+		Execute:            "execute",
+		Close:              "close",
+		Menu:               "menu",
+		Scroll:             "scroll",
+		OpenConfig:         "open config container",
+		EditConfig:         "edit config container",
+		Cancel:             "cancel",
+		Remove:             "remove",
+		RemoveWithVolumes:  "remove with volumes",
+		RemoveService:      "remove containers",
+		Stop:               "stop",
+		Restart:            "restart",
+		PreviousContext:    "previous context",
+		NextContext:        "next context",
+		Attach:             "attach",
+		ViewLogs:           "view logs",
+		RemoveImage:        "remove image",
+		RemoveWithoutPrune: "remove without deleting untagged parents",
+		PruneImages:        "prune unused images",
+
+		AnonymousReportingTitle:  "Help make lazydocker better",
+		AnonymousReportingPrompt: "Would you like to enable anonymous reporting data to help improve lazydocker? (enter/esc)",
+
+		StatusTitle:        "Status",
+		ServicesTitle:      "Services",
+		ContainersTitle:    "Containers",
+		ImagesTitle:        "Images",
+		CustomCommandTitle: "Custom Command:",
+		ErrorTitle:         "Error",
+
+		NoContainers: "No containers",
+		NoImages:     "No images",
+
 		ConfirmQuit:                "Are you sure you want to quit?",
-		ErrorOccurred:              "An error occurred! Please create an issue at https://github.com/jesseduffield/lazydocker/issues",
-		Donate:                     "Donate",
-		Cancel:                     "cancel",
-		CustomCommand:              "Custom Command:",
-		Remove:                     "remove",
-		RemoveWithVolumes:          "remove with volumes",
 		MustForceToRemoveContainer: "You cannot remove a running container unless you force it. Do you want to force it?",
-		Confirm:                    "Confirm",
-		StopContainer:              "Are you sure you want to stop this container?",
-		RestartingStatus:           "restarting",
-		StoppingStatus:             "stopping",
-		RemovingStatus:             "removing",
-		RemoveService:              "remove containers",
-		Stop:                       "stop",
-		Restart:                    "restart",
-		PreviousContext:            "previous context",
-		NextContext:                "next context",
-		Attach:                     "attach",
-		ViewLogs:                   "view logs",
-		ServicesTitle:              "Services",
-		ContainersTitle:            "Containers",
-		ImagesTitle:                "Images",
-		NoContainers:               "No containers",
-		NoImages:                   "No images",
-		RemoveImage:                "remove image",
-		RemoveWithoutPrune:         "remove without deleting untagged parents",
-		PruneImages:                "prune unused images",
+		NotEnoughSpace:             "Not enough space to render panels",
 		ConfirmPruneImages:         "Are you sure you want to prune all unused images?",
-		PruningStatus:              "pruning",
 		StopService:                "Are you sure you want to stop this service's containers? (enter/esc)",
+		StopContainer:              "Are you sure you want to stop this container?",
 		PressEnterToReturn:         "Press enter to return to lazydocker",
 	}
 }

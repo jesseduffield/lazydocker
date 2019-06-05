@@ -51,7 +51,7 @@ func writeString(file *os.File, str string) {
 
 func localisedTitle(mApp *app.App, str string) string {
 	viewTitle := strings.Title(str) + "Title"
-	return mApp.Tr.SLocalize(viewTitle)
+	return mApp.Tr.ViewTitle // FIXME: this used to be dynamic but we can't make this dynamic again without reflection since we're now using a struct of translation strings
 }
 
 func formatTitle(title string) string {
@@ -116,7 +116,7 @@ func addBinding(title string, bindingSections []*bindingSection, binding *gui.Bi
 }
 
 func formatSections(mApp *app.App, bindingSections []*bindingSection) string {
-	content := fmt.Sprintf("# Lazydocker %s\n", mApp.Tr.SLocalize("menu"))
+	content := fmt.Sprintf("# Lazydocker %s\n", mApp.Tr.Menu)
 
 	for _, section := range bindingSections {
 		content += formatTitle(section.title)

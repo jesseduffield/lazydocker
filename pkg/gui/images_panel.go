@@ -62,7 +62,7 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 		if err != gui.Errors.ErrNoImages {
 			return err
 		}
-		return gui.renderString(g, "main", gui.Tr.SLocalize("NoImages"))
+		return gui.renderString(g, "main", gui.Tr.NoImages)
 	}
 
 	key := Image.ID + "-" + gui.getImageContexts()[gui.State.Panels.Images.ContextIndex]
@@ -238,19 +238,19 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 
 	options := []*removeImageOption{
 		{
-			description:   gui.Tr.SLocalize("remove"),
+			description:   gui.Tr.Remove,
 			command:       "docker image rm " + Image.ID[1:20],
 			configOptions: types.ImageRemoveOptions{PruneChildren: true},
 			runCommand:    true,
 		},
 		{
-			description:   gui.Tr.SLocalize("removeWithoutPrune"),
+			description:   gui.Tr.RemoveWithoutPrune,
 			command:       "docker image rm --no-prune " + Image.ID[1:20],
 			configOptions: types.ImageRemoveOptions{PruneChildren: false},
 			runCommand:    true,
 		},
 		{
-			description: gui.Tr.SLocalize("cancel"),
+			description: gui.Tr.Cancel,
 			runCommand:  false,
 		},
 	}
@@ -271,8 +271,8 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handlePruneImages(g *gocui.Gui, v *gocui.View) error {
-	return gui.createConfirmationPanel(gui.g, v, gui.Tr.SLocalize("Confirm"), gui.Tr.SLocalize("confirmPruneImages"), func(g *gocui.Gui, v *gocui.View) error {
-		return gui.WithWaitingStatus(gui.Tr.SLocalize("PruningStatus"), func() error {
+	return gui.createConfirmationPanel(gui.g, v, gui.Tr.Confirm, gui.Tr.ConfirmPruneImages, func(g *gocui.Gui, v *gocui.View) error {
+		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
 			err := gui.DockerCommand.PruneImages()
 			if err != nil {
 				return gui.createErrorPanel(gui.g, err.Error())
