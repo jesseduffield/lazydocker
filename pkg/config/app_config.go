@@ -106,6 +106,7 @@ type CommandTemplatesConfig struct {
 	StopService     string `yaml:"stopService,omitempty"`
 	ServiceLogs     string `yaml:"serviceLogs,omitempty"`
 	ViewServiceLogs string `yaml:"viewServiceLogs,omitempty"`
+	RebuildService  string `yaml:"rebuildService,omitempty"`
 }
 
 type OSConfig struct {

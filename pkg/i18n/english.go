@@ -34,6 +34,7 @@ type TranslationSet struct {
 	RemoveService                              string
 	Stop                                       string
 	Restart                                    string
+	Rebuild                                    string
 	PreviousContext                            string
 	NextContext                                string
 	Attach                                     string
@@ -50,6 +51,7 @@ type TranslationSet struct {
 	PruningStatus                              string
 	StopService                                string
 	PressEnterToReturn                         string
+	ViewRestartOptions                         string
 }
 
 func englishSet() TranslationSet {
@@ -79,6 +81,7 @@ func englishSet() TranslationSet {
 		RemoveService:      "remove containers",
 		Stop:               "stop",
 		Restart:            "restart",
+		Rebuild:            "rebuild",
 		PreviousContext:    "previous context",
 		NextContext:        "next context",
 		Attach:             "attach",
@@ -86,6 +89,7 @@ func englishSet() TranslationSet {
 		RemoveImage:        "remove image",
 		RemoveWithoutPrune: "remove without deleting untagged parents",
 		PruneImages:        "prune unused images",
+		ViewRestartOptions: "view restart options",
 
 		AnonymousReportingTitle:  "Help make lazydocker better",
 		AnonymousReportingPrompt: "Would you like to enable anonymous reporting data to help improve lazydocker? (enter/esc)",

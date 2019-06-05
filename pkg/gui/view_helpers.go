@@ -359,3 +359,10 @@ func (gui *Gui) isPopupPanel(viewName string) bool {
 func (gui *Gui) popupPanelFocused() bool {
 	return gui.isPopupPanel(gui.currentViewName())
 }
+
+func (gui *Gui) clearMainView() {
+	mainView := gui.getMainView()
+	mainView.Clear()
+	mainView.SetOrigin(0, 0)
+	mainView.SetCursor(0, 0)
+}

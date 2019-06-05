@@ -81,10 +81,6 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 
 	mainView := gui.getMainView()
 
-	mainView.Clear()
-	mainView.SetOrigin(0, 0)
-	mainView.SetCursor(0, 0)
-
 	switch gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex] {
 	case "logs":
 		if err := gui.renderContainerLogs(mainView, container); err != nil {
@@ -114,9 +110,11 @@ func (gui *Gui) renderContainerConfig(mainView *gocui.View, container *commands.
 		return err
 	}
 
-	return gui.T.NewTask(func(stop chan struct{}) {
+	go gui.T.NewTask(func(stop chan struct{}) {
 		gui.renderString(gui.g, "main", string(data))
 	})
+
+	return nil
 }
 
 func (gui *Gui) renderContainerStats(mainView *gocui.View, container *commands.Container) error {
@@ -153,13 +151,14 @@ func (gui *Gui) renderLogsForRegularContainer(mainView *gocui.View, container *c
 	cmd.Stdout = mainView
 	cmd.Stderr = mainView
 
-	go gui.runProcessWithLock(cmd)
+	gui.runProcessWithLock(cmd)
 
 	return nil
 }
 
 func (gui *Gui) runProcessWithLock(cmd *exec.Cmd) {
-	gui.T.NewTask(func(stop chan struct{}) {
+	go gui.T.NewTask(func(stop chan struct{}) {
+		gui.clearMainView()
 		cmd.Start()
 
 		go func() {
@@ -189,7 +188,7 @@ func (gui *Gui) renderLogsForTTYContainer(mainView *gocui.View, container *comma
 		}
 	}()
 
-	go gui.runProcessWithLock(cmd)
+	gui.runProcessWithLock(cmd)
 	return nil
 }
 

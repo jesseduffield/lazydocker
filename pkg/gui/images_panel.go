@@ -78,10 +78,6 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 
 	mainView := gui.getMainView()
 
-	mainView.Clear()
-	mainView.SetOrigin(0, 0)
-	mainView.SetCursor(0, 0)
-
 	switch gui.getImageContexts()[gui.State.Panels.Images.ContextIndex] {
 	case "config":
 		if err := gui.renderImageConfig(mainView, Image); err != nil {
@@ -95,11 +91,7 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image) error {
-	mainView.Autoscroll = false
-	mainView.Wrap = false
-	mainView.Title = "Config"
-
-	gui.T.NewTask(func(stop chan struct{}) {
+	go gui.T.NewTask(func(stop chan struct{}) {
 		output := ""
 		output += utils.WithPadding("ID: ", 10) + image.Image.ID + "\n"
 		output += utils.WithPadding("Tags: ", 10) + utils.ColoredString(strings.Join(image.Image.RepoTags, ", "), color.FgGreen) + "\n"
@@ -112,6 +104,10 @@ func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image) e
 		}
 
 		output += "\n\n" + history
+
+		mainView.Autoscroll = false
+		mainView.Wrap = false
+		mainView.Title = "Config"
 
 		gui.renderString(gui.g, "main", output)
 	})

@@ -243,6 +243,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.NextContext,
 		},
 		{
+			ViewName:    "services",
+			Key:         'R',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServiceRestartMenu,
+			Description: gui.Tr.ViewRestartOptions,
+		},
+		{
 			ViewName:    "images",
 			Key:         '[',
 			Modifier:    gocui.ModNone,

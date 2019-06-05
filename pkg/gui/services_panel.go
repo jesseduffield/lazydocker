@@ -1,8 +1,10 @@
 package gui
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 
 	"github.com/fatih/color"
 	"github.com/go-errors/errors"
@@ -73,10 +75,6 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 
 	mainView := gui.getMainView()
 
-	mainView.Clear()
-	mainView.SetOrigin(0, 0)
-	mainView.SetCursor(0, 0)
-
 	switch gui.getServiceContexts()[gui.State.Panels.Services.ContextIndex] {
 	case "logs":
 		if err := gui.renderServiceLogs(mainView, service); err != nil {
@@ -101,7 +99,7 @@ func (gui *Gui) renderServiceConfig(mainView *gocui.View, service *commands.Serv
 	mainView.Autoscroll = false
 	mainView.Title = "Config"
 
-	gui.T.NewTask(func(stop chan struct{}) {
+	go gui.T.NewTask(func(stop chan struct{}) {
 		// TODO: actually show service config
 		data, err := json.MarshalIndent(&service.Container.Container, "", "  ")
 		if err != nil {
@@ -129,6 +127,9 @@ func (gui *Gui) renderServiceLogs(mainView *gocui.View, service *commands.Servic
 	}
 
 	if service.Container == nil {
+		go gui.T.NewTask(func(stop chan struct{}) {
+			gui.clearMainView()
+		})
 		return nil
 	}
 
@@ -183,14 +184,14 @@ func (gui *Gui) handleServicesNextContext(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-type removeServiceOption struct {
+type commandOption struct {
 	description string
 	command     string
 }
 
 // GetDisplayStrings is a function.
-func (r *removeServiceOption) GetDisplayStrings(isFocused bool) []string {
-	return []string{r.description, color.New(color.FgRed).Sprint(r.command)}
+func (r *commandOption) GetDisplayStrings(isFocused bool) []string {
+	return []string{r.description, color.New(color.FgCyan).Sprint(r.command)}
 }
 
 func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
@@ -201,7 +202,7 @@ func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 
 	composeCommand := gui.Config.UserConfig.CommandTemplates.DockerCompose
 
-	options := []*removeServiceOption{
+	options := []*commandOption{
 		{
 			description: gui.Tr.Remove,
 			command:     fmt.Sprintf("%s rm --stop --force %s", composeCommand, service.Name),
@@ -215,20 +216,7 @@ func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		},
 	}
 
-	handleMenuPress := func(index int) error {
-		if options[index].command == "" {
-			return nil
-		}
-		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
-			if err := gui.OSCommand.RunCommand(options[index].command); err != nil {
-				return gui.createErrorPanel(gui.g, err.Error())
-			}
-
-			return gui.refreshContainersAndServices()
-		})
-	}
-
-	return gui.createMenu("", options, len(options), handleMenuPress)
+	return gui.createCommandMenu(options, gui.Tr.RemovingStatus)
 }
 
 func (gui *Gui) handleServiceStop(g *gocui.Gui, v *gocui.View) error {
@@ -292,4 +280,62 @@ func (gui *Gui) handleServiceViewLogs(g *gocui.Gui, v *gocui.View) error {
 
 	gui.SubProcess = c
 	return gui.Errors.ErrSubProcess
+}
+
+func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
+	service, err := gui.getSelectedService()
+	if err != nil {
+		return nil
+	}
+
+	options := []*commandOption{
+		{
+			description: gui.Tr.Restart,
+			command:     utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.RestartService, service.Name),
+		},
+		{
+			description: gui.Tr.Rebuild,
+			command:     utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.RebuildService, service.Name),
+		},
+		{
+			description: gui.Tr.Cancel,
+		},
+	}
+
+	return gui.createCommandMenu(options, gui.Tr.RestartingStatus)
+}
+
+func (gui *Gui) createCommandMenu(options []*commandOption, status string) error {
+
+	handleMenuPress := func(index int) error {
+		if options[index].command == "" {
+			return nil
+		}
+		gui.getMainView().Clear()
+		return gui.WithWaitingStatus(status, func() error {
+			done := make(chan struct{})
+			go gui.T.NewTask(func(stop chan struct{}) {
+				cmd := gui.OSCommand.RunCustomCommand(options[index].command)
+
+				cmd.Stdout = gui.getMainView()
+				var stderrBuf bytes.Buffer
+				cmd.Stderr = io.MultiWriter(gui.getMainView(), &stderrBuf)
+
+				cmd.Run()
+
+				done <- struct{}{}
+
+				errorMessage := stderrBuf.String()
+				if errorMessage != "" {
+					gui.createErrorPanel(gui.g, errorMessage)
+				}
+			})
+
+			<-done
+
+			return nil
+		})
+	}
+
+	return gui.createMenu("", options, len(options), handleMenuPress)
 }
