@@ -148,7 +148,7 @@ func (gui *Gui) renderContainerLogs(mainView *gocui.View, container *commands.Co
 
 func (gui *Gui) renderLogsForRegularContainer(mainView *gocui.View, container *commands.Container) error {
 	var cmd *exec.Cmd
-	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=60m --timestamps --follow " + container.ID)
+	cmd = gui.OSCommand.RunCustomCommand("docker logs --timestamps --follow --since=2h " + container.ID)
 
 	cmd.Stdout = mainView
 	cmd.Stderr = mainView
@@ -173,7 +173,7 @@ func (gui *Gui) runProcessWithLock(cmd *exec.Cmd) {
 
 func (gui *Gui) renderLogsForTTYContainer(mainView *gocui.View, container *commands.Container) error {
 	var cmd *exec.Cmd
-	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=60m --follow " + container.ID)
+	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=2h --follow " + container.ID)
 
 	r, err := cmd.StdoutPipe()
 	if err != nil {
