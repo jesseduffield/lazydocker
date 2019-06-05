@@ -421,7 +421,11 @@ func (v *View) realPosition(vx, vy int) (x, y int, err error) {
 
 // Clear empties the view's internal buffer.
 func (v *View) Clear() {
+	v.writeMutex.Lock()
+	defer v.writeMutex.Unlock()
+
 	v.tainted = true
+	v.ei.reset()
 
 	v.lines = nil
 	v.viewLines = nil
