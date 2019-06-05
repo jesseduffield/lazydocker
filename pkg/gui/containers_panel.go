@@ -158,15 +158,6 @@ func (gui *Gui) renderLogsForRegularContainer(mainView *gocui.View, container *c
 	return nil
 }
 
-func (gui *Gui) obtainLock() {
-	gui.State.MainProcessChan <- struct{}{}
-	gui.State.MainProcessMutex.Lock()
-}
-
-func (gui *Gui) releaseLock() {
-	gui.State.MainProcessMutex.Unlock()
-}
-
 func (gui *Gui) runProcessWithLock(cmd *exec.Cmd) {
 	gui.T.NewTask(func(stop chan struct{}) {
 		cmd.Start()

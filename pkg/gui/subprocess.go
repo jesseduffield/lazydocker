@@ -62,9 +62,9 @@ func (gui *Gui) runCommand() error {
 	gui.SubProcess.Stdin = nil
 	gui.SubProcess = nil
 
-	// fmt.Fprintf(os.Stdout, "\n%s", utils.ColoredString(gui.Tr.SLocalize("pressEnterToReturn"), color.FgGreen))
+	fmt.Fprintf(os.Stdout, "\n%s", utils.ColoredString(gui.Tr.SLocalize("pressEnterToReturn"), color.FgGreen))
 
-	// fmt.Scanln() // wait for enter press
+	fmt.Scanln() // wait for enter press
 
 	return nil
 }

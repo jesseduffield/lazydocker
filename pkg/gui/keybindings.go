@@ -76,43 +76,57 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Key:      gocui.KeyEsc,
 			Modifier: gocui.ModNone,
 			Handler:  gui.quit,
-		}, {
+		},
+		{
 			ViewName: "",
 			Key:      gocui.KeyPgup,
 			Modifier: gocui.ModNone,
 			Handler:  gui.scrollUpMain,
-		}, {
+		},
+		{
 			ViewName: "",
 			Key:      gocui.KeyPgdn,
 			Modifier: gocui.ModNone,
 			Handler:  gui.scrollDownMain,
-		}, {
+		},
+		{
 			ViewName: "",
 			Key:      gocui.KeyCtrlU,
 			Modifier: gocui.ModNone,
 			Handler:  gui.scrollUpMain,
-		}, {
+		},
+		{
 			ViewName: "",
 			Key:      gocui.KeyCtrlD,
 			Modifier: gocui.ModNone,
 			Handler:  gui.scrollDownMain,
-		}, {
+		},
+		{
 			ViewName: "",
 			Key:      gocui.KeyEnd,
 			Modifier: gocui.ModNone,
 			Handler:  gui.autoScrollMain,
-		}, {
+		},
+		{
 			ViewName: "",
 			Key:      'x',
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleCreateOptionsMenu,
-		}, {
+		},
+		{
+			ViewName: "",
+			Key:      'X',
+			Modifier: gocui.ModNone,
+			Handler:  gui.handleCustomCommand,
+		},
+		{
 			ViewName:    "status",
 			Key:         'e',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleEditConfig,
 			Description: gui.Tr.SLocalize("EditConfig"),
-		}, {
+		},
+		{
 			ViewName:    "status",
 			Key:         'o',
 			Modifier:    gocui.ModNone,
@@ -124,23 +138,27 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Key:      gocui.KeyEsc,
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleMenuClose,
-		}, {
+		},
+		{
 			ViewName: "menu",
 			Key:      'q',
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleMenuClose,
-		}, {
+		},
+		{
 			ViewName: "information",
 			Key:      gocui.MouseLeft,
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleDonate,
-		}, {
+		},
+		{
 			ViewName:    "containers",
 			Key:         '[',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersPrevContext,
 			Description: gui.Tr.SLocalize("previousContext"),
-		}, {
+		},
+		{
 			ViewName:    "containers",
 			Key:         ']',
 			Modifier:    gocui.ModNone,
@@ -230,7 +248,8 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleImagesPrevContext,
 			Description: gui.Tr.SLocalize("previousContext"),
-		}, {
+		},
+		{
 			ViewName:    "images",
 			Key:         ']',
 			Modifier:    gocui.ModNone,

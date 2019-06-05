@@ -58,7 +58,7 @@ func (t *Task) Stop() {
 // NewTickerTask is a convenience function for making a new task that repeats some action once per e.g. second
 func (t *TaskManager) NewTickerTask(duration time.Duration, f func()) error {
 	return t.NewTask(func(stop chan struct{}) {
-		tickChan := time.NewTicker(time.Second)
+		tickChan := time.NewTicker(duration)
 		f() // calling f first so that we're not waiting for the first tick
 		for {
 			select {

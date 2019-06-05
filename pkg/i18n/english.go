@@ -868,5 +868,9 @@ func addEnglish(i18nObject *i18n.Bundle) error {
 			ID:    "StopService",
 			Other: "Are you sure you want to stop this service's containers? (enter/esc)",
 		},
+		&i18n.Message{
+			ID:    "pressEnterToReturn",
+			Other: "Press enter to return to lazydocker",
+		},
 	)
 }
