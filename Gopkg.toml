@@ -42,5 +42,5 @@
   name = "github.com/spkg/bom"
 
 [[constraint]]
-  name = "github.com/carlosms/asciigraph"
-  revision = "22e3e1b9e3cd5ab4f79619cd65987f426d2d3dc4"
+  branch = "master"
+  name = "github.com/jesseduffield/asciigraph"

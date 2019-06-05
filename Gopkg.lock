@@ -18,13 +18,6 @@
   revision = "5a71ef0e047df0427e87a79f27009029921f1f9b"
 
 [[projects]]
-  digest = "1:8abef4b9ca2f94e008688685bf8fb7bb27e5c82b353a82ef9276a27b4a6d2020"
-  name = "github.com/carlosms/asciigraph"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "22e3e1b9e3cd5ab4f79619cd65987f426d2d3dc4"
-
-[[projects]]
   branch = "master"
   digest = "1:cd7ba2b29e93e2a8384e813dfc80ebb0f85d9214762e6ca89bb55a58092eab87"
   name = "github.com/cloudfoundry/jibber_jabber"
@@ -119,6 +112,14 @@
   packages = ["."]
   pruneopts = "NUT"
   revision = "fc0cef2ff331aebb24cd4e9ded7e20650f3d7006"
+
+[[projects]]
+  branch = "master"
+  digest = "1:7b2ab5c6de135d57d3a594b53068e2712da4d376b2f78097dec7b46d18deaa78"
+  name = "github.com/jesseduffield/asciigraph"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "6d88e39309eef29cc5c2ab279ec600465827cbac"
 
 [[projects]]
   branch = "master"
@@ -336,7 +337,6 @@
   analyzer-version = 1
   input-imports = [
     "github.com/acarl005/stripansi",
-    "github.com/carlosms/asciigraph",
     "github.com/cloudfoundry/jibber_jabber",
     "github.com/docker/docker/api/types",
     "github.com/docker/docker/api/types/filters",
@@ -344,6 +344,7 @@
     "github.com/fatih/color",
     "github.com/go-errors/errors",
     "github.com/heroku/rollrus",
+    "github.com/jesseduffield/asciigraph",
     "github.com/jesseduffield/gocui",
     "github.com/jesseduffield/pty",
     "github.com/mcuadros/go-lookup",
