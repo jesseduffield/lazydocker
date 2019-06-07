@@ -153,6 +153,7 @@ func GetDefaultConfig() UserConfig {
 		ConfirmOnQuit: false,
 		CommandTemplates: CommandTemplatesConfig{
 			RestartService: "docker-compose restart {{ .Name }}",
+			RebuildService: "docker-compose up -d --build {{ .Name }}",
 			DockerCompose:  "apdev compose",
 			StopService:    "apdev stop {{ .Name }}",
 			ServiceLogs:    "apdev logs {{ .Name }}",

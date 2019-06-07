@@ -354,3 +354,9 @@ func (c *DockerCommand) PruneImages() error {
 	_, err := c.Client.ImagesPrune(context.Background(), filters.Args{})
 	return err
 }
+
+// PruneContainers prunes containers
+func (c *DockerCommand) PruneContainers() error {
+	_, err := c.Client.ContainersPrune(context.Background(), filters.Args{})
+	return err
+}
