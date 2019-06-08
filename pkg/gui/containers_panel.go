@@ -207,7 +207,9 @@ func (gui *Gui) renderLogs(container *commands.Container, template string, setup
 			default:
 				result, err := gui.DockerCommand.Client.ContainerInspect(context.Background(), container.ID)
 				if err != nil {
+					// if we get an error, then the container has probably been removed so we'll get out of here
 					gui.Log.Error(err)
+					notifyStopped <- struct{}{}
 					return
 				}
 				if result.State.Running {

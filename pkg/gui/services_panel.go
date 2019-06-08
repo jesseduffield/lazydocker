@@ -1,10 +1,8 @@
 package gui
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 
 	"github.com/fatih/color"
 	"github.com/go-errors/errors"
@@ -187,6 +185,7 @@ func (gui *Gui) handleServicesNextContext(g *gocui.Gui, v *gocui.View) error {
 type commandOption struct {
 	description string
 	command     string
+	f           func() error
 }
 
 // GetDisplayStrings is a function.
@@ -293,50 +292,50 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
+	rebuildCommand := utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.RebuildService, service)
+
 	options := []*commandOption{
 		{
 			description: gui.Tr.Restart,
 			command:     utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.RestartService, service),
+			f: func() error {
+				return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
+					if err := service.Restart(); err != nil {
+						return gui.createErrorPanel(gui.g, err.Error())
+					}
+
+					return gui.refreshContainersAndServices()
+				})
+			},
 		},
 		{
 			description: gui.Tr.Rebuild,
 			command:     utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.RebuildService, service),
+			f: func() error {
+				gui.SubProcess = gui.OSCommand.RunCustomCommand(rebuildCommand)
+				return gui.Errors.ErrSubProcess
+			},
 		},
 		{
 			description: gui.Tr.Cancel,
+			f:           func() error { return nil },
 		},
 	}
 
-	return gui.createCommandMenu(options, gui.Tr.RestartingStatus)
+	handleMenuPress := func(index int) error { return options[index].f() }
+
+	return gui.createMenu("", options, len(options), handleMenuPress)
 }
 
 func (gui *Gui) createCommandMenu(options []*commandOption, status string) error {
-
 	handleMenuPress := func(index int) error {
 		if options[index].command == "" {
 			return nil
 		}
-		gui.getMainView().Clear()
 		return gui.WithWaitingStatus(status, func() error {
-			done := make(chan struct{})
-			go gui.T.NewTask(func(stop chan struct{}) {
-				cmd := gui.OSCommand.RunCustomCommand(options[index].command)
-
-				cmd.Stdout = gui.getMainView()
-				var stderrBuf bytes.Buffer
-				cmd.Stderr = io.MultiWriter(gui.getMainView(), &stderrBuf)
-
-				cmd.Run()
-
-				close(done)
-
-				errorMessage := stderrBuf.String()
-				if errorMessage != "" {
-					gui.createErrorPanel(gui.g, errorMessage)
-				}
-			})
-
-			<-done
+			if err := gui.OSCommand.RunCommand(options[index].command); err != nil {
+				return gui.createErrorPanel(gui.g, err.Error())
+			}
 
 			return nil
 		})
