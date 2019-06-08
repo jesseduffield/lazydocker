@@ -134,6 +134,20 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.OpenConfig,
 		},
 		{
+			ViewName:    "status",
+			Key:         '[',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleStatusPrevContext,
+			Description: gui.Tr.PreviousContext,
+		},
+		{
+			ViewName:    "status",
+			Key:         ']',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleStatusNextContext,
+			Description: gui.Tr.NextContext,
+		},
+		{
 			ViewName: "menu",
 			Key:      gocui.KeyEsc,
 			Modifier: gocui.ModNone,

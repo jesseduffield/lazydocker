@@ -27,7 +27,7 @@ func (s *Service) GetDisplayStrings(isFocused bool) []string {
 	}
 
 	cont := s.Container
-	return []string{utils.ColoredString(cont.Container.State, cont.GetColor()), utils.ColoredString(s.Name, color.FgWhite), cont.GetDisplayCPUPerc()}
+	return []string{cont.GetDisplayStatus(), utils.ColoredString(s.Name, color.FgWhite), cont.GetDisplayCPUPerc()}
 }
 
 // Remove removes the service's containers
@@ -68,7 +68,6 @@ func (s *Service) ViewLogs() (*exec.Cmd, error) {
 	// so long as this is commented in, the child process does not receive the interrupt
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,
-		Pgid:    0,
 	}
 
 	return cmd, nil

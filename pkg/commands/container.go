@@ -254,7 +254,17 @@ type ContainerCliStat struct {
 
 // GetDisplayStrings returns the dispaly string of Container
 func (c *Container) GetDisplayStrings(isFocused bool) []string {
-	return []string{utils.ColoredString(c.Container.State, c.GetColor()), utils.ColoredString(c.Name, color.FgWhite), c.GetDisplayCPUPerc()}
+	return []string{c.GetDisplayStatus(), utils.ColoredString(c.Name, color.FgWhite), c.GetDisplayCPUPerc()}
+}
+
+// GetDisplayStatus returns the colored status of the container
+func (c *Container) GetDisplayStatus() string {
+	state := c.Container.State
+	if c.Container.State == "exited" {
+		state += " (" + strconv.Itoa(c.Details.State.ExitCode) + ")"
+	}
+
+	return utils.ColoredString(state, c.GetColor())
 }
 
 // GetDisplayCPUPerc colors the cpu percentage based on how extreme it is
@@ -292,6 +302,9 @@ func (c *Container) ProducingLogs() bool {
 func (c *Container) GetColor() color.Attribute {
 	switch c.Container.State {
 	case "exited":
+		if c.Details.State.ExitCode == 0 {
+			return color.FgBlue
+		}
 		return color.FgRed
 	case "created":
 		return color.FgCyan

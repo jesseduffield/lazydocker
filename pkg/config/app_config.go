@@ -110,6 +110,7 @@ type CommandTemplatesConfig struct {
 	RebuildService   string `yaml:"rebuildService,omitempty"`
 	ContainerLogs    string `yaml:"containerLogs,omitempty"`
 	ContainerTTYLogs string `yaml:"containerTTYLogs,omitempty"`
+	AllLogs          string `yaml:"allLogs,omitempty"`
 }
 
 type OSConfig struct {
@@ -164,6 +165,7 @@ func GetDefaultConfig() UserConfig {
 			ServiceLogs:      "apdev logs {{ .Name }}",
 			ContainerLogs:    "docker logs --timestamps --follow --tail=100 {{ .ID }}",
 			ContainerTTYLogs: "docker logs --follow --tail=100 {{ .ID }}",
+			AllLogs:          "apdev logs --tail=100",
 		},
 		OS: GetPlatformDefaultConfig(),
 		Update: UpdateConfig{

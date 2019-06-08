@@ -3,9 +3,15 @@ package gui
 import (
 	"fmt"
 	"strings"
+	"syscall"
 
+	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
 )
+
+func (gui *Gui) getStatusContexts() []string {
+	return []string{"logs", "credits"}
+}
 
 func (gui *Gui) refreshStatus() error {
 	v := gui.getStatusView()
@@ -28,6 +34,36 @@ func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 
+	key := gui.getStatusContexts()[gui.State.Panels.Status.ContextIndex]
+	if gui.State.Panels.Main.ObjectKey == key {
+		return nil
+	} else {
+		gui.State.Panels.Main.ObjectKey = key
+	}
+
+	gui.clearMainView()
+
+	switch gui.getStatusContexts()[gui.State.Panels.Status.ContextIndex] {
+	case "credits":
+		if err := gui.renderCredits(); err != nil {
+			return err
+		}
+	case "logs":
+		if err := gui.renderAllLogs(); err != nil {
+			return err
+		}
+	default:
+		return errors.New("Unknown context for status panel")
+	}
+
+	return nil
+}
+
+func (gui *Gui) renderCredits() error {
+	mainView := gui.getMainView()
+	mainView.Autoscroll = false
+	mainView.Title = "about"
+
 	dashboardString := strings.Join(
 		[]string{
 			lazydockerTitle(),
@@ -37,7 +73,40 @@ func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
 			"Raise an Issue: https://github.com/jesseduffield/lazydocker/issues",
 		}, "\n\n")
 
-	return gui.renderString(g, "main", dashboardString)
+	go gui.T.NewTask(func(stop chan struct{}) {
+		gui.renderString(gui.g, "main", dashboardString)
+	})
+
+	return nil
+}
+
+func (gui *Gui) renderAllLogs() error {
+	mainView := gui.getMainView()
+	mainView.Autoscroll = true
+	mainView.Title = "logs"
+
+	go gui.T.NewTask(func(stop chan struct{}) {
+		gui.clearMainView()
+
+		cmd := gui.OSCommand.RunCustomCommand(gui.Config.UserConfig.CommandTemplates.AllLogs)
+
+		cmd.Stdout = mainView
+		cmd.Stderr = mainView
+
+		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+		cmd.Start()
+
+		go func() {
+			<-stop
+			if err := gui.OSCommand.Kill(cmd); err != nil {
+				gui.Log.Error(err)
+			}
+		}()
+
+		cmd.Wait()
+	})
+
+	return nil
 }
 
 func (gui *Gui) handleOpenConfig(g *gocui.Gui, v *gocui.View) error {
@@ -59,4 +128,30 @@ func lazydockerTitle() string {
                 __/ |
                |___/
 `
+}
+
+func (gui *Gui) handleStatusPrevContext(g *gocui.Gui, v *gocui.View) error {
+	contexts := gui.getStatusContexts()
+	if gui.State.Panels.Status.ContextIndex >= len(contexts)-1 {
+		gui.State.Panels.Status.ContextIndex = 0
+	} else {
+		gui.State.Panels.Status.ContextIndex++
+	}
+
+	gui.handleStatusSelect(gui.g, v)
+
+	return nil
+}
+
+func (gui *Gui) handleStatusNextContext(g *gocui.Gui, v *gocui.View) error {
+	contexts := gui.getStatusContexts()
+	if gui.State.Panels.Status.ContextIndex <= 0 {
+		gui.State.Panels.Status.ContextIndex = len(contexts) - 1
+	} else {
+		gui.State.Panels.Status.ContextIndex--
+	}
+
+	gui.handleStatusSelect(gui.g, v)
+
+	return nil
 }

@@ -77,6 +77,10 @@ type containerPanelState struct {
 	ContextIndex int // for specifying if you are looking at logs/stats/config/etc
 }
 
+type statusState struct {
+	ContextIndex int // for specifying if you are looking at credits/logs
+}
+
 type menuPanelState struct {
 	SelectedLine int
 }
@@ -96,6 +100,7 @@ type panelStates struct {
 	Menu       *menuPanelState
 	Main       *mainPanelState
 	Images     *imagePanelState
+	Status     *statusState
 }
 
 type guiState struct {
@@ -121,6 +126,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 			Main: &mainPanelState{
 				ObjectKey: "",
 			},
+			Status: &statusState{ContextIndex: 0},
 		},
 	}
 

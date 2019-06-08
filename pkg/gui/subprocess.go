@@ -21,6 +21,10 @@ func (gui *Gui) RunWithSubprocesses() error {
 			if err == gocui.ErrQuit {
 				break
 			} else if err == gui.Errors.ErrSubProcess {
+				// preparing the state for when we return
+				gui.State.PreviousView = gui.currentViewName()
+				gui.State.Panels.Main.ObjectKey = ""
+
 				if err := gui.runCommand(); err != nil {
 					return err
 				}
@@ -33,8 +37,6 @@ func (gui *Gui) RunWithSubprocesses() error {
 }
 
 func (gui *Gui) runCommand() error {
-	gui.State.PreviousView = gui.currentViewName()
-
 	gui.SubProcess.Stdout = os.Stdout
 	gui.SubProcess.Stderr = os.Stdout
 	gui.SubProcess.Stdin = os.Stdin
@@ -46,7 +48,9 @@ func (gui *Gui) runCommand() error {
 		<-c
 		signal.Stop(c)
 
-		gui.SubProcess.Process.Kill()
+		if err := gui.OSCommand.Kill(gui.SubProcess); err != nil {
+			gui.Log.Error(err)
+		}
 	}()
 
 	fmt.Fprintf(os.Stdout, "\n%s\n\n", utils.ColoredString("+ "+strings.Join(gui.SubProcess.Args, " "), color.FgBlue))
