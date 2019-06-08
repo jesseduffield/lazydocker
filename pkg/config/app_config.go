@@ -101,12 +101,14 @@ type GuiConfig struct {
 }
 
 type CommandTemplatesConfig struct {
-	RestartService  string `yaml:"restartService,omitempty"`
-	DockerCompose   string `yaml:"dockerCompose,omitempty"`
-	StopService     string `yaml:"stopService,omitempty"`
-	ServiceLogs     string `yaml:"serviceLogs,omitempty"`
-	ViewServiceLogs string `yaml:"viewServiceLogs,omitempty"`
-	RebuildService  string `yaml:"rebuildService,omitempty"`
+	RestartService   string `yaml:"restartService,omitempty"`
+	DockerCompose    string `yaml:"dockerCompose,omitempty"`
+	StopService      string `yaml:"stopService,omitempty"`
+	ServiceLogs      string `yaml:"serviceLogs,omitempty"`
+	ViewServiceLogs  string `yaml:"viewServiceLogs,omitempty"`
+	RebuildService   string `yaml:"rebuildService,omitempty"`
+	ContainerLogs    string `yaml:"containerLogs,omitempty"`
+	ContainerTTYLogs string `yaml:"containerTTYLogs,omitempty"`
 }
 
 type OSConfig struct {
@@ -152,11 +154,13 @@ func GetDefaultConfig() UserConfig {
 		Reporting:     "undetermined",
 		ConfirmOnQuit: false,
 		CommandTemplates: CommandTemplatesConfig{
-			RestartService: "docker-compose restart {{ .Name }}",
-			RebuildService: "docker-compose up -d --build {{ .Name }}",
-			DockerCompose:  "apdev compose",
-			StopService:    "apdev stop {{ .Name }}",
-			ServiceLogs:    "apdev logs {{ .Name }}",
+			RestartService:   "docker-compose restart {{ .Name }}",
+			RebuildService:   "docker-compose up -d --build {{ .Name }}",
+			DockerCompose:    "apdev compose",
+			StopService:      "apdev stop {{ .Name }}",
+			ServiceLogs:      "apdev logs {{ .Name }}",
+			ContainerLogs:    "docker logs --timestamps --follow --tail=100 {{ .ID }}",
+			ContainerTTYLogs: "docker logs --follow --tail=100 {{ .ID }}",
 		},
 		OS: GetPlatformDefaultConfig(),
 		Update: UpdateConfig{

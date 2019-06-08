@@ -47,6 +47,8 @@ type TranslationSet struct {
 	RemoveImage                                string
 	RemoveWithoutPrune                         string
 	PruneImages                                string
+	PruneContainers                            string
+	ConfirmPruneContainers                     string
 	ConfirmPruneImages                         string
 	PruningStatus                              string
 	StopService                                string
@@ -88,6 +90,7 @@ func englishSet() TranslationSet {
 		ViewLogs:           "view logs",
 		RemoveImage:        "remove image",
 		RemoveWithoutPrune: "remove without deleting untagged parents",
+		PruneContainers:    "prune exited containers",
 		PruneImages:        "prune unused images",
 		ViewRestartOptions: "view restart options",
 
@@ -108,6 +111,7 @@ func englishSet() TranslationSet {
 		MustForceToRemoveContainer: "You cannot remove a running container unless you force it. Do you want to force it?",
 		NotEnoughSpace:             "Not enough space to render panels",
 		ConfirmPruneImages:         "Are you sure you want to prune all unused images?",
+		ConfirmPruneContainers:     "Are you sure you want to prune all stopped containers?",
 		StopService:                "Are you sure you want to stop this service's containers? (enter/esc)",
 		StopContainer:              "Are you sure you want to stop this container?",
 		PressEnterToReturn:         "Press enter to return to lazydocker",

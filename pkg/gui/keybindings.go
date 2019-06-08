@@ -194,6 +194,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.Attach,
 		},
 		{
+			ViewName:    "containers",
+			Key:         'D',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handlePruneContainers,
+			Description: gui.Tr.PruneContainers,
+		},
+		{
 			ViewName:    "services",
 			Key:         'd',
 			Modifier:    gocui.ModNone,

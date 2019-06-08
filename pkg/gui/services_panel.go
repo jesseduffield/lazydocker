@@ -291,11 +291,11 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 	options := []*commandOption{
 		{
 			description: gui.Tr.Restart,
-			command:     utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.RestartService, service.Name),
+			command:     utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.RestartService, service),
 		},
 		{
 			description: gui.Tr.Rebuild,
-			command:     utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.RebuildService, service.Name),
+			command:     utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.RebuildService, service),
 		},
 		{
 			description: gui.Tr.Cancel,
@@ -323,7 +323,7 @@ func (gui *Gui) createCommandMenu(options []*commandOption, status string) error
 
 				cmd.Run()
 
-				done <- struct{}{}
+				close(done)
 
 				errorMessage := stderrBuf.String()
 				if errorMessage != "" {

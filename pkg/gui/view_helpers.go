@@ -199,6 +199,9 @@ func (gui *Gui) renderString(g *gocui.Gui, viewName, s string) error {
 		if err := v.SetOrigin(0, 0); err != nil {
 			return err
 		}
+		if err := v.SetCursor(0, 0); err != nil {
+			return err
+		}
 		return gui.setViewContent(gui.g, v, s)
 	})
 	return nil

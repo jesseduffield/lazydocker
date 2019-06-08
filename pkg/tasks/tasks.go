@@ -43,29 +43,38 @@ func (t *TaskManager) NewTask(f func(stop chan struct{})) error {
 
 	go func() {
 		f(stop)
-		notifyStopped <- struct{}{}
+		close(notifyStopped)
 	}()
 
 	return nil
 }
 
 func (t *Task) Stop() {
-	t.stop <- struct{}{}
+	close(t.stop)
 	<-t.notifyStopped
 	return
 }
 
 // NewTickerTask is a convenience function for making a new task that repeats some action once per e.g. second
-func (t *TaskManager) NewTickerTask(duration time.Duration, f func()) error {
+// the before function gets called after the lock is obtained, but before the ticker starts.
+func (t *TaskManager) NewTickerTask(duration time.Duration, before func(stop chan struct{}), f func(stop, notifyStopped chan struct{})) error {
+	notifyStopped := make(chan struct{})
+
 	return t.NewTask(func(stop chan struct{}) {
+		if before != nil {
+			before(stop)
+		}
 		tickChan := time.NewTicker(duration)
-		f() // calling f first so that we're not waiting for the first tick
+		// calling f first so that we're not waiting for the first tick
+		f(stop, notifyStopped)
 		for {
 			select {
+			case <-notifyStopped:
+				return
 			case <-stop:
 				return
 			case <-tickChan.C:
-				f()
+				f(stop, notifyStopped)
 			}
 		}
 	})

@@ -2,6 +2,7 @@ package gui
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -81,6 +82,8 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 
 	mainView := gui.getMainView()
 
+	gui.clearMainView()
+
 	switch gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex] {
 	case "logs":
 		if err := gui.renderContainerLogs(mainView, container); err != nil {
@@ -122,7 +125,7 @@ func (gui *Gui) renderContainerStats(mainView *gocui.View, container *commands.C
 	mainView.Title = "Stats"
 	mainView.Wrap = false
 
-	return gui.T.NewTickerTask(time.Second, func() {
+	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
 		width, _ := mainView.Size()
 
 		contents, err := container.RenderStats(width)
@@ -139,19 +142,52 @@ func (gui *Gui) renderContainerLogs(mainView *gocui.View, container *commands.Co
 	mainView.Title = "Logs"
 
 	if container.Details.Config.OpenStdin {
-		return gui.renderLogsForTTYContainer(mainView, container)
+		return gui.renderLogsForTTYContainer(container)
 	}
-	return gui.renderLogsForRegularContainer(mainView, container)
+	return gui.renderLogsForRegularContainer(container)
 }
 
-func (gui *Gui) renderLogsForRegularContainer(mainView *gocui.View, container *commands.Container) error {
-	var cmd *exec.Cmd
-	cmd = gui.OSCommand.RunCustomCommand("docker logs --timestamps --follow --since=2h " + container.ID)
+func (gui *Gui) renderLogsForRegularContainer(container *commands.Container) error {
+	mainView := gui.getMainView()
+	go gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
 
-	cmd.Stdout = mainView
-	cmd.Stderr = mainView
+		gui.clearMainView()
 
-	gui.runProcessWithLock(cmd)
+		cmd := gui.OSCommand.RunCustomCommand(utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.ContainerLogs, container))
+
+		cmd.Stdout = mainView
+		cmd.Stderr = mainView
+
+		cmd.Start()
+
+		go func() {
+			<-stop
+			cmd.Process.Kill()
+			return
+		}()
+
+		cmd.Wait()
+
+		// if we are here because the task has been stopped, we should return
+		// if we are here then the container must have exited, meaning we should wait until it's back again before
+	L:
+		for {
+			select {
+			case <-stop:
+				return
+			default:
+				result, err := gui.DockerCommand.Client.ContainerInspect(context.Background(), container.ID)
+				if err != nil {
+					gui.Log.Error(err)
+					return
+				}
+				if result.State.Running {
+					break L
+				}
+				time.Sleep(time.Millisecond * 100)
+			}
+		}
+	})
 
 	return nil
 }
@@ -170,25 +206,42 @@ func (gui *Gui) runProcessWithLock(cmd *exec.Cmd) {
 	})
 }
 
-func (gui *Gui) renderLogsForTTYContainer(mainView *gocui.View, container *commands.Container) error {
-	var cmd *exec.Cmd
-	cmd = gui.OSCommand.RunCustomCommand("docker logs --since=2h --follow " + container.ID)
+func (gui *Gui) renderLogsForTTYContainer(container *commands.Container) error {
+	mainView := gui.getMainView()
+	gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
+		gui.clearMainView()
 
-	r, err := cmd.StdoutPipe()
-	if err != nil {
-		return err
-	}
+		command := utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.ContainerTTYLogs, container)
+		gui.Log.Warn(command)
+		cmd := gui.OSCommand.RunCustomCommand(command)
 
-	go func() {
-		s := bufio.NewScanner(r)
-		s.Split(bufio.ScanLines)
-		for s.Scan() {
-			// I might put a check on the stopped channel here. Would mean more code duplication though
-			mainView.Write(append(s.Bytes(), '\n'))
+		// for some reason just saying cmd.Stdout = mainView does not work here as it does for non-tty containers, so we feed it through line by line
+		r, err := cmd.StdoutPipe()
+		if err != nil {
+			gui.ErrorChan <- err
 		}
-	}()
 
-	gui.runProcessWithLock(cmd)
+		go func() {
+			s := bufio.NewScanner(r)
+			s.Split(bufio.ScanLines)
+			for s.Scan() {
+				// I might put a check on the stopped channel here. Would mean more code duplication though
+				mainView.Write(append(s.Bytes(), '\n'))
+				gui.Log.Warn(s.Text())
+			}
+		}()
+
+		cmd.Start()
+
+		go func() {
+			<-stop
+			cmd.Process.Kill()
+			return
+		}()
+
+		cmd.Wait()
+	})
+
 	return nil
 }
 
@@ -443,4 +496,16 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 
 	gui.SubProcess = c
 	return gui.Errors.ErrSubProcess
+}
+
+func (gui *Gui) handlePruneContainers(g *gocui.Gui, v *gocui.View) error {
+	return gui.createConfirmationPanel(gui.g, v, gui.Tr.Confirm, gui.Tr.ConfirmPruneContainers, func(g *gocui.Gui, v *gocui.View) error {
+		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
+			err := gui.DockerCommand.PruneContainers()
+			if err != nil {
+				return gui.createErrorPanel(gui.g, err.Error())
+			}
+			return nil
+		})
+	}, nil)
 }
