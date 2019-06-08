@@ -262,7 +262,12 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 		}
 
 		newContainer.Container = container
-		newContainer.Name = strings.TrimLeft(container.Names[0], "/")
+		// if the container is made with a name label we will use that
+		if name, ok := container.Labels["name"]; ok {
+			newContainer.Name = name
+		} else {
+			newContainer.Name = strings.TrimLeft(container.Names[0], "/")
+		}
 		newContainer.ServiceName = container.Labels["com.docker.compose.service"]
 		newContainer.ServiceID = container.Labels["com.docker.compose.config-hash"]
 		newContainer.ProjectName = container.Labels["com.docker.compose.project"]

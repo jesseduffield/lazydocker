@@ -285,7 +285,7 @@ func (c *Container) GetDisplayCPUPerc() string {
 
 // ProducingLogs tells us whether we should bother checking a container's logs
 func (c *Container) ProducingLogs() bool {
-	return c.Container.State == "running"
+	return c.Container.State == "running" && !(c.Details.HostConfig.LogConfig.Type == "none")
 }
 
 // GetColor Container color
