@@ -51,8 +51,6 @@ func (s *Service) Restart() error {
 
 // Attach attaches to the service
 func (s *Service) Attach() (*exec.Cmd, error) {
-	// TODO: if you have a custom command for attaching to a service here is the place to use it
-
 	return s.Container.Attach()
 }
 

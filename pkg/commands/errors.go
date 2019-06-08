@@ -7,6 +7,11 @@ import (
 	"golang.org/x/xerrors"
 )
 
+const (
+	// MustStopContainer tells us that we must stop the container before removing it
+	MustStopContainer = iota
+)
+
 // WrapError wraps an error for the sake of showing a stack trace at the top level
 // the go-errors package, for some reason, does not return nil when you try to wrap
 // a non-error, so we're just doing it here
@@ -31,9 +36,19 @@ func (ce ComplexError) FormatError(p xerrors.Printer) error {
 	ce.frame.Format(p)
 	return nil
 }
+
 func (ce ComplexError) Format(f fmt.State, c rune) {
 	xerrors.FormatError(ce, f, c)
 }
+
 func (ce ComplexError) Error() string {
 	return fmt.Sprint(ce)
+}
+
+func HasErrorCode(err error, code int) bool {
+	var originalErr ComplexError
+	if xerrors.As(err, &originalErr) {
+		return originalErr.Code == MustStopContainer
+	}
+	return false
 }

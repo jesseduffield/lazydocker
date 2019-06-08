@@ -310,9 +310,6 @@ func (c *Container) GetColor() color.Attribute {
 	}
 }
 
-// MustStopContainer tells us that we must stop the container before removing it
-const MustStopContainer = iota
-
 // Remove removes the container
 func (c *Container) Remove(options types.ContainerRemoveOptions) error {
 	if err := c.Client.ContainerRemove(context.Background(), c.ID, options); err != nil {

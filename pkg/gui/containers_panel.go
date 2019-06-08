@@ -14,7 +14,6 @@ import (
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
-	"golang.org/x/xerrors"
 )
 
 // list panel functions
@@ -423,25 +422,20 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		configOptions := options[index].configOptions
 
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
-			if cerr := container.Remove(configOptions); cerr != nil {
-				var originalErr commands.ComplexError
-				if xerrors.As(cerr, &originalErr) {
-					if originalErr.Code == commands.MustStopContainer {
-						return gui.createConfirmationPanel(gui.g, v, gui.Tr.Confirm, gui.Tr.MustForceToRemoveContainer, func(g *gocui.Gui, v *gocui.View) error {
-							return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
-								configOptions.Force = true
-								if err := container.Remove(configOptions); err != nil {
-									return err
-								}
-								return gui.refreshContainersAndServices()
-							})
-						}, nil)
-					}
-				} else {
-					return gui.createErrorPanel(gui.g, cerr.Error())
+			if err := container.Remove(configOptions); err != nil {
+				if commands.HasErrorCode(err, commands.MustStopContainer) {
+					return gui.createConfirmationPanel(gui.g, v, gui.Tr.Confirm, gui.Tr.MustForceToRemoveContainer, func(g *gocui.Gui, v *gocui.View) error {
+						return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
+							configOptions.Force = true
+							if err := container.Remove(configOptions); err != nil {
+								return err
+							}
+							return gui.refreshContainersAndServices()
+						})
+					}, nil)
 				}
+				return gui.createErrorPanel(gui.g, err.Error())
 			}
-
 			return gui.refreshContainersAndServices()
 		})
 
