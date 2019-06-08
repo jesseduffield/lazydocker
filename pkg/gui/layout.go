@@ -164,7 +164,11 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			return err
 		}
 		containersView.Highlight = true
-		containersView.Title = gui.Tr.ContainersTitle
+		if gui.Config.UserConfig.Gui.ShowAllContainers {
+			containersView.Title = gui.Tr.ContainersTitle
+		} else {
+			containersView.Title = gui.Tr.StandaloneContainersTitle
+		}
 		containersView.FgColor = gocui.ColorWhite
 
 		gui.focusPoint(0, gui.State.Panels.Containers.SelectedLine, len(gui.DockerCommand.Containers), containersView)

@@ -57,16 +57,16 @@ func (gui *Gui) runCommand() error {
 		gui.Log.Error(err)
 	}
 
+	gui.SubProcess.Stdin = nil
+	gui.SubProcess.Stdout = ioutil.Discard
+	gui.SubProcess.Stderr = ioutil.Discard
+	gui.SubProcess = nil
+
 	signal.Stop(c)
 
 	fmt.Fprintf(os.Stdout, "\n%s", utils.ColoredString(gui.Tr.PressEnterToReturn, color.FgGreen))
 
 	fmt.Scanln() // wait for enter press
-
-	gui.SubProcess.Stdout = ioutil.Discard
-	gui.SubProcess.Stderr = ioutil.Discard
-	gui.SubProcess.Stdin = nil
-	gui.SubProcess = nil
 
 	return nil
 }

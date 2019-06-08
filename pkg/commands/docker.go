@@ -33,7 +33,9 @@ type DockerCommand struct {
 	ServiceMutex           sync.Mutex
 	Services               []*Service
 	Containers             []*Container
-	Images                 []*Image
+	// DisplayContainers is the array of containers we will display in the containers panel. If Gui.ShowAllContainers is false, this will only be those containers which aren't based on a service. This reduces clutter and duplication in the UI
+	DisplayContainers []*Container
+	Images            []*Image
 }
 
 // NewDockerCommand it runs git commands
@@ -166,19 +168,13 @@ func (c *DockerCommand) GetContainersAndServices() error {
 		}
 	}
 
-	// find out which services have corresponding containers and assign them
-	for _, service := range services {
-		foundMatch := false
-		for _, container := range containers {
-			if container.ServiceID != "" && container.ServiceID == service.ID {
-				foundMatch = true
-				service.Container = container
-				break
-			}
-		}
-		if !foundMatch {
-			service.Container = nil
-		}
+	c.assignContainersToServices(containers, services)
+
+	var displayContainers []*Container
+	if c.Config.UserConfig.Gui.ShowAllContainers {
+		displayContainers = containers
+	} else {
+		displayContainers = c.obtainStandaloneContainers(containers, services)
 	}
 
 	// sort services first by whether they have a linked container, and second by alphabetical order
@@ -196,8 +192,37 @@ func (c *DockerCommand) GetContainersAndServices() error {
 
 	c.Containers = containers
 	c.Services = services
+	c.DisplayContainers = displayContainers
 
 	return nil
+}
+
+func (c *DockerCommand) assignContainersToServices(containers []*Container, services []*Service) {
+L:
+	for _, service := range services {
+		for _, container := range containers {
+			if container.ServiceID != "" && container.ServiceID == service.ID {
+				service.Container = container
+				continue L
+			}
+		}
+		service.Container = nil
+	}
+}
+
+func (c *DockerCommand) obtainStandaloneContainers(containers []*Container, services []*Service) []*Container {
+	standaloneContainers := []*Container{}
+L:
+	for _, container := range containers {
+		for _, service := range services {
+			if container.ServiceID != "" && container.ServiceID == service.ID {
+				continue L
+			}
+		}
+		standaloneContainers = append(standaloneContainers, container)
+	}
+
+	return standaloneContainers
 }
 
 // GetContainers gets the docker containers

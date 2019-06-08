@@ -41,6 +41,7 @@ type TranslationSet struct {
 	ViewLogs                                   string
 	ServicesTitle                              string
 	ContainersTitle                            string
+	StandaloneContainersTitle                  string
 	ImagesTitle                                string
 	NoContainers                               string
 	NoImages                                   string
@@ -97,12 +98,13 @@ func englishSet() TranslationSet {
 		AnonymousReportingTitle:  "Help make lazydocker better",
 		AnonymousReportingPrompt: "Would you like to enable anonymous reporting data to help improve lazydocker? (enter/esc)",
 
-		StatusTitle:        "Status",
-		ServicesTitle:      "Services",
-		ContainersTitle:    "Containers",
-		ImagesTitle:        "Images",
-		CustomCommandTitle: "Custom Command:",
-		ErrorTitle:         "Error",
+		StatusTitle:               "Status",
+		ServicesTitle:             "Services",
+		ContainersTitle:           "Containers",
+		StandaloneContainersTitle: "Standalone Containers",
+		ImagesTitle:               "Images",
+		CustomCommandTitle:        "Custom Command:",
+		ErrorTitle:                "Error",
 
 		NoContainers: "No containers",
 		NoImages:     "No images",

@@ -94,10 +94,11 @@ type ThemeConfig struct {
 }
 
 type GuiConfig struct {
-	ScrollHeight     int         `yaml:"scrollHeight,omitempty"`
-	ScrollPastBottom bool        `yaml:"scrollPastBottom,omitempty"`
-	MouseEvents      bool        `yaml:"mouseEvents,omitempty"`
-	Theme            ThemeConfig `yaml:"theme,omitempty"`
+	ScrollHeight      int         `yaml:"scrollHeight,omitempty"`
+	ScrollPastBottom  bool        `yaml:"scrollPastBottom,omitempty"`
+	MouseEvents       bool        `yaml:"mouseEvents,omitempty"`
+	Theme             ThemeConfig `yaml:"theme,omitempty"`
+	ShowAllContainers bool        `yaml:"showAllContainers,omitempty"`
 }
 
 type CommandTemplatesConfig struct {
@@ -139,6 +140,7 @@ type StatsConfig struct {
 }
 
 // GetDefaultConfig returns the application default configuration
+// NOTE: do not default a boolean to true, because false is the boolean zero value and this will be ignored when parsing the user's config
 func GetDefaultConfig() UserConfig {
 	return UserConfig{
 		Gui: GuiConfig{
@@ -150,6 +152,7 @@ func GetDefaultConfig() UserConfig {
 				InactiveBorderColor: []string{"white"},
 				OptionsTextColor:    []string{"blue"},
 			},
+			ShowAllContainers: false,
 		},
 		Reporting:     "undetermined",
 		ConfirmOnQuit: false,

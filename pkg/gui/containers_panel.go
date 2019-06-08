@@ -28,7 +28,7 @@ func (gui *Gui) getSelectedContainer(g *gocui.Gui) (*commands.Container, error) 
 		return &commands.Container{}, gui.Errors.ErrNoContainers
 	}
 
-	return gui.DockerCommand.Containers[selectedLine], nil
+	return gui.DockerCommand.DisplayContainers[selectedLine], nil
 }
 
 func (gui *Gui) handleContainersFocus(g *gocui.Gui, v *gocui.View) error {
@@ -42,7 +42,7 @@ func (gui *Gui) handleContainersFocus(g *gocui.Gui, v *gocui.View) error {
 	prevSelectedLine := gui.State.Panels.Containers.SelectedLine
 	newSelectedLine := cy - oy
 
-	if newSelectedLine > len(gui.DockerCommand.Containers)-1 || len(utils.Decolorise(gui.DockerCommand.Containers[newSelectedLine].Name)) < cx {
+	if newSelectedLine > len(gui.DockerCommand.DisplayContainers)-1 || len(utils.Decolorise(gui.DockerCommand.DisplayContainers[newSelectedLine].Name)) < cx {
 		return gui.handleContainerSelect(gui.g, v)
 	}
 
@@ -75,7 +75,7 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Main.ObjectKey = key
 	}
 
-	if err := gui.focusPoint(0, gui.State.Panels.Containers.SelectedLine, len(gui.DockerCommand.Containers), v); err != nil {
+	if err := gui.focusPoint(0, gui.State.Panels.Containers.SelectedLine, len(gui.DockerCommand.DisplayContainers), v); err != nil {
 		return err
 	}
 
@@ -147,15 +147,45 @@ func (gui *Gui) renderContainerLogs(mainView *gocui.View, container *commands.Co
 }
 
 func (gui *Gui) renderLogsForRegularContainer(container *commands.Container) error {
-	mainView := gui.getMainView()
-	go gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
-
-		gui.clearMainView()
-
-		cmd := gui.OSCommand.RunCustomCommand(utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.ContainerLogs, container))
-
+	gui.renderLogs(container, gui.Config.UserConfig.CommandTemplates.ContainerLogs, func(cmd *exec.Cmd) {
+		mainView := gui.getMainView()
 		cmd.Stdout = mainView
 		cmd.Stderr = mainView
+	})
+
+	return nil
+}
+
+func (gui *Gui) renderLogsForTTYContainer(container *commands.Container) error {
+	gui.renderLogs(container, gui.Config.UserConfig.CommandTemplates.ContainerTTYLogs, func(cmd *exec.Cmd) {
+		// for some reason just saying cmd.Stdout = mainView does not work here as it does for non-tty containers, so we feed it through line by line
+		r, err := cmd.StdoutPipe()
+		if err != nil {
+			gui.ErrorChan <- err
+		}
+
+		go func() {
+			mainView := gui.getMainView()
+			s := bufio.NewScanner(r)
+			s.Split(bufio.ScanLines)
+			for s.Scan() {
+				// I might put a check on the stopped channel here. Would mean more code duplication though
+				mainView.Write(append(s.Bytes(), '\n'))
+			}
+		}()
+	})
+
+	return nil
+}
+
+func (gui *Gui) renderLogs(container *commands.Container, template string, setup func(*exec.Cmd)) {
+	gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
+		gui.clearMainView()
+
+		command := utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.ContainerTTYLogs, container)
+		cmd := gui.OSCommand.RunCustomCommand(command)
+
+		setup(cmd)
 
 		cmd.Start()
 
@@ -187,59 +217,6 @@ func (gui *Gui) renderLogsForRegularContainer(container *commands.Container) err
 			}
 		}
 	})
-
-	return nil
-}
-
-func (gui *Gui) runProcessWithLock(cmd *exec.Cmd) {
-	go gui.T.NewTask(func(stop chan struct{}) {
-		gui.clearMainView()
-		cmd.Start()
-
-		go func() {
-			<-stop
-			cmd.Process.Kill()
-		}()
-
-		cmd.Wait()
-	})
-}
-
-func (gui *Gui) renderLogsForTTYContainer(container *commands.Container) error {
-	mainView := gui.getMainView()
-	gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
-		gui.clearMainView()
-
-		command := utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.ContainerTTYLogs, container)
-		cmd := gui.OSCommand.RunCustomCommand(command)
-
-		// for some reason just saying cmd.Stdout = mainView does not work here as it does for non-tty containers, so we feed it through line by line
-		r, err := cmd.StdoutPipe()
-		if err != nil {
-			gui.ErrorChan <- err
-		}
-
-		go func() {
-			s := bufio.NewScanner(r)
-			s.Split(bufio.ScanLines)
-			for s.Scan() {
-				// I might put a check on the stopped channel here. Would mean more code duplication though
-				mainView.Write(append(s.Bytes(), '\n'))
-			}
-		}()
-
-		cmd.Start()
-
-		go func() {
-			<-stop
-			cmd.Process.Kill()
-			return
-		}()
-
-		cmd.Wait()
-	})
-
-	return nil
 }
 
 func (gui *Gui) refreshContainersAndServices() error {
@@ -275,11 +252,11 @@ func (gui *Gui) refreshContainersAndServices() error {
 		}
 	}
 
-	if len(gui.DockerCommand.Containers) > 0 && gui.State.Panels.Containers.SelectedLine == -1 {
+	if len(gui.DockerCommand.DisplayContainers) > 0 && gui.State.Panels.Containers.SelectedLine == -1 {
 		gui.State.Panels.Containers.SelectedLine = 0
 	}
-	if len(gui.DockerCommand.Containers)-1 < gui.State.Panels.Containers.SelectedLine {
-		gui.State.Panels.Containers.SelectedLine = len(gui.DockerCommand.Containers) - 1
+	if len(gui.DockerCommand.DisplayContainers)-1 < gui.State.Panels.Containers.SelectedLine {
+		gui.State.Panels.Containers.SelectedLine = len(gui.DockerCommand.DisplayContainers) - 1
 	}
 
 	// doing the exact same thing for services
@@ -293,7 +270,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 	gui.g.Update(func(g *gocui.Gui) error {
 		containersView.Clear()
 		isFocused := gui.g.CurrentView().Name() == "containers"
-		list, err := utils.RenderList(gui.DockerCommand.Containers, utils.IsFocused(isFocused))
+		list, err := utils.RenderList(gui.DockerCommand.DisplayContainers, utils.IsFocused(isFocused))
 		if err != nil {
 			return err
 		}
@@ -337,7 +314,7 @@ func (gui *Gui) handleContainersNextLine(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	panelState := gui.State.Panels.Containers
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.Containers), false)
+	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.DisplayContainers), false)
 
 	return gui.handleContainerSelect(gui.g, v)
 }
@@ -348,7 +325,7 @@ func (gui *Gui) handleContainersPrevLine(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	panelState := gui.State.Panels.Containers
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.Containers), true)
+	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.DisplayContainers), true)
 
 	return gui.handleContainerSelect(gui.g, v)
 }
