@@ -33,6 +33,8 @@ func (gui *Gui) RunWithSubprocesses() error {
 }
 
 func (gui *Gui) runCommand() error {
+	gui.State.PreviousView = gui.currentViewName()
+
 	gui.SubProcess.Stdout = os.Stdout
 	gui.SubProcess.Stderr = os.Stdout
 	gui.SubProcess.Stdin = os.Stdin

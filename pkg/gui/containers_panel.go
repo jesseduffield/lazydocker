@@ -211,7 +211,6 @@ func (gui *Gui) renderLogsForTTYContainer(container *commands.Container) error {
 		gui.clearMainView()
 
 		command := utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.ContainerTTYLogs, container)
-		gui.Log.Warn(command)
 		cmd := gui.OSCommand.RunCustomCommand(command)
 
 		// for some reason just saying cmd.Stdout = mainView does not work here as it does for non-tty containers, so we feed it through line by line
@@ -226,7 +225,6 @@ func (gui *Gui) renderLogsForTTYContainer(container *commands.Container) error {
 			for s.Scan() {
 				// I might put a check on the stopped channel here. Would mean more code duplication though
 				mainView.Write(append(s.Bytes(), '\n'))
-				gui.Log.Warn(s.Text())
 			}
 		}()
 

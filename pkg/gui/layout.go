@@ -222,11 +222,12 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	}
 
 	if gui.g.CurrentView() == nil {
-		if _, err := gui.g.SetCurrentView(gui.getContainersView().Name()); err != nil {
-			return err
+		v, err := gui.g.View(gui.State.PreviousView)
+		if err != nil {
+			v = gui.getServicesView()
 		}
 
-		if err := gui.switchFocus(gui.g, nil, gui.getServicesView()); err != nil {
+		if err := gui.switchFocus(gui.g, nil, v); err != nil {
 			return err
 		}
 	}
