@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/fatih/color"
@@ -14,11 +13,11 @@ import (
 // list panel functions
 
 func (gui *Gui) getServiceContexts() []string {
-	return []string{"logs", "stats", "config", "container-config"}
+	return []string{"logs", "stats", "container-config"}
 }
 
 func (gui *Gui) getServiceContextTitles() []string {
-	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.ConfigTitle, gui.Tr.ContainerConfigTitle}
+	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.ContainerConfigTitle}
 }
 
 func (gui *Gui) getSelectedService() (*commands.Service, error) {
@@ -85,10 +84,6 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 		if err := gui.renderServiceLogs(service); err != nil {
 			return err
 		}
-	case "config":
-		if err := gui.renderServiceConfig(service); err != nil {
-			return err
-		}
 	case "stats":
 		if err := gui.renderServiceStats(service); err != nil {
 			return err
@@ -103,24 +98,6 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 	default:
 		return errors.New("Unknown context for services panel")
 	}
-
-	return nil
-}
-
-func (gui *Gui) renderServiceConfig(service *commands.Service) error {
-	mainView := gui.getMainView()
-	mainView.Autoscroll = false
-	mainView.Wrap = true
-
-	go gui.T.NewTask(func(stop chan struct{}) {
-		// TODO: actually show service config
-		data, err := json.MarshalIndent(&service.Container.Container, "", "  ")
-		if err != nil {
-			gui.Log.Error(err)
-			return
-		}
-		gui.renderString(gui.g, "main", string(data))
-	})
 
 	return nil
 }

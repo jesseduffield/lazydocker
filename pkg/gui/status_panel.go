@@ -9,11 +9,11 @@ import (
 )
 
 func (gui *Gui) getStatusContexts() []string {
-	return []string{"logs", "credits"}
+	return []string{"logs", "credits", "config"}
 }
 
 func (gui *Gui) getStatusContextTitles() []string {
-	return []string{gui.Tr.LogsTitle, gui.Tr.CreditsTitle}
+	return []string{gui.Tr.LogsTitle, gui.Tr.CreditsTitle, gui.Tr.ConfigTitle}
 }
 
 func (gui *Gui) refreshStatus() error {
@@ -57,6 +57,10 @@ func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
 		}
 	case "logs":
 		if err := gui.renderAllLogs(); err != nil {
+			return err
+		}
+	case "config":
+		if err := gui.renderDockerComposeConfig(); err != nil {
 			return err
 		}
 	default:
@@ -111,6 +115,19 @@ func (gui *Gui) renderAllLogs() error {
 		}()
 
 		cmd.Wait()
+	})
+
+	return nil
+}
+
+func (gui *Gui) renderDockerComposeConfig() error {
+	mainView := gui.getMainView()
+	mainView.Autoscroll = false
+	mainView.Wrap = true
+
+	go gui.T.NewTask(func(stop chan struct{}) {
+		config := gui.DockerCommand.DockerComposeConfig()
+		gui.renderString(gui.g, "main", config)
 	})
 
 	return nil

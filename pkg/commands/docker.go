@@ -401,3 +401,12 @@ func (c *DockerCommand) ViewAllLogs() (*exec.Cmd, error) {
 
 	return cmd, nil
 }
+
+// DockerComposeConfig returns the result of 'docker-compose config'
+func (c *DockerCommand) DockerComposeConfig() string {
+	output, err := c.OSCommand.RunCommandWithOutput(c.OSCommand.Config.UserConfig.CommandTemplates.DockerComposeConfig)
+	if err != nil {
+		output = err.Error()
+	}
+	return output
+}
