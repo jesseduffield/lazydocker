@@ -2,7 +2,6 @@ package commands
 
 import (
 	"os/exec"
-	"syscall"
 
 	"github.com/docker/docker/api/types"
 	"github.com/fatih/color"
@@ -65,10 +64,7 @@ func (s *Service) ViewLogs() (*exec.Cmd, error) {
 	command := utils.ApplyTemplate(templateString, s)
 
 	cmd := s.OSCommand.ExecutableFromString(command)
-	// so long as this is commented in, the child process does not receive the interrupt
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid: true,
-	}
+	s.OSCommand.PrepareForChildren(cmd)
 
 	return cmd, nil
 }

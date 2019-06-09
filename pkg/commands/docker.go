@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os/exec"
 	"sort"
 	"strings"
 	"sync"
@@ -391,4 +392,12 @@ func (c *DockerCommand) PruneImages() error {
 func (c *DockerCommand) PruneContainers() error {
 	_, err := c.Client.ContainersPrune(context.Background(), filters.Args{})
 	return err
+}
+
+// ViewAllLogs attaches to a subprocess viewing all the logs from docker-compose
+func (c *DockerCommand) ViewAllLogs() (*exec.Cmd, error) {
+	cmd := c.OSCommand.ExecutableFromString(c.OSCommand.Config.UserConfig.CommandTemplates.ViewAllLogs)
+	c.OSCommand.PrepareForChildren(cmd)
+
+	return cmd, nil
 }

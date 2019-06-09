@@ -389,3 +389,14 @@ func (c *Container) EraseOldHistory() {
 		}
 	}
 }
+
+// ViewLogs attaches to a subprocess viewing the container's logs
+func (c *Container) ViewLogs() (*exec.Cmd, error) {
+	templateString := c.OSCommand.Config.UserConfig.CommandTemplates.ViewContainerLogs
+	command := utils.ApplyTemplate(templateString, c)
+
+	cmd := c.OSCommand.ExecutableFromString(command)
+	c.OSCommand.PrepareForChildren(cmd)
+
+	return cmd, nil
+}

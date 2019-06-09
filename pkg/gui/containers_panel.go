@@ -26,7 +26,7 @@ func (gui *Gui) getContainerContextTitles() []string {
 	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.ConfigTitle}
 }
 
-func (gui *Gui) getSelectedContainer(g *gocui.Gui) (*commands.Container, error) {
+func (gui *Gui) getSelectedContainer() (*commands.Container, error) {
 	selectedLine := gui.State.Panels.Containers.SelectedLine
 	if selectedLine == -1 {
 		return &commands.Container{}, gui.Errors.ErrNoContainers
@@ -64,7 +64,7 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 
-	container, err := gui.getSelectedContainer(g)
+	container, err := gui.getSelectedContainer()
 	if err != nil {
 		if err != gui.Errors.ErrNoContainers {
 			return err
@@ -379,7 +379,7 @@ func (r *removeContainerOption) GetDisplayStrings(isFocused bool) []string {
 }
 
 func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer(g)
+	container, err := gui.getSelectedContainer()
 	if err != nil {
 		return nil
 	}
@@ -430,7 +430,7 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer(g)
+	container, err := gui.getSelectedContainer()
 	if err != nil {
 		return nil
 	}
@@ -448,7 +448,7 @@ func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer(g)
+	container, err := gui.getSelectedContainer()
 	if err != nil {
 		return nil
 	}
@@ -463,7 +463,7 @@ func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer(g)
+	container, err := gui.getSelectedContainer()
 	if err != nil {
 		return nil
 	}
@@ -487,4 +487,19 @@ func (gui *Gui) handlePruneContainers(g *gocui.Gui, v *gocui.View) error {
 			return nil
 		})
 	}, nil)
+}
+
+func (gui *Gui) handleContainerViewLogs(g *gocui.Gui, v *gocui.View) error {
+	container, err := gui.getSelectedContainer()
+	if err != nil {
+		return nil
+	}
+
+	c, err := container.ViewLogs()
+	if err != nil {
+		return gui.createErrorPanel(gui.g, err.Error())
+	}
+
+	gui.SubProcess = c
+	return gui.Errors.ErrSubProcess
 }

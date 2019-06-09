@@ -148,6 +148,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.NextContext,
 		},
 		{
+			ViewName:    "status",
+			Key:         'm',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleViewAllLogs,
+			Description: gui.Tr.ViewLogs,
+		},
+		{
 			ViewName: "menu",
 			Key:      gocui.KeyEsc,
 			Modifier: gocui.ModNone,
@@ -213,6 +220,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handlePruneContainers,
 			Description: gui.Tr.PruneContainers,
+		},
+		{
+			ViewName:    "containers",
+			Key:         'm',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleContainerViewLogs,
+			Description: gui.Tr.ViewLogs,
 		},
 		{
 			ViewName:    "services",

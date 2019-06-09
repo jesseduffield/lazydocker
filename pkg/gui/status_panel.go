@@ -3,7 +3,6 @@ package gui
 import (
 	"fmt"
 	"strings"
-	"syscall"
 
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
@@ -101,7 +100,7 @@ func (gui *Gui) renderAllLogs() error {
 		cmd.Stdout = mainView
 		cmd.Stderr = mainView
 
-		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+		gui.OSCommand.PrepareForChildren(cmd)
 		cmd.Start()
 
 		go func() {
@@ -162,4 +161,15 @@ func (gui *Gui) handleStatusPrevContext(g *gocui.Gui, v *gocui.View) error {
 	gui.handleStatusSelect(gui.g, v)
 
 	return nil
+}
+
+// handleViewAllLogs switches to a subprocess viewing all the logs from docker-compose
+func (gui *Gui) handleViewAllLogs(g *gocui.Gui, v *gocui.View) error {
+	c, err := gui.DockerCommand.ViewAllLogs()
+	if err != nil {
+		return gui.createErrorPanel(gui.g, err.Error())
+	}
+
+	gui.SubProcess = c
+	return gui.Errors.ErrSubProcess
 }

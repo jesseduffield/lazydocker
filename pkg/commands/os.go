@@ -377,3 +377,10 @@ func (c *OSCommand) Kill(cmd *exec.Cmd) error {
 
 	return cmd.Process.Kill()
 }
+
+// PrepareForChildren sets Setpgid to true on the cmd, so that when we run it as a sideproject, we can kill its group rather than the process itself. This is because some commands, like `docker-compose logs` spawn multiple children processes, and killing the parent process isn't sufficient for killing those child processes. We set the group id here, and then in subprocess.go we check if the group id is set and if so, we kill the whole group rather than just the one process.
+func (c *OSCommand) PrepareForChildren(cmd *exec.Cmd) {
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+	}
+}
