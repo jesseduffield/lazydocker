@@ -80,6 +80,9 @@ type View struct {
 	// If Frame is true, Title allows to configure a title for the view.
 	Title string
 
+	Tabs     []string
+	TabIndex int
+
 	// If Frame is true, Subtitle allows to configure a subtitle for the view.
 	Subtitle string
 

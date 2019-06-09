@@ -6,6 +6,7 @@ package gocui
 
 import (
 	standardErrors "errors"
+	"strings"
 	"time"
 
 	"github.com/go-errors/errors"
@@ -501,7 +502,7 @@ func (g *Gui) flush() error {
 			if err := g.drawFrameCorners(v, fgColor, bgColor); err != nil {
 				return err
 			}
-			if v.Title != "" {
+			if v.Title != "" || len(v.Tabs) > 0 {
 				if err := g.drawTitle(v, fgColor, bgColor); err != nil {
 					return err
 				}
@@ -615,17 +616,47 @@ func (g *Gui) drawTitle(v *View, fgColor, bgColor Attribute) error {
 		return nil
 	}
 
-	for i, ch := range v.Title {
+	tabs := v.Tabs
+	separator := " - "
+	charIndex := 0
+	currentTabStart := -1
+	currentTabEnd := -1
+	if len(tabs) == 0 {
+		tabs = []string{v.Title}
+	} else {
+		for i, tab := range tabs {
+			if i == v.TabIndex {
+				currentTabStart = charIndex
+				currentTabEnd = charIndex + len(tab)
+				break
+			}
+			charIndex += len(tab)
+			if i < len(tabs)-1 {
+				charIndex += len(separator)
+			}
+		}
+	}
+
+	str := strings.Join(tabs, separator)
+
+	for i, ch := range str {
 		x := v.x0 + i + 2
 		if x < 0 {
 			continue
 		} else if x > v.x1-2 || x >= g.maxX {
 			break
 		}
-		if err := g.SetRune(x, v.y0, ch, fgColor, bgColor); err != nil {
+		currentFgColor := fgColor
+		currentBgColor := bgColor
+		if i >= currentTabStart && i <= currentTabEnd {
+			currentFgColor = v.SelFgColor - AttrBold
+			currentBgColor = v.SelBgColor
+		}
+		if err := g.SetRune(x, v.y0, ch, currentFgColor, currentBgColor); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 

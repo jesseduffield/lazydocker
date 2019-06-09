@@ -114,6 +114,14 @@
   revision = "fc0cef2ff331aebb24cd4e9ded7e20650f3d7006"
 
 [[projects]]
+  digest = "1:aaa38889f11896ee3644d77e17dc7764cc47f5f3d3b488268df2af2b52541c5f"
+  name = "github.com/imdario/mergo"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "7c29201646fa3de8506f701213473dd407f19646"
+  version = "v0.3.7"
+
+[[projects]]
   branch = "master"
   digest = "1:7b2ab5c6de135d57d3a594b53068e2712da4d376b2f78097dec7b46d18deaa78"
   name = "github.com/jesseduffield/asciigraph"
@@ -123,11 +131,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f9d37b286259d069b0e12b1c9c2662dc51d0fe6c9257780412c43a7b05f8bc51"
+  digest = "1:48d9273fdc90d71d6de12efb6bea48333cd569f8ce8363ceb269d3fda4f6442b"
   name = "github.com/jesseduffield/gocui"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "efab7b041c46d3ae956e6b89046087b65f2e1e01"
+  revision = "619845fffd4d94c2e248f04bcdeaa2669ae24698"
 
 [[projects]]
   branch = "master"
@@ -184,18 +192,6 @@
   pruneopts = "NUT"
   revision = "968bf66e3da857419e4f6e71b2d5c9ae95682dc4"
   version = "v1.2.0"
-
-[[projects]]
-  digest = "1:2c34c77bf3ec848da26e48af58fc511ed52750961fa848399d122882b8890928"
-  name = "github.com/nicksnyder/go-i18n"
-  packages = [
-    "v2/i18n",
-    "v2/internal",
-    "v2/internal/plural",
-  ]
-  pruneopts = "NUT"
-  revision = "a16b91a3ba80db3a2301c70d1d302d42251c9079"
-  version = "v2.0.0-beta.5"
 
 [[projects]]
   digest = "1:e0cc8395ea893c898ff5eb0850f4d9851c1f57c78c232304a026379a47a552d0"
@@ -301,19 +297,6 @@
   revision = "98c5dad5d1a0e8a73845ecc8897d0bd56586511d"
 
 [[projects]]
-  digest = "1:4735753d5c5c1d1786a89849e63a1e2ef2ba2dcd42e9e64b19b84969f8f8e871"
-  name = "golang.org/x/text"
-  packages = [
-    "internal/gen",
-    "internal/tag",
-    "language",
-    "unicode/cldr",
-  ]
-  pruneopts = "NUT"
-  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
-  version = "v0.3.0"
-
-[[projects]]
   branch = "master"
   digest = "1:16abb29c003995f7c4fdec9c19cca4f9867e271d3c6b93ed85f9cce257f7bce7"
   name = "golang.org/x/xerrors"
@@ -344,18 +327,17 @@
     "github.com/fatih/color",
     "github.com/go-errors/errors",
     "github.com/heroku/rollrus",
+    "github.com/imdario/mergo",
     "github.com/jesseduffield/asciigraph",
     "github.com/jesseduffield/gocui",
     "github.com/jesseduffield/pty",
     "github.com/mcuadros/go-lookup",
     "github.com/mgutz/str",
-    "github.com/nicksnyder/go-i18n/v2/i18n",
     "github.com/shibukawa/configdir",
     "github.com/sirupsen/logrus",
     "github.com/spkg/bom",
     "github.com/stretchr/testify/assert",
     "github.com/tcnksm/go-gitconfig",
-    "golang.org/x/text/language",
     "golang.org/x/xerrors",
     "gopkg.in/yaml.v2",
   ]
