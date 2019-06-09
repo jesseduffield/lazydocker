@@ -14,7 +14,11 @@ import (
 // list panel functions
 
 func (gui *Gui) getServiceContexts() []string {
-	return []string{"logs", "config", "stats"}
+	return []string{"logs", "stats", "config"}
+}
+
+func (gui *Gui) getServiceContextTitles() []string {
+	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.ConfigTitle}
 }
 
 func (gui *Gui) getSelectedService() (*commands.Service, error) {
@@ -73,17 +77,20 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 
 	mainView := gui.getMainView()
 
+	mainView.Tabs = gui.getServiceContextTitles()
+	mainView.TabIndex = gui.State.Panels.Services.ContextIndex
+
 	switch gui.getServiceContexts()[gui.State.Panels.Services.ContextIndex] {
 	case "logs":
-		if err := gui.renderServiceLogs(mainView, service); err != nil {
+		if err := gui.renderServiceLogs(service); err != nil {
 			return err
 		}
 	case "config":
-		if err := gui.renderServiceConfig(mainView, service); err != nil {
+		if err := gui.renderServiceConfig(service); err != nil {
 			return err
 		}
 	case "stats":
-		if err := gui.renderServiceStats(mainView, service); err != nil {
+		if err := gui.renderServiceStats(service); err != nil {
 			return err
 		}
 	default:
@@ -93,9 +100,10 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) renderServiceConfig(mainView *gocui.View, service *commands.Service) error {
+func (gui *Gui) renderServiceConfig(service *commands.Service) error {
+	mainView := gui.getMainView()
 	mainView.Autoscroll = false
-	mainView.Title = "Config"
+	mainView.Wrap = true
 
 	go gui.T.NewTask(func(stop chan struct{}) {
 		// TODO: actually show service config
@@ -110,15 +118,15 @@ func (gui *Gui) renderServiceConfig(mainView *gocui.View, service *commands.Serv
 	return nil
 }
 
-func (gui *Gui) renderServiceStats(mainView *gocui.View, service *commands.Service) error {
+func (gui *Gui) renderServiceStats(service *commands.Service) error {
 	if service.Container == nil {
 		return nil
 	}
 
-	return gui.renderContainerStats(mainView, service.Container)
+	return gui.renderContainerStats(service.Container)
 }
 
-func (gui *Gui) renderServiceLogs(mainView *gocui.View, service *commands.Service) error {
+func (gui *Gui) renderServiceLogs(service *commands.Service) error {
 	service, err := gui.getSelectedService()
 	if err != nil {
 		return nil
@@ -131,7 +139,7 @@ func (gui *Gui) renderServiceLogs(mainView *gocui.View, service *commands.Servic
 		return nil
 	}
 
-	return gui.renderContainerLogs(gui.getMainView(), service.Container)
+	return gui.renderContainerLogs(service.Container)
 }
 
 func (gui *Gui) handleServicesNextLine(g *gocui.Gui, v *gocui.View) error {
@@ -156,7 +164,7 @@ func (gui *Gui) handleServicesPrevLine(g *gocui.Gui, v *gocui.View) error {
 	return gui.handleServiceSelect(gui.g, v)
 }
 
-func (gui *Gui) handleServicesPrevContext(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleServicesNextContext(g *gocui.Gui, v *gocui.View) error {
 	contexts := gui.getServiceContexts()
 	if gui.State.Panels.Services.ContextIndex >= len(contexts)-1 {
 		gui.State.Panels.Services.ContextIndex = 0
@@ -169,7 +177,7 @@ func (gui *Gui) handleServicesPrevContext(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) handleServicesNextContext(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleServicesPrevContext(g *gocui.Gui, v *gocui.View) error {
 	contexts := gui.getServiceContexts()
 	if gui.State.Panels.Services.ContextIndex <= 0 {
 		gui.State.Panels.Services.ContextIndex = len(contexts) - 1

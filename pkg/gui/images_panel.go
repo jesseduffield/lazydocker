@@ -19,6 +19,10 @@ func (gui *Gui) getImageContexts() []string {
 	return []string{"config"}
 }
 
+func (gui *Gui) getImageContextTitles() []string {
+	return []string{gui.Tr.ConfigTitle}
+}
+
 func (gui *Gui) getSelectedImage(g *gocui.Gui) (*commands.Image, error) {
 	selectedLine := gui.State.Panels.Images.SelectedLine
 	if selectedLine == -1 {
@@ -77,6 +81,8 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	mainView := gui.getMainView()
+	mainView.Tabs = gui.getImageContextTitles()
+	mainView.TabIndex = gui.State.Panels.Images.ContextIndex
 
 	switch gui.getImageContexts()[gui.State.Panels.Images.ContextIndex] {
 	case "config":
@@ -107,7 +113,6 @@ func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image) e
 
 		mainView.Autoscroll = false
 		mainView.Wrap = false
-		mainView.Title = "Config"
 
 		gui.renderString(gui.g, "main", output)
 	})
@@ -188,7 +193,7 @@ func (gui *Gui) handleImagePress(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) handleImagesPrevContext(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleImagesNextContext(g *gocui.Gui, v *gocui.View) error {
 	contexts := gui.getImageContexts()
 	if gui.State.Panels.Images.ContextIndex >= len(contexts)-1 {
 		gui.State.Panels.Images.ContextIndex = 0
@@ -201,7 +206,7 @@ func (gui *Gui) handleImagesPrevContext(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) handleImagesNextContext(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleImagesPrevContext(g *gocui.Gui, v *gocui.View) error {
 	contexts := gui.getImageContexts()
 	if gui.State.Panels.Images.ContextIndex <= 0 {
 		gui.State.Panels.Images.ContextIndex = len(contexts) - 1

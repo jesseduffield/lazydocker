@@ -55,6 +55,11 @@ type TranslationSet struct {
 	StopService                                string
 	PressEnterToReturn                         string
 	ViewRestartOptions                         string
+
+	LogsTitle    string
+	ConfigTitle  string
+	StatsTitle   string
+	CreditsTitle string
 }
 
 func englishSet() TranslationSet {
@@ -105,6 +110,10 @@ func englishSet() TranslationSet {
 		ImagesTitle:               "Images",
 		CustomCommandTitle:        "Custom Command:",
 		ErrorTitle:                "Error",
+		LogsTitle:                 "Logs",
+		ConfigTitle:               "Config",
+		StatsTitle:                "Stats",
+		CreditsTitle:              "About",
 
 		NoContainers: "No containers",
 		NoImages:     "No images",

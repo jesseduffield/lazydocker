@@ -13,6 +13,10 @@ func (gui *Gui) getStatusContexts() []string {
 	return []string{"logs", "credits"}
 }
 
+func (gui *Gui) getStatusContextTitles() []string {
+	return []string{gui.Tr.LogsTitle, gui.Tr.CreditsTitle}
+}
+
 func (gui *Gui) refreshStatus() error {
 	v := gui.getStatusView()
 
@@ -43,6 +47,10 @@ func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
 
 	gui.clearMainView()
 
+	mainView := gui.getMainView()
+	mainView.Tabs = gui.getStatusContextTitles()
+	mainView.TabIndex = gui.State.Panels.Status.ContextIndex
+
 	switch gui.getStatusContexts()[gui.State.Panels.Status.ContextIndex] {
 	case "credits":
 		if err := gui.renderCredits(); err != nil {
@@ -62,7 +70,7 @@ func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) renderCredits() error {
 	mainView := gui.getMainView()
 	mainView.Autoscroll = false
-	mainView.Title = "about"
+	mainView.Wrap = true
 
 	dashboardString := strings.Join(
 		[]string{
@@ -83,7 +91,7 @@ func (gui *Gui) renderCredits() error {
 func (gui *Gui) renderAllLogs() error {
 	mainView := gui.getMainView()
 	mainView.Autoscroll = true
-	mainView.Title = "logs"
+	mainView.Wrap = true
 
 	go gui.T.NewTask(func(stop chan struct{}) {
 		gui.clearMainView()
@@ -130,7 +138,7 @@ func lazydockerTitle() string {
 `
 }
 
-func (gui *Gui) handleStatusPrevContext(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleStatusNextContext(g *gocui.Gui, v *gocui.View) error {
 	contexts := gui.getStatusContexts()
 	if gui.State.Panels.Status.ContextIndex >= len(contexts)-1 {
 		gui.State.Panels.Status.ContextIndex = 0
@@ -143,7 +151,7 @@ func (gui *Gui) handleStatusPrevContext(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) handleStatusNextContext(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleStatusPrevContext(g *gocui.Gui, v *gocui.View) error {
 	contexts := gui.getStatusContexts()
 	if gui.State.Panels.Status.ContextIndex <= 0 {
 		gui.State.Panels.Status.ContextIndex = len(contexts) - 1

@@ -19,7 +19,11 @@ import (
 // list panel functions
 
 func (gui *Gui) getContainerContexts() []string {
-	return []string{"logs", "config", "stats"}
+	return []string{"logs", "stats", "config"}
+}
+
+func (gui *Gui) getContainerContextTitles() []string {
+	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.ConfigTitle}
 }
 
 func (gui *Gui) getSelectedContainer(g *gocui.Gui) (*commands.Container, error) {
@@ -80,20 +84,22 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	mainView := gui.getMainView()
+	mainView.Tabs = gui.getContainerContextTitles()
+	mainView.TabIndex = gui.State.Panels.Containers.ContextIndex
 
 	gui.clearMainView()
 
 	switch gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex] {
 	case "logs":
-		if err := gui.renderContainerLogs(mainView, container); err != nil {
+		if err := gui.renderContainerLogs(container); err != nil {
 			return err
 		}
 	case "config":
-		if err := gui.renderContainerConfig(mainView, container); err != nil {
+		if err := gui.renderContainerConfig(container); err != nil {
 			return err
 		}
 	case "stats":
-		if err := gui.renderContainerStats(mainView, container); err != nil {
+		if err := gui.renderContainerStats(container); err != nil {
 			return err
 		}
 	default:
@@ -103,9 +109,10 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) renderContainerConfig(mainView *gocui.View, container *commands.Container) error {
+func (gui *Gui) renderContainerConfig(container *commands.Container) error {
+	mainView := gui.getMainView()
 	mainView.Autoscroll = false
-	mainView.Title = "Config"
+	mainView.Wrap = true
 
 	data, err := json.MarshalIndent(&container.Details, "", "  ")
 	if err != nil {
@@ -119,9 +126,9 @@ func (gui *Gui) renderContainerConfig(mainView *gocui.View, container *commands.
 	return nil
 }
 
-func (gui *Gui) renderContainerStats(mainView *gocui.View, container *commands.Container) error {
+func (gui *Gui) renderContainerStats(container *commands.Container) error {
+	mainView := gui.getMainView()
 	mainView.Autoscroll = false
-	mainView.Title = "Stats"
 	mainView.Wrap = false
 
 	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
@@ -136,9 +143,10 @@ func (gui *Gui) renderContainerStats(mainView *gocui.View, container *commands.C
 	})
 }
 
-func (gui *Gui) renderContainerLogs(mainView *gocui.View, container *commands.Container) error {
+func (gui *Gui) renderContainerLogs(container *commands.Container) error {
+	mainView := gui.getMainView()
 	mainView.Autoscroll = true
-	mainView.Title = "Logs"
+	mainView.Wrap = true
 
 	if container.Details.Config.OpenStdin {
 		return gui.renderLogsForTTYContainer(container)
@@ -332,7 +340,7 @@ func (gui *Gui) handleContainersPrevLine(g *gocui.Gui, v *gocui.View) error {
 	return gui.handleContainerSelect(gui.g, v)
 }
 
-func (gui *Gui) handleContainersPrevContext(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleContainersNextContext(g *gocui.Gui, v *gocui.View) error {
 	contexts := gui.getContainerContexts()
 	if gui.State.Panels.Containers.ContextIndex >= len(contexts)-1 {
 		gui.State.Panels.Containers.ContextIndex = 0
@@ -345,7 +353,7 @@ func (gui *Gui) handleContainersPrevContext(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) handleContainersNextContext(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleContainersPrevContext(g *gocui.Gui, v *gocui.View) error {
 	contexts := gui.getContainerContexts()
 	if gui.State.Panels.Containers.ContextIndex <= 0 {
 		gui.State.Panels.Containers.ContextIndex = len(contexts) - 1

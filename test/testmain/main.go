@@ -1,17 +1,9 @@
 package main
 
-import (
-	"os"
-	"os/exec"
-	"strings"
-)
+import "fmt"
 
 func main() {
-	cmd := exec.Command("docker", strings.Split("logs --follow 29754cb1ab9a", " ")...)
-
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	cmd.Start()
-	cmd.Wait()
+	var arr []string
+	arr = nil
+	fmt.Println(len(arr))
 }
