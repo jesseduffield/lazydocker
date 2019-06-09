@@ -44,6 +44,7 @@ type TranslationSet struct {
 	StandaloneContainersTitle                  string
 	ImagesTitle                                string
 	NoContainers                               string
+	NoContainer                                string
 	NoImages                                   string
 	RemoveImage                                string
 	RemoveWithoutPrune                         string
@@ -56,10 +57,11 @@ type TranslationSet struct {
 	PressEnterToReturn                         string
 	ViewRestartOptions                         string
 
-	LogsTitle    string
-	ConfigTitle  string
-	StatsTitle   string
-	CreditsTitle string
+	LogsTitle            string
+	ConfigTitle          string
+	StatsTitle           string
+	CreditsTitle         string
+	ContainerConfigTitle string
 }
 
 func englishSet() TranslationSet {
@@ -114,8 +116,10 @@ func englishSet() TranslationSet {
 		ConfigTitle:               "Config",
 		StatsTitle:                "Stats",
 		CreditsTitle:              "About",
+		ContainerConfigTitle:      "Container Config",
 
 		NoContainers: "No containers",
+		NoContainer:  "No container",
 		NoImages:     "No images",
 
 		ConfirmQuit:                "Are you sure you want to quit?",
