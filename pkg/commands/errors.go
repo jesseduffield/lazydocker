@@ -31,12 +31,14 @@ type ComplexError struct {
 	frame   xerrors.Frame
 }
 
+// FormatError is a function
 func (ce ComplexError) FormatError(p xerrors.Printer) error {
 	p.Printf("%d %s", ce.Code, ce.Message)
 	ce.frame.Format(p)
 	return nil
 }
 
+// Format is a function
 func (ce ComplexError) Format(f fmt.State, c rune) {
 	xerrors.FormatError(ce, f, c)
 }
@@ -45,6 +47,7 @@ func (ce ComplexError) Error() string {
 	return fmt.Sprint(ce)
 }
 
+// HasErrorCode is a function
 func HasErrorCode(err error, code int) bool {
 	var originalErr ComplexError
 	if xerrors.As(err, &originalErr) {

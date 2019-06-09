@@ -20,7 +20,7 @@ type App struct {
 	OSCommand     *commands.OSCommand
 	DockerCommand *commands.DockerCommand
 	Gui           *gui.Gui
-	Tr            i18n.TranslationSet
+	Tr            *i18n.TranslationSet
 	ErrorChan     chan error
 }
 

@@ -36,17 +36,21 @@ type Container struct {
 	Details         Details
 	MonitoringStats bool
 }
+
+// RecordedStats contains both the container stats we've received from docker, and our own derived stats  from those container stats. When configuring a graph, you're basically specifying the path of a value in this struct
 type RecordedStats struct {
 	ClientStats  ContainerStats
 	DerivedStats DerivedStats
 	RecordedAt   time.Time
 }
 
+// DerivedStats contains some useful stats that we've calculated based on the raw container stats that we got back from docker
 type DerivedStats struct {
 	CPUPercentage    float64
 	MemoryPercentage float64
 }
 
+// Details is a struct containing what we get back from `docker inspect` on a container
 type Details struct {
 	ID      string    `json:"Id"`
 	Created time.Time `json:"Created"`

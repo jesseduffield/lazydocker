@@ -24,7 +24,7 @@ import (
 type DockerCommand struct {
 	Log                    *logrus.Entry
 	OSCommand              *OSCommand
-	Tr                     i18n.TranslationSet
+	Tr                     *i18n.TranslationSet
 	Config                 *config.AppConfig
 	Client                 *client.Client
 	InDockerComposeProject bool
@@ -39,7 +39,7 @@ type DockerCommand struct {
 }
 
 // NewDockerCommand it runs git commands
-func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
+func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		return nil, err
@@ -56,6 +56,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr i18n.Translati
 	}, nil
 }
 
+// MonitorContainerStats is a function
 func (c *DockerCommand) MonitorContainerStats() {
 	go c.MonitorCLIContainerStats()
 	go c.MonitorClientContainerStats()
@@ -98,6 +99,7 @@ func (c *DockerCommand) MonitorCLIContainerStats() {
 	return
 }
 
+// MonitorClientContainerStats is a function
 func (c *DockerCommand) MonitorClientContainerStats() {
 	// periodically loop through running containers and see if we need to create a monitor goroutine for any
 	// every second we check if we need to spawn a new goroutine

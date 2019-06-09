@@ -50,8 +50,9 @@ func writeString(file *os.File, str string) {
 }
 
 func localisedTitle(mApp *app.App, str string) string {
-	viewTitle := strings.Title(str) + "Title"
-	return mApp.Tr.ViewTitle // FIXME: this used to be dynamic but we can't make this dynamic again without reflection since we're now using a struct of translation strings
+	return ""
+	// viewTitle := strings.Title(str) + "Title"
+	// return mApp.Tr.ViewTitle // FIXME: this used to be dynamic but we can't make this dynamic again without reflection since we're now using a struct of translation strings
 }
 
 func formatTitle(title string) string {
@@ -80,17 +81,17 @@ func getBindingSections(mApp *app.App) []*bindingSection {
 		bindingSections = addBinding(title, bindingSections, binding)
 	}
 
-	for view, contexts := range mApp.Gui.GetContextMap() {
-		for contextName, contextBindings := range contexts {
-			translatedView := localisedTitle(mApp, view)
-			translatedContextName := localisedTitle(mApp, contextName)
-			title := fmt.Sprintf("%s (%s)", translatedView, translatedContextName)
+	// for view, contexts := range mApp.Gui.GetContextMap() {
+	// 	for contextName, contextBindings := range contexts {
+	// 		translatedView := localisedTitle(mApp, view)
+	// 		translatedContextName := localisedTitle(mApp, contextName)
+	// 		title := fmt.Sprintf("%s (%s)", translatedView, translatedContextName)
 
-			for _, binding := range contextBindings {
-				bindingSections = addBinding(title, bindingSections, binding)
-			}
-		}
-	}
+	// 		for _, binding := range contextBindings {
+	// 			bindingSections = addBinding(title, bindingSections, binding)
+	// 		}
+	// 	}
+	// }
 
 	return bindingSections
 }

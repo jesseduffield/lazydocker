@@ -59,7 +59,7 @@ type Gui struct {
 	SubProcess    *exec.Cmd
 	State         guiState
 	Config        *config.AppConfig
-	Tr            i18n.TranslationSet
+	Tr            *i18n.TranslationSet
 	Errors        SentinelErrors
 	statusManager *statusManager
 	waitForIntro  sync.WaitGroup
@@ -113,7 +113,7 @@ type guiState struct {
 }
 
 // NewGui builds a new gui handler
-func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
+func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
 
 	initialState := guiState{
 		PreviousView: "services",

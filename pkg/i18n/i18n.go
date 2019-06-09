@@ -17,7 +17,7 @@ type Localizer struct {
 }
 
 // NewTranslationSet creates a new Localizer
-func NewTranslationSet(log *logrus.Entry) TranslationSet {
+func NewTranslationSet(log *logrus.Entry) *TranslationSet {
 	userLang := detectLanguage(jibber_jabber.DetectLanguage)
 
 	log.Info("language: " + userLang)
@@ -34,7 +34,7 @@ func NewTranslationSet(log *logrus.Entry) TranslationSet {
 		mergo.Merge(&set, polishSet(), mergo.WithOverride)
 	}
 
-	return set
+	return &set
 }
 
 // detectLanguage extracts user language from environment
