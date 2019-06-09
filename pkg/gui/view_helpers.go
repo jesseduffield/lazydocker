@@ -13,9 +13,7 @@ import (
 var cyclableViews = []string{"status", "services", "containers", "images"}
 
 func (gui *Gui) refreshSidePanels(g *gocui.Gui) error {
-	if err := gui.refreshContainersAndServices(); err != nil {
-		return err
-	}
+	// not refreshing containers and services here given that we do it every few milliseconds anyway
 	if err := gui.refreshImages(); err != nil {
 		return err
 	}

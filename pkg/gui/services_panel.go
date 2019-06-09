@@ -57,7 +57,7 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 
 	service, err := gui.getSelectedService()
 	if err != nil {
-		return err
+		return nil
 	}
 
 	key := service.ID + "-" + gui.getServiceContexts()[gui.State.Panels.Services.ContextIndex]
