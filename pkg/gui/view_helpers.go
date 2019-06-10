@@ -10,8 +10,6 @@ import (
 	"github.com/spkg/bom"
 )
 
-var cyclableViews = []string{"status", "services", "containers", "images", "volumes"}
-
 func (gui *Gui) refreshSidePanels(g *gocui.Gui) error {
 	// not refreshing containers and services here given that we do it every few milliseconds anyway
 	if err := gui.refreshImages(); err != nil {
@@ -26,16 +24,16 @@ func (gui *Gui) refreshSidePanels(g *gocui.Gui) error {
 
 func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 	var focusedViewName string
-	if v == nil || v.Name() == cyclableViews[len(cyclableViews)-1] {
-		focusedViewName = cyclableViews[0]
+	if v == nil || v.Name() == gui.CyclableViews[len(gui.CyclableViews)-1] {
+		focusedViewName = gui.CyclableViews[0]
 	} else {
 		viewName := v.Name()
-		for i := range cyclableViews {
-			if viewName == cyclableViews[i] {
-				focusedViewName = cyclableViews[i+1]
+		for i := range gui.CyclableViews {
+			if viewName == gui.CyclableViews[i] {
+				focusedViewName = gui.CyclableViews[i+1]
 				break
 			}
-			if i == len(cyclableViews)-1 {
+			if i == len(gui.CyclableViews)-1 {
 				gui.Log.Info("not in list of views")
 				return nil
 			}
@@ -51,16 +49,16 @@ func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 	var focusedViewName string
-	if v == nil || v.Name() == cyclableViews[0] {
-		focusedViewName = cyclableViews[len(cyclableViews)-1]
+	if v == nil || v.Name() == gui.CyclableViews[0] {
+		focusedViewName = gui.CyclableViews[len(gui.CyclableViews)-1]
 	} else {
 		viewName := v.Name()
-		for i := range cyclableViews {
-			if viewName == cyclableViews[i] {
-				focusedViewName = cyclableViews[i-1]
+		for i := range gui.CyclableViews {
+			if viewName == gui.CyclableViews[i] {
+				focusedViewName = gui.CyclableViews[i-1]
 				break
 			}
-			if i == len(cyclableViews)-1 {
+			if i == len(gui.CyclableViews)-1 {
 				gui.Log.Info("not in list of views")
 				return nil
 			}

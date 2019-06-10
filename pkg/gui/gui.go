@@ -67,6 +67,7 @@ type Gui struct {
 	waitForIntro  sync.WaitGroup
 	T             *tasks.TaskManager
 	ErrorChan     chan error
+	CyclableViews []string
 }
 
 type servicePanelState struct {
@@ -122,9 +123,13 @@ type guiState struct {
 
 // NewGui builds a new gui handler
 func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
+	previousView := "containers"
+	if dockerCommand.InDockerComposeProject {
+		previousView = "services"
+	}
 
 	initialState := guiState{
-		PreviousView: "services",
+		PreviousView: previousView,
 		Platform:     *oSCommand.Platform,
 		Panels: &panelStates{
 			Services:   &servicePanelState{SelectedLine: -1, ContextIndex: 0},
@@ -139,6 +144,11 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		},
 	}
 
+	cyclableViews := []string{"status", "containers", "images", "volumes"}
+	if dockerCommand.InDockerComposeProject {
+		cyclableViews = []string{"status", "services", "containers", "images", "volumes"}
+	}
+
 	gui := &Gui{
 		Log:           log,
 		DockerCommand: dockerCommand,
@@ -150,6 +160,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		statusManager: &statusManager{},
 		T:             tasks.NewTaskManager(log),
 		ErrorChan:     errorChan,
+		CyclableViews: cyclableViews,
 	}
 
 	gui.GenerateSentinelErrors()

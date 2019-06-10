@@ -110,12 +110,13 @@ type CommandTemplatesConfig struct {
 	RebuildService  string `yaml:"rebuildService,omitempty"`
 
 	// ViewContainerLogs is for viewing the container logs in a subprocess. We have this as a separate command in case you want to show all the logs rather than just tail them for the sake of reducing CPU load when in the lazydocker GUI
-	ViewContainerLogs   string `yaml:"viewContainerLogs,omitempty"`
-	ContainerLogs       string `yaml:"containerLogs,omitempty"`
-	ContainerTTYLogs    string `yaml:"containerTTYLogs,omitempty"`
-	AllLogs             string `yaml:"allLogs,omitempty"`
-	ViewAllLogs         string `yaml:"viewAlLogs,omitempty"`
-	DockerComposeConfig string `yaml:"dockerComposeConfig,omitempty"`
+	ViewContainerLogs        string `yaml:"viewContainerLogs,omitempty"`
+	ContainerLogs            string `yaml:"containerLogs,omitempty"`
+	ContainerTTYLogs         string `yaml:"containerTTYLogs,omitempty"`
+	AllLogs                  string `yaml:"allLogs,omitempty"`
+	ViewAllLogs              string `yaml:"viewAlLogs,omitempty"`
+	DockerComposeConfig      string `yaml:"dockerComposeConfig,omitempty"`
+	CheckDockerComposeConfig string `yaml:"checkDockerComposeConfig,omitempty"`
 }
 
 type OSConfig struct {
@@ -163,17 +164,18 @@ func GetDefaultConfig() UserConfig {
 		Reporting:     "undetermined",
 		ConfirmOnQuit: false,
 		CommandTemplates: CommandTemplatesConfig{
-			RestartService:      "docker-compose restart {{ .Name }}",
-			RebuildService:      "docker-compose up -d --build {{ .Name }}",
-			DockerCompose:       "apdev compose",
-			StopService:         "apdev stop {{ .Name }}",
-			ServiceLogs:         "apdev logs {{ .Name }}",
-			ContainerLogs:       "docker logs --timestamps --follow --tail=100 {{ .ID }}",
-			ViewContainerLogs:   "docker logs --timestamps --follow --tail=100 {{ .ID }}",
-			ContainerTTYLogs:    "docker logs --follow --tail=100 {{ .ID }}",
-			AllLogs:             "apdev logs --tail=100",
-			ViewAllLogs:         "apdev logs",
-			DockerComposeConfig: "apdev compose config",
+			RestartService:           "docker-compose restart {{ .Name }}",
+			RebuildService:           "docker-compose up -d --build {{ .Name }}",
+			DockerCompose:            "docker-compose",
+			StopService:              "docker-compose stop {{ .Name }}",
+			ServiceLogs:              "docker-compose logs {{ .Name }}",
+			AllLogs:                  "docker-compose logs --tail=100",
+			ViewAllLogs:              "docker-compose logs",
+			DockerComposeConfig:      "docker-compose config",
+			CheckDockerComposeConfig: "docker-compose config --quiet",
+			ContainerLogs:            "docker logs --timestamps --follow --tail=100 {{ .ID }}",
+			ViewContainerLogs:        "docker logs --timestamps --follow --tail=100 {{ .ID }}",
+			ContainerTTYLogs:         "docker logs --follow --tail=100 {{ .ID }}",
 		},
 		OS: GetPlatformDefaultConfig(),
 		Update: UpdateConfig{

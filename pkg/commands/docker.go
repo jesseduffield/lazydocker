@@ -46,13 +46,20 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		return nil, err
 	}
 
+	inDockerComposeProject := true
+	err = osCommand.RunCommand(config.UserConfig.CommandTemplates.CheckDockerComposeConfig)
+	if err != nil {
+		inDockerComposeProject = false
+		log.Warn(err.Error())
+	}
+
 	return &DockerCommand{
 		Log:                    log,
 		OSCommand:              osCommand,
 		Tr:                     tr,
 		Config:                 config,
 		Client:                 cli,
-		InDockerComposeProject: true, // TODO: determine this at startup
+		InDockerComposeProject: inDockerComposeProject,
 		ErrorChan:              errorChan,
 	}, nil
 }

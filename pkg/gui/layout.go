@@ -78,7 +78,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	if currView != nil {
 		viewName := currView.Name()
 		usePreviouseView := true
-		for _, view := range cyclableViews {
+		for _, view := range gui.CyclableViews {
 			if view == viewName {
 				currentCyclebleView = viewName
 				usePreviouseView = false
@@ -92,15 +92,26 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 
 	usableSpace := height - 4
 
-	tallPanels := 4
-
-	vHeights := map[string]int{
-		"status":     3,
-		"services":   usableSpace/tallPanels + usableSpace%tallPanels,
-		"containers": usableSpace / tallPanels,
-		"images":     usableSpace / tallPanels,
-		"volumes":    usableSpace / tallPanels,
-		"options":    1,
+	tallPanels := 3
+	var vHeights map[string]int
+	if gui.DockerCommand.InDockerComposeProject {
+		tallPanels++
+		vHeights = map[string]int{
+			"status":     3,
+			"services":   usableSpace/tallPanels + usableSpace%tallPanels,
+			"containers": usableSpace / tallPanels,
+			"images":     usableSpace / tallPanels,
+			"volumes":    usableSpace / tallPanels,
+			"options":    1,
+		}
+	} else {
+		vHeights = map[string]int{
+			"status":     3,
+			"containers": usableSpace/tallPanels + usableSpace%tallPanels,
+			"images":     usableSpace / tallPanels,
+			"volumes":    usableSpace / tallPanels,
+			"options":    1,
+		}
 	}
 
 	if height < 28 {
@@ -110,11 +121,13 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 		vHeights = map[string]int{
 			"status":     defaultHeight,
-			"services":   defaultHeight,
 			"containers": defaultHeight,
 			"images":     defaultHeight,
 			"volumes":    defaultHeight,
 			"options":    defaultHeight,
+		}
+		if gui.DockerCommand.InDockerComposeProject {
+			vHeights["services"] = defaultHeight
 		}
 		vHeights[currentCyclebleView] = height - defaultHeight*tallPanels - 1
 	}
@@ -148,25 +161,30 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		v.FgColor = gocui.ColorWhite
 	}
 
-	servicesView, err := g.SetViewBeneath("services", "status", vHeights["services"])
-	if err != nil {
-		if err.Error() != "unknown view" {
-			return err
-		}
-		servicesView.Highlight = true
-		servicesView.Title = gui.Tr.ServicesTitle
-		servicesView.FgColor = gocui.ColorWhite
+	var servicesView *gocui.View
+	aboveContainersView := "status"
+	if gui.DockerCommand.InDockerComposeProject {
+		aboveContainersView = "services"
+		servicesView, err = g.SetViewBeneath("services", "status", vHeights["services"])
+		if err != nil {
+			if err.Error() != "unknown view" {
+				return err
+			}
+			servicesView.Highlight = true
+			servicesView.Title = gui.Tr.ServicesTitle
+			servicesView.FgColor = gocui.ColorWhite
 
-		gui.focusPoint(0, gui.State.Panels.Services.SelectedLine, len(gui.DockerCommand.Services), servicesView)
+			gui.focusPoint(0, gui.State.Panels.Services.SelectedLine, len(gui.DockerCommand.Services), servicesView)
+		}
 	}
 
-	containersView, err := g.SetViewBeneath("containers", "services", vHeights["containers"])
+	containersView, err := g.SetViewBeneath("containers", aboveContainersView, vHeights["containers"])
 	if err != nil {
 		if err.Error() != "unknown view" {
 			return err
 		}
 		containersView.Highlight = true
-		if gui.Config.UserConfig.Gui.ShowAllContainers {
+		if gui.Config.UserConfig.Gui.ShowAllContainers || !gui.DockerCommand.InDockerComposeProject {
 			containersView.Title = gui.Tr.ContainersTitle
 		} else {
 			containersView.Title = gui.Tr.StandaloneContainersTitle
@@ -255,6 +273,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		lineCount    int
 	}
 
+	// TODO: find out if I should add the services view to this.
 	listViews := map[*gocui.View]listViewState{
 		containersView: {selectedLine: gui.State.Panels.Containers.SelectedLine, lineCount: len(gui.DockerCommand.Containers)},
 		imagesView:     {selectedLine: gui.State.Panels.Images.SelectedLine, lineCount: len(gui.DockerCommand.Images)},

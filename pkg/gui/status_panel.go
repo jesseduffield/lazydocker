@@ -9,11 +9,17 @@ import (
 )
 
 func (gui *Gui) getStatusContexts() []string {
-	return []string{"logs", "credits", "config"}
+	if gui.DockerCommand.InDockerComposeProject {
+		return []string{"logs", "credits", "config"}
+	}
+	return []string{"credits"}
 }
 
 func (gui *Gui) getStatusContextTitles() []string {
-	return []string{gui.Tr.LogsTitle, gui.Tr.CreditsTitle, gui.Tr.ConfigTitle}
+	if gui.DockerCommand.InDockerComposeProject {
+		return []string{gui.Tr.LogsTitle, gui.Tr.CreditsTitle, gui.Tr.ConfigTitle}
+	}
+	return []string{gui.Tr.CreditsTitle}
 }
 
 func (gui *Gui) refreshStatus() error {
@@ -71,20 +77,20 @@ func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) renderCredits() error {
-	mainView := gui.getMainView()
-	mainView.Autoscroll = false
-	mainView.Wrap = true
-
-	dashboardString := strings.Join(
-		[]string{
-			lazydockerTitle(),
-			"Copyright (c) 2019 Jesse Duffield",
-			"Keybindings: https://github.com/jesseduffield/lazydocker/blob/master/docs/keybindings",
-			"Config Options: https://github.com/jesseduffield/lazydocker/blob/master/docs/Config.md",
-			"Raise an Issue: https://github.com/jesseduffield/lazydocker/issues",
-		}, "\n\n")
-
 	go gui.T.NewTask(func(stop chan struct{}) {
+		mainView := gui.getMainView()
+		mainView.Autoscroll = false
+		mainView.Wrap = true
+
+		dashboardString := strings.Join(
+			[]string{
+				lazydockerTitle(),
+				"Copyright (c) 2019 Jesse Duffield",
+				"Keybindings: https://github.com/jesseduffield/lazydocker/blob/master/docs/keybindings",
+				"Config Options: https://github.com/jesseduffield/lazydocker/blob/master/docs/Config.md",
+				"Raise an Issue: https://github.com/jesseduffield/lazydocker/issues",
+			}, "\n\n")
+
 		gui.renderString(gui.g, "main", dashboardString)
 	})
 
@@ -92,11 +98,11 @@ func (gui *Gui) renderCredits() error {
 }
 
 func (gui *Gui) renderAllLogs() error {
-	mainView := gui.getMainView()
-	mainView.Autoscroll = true
-	mainView.Wrap = true
-
 	go gui.T.NewTask(func(stop chan struct{}) {
+		mainView := gui.getMainView()
+		mainView.Autoscroll = true
+		mainView.Wrap = true
+
 		gui.clearMainView()
 
 		cmd := gui.OSCommand.RunCustomCommand(gui.Config.UserConfig.CommandTemplates.AllLogs)
@@ -121,11 +127,11 @@ func (gui *Gui) renderAllLogs() error {
 }
 
 func (gui *Gui) renderDockerComposeConfig() error {
-	mainView := gui.getMainView()
-	mainView.Autoscroll = false
-	mainView.Wrap = true
-
 	go gui.T.NewTask(func(stop chan struct{}) {
+		mainView := gui.getMainView()
+		mainView.Autoscroll = false
+		mainView.Wrap = true
+
 		config := gui.DockerCommand.DockerComposeConfig()
 		gui.renderString(gui.g, "main", config)
 	})
