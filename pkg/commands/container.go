@@ -36,6 +36,7 @@ type Container struct {
 	StatHistory     []RecordedStats
 	Details         Details
 	MonitoringStats bool
+	DockerCommand   LimitedDockerCommand
 }
 
 // RecordedStats contains both the container stats we've received from docker, and our own derived stats  from those container stats. When configuring a graph, you're basically specifying the path of a value in this struct
@@ -354,13 +355,6 @@ func (c *Container) Restart() error {
 	return c.Client.ContainerRestart(context.Background(), c.ID, nil)
 }
 
-// RestartService restarts the container
-func (c *Container) RestartService() error {
-	templateString := c.OSCommand.Config.UserConfig.CommandTemplates.RestartService
-	command := utils.ApplyTemplate(templateString, c)
-	return c.OSCommand.RunCommand(command)
-}
-
 // Attach attaches the container
 func (c *Container) Attach() (*exec.Cmd, error) {
 	// verify that we can in fact attach to this container
@@ -394,7 +388,10 @@ func (c *Container) EraseOldHistory() {
 // ViewLogs attaches to a subprocess viewing the container's logs
 func (c *Container) ViewLogs() (*exec.Cmd, error) {
 	templateString := c.OSCommand.Config.UserConfig.CommandTemplates.ViewContainerLogs
-	command := utils.ApplyTemplate(templateString, c)
+	command := utils.ApplyTemplate(
+		templateString,
+		c.DockerCommand.NewCommandObject(CommandObject{Container: c}),
+	)
 
 	cmd := c.OSCommand.ExecutableFromString(command)
 	c.OSCommand.PrepareForChildren(cmd)
@@ -406,4 +403,18 @@ func (c *Container) ViewLogs() (*exec.Cmd, error) {
 func (c *DockerCommand) PruneContainers() error {
 	_, err := c.Client.ContainersPrune(context.Background(), filters.Args{})
 	return err
+}
+
+// TTYLogsCommand returns a command for obtaining the logs from a TTY container
+func (c *Container) TTYLogsCommand() *exec.Cmd {
+	command := utils.ApplyTemplate(
+		c.Config.UserConfig.CommandTemplates.ContainerTTYLogs,
+		c.DockerCommand.NewCommandObject(CommandObject{Container: c}),
+	)
+	return c.OSCommand.RunCustomCommand(command)
+}
+
+// Inspect returns details about the container
+func (c *Container) Inspect() (types.ContainerJSON, error) {
+	return c.Client.ContainerInspect(context.Background(), c.ID)
 }

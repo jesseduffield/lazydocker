@@ -12,11 +12,12 @@ import (
 
 // Volume : A docker Volume
 type Volume struct {
-	Name      string
-	Volume    *types.Volume
-	Client    *client.Client
-	OSCommand *OSCommand
-	Log       *logrus.Entry
+	Name          string
+	Volume        *types.Volume
+	Client        *client.Client
+	OSCommand     *OSCommand
+	Log           *logrus.Entry
+	DockerCommand LimitedDockerCommand
 }
 
 // GetDisplayStrings returns the dispaly string of Container
@@ -41,11 +42,12 @@ func (c *DockerCommand) RefreshVolumes() error {
 
 	for i, volume := range volumes {
 		ownVolumes[i] = &Volume{
-			Name:      volume.Name,
-			Volume:    volume,
-			Client:    c.Client,
-			OSCommand: c.OSCommand,
-			Log:       c.Log,
+			Name:          volume.Name,
+			Volume:        volume,
+			Client:        c.Client,
+			OSCommand:     c.OSCommand,
+			Log:           c.Log,
+			DockerCommand: c,
 		}
 	}
 

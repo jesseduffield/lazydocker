@@ -284,12 +284,18 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	rebuildCommand := utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.RebuildService, service)
+	rebuildCommand := utils.ApplyTemplate(
+		gui.Config.UserConfig.CommandTemplates.RebuildService,
+		service,
+	)
 
 	options := []*commandOption{
 		{
 			description: gui.Tr.Restart,
-			command:     utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.RestartService, service),
+			command: utils.ApplyTemplate(
+				gui.Config.UserConfig.CommandTemplates.RestartService,
+				gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+			),
 			f: func() error {
 				return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
 					if err := service.Restart(); err != nil {
@@ -302,7 +308,10 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 		},
 		{
 			description: gui.Tr.Rebuild,
-			command:     utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.RebuildService, service),
+			command: utils.ApplyTemplate(
+				gui.Config.UserConfig.CommandTemplates.RebuildService,
+				gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+			),
 			f: func() error {
 				gui.SubProcess = gui.OSCommand.RunCustomCommand(rebuildCommand)
 				return gui.Errors.ErrSubProcess

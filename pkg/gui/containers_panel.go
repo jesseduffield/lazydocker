@@ -2,7 +2,6 @@ package gui
 
 import (
 	"bufio"
-	"context"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -190,8 +189,7 @@ func (gui *Gui) renderLogs(container *commands.Container, template string, setup
 	gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
 		gui.clearMainView()
 
-		command := utils.ApplyTemplate(gui.Config.UserConfig.CommandTemplates.ContainerTTYLogs, container)
-		cmd := gui.OSCommand.RunCustomCommand(command)
+		cmd := container.TTYLogsCommand()
 
 		setup(cmd)
 
@@ -213,7 +211,7 @@ func (gui *Gui) renderLogs(container *commands.Container, template string, setup
 			case <-stop:
 				return
 			default:
-				result, err := gui.DockerCommand.Client.ContainerInspect(context.Background(), container.ID)
+				result, err := container.Inspect()
 				if err != nil {
 					// if we get an error, then the container has probably been removed so we'll get out of here
 					gui.Log.Error(err)

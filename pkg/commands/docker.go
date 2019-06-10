@@ -14,6 +14,7 @@ import (
 	"github.com/acarl005/stripansi"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/imdario/mergo"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
@@ -39,6 +40,25 @@ type DockerCommand struct {
 	Volumes           []*Volume
 }
 
+// LimitedDockerCommand is a stripped-down DockerCommand with just the methods the container/service/image might need
+type LimitedDockerCommand interface {
+	NewCommandObject(CommandObject) CommandObject
+}
+
+// CommandObject is what we pass to our template resolvers when we are running a custom command. We do not guarantee that all fields will be populated: just the ones that make sense for the current context
+type CommandObject struct {
+	DockerCompose string
+	Service       *Service
+	Container     *Container
+}
+
+// NewCommandObject takes a command object and returns a default command object with the passed command object merged in
+func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
+	defaultObj := CommandObject{DockerCompose: c.Config.UserConfig.CommandTemplates.DockerCompose}
+	mergo.Merge(&defaultObj, obj)
+	return defaultObj
+}
+
 // NewDockerCommand it runs git commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
 	cli, err := client.NewEnvClient()
@@ -46,22 +66,35 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		return nil, err
 	}
 
-	inDockerComposeProject := true
-	err = osCommand.RunCommand(config.UserConfig.CommandTemplates.CheckDockerComposeConfig)
-	if err != nil {
-		inDockerComposeProject = false
-		log.Warn(err.Error())
-	}
-
-	return &DockerCommand{
+	dockerCommand := &DockerCommand{
 		Log:                    log,
 		OSCommand:              osCommand,
 		Tr:                     tr,
 		Config:                 config,
 		Client:                 cli,
-		InDockerComposeProject: inDockerComposeProject,
 		ErrorChan:              errorChan,
-	}, nil
+		InDockerComposeProject: true,
+	}
+
+	command := utils.ApplyTemplate(
+		config.UserConfig.CommandTemplates.CheckDockerComposeConfig,
+		dockerCommand.NewCommandObject(CommandObject{}),
+	)
+
+	log.Warn(command)
+
+	err = osCommand.RunCommand(
+		utils.ApplyTemplate(
+			config.UserConfig.CommandTemplates.CheckDockerComposeConfig,
+			dockerCommand.NewCommandObject(CommandObject{}),
+		),
+	)
+	if err != nil {
+		dockerCommand.InDockerComposeProject = false
+		log.Warn(err.Error())
+	}
+
+	return dockerCommand, nil
 }
 
 // MonitorContainerStats is a function
@@ -263,11 +296,12 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 		// initialise the container if it's completely new
 		if newContainer == nil {
 			newContainer = &Container{
-				ID:        container.ID,
-				Client:    c.Client,
-				OSCommand: c.OSCommand,
-				Log:       c.Log,
-				Config:    c.Config,
+				ID:            container.ID,
+				Client:        c.Client,
+				OSCommand:     c.OSCommand,
+				Log:           c.Log,
+				Config:        c.Config,
+				DockerCommand: c,
 			}
 		}
 
@@ -310,10 +344,11 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	for i, str := range lines {
 		arr := strings.Split(str, " ")
 		services[i] = &Service{
-			Name:      arr[0],
-			ID:        arr[1],
-			OSCommand: c.OSCommand,
-			Log:       c.Log,
+			Name:          arr[0],
+			ID:            arr[1],
+			OSCommand:     c.OSCommand,
+			Log:           c.Log,
+			DockerCommand: c,
 		}
 	}
 
@@ -353,7 +388,13 @@ func (c *DockerCommand) UpdateContainerDetails() error {
 
 // ViewAllLogs attaches to a subprocess viewing all the logs from docker-compose
 func (c *DockerCommand) ViewAllLogs() (*exec.Cmd, error) {
-	cmd := c.OSCommand.ExecutableFromString(c.OSCommand.Config.UserConfig.CommandTemplates.ViewAllLogs)
+	cmd := c.OSCommand.ExecutableFromString(
+		utils.ApplyTemplate(
+			c.OSCommand.Config.UserConfig.CommandTemplates.ViewAllLogs,
+			c.NewCommandObject(CommandObject{}),
+		),
+	)
+
 	c.OSCommand.PrepareForChildren(cmd)
 
 	return cmd, nil
@@ -361,7 +402,13 @@ func (c *DockerCommand) ViewAllLogs() (*exec.Cmd, error) {
 
 // DockerComposeConfig returns the result of 'docker-compose config'
 func (c *DockerCommand) DockerComposeConfig() string {
-	output, err := c.OSCommand.RunCommandWithOutput(c.OSCommand.Config.UserConfig.CommandTemplates.DockerComposeConfig)
+	output, err := c.OSCommand.RunCommandWithOutput(
+		utils.ApplyTemplate(
+			c.OSCommand.Config.UserConfig.CommandTemplates.DockerComposeConfig,
+			c.NewCommandObject(CommandObject{}),
+		),
+	)
+
 	if err != nil {
 		output = err.Error()
 	}

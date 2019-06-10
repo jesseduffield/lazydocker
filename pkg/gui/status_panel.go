@@ -6,6 +6,8 @@ import (
 
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
+	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
 func (gui *Gui) getStatusContexts() []string {
@@ -105,7 +107,12 @@ func (gui *Gui) renderAllLogs() error {
 
 		gui.clearMainView()
 
-		cmd := gui.OSCommand.RunCustomCommand(gui.Config.UserConfig.CommandTemplates.AllLogs)
+		cmd := gui.OSCommand.RunCustomCommand(
+			utils.ApplyTemplate(
+				gui.Config.UserConfig.CommandTemplates.AllLogs,
+				gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+			),
+		)
 
 		cmd.Stdout = mainView
 		cmd.Stderr = mainView

@@ -14,13 +14,14 @@ import (
 
 // Image : A docker Image
 type Image struct {
-	Name      string
-	Tag       string
-	ID        string
-	Image     types.ImageSummary
-	Client    *client.Client
-	OSCommand *OSCommand
-	Log       *logrus.Entry
+	Name          string
+	Tag           string
+	ID            string
+	Image         types.ImageSummary
+	Client        *client.Client
+	OSCommand     *OSCommand
+	Log           *logrus.Entry
+	DockerCommand LimitedDockerCommand
 }
 
 // GetDisplayStrings returns the display string of Image
@@ -99,9 +100,6 @@ func (i *Image) RenderHistory() (string, error) {
 	return utils.RenderList(layers, utils.WithHeader([]string{"ID", "TAG", "SIZE", "COMMAND"}))
 }
 
-
-
-
 // GetImages returns a slice of docker images
 func (c *DockerCommand) GetImages() ([]*Image, error) {
 	images, err := c.Client.ImageList(context.Background(), types.ImageListOptions{})
@@ -127,13 +125,14 @@ func (c *DockerCommand) GetImages() ([]*Image, error) {
 		}
 
 		ownImages[i] = &Image{
-			ID:        image.ID,
-			Name:      nameParts[0],
-			Tag:       tag,
-			Image:     image,
-			Client:    c.Client,
-			OSCommand: c.OSCommand,
-			Log:       c.Log,
+			ID:            image.ID,
+			Name:          nameParts[0],
+			Tag:           tag,
+			Image:         image,
+			Client:        c.Client,
+			OSCommand:     c.OSCommand,
+			Log:           c.Log,
+			DockerCommand: c,
 		}
 	}
 

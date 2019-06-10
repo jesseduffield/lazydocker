@@ -11,11 +11,12 @@ import (
 
 // Service : A docker Service
 type Service struct {
-	Name      string
-	ID        string
-	OSCommand *OSCommand
-	Log       *logrus.Entry
-	Container *Container
+	Name          string
+	ID            string
+	OSCommand     *OSCommand
+	Log           *logrus.Entry
+	Container     *Container
+	DockerCommand LimitedDockerCommand
 }
 
 // GetDisplayStrings returns the dispaly string of Container
@@ -37,14 +38,20 @@ func (s *Service) Remove(options types.ContainerRemoveOptions) error {
 // Stop stops the service's containers
 func (s *Service) Stop() error {
 	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.StopService
-	command := utils.ApplyTemplate(templateString, s)
+	command := utils.ApplyTemplate(
+		templateString,
+		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
+	)
 	return s.OSCommand.RunCommand(command)
 }
 
 // Restart restarts the service
 func (s *Service) Restart() error {
 	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.RestartService
-	command := utils.ApplyTemplate(templateString, s)
+	command := utils.ApplyTemplate(
+		templateString,
+		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
+	)
 	return s.OSCommand.RunCommand(command)
 }
 
@@ -61,7 +68,10 @@ func (s *Service) Top() (types.ContainerProcessList, error) {
 // ViewLogs attaches to a subprocess viewing the service's logs
 func (s *Service) ViewLogs() (*exec.Cmd, error) {
 	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.ViewServiceLogs
-	command := utils.ApplyTemplate(templateString, s)
+	command := utils.ApplyTemplate(
+		templateString,
+		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
+	)
 
 	cmd := s.OSCommand.ExecutableFromString(command)
 	s.OSCommand.PrepareForChildren(cmd)
