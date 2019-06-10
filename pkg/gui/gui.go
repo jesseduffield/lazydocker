@@ -30,6 +30,7 @@ type SentinelErrors struct {
 	ErrSubProcess   error
 	ErrNoContainers error
 	ErrNoImages     error
+	ErrNoVolumes    error
 }
 
 // GenerateSentinelErrors makes the sentinel errors for the gui. We're defining it here
@@ -47,6 +48,7 @@ func (gui *Gui) GenerateSentinelErrors() {
 		ErrSubProcess:   errors.New(gui.Tr.RunningSubprocess),
 		ErrNoContainers: errors.New(gui.Tr.NoContainers),
 		ErrNoImages:     errors.New(gui.Tr.NoImages),
+		ErrNoVolumes:    errors.New(gui.Tr.NoVolumes),
 	}
 }
 
@@ -94,12 +96,18 @@ type imagePanelState struct {
 	ContextIndex int // for specifying if you are looking at logs/stats/config/etc
 }
 
+type volumePanelState struct {
+	SelectedLine int
+	ContextIndex int
+}
+
 type panelStates struct {
 	Services   *servicePanelState
 	Containers *containerPanelState
 	Menu       *menuPanelState
 	Main       *mainPanelState
 	Images     *imagePanelState
+	Volumes    *volumePanelState
 	Status     *statusState
 }
 
@@ -122,6 +130,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 			Services:   &servicePanelState{SelectedLine: -1, ContextIndex: 0},
 			Containers: &containerPanelState{SelectedLine: -1, ContextIndex: 0},
 			Images:     &imagePanelState{SelectedLine: -1, ContextIndex: 0},
+			Volumes:    &volumePanelState{SelectedLine: -1, ContextIndex: 0},
 			Menu:       &menuPanelState{SelectedLine: 0},
 			Main: &mainPanelState{
 				ObjectKey: "",
@@ -245,6 +254,7 @@ func (gui *Gui) Run() error {
 		gui.goEvery(time.Millisecond*50, gui.renderAppStatus)
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
 		gui.goEvery(time.Millisecond*100, gui.refreshContainersAndServices)
+		gui.goEvery(time.Millisecond*100, gui.refreshVolumes)
 		gui.goEvery(time.Millisecond*1000, gui.DockerCommand.UpdateContainerDetails)
 	}()
 

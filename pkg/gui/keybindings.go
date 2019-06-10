@@ -312,10 +312,38 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:     gui.handlePruneImages,
 			Description: gui.Tr.PruneImages,
 		},
+		{
+			ViewName:    "volumes",
+			Key:         '[',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleVolumesPrevContext,
+			Description: gui.Tr.PreviousContext,
+		},
+		{
+			ViewName:    "volumes",
+			Key:         ']',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleVolumesNextContext,
+			Description: gui.Tr.NextContext,
+		},
+		{
+			ViewName:    "volumes",
+			Key:         'd',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleVolumesRemoveMenu,
+			Description: gui.Tr.RemoveVolume,
+		},
+		{
+			ViewName:    "volumes",
+			Key:         'D',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handlePruneVolumes,
+			Description: gui.Tr.PruneVolumes,
+		},
 	}
 
 	// TODO: add more views here
-	for _, viewName := range []string{"status", "services", "containers", "images", "menu"} {
+	for _, viewName := range []string{"status", "services", "containers", "images", "volumes", "menu"} {
 		bindings = append(bindings, []*Binding{
 			{ViewName: viewName, Key: gocui.KeyTab, Modifier: gocui.ModNone, Handler: gui.nextView},
 			{ViewName: viewName, Key: gocui.KeyArrowLeft, Modifier: gocui.ModNone, Handler: gui.previousView},
@@ -334,6 +362,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		"services":   {prevLine: gui.handleServicesPrevLine, nextLine: gui.handleServicesNextLine, focus: gui.handleServicesFocus},
 		"containers": {prevLine: gui.handleContainersPrevLine, nextLine: gui.handleContainersNextLine, focus: gui.handleContainersFocus},
 		"images":     {prevLine: gui.handleImagesPrevLine, nextLine: gui.handleImagesNextLine, focus: gui.handleImagesFocus},
+		"volumes":    {prevLine: gui.handleVolumesPrevLine, nextLine: gui.handleVolumesNextLine, focus: gui.handleVolumesFocus},
 	}
 
 	for viewName, functions := range listPanelMap {

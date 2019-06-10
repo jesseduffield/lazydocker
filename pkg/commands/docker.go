@@ -13,7 +13,6 @@ import (
 
 	"github.com/acarl005/stripansi"
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
@@ -37,6 +36,7 @@ type DockerCommand struct {
 	// DisplayContainers is the array of containers we will display in the containers panel. If Gui.ShowAllContainers is false, this will only be those containers which aren't based on a service. This reduces clutter and duplication in the UI
 	DisplayContainers []*Container
 	Images            []*Image
+	Volumes           []*Volume
 }
 
 // NewDockerCommand it runs git commands
@@ -148,8 +148,8 @@ func (c *DockerCommand) createClientStatMonitor(container *Container) {
 	return
 }
 
-// GetContainersAndServices returns a slice of docker containers
-func (c *DockerCommand) GetContainersAndServices() error {
+// RefreshContainersAndServices returns a slice of docker containers
+func (c *DockerCommand) RefreshContainersAndServices() error {
 	c.ServiceMutex.Lock()
 	defer c.ServiceMutex.Unlock()
 
@@ -342,56 +342,6 @@ func (c *DockerCommand) UpdateContainerDetails() error {
 	}
 
 	return nil
-}
-
-// GetImages returns a slice of docker images
-func (c *DockerCommand) GetImages() ([]*Image, error) {
-	images, err := c.Client.ImageList(context.Background(), types.ImageListOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	ownImages := make([]*Image, len(images))
-
-	for i, image := range images {
-		// func (cli *Client) ImageHistory(ctx context.Context, imageID string) ([]image.HistoryResponseItem, error)
-
-		name := "none"
-		tags := image.RepoTags
-		if len(tags) > 0 {
-			name = tags[0]
-		}
-
-		nameParts := strings.Split(name, ":")
-		tag := ""
-		if len(nameParts) > 1 {
-			tag = nameParts[1]
-		}
-
-		ownImages[i] = &Image{
-			ID:        image.ID,
-			Name:      nameParts[0],
-			Tag:       tag,
-			Image:     image,
-			Client:    c.Client,
-			OSCommand: c.OSCommand,
-			Log:       c.Log,
-		}
-	}
-
-	return ownImages, nil
-}
-
-// PruneImages prunes images
-func (c *DockerCommand) PruneImages() error {
-	_, err := c.Client.ImagesPrune(context.Background(), filters.Args{})
-	return err
-}
-
-// PruneContainers prunes containers
-func (c *DockerCommand) PruneContainers() error {
-	_, err := c.Client.ContainersPrune(context.Background(), filters.Args{})
-	return err
 }
 
 // ViewAllLogs attaches to a subprocess viewing all the logs from docker-compose

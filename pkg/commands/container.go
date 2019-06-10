@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/fatih/color"
 	"github.com/go-errors/errors"
@@ -399,4 +400,10 @@ func (c *Container) ViewLogs() (*exec.Cmd, error) {
 	c.OSCommand.PrepareForChildren(cmd)
 
 	return cmd, nil
+}
+
+// PruneContainers prunes containers
+func (c *DockerCommand) PruneContainers() error {
+	_, err := c.Client.ContainersPrune(context.Background(), filters.Args{})
+	return err
 }

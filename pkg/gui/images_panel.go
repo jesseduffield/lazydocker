@@ -49,11 +49,11 @@ func (gui *Gui) handleImagesFocus(g *gocui.Gui, v *gocui.View) error {
 
 	gui.State.Panels.Images.SelectedLine = newSelectedLine
 
-	if prevSelectedLine == newSelectedLine && gui.currentViewName() == v.Name() {
-		return gui.handleImagePress(gui.g, v)
-	} else {
+	if !(prevSelectedLine == newSelectedLine && gui.currentViewName() == v.Name()) {
 		return gui.handleImageSelect(gui.g, v)
 	}
+
+	return nil
 }
 
 func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
@@ -69,7 +69,7 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 		return gui.renderString(g, "main", gui.Tr.NoImages)
 	}
 
-	key := Image.ID + "-" + gui.getImageContexts()[gui.State.Panels.Images.ContextIndex]
+	key := "images-" + Image.ID + "-" + gui.getImageContexts()[gui.State.Panels.Images.ContextIndex]
 	if gui.State.Panels.Main.ObjectKey == key {
 		return nil
 	} else {
@@ -98,11 +98,13 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image) error {
 	go gui.T.NewTask(func(stop chan struct{}) {
+		padding := 10
 		output := ""
-		output += utils.WithPadding("ID: ", 10) + image.Image.ID + "\n"
-		output += utils.WithPadding("Tags: ", 10) + utils.ColoredString(strings.Join(image.Image.RepoTags, ", "), color.FgGreen) + "\n"
-		output += utils.WithPadding("Size: ", 10) + utils.FormatDecimalBytes(int(image.Image.Size)) + "\n"
-		output += utils.WithPadding("Created: ", 10) + fmt.Sprintf("%v", time.Unix(image.Image.Created, 0).Format(time.RFC1123)) + "\n"
+		output += utils.WithPadding("Name: ", padding) + image.Name + "\n"
+		output += utils.WithPadding("ID: ", padding) + image.Image.ID + "\n"
+		output += utils.WithPadding("Tags: ", padding) + utils.ColoredString(strings.Join(image.Image.RepoTags, ", "), color.FgGreen) + "\n"
+		output += utils.WithPadding("Size: ", padding) + utils.FormatDecimalBytes(int(image.Image.Size)) + "\n"
+		output += utils.WithPadding("Created: ", padding) + fmt.Sprintf("%v", time.Unix(image.Image.Created, 0).Format(time.RFC1123)) + "\n"
 
 		history, err := image.RenderHistory()
 		if err != nil {
@@ -156,6 +158,7 @@ func (gui *Gui) refreshImages() error {
 	return nil
 }
 
+// TODO: leave this to DockerCommand
 func (gui *Gui) refreshStateImages() error {
 	Images, err := gui.DockerCommand.GetImages()
 	if err != nil {
@@ -187,10 +190,6 @@ func (gui *Gui) handleImagesPrevLine(g *gocui.Gui, v *gocui.View) error {
 	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.Images), true)
 
 	return gui.handleImageSelect(gui.g, v)
-}
-
-func (gui *Gui) handleImagePress(g *gocui.Gui, v *gocui.View) error {
-	return nil
 }
 
 func (gui *Gui) handleImagesNextContext(g *gocui.Gui, v *gocui.View) error {

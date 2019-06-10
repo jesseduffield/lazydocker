@@ -72,7 +72,7 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	key := container.ID + "-" + gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex]
+	key := "containers-" + container.ID + "-" + gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex]
 	if gui.State.Panels.Main.ObjectKey == key {
 		return nil
 	} else {
@@ -243,7 +243,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 		selectedService = gui.DockerCommand.Services[sl]
 	}
 
-	if err := gui.refreshStateContainersAndServices(); err != nil {
+	if err := gui.DockerCommand.RefreshContainersAndServices(); err != nil {
 		return err
 	}
 
@@ -312,10 +312,6 @@ func (gui *Gui) refreshContainersAndServices() error {
 	})
 
 	return nil
-}
-
-func (gui *Gui) refreshStateContainersAndServices() error {
-	return gui.DockerCommand.GetContainersAndServices()
 }
 
 func (gui *Gui) handleContainersNextLine(g *gocui.Gui, v *gocui.View) error {

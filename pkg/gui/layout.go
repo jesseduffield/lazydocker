@@ -92,13 +92,14 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 
 	usableSpace := height - 4
 
-	tallPanels := 3
+	tallPanels := 4
 
 	vHeights := map[string]int{
-		"status":     tallPanels,
+		"status":     3,
 		"services":   usableSpace/tallPanels + usableSpace%tallPanels,
 		"containers": usableSpace / tallPanels,
 		"images":     usableSpace / tallPanels,
+		"volumes":    usableSpace / tallPanels,
 		"options":    1,
 	}
 
@@ -112,6 +113,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			"services":   defaultHeight,
 			"containers": defaultHeight,
 			"images":     defaultHeight,
+			"volumes":    defaultHeight,
 			"options":    defaultHeight,
 		}
 		vHeights[currentCyclebleView] = height - defaultHeight*tallPanels - 1
@@ -186,6 +188,18 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		gui.focusPoint(0, gui.State.Panels.Images.SelectedLine, len(gui.DockerCommand.Images), imagesView)
 	}
 
+	volumesView, err := g.SetViewBeneath("volumes", "images", vHeights["volumes"])
+	if err != nil {
+		if err.Error() != "unknown view" {
+			return err
+		}
+		volumesView.Highlight = true
+		volumesView.Title = gui.Tr.VolumesTitle
+		volumesView.FgColor = gocui.ColorWhite
+
+		gui.focusPoint(0, gui.State.Panels.Images.SelectedLine, len(gui.DockerCommand.Images), volumesView)
+	}
+
 	if v, err := g.SetView("options", appStatusOptionsBoundary-1, height-2, optionsVersionBoundary-1, height, 0); err != nil {
 		if err.Error() != "unknown view" {
 			return err
@@ -244,6 +258,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	listViews := map[*gocui.View]listViewState{
 		containersView: {selectedLine: gui.State.Panels.Containers.SelectedLine, lineCount: len(gui.DockerCommand.Containers)},
 		imagesView:     {selectedLine: gui.State.Panels.Images.SelectedLine, lineCount: len(gui.DockerCommand.Images)},
+		volumesView:    {selectedLine: gui.State.Panels.Volumes.SelectedLine, lineCount: len(gui.DockerCommand.Volumes)},
 	}
 
 	// menu view might not exist so we check to be safe
@@ -252,8 +267,10 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	}
 	for view, state := range listViews {
 		// check if the selected line is now out of view and if so refocus it
-		if err := gui.focusPoint(0, state.selectedLine, state.lineCount, view); err != nil {
-			return err
+		if view == gui.g.CurrentView() {
+			if err := gui.focusPoint(0, state.selectedLine, state.lineCount, view); err != nil {
+				return err
+			}
 		}
 	}
 

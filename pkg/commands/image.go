@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
@@ -96,4 +97,51 @@ func (i *Image) RenderHistory() (string, error) {
 	}
 
 	return utils.RenderList(layers, utils.WithHeader([]string{"ID", "TAG", "SIZE", "COMMAND"}))
+}
+
+
+
+
+// GetImages returns a slice of docker images
+func (c *DockerCommand) GetImages() ([]*Image, error) {
+	images, err := c.Client.ImageList(context.Background(), types.ImageListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	ownImages := make([]*Image, len(images))
+
+	for i, image := range images {
+		// func (cli *Client) ImageHistory(ctx context.Context, imageID string) ([]image.HistoryResponseItem, error)
+
+		name := "none"
+		tags := image.RepoTags
+		if len(tags) > 0 {
+			name = tags[0]
+		}
+
+		nameParts := strings.Split(name, ":")
+		tag := ""
+		if len(nameParts) > 1 {
+			tag = nameParts[1]
+		}
+
+		ownImages[i] = &Image{
+			ID:        image.ID,
+			Name:      nameParts[0],
+			Tag:       tag,
+			Image:     image,
+			Client:    c.Client,
+			OSCommand: c.OSCommand,
+			Log:       c.Log,
+		}
+	}
+
+	return ownImages, nil
+}
+
+// PruneImages prunes images
+func (c *DockerCommand) PruneImages() error {
+	_, err := c.Client.ImagesPrune(context.Background(), filters.Args{})
+	return err
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/spkg/bom"
 )
 
-var cyclableViews = []string{"status", "services", "containers", "images"}
+var cyclableViews = []string{"status", "services", "containers", "images", "volumes"}
 
 func (gui *Gui) refreshSidePanels(g *gocui.Gui) error {
 	// not refreshing containers and services here given that we do it every few milliseconds anyway
@@ -91,6 +91,8 @@ func (gui *Gui) newLineFocused(g *gocui.Gui, v *gocui.View) error {
 		return gui.handleContainerSelect(g, v)
 	case "images":
 		return gui.handleImageSelect(g, v)
+	case "volumes":
+		return gui.handleVolumeSelect(g, v)
 	case "confirmation":
 		return nil
 	case "main":
@@ -242,6 +244,11 @@ func (gui *Gui) getContainersView() *gocui.View {
 
 func (gui *Gui) getImagesView() *gocui.View {
 	v, _ := gui.g.View("images")
+	return v
+}
+
+func (gui *Gui) getVolumesView() *gocui.View {
+	v, _ := gui.g.View("volumes")
 	return v
 }
 
