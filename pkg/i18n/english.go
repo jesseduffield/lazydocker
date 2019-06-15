@@ -44,6 +44,7 @@ type TranslationSet struct {
 	ServicesTitle                              string
 	ContainersTitle                            string
 	StandaloneContainersTitle                  string
+	TopTitle                                   string
 	ImagesTitle                                string
 	VolumesTitle                               string
 	NoContainers                               string
@@ -128,6 +129,7 @@ func englishSet() TranslationSet {
 		ErrorTitle:                "Error",
 		LogsTitle:                 "Logs",
 		ConfigTitle:               "Config",
+		TopTitle:                  "Top",
 		StatsTitle:                "Stats",
 		CreditsTitle:              "About",
 		ContainerConfigTitle:      "Container Config",

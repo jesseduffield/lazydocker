@@ -157,6 +157,11 @@ func renderDisplayableList(items []Displayable, config RenderListConfig) (string
 		stringArrays = append([][]string{config.Header}, stringArrays...)
 	}
 
+	return RenderTable(stringArrays)
+}
+
+// RenderTable takes an array of string arrays and returns a table containing the values
+func RenderTable(stringArrays [][]string) (string, error) {
 	if !displayArraysAligned(stringArrays) {
 		return "", errors.New("Each item must return the same number of strings to display")
 	}

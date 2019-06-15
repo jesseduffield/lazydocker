@@ -78,3 +78,14 @@ func (s *Service) ViewLogs() (*exec.Cmd, error) {
 
 	return cmd, nil
 }
+
+// RenderTop renders the process list of the service
+func (s *Service) RenderTop() (string, error) {
+	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.ServiceTop
+	command := utils.ApplyTemplate(
+		templateString,
+		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
+	)
+
+	return s.OSCommand.RunCommandWithOutput(command)
+}

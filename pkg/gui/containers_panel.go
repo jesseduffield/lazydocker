@@ -18,11 +18,11 @@ import (
 // list panel functions
 
 func (gui *Gui) getContainerContexts() []string {
-	return []string{"logs", "stats", "config"}
+	return []string{"logs", "stats", "config", "top"}
 }
 
 func (gui *Gui) getContainerContextTitles() []string {
-	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.ConfigTitle}
+	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.ConfigTitle, gui.Tr.TopTitle}
 }
 
 func (gui *Gui) getSelectedContainer() (*commands.Container, error) {
@@ -101,6 +101,10 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 		if err := gui.renderContainerStats(container); err != nil {
 			return err
 		}
+	case "top":
+		if err := gui.renderContainerTop(container); err != nil {
+			return err
+		}
 	default:
 		return errors.New("Unknown context for containers panel")
 	}
@@ -136,6 +140,21 @@ func (gui *Gui) renderContainerStats(container *commands.Container) error {
 		contents, err := container.RenderStats(width)
 		if err != nil {
 			gui.createErrorPanel(gui.g, err.Error())
+		}
+
+		gui.reRenderString(gui.g, "main", contents)
+	})
+}
+
+func (gui *Gui) renderContainerTop(container *commands.Container) error {
+	mainView := gui.getMainView()
+	mainView.Autoscroll = false
+	mainView.Wrap = false
+
+	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
+		contents, err := container.RenderTop()
+		if err != nil {
+			gui.reRenderString(gui.g, "main", err.Error())
 		}
 
 		gui.reRenderString(gui.g, "main", contents)

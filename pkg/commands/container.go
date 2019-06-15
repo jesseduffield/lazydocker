@@ -418,3 +418,13 @@ func (c *Container) TTYLogsCommand() *exec.Cmd {
 func (c *Container) Inspect() (types.ContainerJSON, error) {
 	return c.Client.ContainerInspect(context.Background(), c.ID)
 }
+
+// RenderTop returns details about the container
+func (c *Container) RenderTop() (string, error) {
+	result, err := c.Client.ContainerTop(context.Background(), c.ID, []string{})
+	if err != nil {
+		return "", err
+	}
+
+	return utils.RenderTable(append([][]string{result.Titles}, result.Processes...))
+}

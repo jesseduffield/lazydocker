@@ -118,6 +118,7 @@ type CommandTemplatesConfig struct {
 	ViewAllLogs              string `yaml:"viewAlLogs,omitempty"`
 	DockerComposeConfig      string `yaml:"dockerComposeConfig,omitempty"`
 	CheckDockerComposeConfig string `yaml:"checkDockerComposeConfig,omitempty"`
+	ServiceTop               string `yaml:"serviceTop,omitempty"`
 }
 
 type OSConfig struct {
@@ -188,6 +189,7 @@ func GetDefaultConfig() UserConfig {
 			ContainerLogs:            "docker logs --timestamps --follow --tail=100 {{ .Container.ID }}",
 			ViewContainerLogs:        "docker logs --timestamps --follow --tail=100 {{ .Container.ID }}",
 			ContainerTTYLogs:         "docker logs --follow --tail=100 {{ .Container.ID }}",
+			ServiceTop:               "{{ .DockerCompose }} top {{ .Service.Name }}",
 		},
 		CustomCommands: CustomCommands{
 			Containers: []CustomCommand{

@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/go-errors/errors"
@@ -13,11 +14,11 @@ import (
 // list panel functions
 
 func (gui *Gui) getServiceContexts() []string {
-	return []string{"logs", "stats", "container-config"}
+	return []string{"logs", "stats", "container-config", "top"}
 }
 
 func (gui *Gui) getServiceContextTitles() []string {
-	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.ContainerConfigTitle}
+	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.ContainerConfigTitle, gui.Tr.TopTitle}
 }
 
 func (gui *Gui) getSelectedService() (*commands.Service, error) {
@@ -95,6 +96,10 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 		if err := gui.renderContainerConfig(service.Container); err != nil {
 			return err
 		}
+	case "top":
+		if err := gui.renderServiceTop(service); err != nil {
+			return err
+		}
 	default:
 		return errors.New("Unknown context for services panel")
 	}
@@ -108,6 +113,21 @@ func (gui *Gui) renderServiceStats(service *commands.Service) error {
 	}
 
 	return gui.renderContainerStats(service.Container)
+}
+
+func (gui *Gui) renderServiceTop(service *commands.Service) error {
+	mainView := gui.getMainView()
+	mainView.Autoscroll = false
+	mainView.Wrap = false
+
+	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
+		contents, err := service.RenderTop()
+		if err != nil {
+			gui.reRenderString(gui.g, "main", err.Error())
+		}
+
+		gui.reRenderString(gui.g, "main", contents)
+	})
 }
 
 func (gui *Gui) renderServiceLogs(service *commands.Service) error {
