@@ -32,6 +32,7 @@ type TranslationSet struct {
 	RestartingStatus                           string
 	StoppingStatus                             string
 	RemovingStatus                             string
+	RunningCustomCommandStatus                 string
 	RemoveService                              string
 	Stop                                       string
 	Restart                                    string
@@ -62,6 +63,7 @@ type TranslationSet struct {
 	StopService                                string
 	PressEnterToReturn                         string
 	ViewRestartOptions                         string
+	RunCustomCommand                           string
 
 	LogsTitle            string
 	ConfigTitle          string
@@ -72,10 +74,11 @@ type TranslationSet struct {
 
 func englishSet() TranslationSet {
 	return TranslationSet{
-		PruningStatus:    "pruning",
-		RemovingStatus:   "removing",
-		RestartingStatus: "restarting",
-		StoppingStatus:   "stopping",
+		PruningStatus:              "pruning",
+		RemovingStatus:             "removing",
+		RestartingStatus:           "restarting",
+		StoppingStatus:             "stopping",
+		RunningCustomCommandStatus: "running custom command",
 
 		RunningSubprocess:                          "running subprocess",
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
@@ -110,6 +113,7 @@ func englishSet() TranslationSet {
 		PruneVolumes:       "prune unused volumes",
 		PruneImages:        "prune unused images",
 		ViewRestartOptions: "view restart options",
+		RunCustomCommand:   "run predefined custom command",
 
 		AnonymousReportingTitle:  "Help make lazydocker better",
 		AnonymousReportingPrompt: "Would you like to enable anonymous reporting data to help improve lazydocker? (enter/esc)",

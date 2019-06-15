@@ -344,3 +344,22 @@ func (gui *Gui) createCommandMenu(options []*commandOption, status string) error
 
 	return gui.createMenu("", options, len(options), handleMenuPress)
 }
+
+func (gui *Gui) handleServicesCustomCommand(g *gocui.Gui, v *gocui.View) error {
+	service, err := gui.getSelectedService()
+	if err != nil {
+		return nil
+	}
+
+	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+		Service:   service,
+		Container: service.Container,
+	})
+
+	customCommands := gui.Config.UserConfig.CustomCommands.Services
+	if service.Container != nil {
+		customCommands = append(customCommands, gui.Config.UserConfig.CustomCommands.Containers...)
+	}
+
+	return gui.createCustomCommandMenu(customCommands, commandObject)
+}

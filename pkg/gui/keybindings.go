@@ -229,6 +229,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.ViewLogs,
 		},
 		{
+			ViewName:    "containers",
+			Key:         'c',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleContainersCustomCommand,
+			Description: gui.Tr.RunCustomCommand,
+		},
+		{
 			ViewName:    "services",
 			Key:         'd',
 			Modifier:    gocui.ModNone,
@@ -283,6 +290,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceRestartMenu,
 			Description: gui.Tr.ViewRestartOptions,
+		},
+		{
+			ViewName:    "services",
+			Key:         'c',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServicesCustomCommand,
+			Description: gui.Tr.RunCustomCommand,
 		},
 		{
 			ViewName:    "images",

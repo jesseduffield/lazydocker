@@ -82,6 +82,7 @@ type UserConfig struct {
 	Reporting        string                 `yaml:"reporting,omitempty"`
 	ConfirmOnQuit    bool                   `yaml:"confirmOnQuit,omitempty"`
 	CommandTemplates CommandTemplatesConfig `yaml:"commandTemplates,omitempty"`
+	CustomCommands   CustomCommands         `yaml:"customCommands,omitempty"`
 	OS               OSConfig               `yaml:"oS,omitempty"`
 	Update           UpdateConfig           `yaml:"update,omitempty"`
 	Stats            StatsConfig            `yaml:"stats,omitempty"`
@@ -146,6 +147,16 @@ type StatsConfig struct {
 	MaxDuration time.Duration `yaml:"maxDuration,omitempty"`
 }
 
+type CustomCommands struct {
+	Containers []CustomCommand `yaml:"containers,omitempty"`
+	Services   []CustomCommand `yaml:"services,omitempty"`
+}
+
+type CustomCommand struct {
+	Attach  bool
+	Command string
+}
+
 // GetDefaultConfig returns the application default configuration
 // NOTE: do not default a boolean to true, because false is the boolean zero value and this will be ignored when parsing the user's config
 func GetDefaultConfig() UserConfig {
@@ -177,6 +188,15 @@ func GetDefaultConfig() UserConfig {
 			ContainerLogs:            "docker logs --timestamps --follow --tail=100 {{ .Container.ID }}",
 			ViewContainerLogs:        "docker logs --timestamps --follow --tail=100 {{ .Container.ID }}",
 			ContainerTTYLogs:         "docker logs --follow --tail=100 {{ .Container.ID }}",
+		},
+		CustomCommands: CustomCommands{
+			Containers: []CustomCommand{
+				{
+					Attach:  true,
+					Command: "docker exec -it {{ .Container.ID }} /bin/bash",
+				},
+			},
+			Services: []CustomCommand{},
 		},
 		OS: GetPlatformDefaultConfig(),
 		Update: UpdateConfig{

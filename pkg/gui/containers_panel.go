@@ -497,3 +497,18 @@ func (gui *Gui) handleContainerViewLogs(g *gocui.Gui, v *gocui.View) error {
 	gui.SubProcess = c
 	return gui.Errors.ErrSubProcess
 }
+
+func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error {
+	container, err := gui.getSelectedContainer()
+	if err != nil {
+		return nil
+	}
+
+	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+		Container: container,
+	})
+
+	customCommands := gui.Config.UserConfig.CustomCommands.Containers
+
+	return gui.createCustomCommandMenu(customCommands, commandObject)
+}
