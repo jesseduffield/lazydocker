@@ -8,16 +8,20 @@ import (
 )
 
 type TaskManager struct {
-	waitingTasks []*Task
-	currentTask  *Task
-	waitingMutex sync.Mutex
-	Log          *logrus.Entry
+	waitingTask       *Task
+	currentTask       *Task
+	waitingMutex      sync.Mutex
+	taskIDMutex       sync.Mutex
+	Log               *logrus.Entry
+	waitingTaskAlerts chan struct{}
+	newTaskId         int
 }
 
 type Task struct {
 	stop          chan struct{}
 	notifyStopped chan struct{}
 	Log           *logrus.Entry
+	f             func(chan struct{})
 }
 
 func NewTaskManager(log *logrus.Entry) *TaskManager {
@@ -25,24 +29,30 @@ func NewTaskManager(log *logrus.Entry) *TaskManager {
 }
 
 func (t *TaskManager) NewTask(f func(stop chan struct{})) error {
-
-	// TODO: topple the previous task if there is a new one
-
 	go func() {
+		t.taskIDMutex.Lock()
+		t.newTaskId++
+		taskID := t.newTaskId
+		t.taskIDMutex.Unlock()
+
 		t.waitingMutex.Lock()
 		defer t.waitingMutex.Unlock()
-
-		if t.currentTask != nil {
-			t.currentTask.Stop()
+		if taskID < t.newTaskId {
+			return
 		}
 
 		stop := make(chan struct{}, 1) // we don't want to block on this in case the task already returned
 		notifyStopped := make(chan struct{})
 
+		if t.currentTask != nil {
+			t.currentTask.Stop()
+		}
+
 		t.currentTask = &Task{
 			stop:          stop,
 			notifyStopped: notifyStopped,
 			Log:           t.Log,
+			f:             f,
 		}
 
 		go func() {
