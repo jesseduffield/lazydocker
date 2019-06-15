@@ -122,11 +122,9 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 		return err
 	}
 
-	go gui.T.NewTask(func(stop chan struct{}) {
+	return gui.T.NewTask(func(stop chan struct{}) {
 		gui.renderString(gui.g, "main", string(data))
 	})
-
-	return nil
 }
 
 func (gui *Gui) renderContainerStats(container *commands.Container) error {
@@ -173,17 +171,15 @@ func (gui *Gui) renderContainerLogs(container *commands.Container) error {
 }
 
 func (gui *Gui) renderLogsForRegularContainer(container *commands.Container) error {
-	gui.renderLogs(container, gui.Config.UserConfig.CommandTemplates.ContainerLogs, func(cmd *exec.Cmd) {
+	return gui.renderLogs(container, gui.Config.UserConfig.CommandTemplates.ContainerLogs, func(cmd *exec.Cmd) {
 		mainView := gui.getMainView()
 		cmd.Stdout = mainView
 		cmd.Stderr = mainView
 	})
-
-	return nil
 }
 
 func (gui *Gui) renderLogsForTTYContainer(container *commands.Container) error {
-	gui.renderLogs(container, gui.Config.UserConfig.CommandTemplates.ContainerTTYLogs, func(cmd *exec.Cmd) {
+	return gui.renderLogs(container, gui.Config.UserConfig.CommandTemplates.ContainerTTYLogs, func(cmd *exec.Cmd) {
 		// for some reason just saying cmd.Stdout = mainView does not work here as it does for non-tty containers, so we feed it through line by line
 		r, err := cmd.StdoutPipe()
 		if err != nil {
@@ -200,12 +196,10 @@ func (gui *Gui) renderLogsForTTYContainer(container *commands.Container) error {
 			}
 		}()
 	})
-
-	return nil
 }
 
-func (gui *Gui) renderLogs(container *commands.Container, template string, setup func(*exec.Cmd)) {
-	gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
+func (gui *Gui) renderLogs(container *commands.Container, template string, setup func(*exec.Cmd)) error {
+	return gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
 		gui.clearMainView()
 
 		cmd := container.TTYLogsCommand()

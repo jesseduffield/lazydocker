@@ -137,12 +137,15 @@ func (gui *Gui) renderServiceLogs(service *commands.Service) error {
 	}
 
 	if service.Container == nil {
-		go gui.T.NewTask(func(stop chan struct{}) {
+		gui.Log.Warn("container is nil")
+		return gui.T.NewTask(func(stop chan struct{}) {
+			gui.Log.Warn("about to clear main view")
 			gui.clearMainView()
+			gui.Log.Warn("cleared main view")
 		})
-		return nil
 	}
 
+	gui.Log.Warn("about to render container logs for service ", service.Name)
 	return gui.renderContainerLogs(service.Container)
 }
 

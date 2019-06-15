@@ -79,7 +79,7 @@ func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) renderCredits() error {
-	go gui.T.NewTask(func(stop chan struct{}) {
+	return gui.T.NewTask(func(stop chan struct{}) {
 		mainView := gui.getMainView()
 		mainView.Autoscroll = false
 		mainView.Wrap = true
@@ -95,12 +95,10 @@ func (gui *Gui) renderCredits() error {
 
 		gui.renderString(gui.g, "main", dashboardString)
 	})
-
-	return nil
 }
 
 func (gui *Gui) renderAllLogs() error {
-	go gui.T.NewTask(func(stop chan struct{}) {
+	return gui.T.NewTask(func(stop chan struct{}) {
 		mainView := gui.getMainView()
 		mainView.Autoscroll = true
 		mainView.Wrap = true
@@ -129,12 +127,10 @@ func (gui *Gui) renderAllLogs() error {
 
 		cmd.Wait()
 	})
-
-	return nil
 }
 
 func (gui *Gui) renderDockerComposeConfig() error {
-	go gui.T.NewTask(func(stop chan struct{}) {
+	return gui.T.NewTask(func(stop chan struct{}) {
 		mainView := gui.getMainView()
 		mainView.Autoscroll = false
 		mainView.Wrap = true
@@ -142,8 +138,6 @@ func (gui *Gui) renderDockerComposeConfig() error {
 		config := gui.DockerCommand.DockerComposeConfig()
 		gui.renderString(gui.g, "main", config)
 	})
-
-	return nil
 }
 
 func (gui *Gui) handleOpenConfig(g *gocui.Gui, v *gocui.View) error {

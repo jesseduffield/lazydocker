@@ -95,7 +95,7 @@ func (gui *Gui) handleVolumeSelect(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) renderVolumeConfig(mainView *gocui.View, volume *commands.Volume) error {
-	go gui.T.NewTask(func(stop chan struct{}) {
+	return gui.T.NewTask(func(stop chan struct{}) {
 		mainView.Autoscroll = false
 		mainView.Wrap = true
 
@@ -142,8 +142,6 @@ func (gui *Gui) renderVolumeConfig(mainView *gocui.View, volume *commands.Volume
 
 		gui.renderString(gui.g, "main", output)
 	})
-
-	return nil
 }
 
 func formatMapItem(padding int, k string, v interface{}) string {

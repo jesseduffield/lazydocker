@@ -25,25 +25,30 @@ func NewTaskManager(log *logrus.Entry) *TaskManager {
 }
 
 func (t *TaskManager) NewTask(f func(stop chan struct{})) error {
-	t.waitingMutex.Lock()
-	defer t.waitingMutex.Unlock()
 
-	if t.currentTask != nil {
-		t.currentTask.Stop()
-	}
-
-	stop := make(chan struct{}, 1) // we don't want to block on this in case the task already returned
-	notifyStopped := make(chan struct{})
-
-	t.currentTask = &Task{
-		stop:          stop,
-		notifyStopped: notifyStopped,
-		Log:           t.Log,
-	}
+	// TODO: topple the previous task if there is a new one
 
 	go func() {
-		f(stop)
-		close(notifyStopped)
+		t.waitingMutex.Lock()
+		defer t.waitingMutex.Unlock()
+
+		if t.currentTask != nil {
+			t.currentTask.Stop()
+		}
+
+		stop := make(chan struct{}, 1) // we don't want to block on this in case the task already returned
+		notifyStopped := make(chan struct{})
+
+		t.currentTask = &Task{
+			stop:          stop,
+			notifyStopped: notifyStopped,
+			Log:           t.Log,
+		}
+
+		go func() {
+			f(stop)
+			close(notifyStopped)
+		}()
 	}()
 
 	return nil

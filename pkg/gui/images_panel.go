@@ -97,7 +97,7 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image) error {
-	go gui.T.NewTask(func(stop chan struct{}) {
+	return gui.T.NewTask(func(stop chan struct{}) {
 		padding := 10
 		output := ""
 		output += utils.WithPadding("Name: ", padding) + image.Name + "\n"
@@ -118,8 +118,6 @@ func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image) e
 
 		gui.renderString(gui.g, "main", output)
 	})
-
-	return nil
 }
 
 func (gui *Gui) refreshImages() error {
