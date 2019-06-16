@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/lazydocker/pkg/app"
 	"github.com/jesseduffield/lazydocker/pkg/config"
@@ -50,6 +51,11 @@ func main() {
 	}
 
 	if err != nil {
+		if client.IsErrConnectionFailed(err) {
+			log.Println(app.Tr.ConnectionFailed)
+			os.Exit(0)
+		}
+
 		newErr := errors.Wrap(err, 0)
 		stackTrace := newErr.ErrorStack()
 		app.Log.Error(stackTrace)

@@ -202,7 +202,11 @@ func (gui *Gui) renderLogs(container *commands.Container, template string, setup
 	return gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
 		gui.clearMainView()
 
-		cmd := container.TTYLogsCommand()
+		command := utils.ApplyTemplate(
+			template,
+			gui.DockerCommand.NewCommandObject(commands.CommandObject{Container: container}),
+		)
+		cmd := gui.OSCommand.RunCustomCommand(command)
 
 		setup(cmd)
 
@@ -211,6 +215,7 @@ func (gui *Gui) renderLogs(container *commands.Container, template string, setup
 		go func() {
 			<-stop
 			cmd.Process.Kill()
+			gui.Log.Info("killed container logs process")
 			return
 		}()
 

@@ -283,7 +283,7 @@ func (c *Container) GetDisplayCPUPerc() string {
 
 	percentage, err := strconv.ParseFloat(strings.TrimSuffix(stats.CPUPerc, "%"), 32)
 	if err != nil {
-		c.Log.Error(err)
+		// probably complaining about not being able to convert '--'
 		return ""
 	}
 

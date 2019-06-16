@@ -1,9 +1,21 @@
 package main
 
-import "fmt"
+import "log"
 
 func main() {
-	var arr []string
-	arr = nil
-	fmt.Println(len(arr))
+	c := make(chan struct{})
+
+	close(c)
+
+	close(c)
+
+	select {
+	case <-c:
+		log.Println("hmm")
+	}
+
+	select {
+	case <-c:
+		log.Println("okay")
+	}
 }

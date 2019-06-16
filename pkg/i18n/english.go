@@ -20,6 +20,7 @@ type TranslationSet struct {
 	AnonymousReportingPrompt                   string
 	ConfirmQuit                                string
 	ErrorOccurred                              string
+	ConnectionFailed                           string
 	Donate                                     string
 	Cancel                                     string
 	CustomCommandTitle                         string
@@ -84,9 +85,10 @@ func englishSet() TranslationSet {
 		RunningSubprocess:                          "running subprocess",
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
 
-		ErrorOccurred: "An error occurred! Please create an issue at https://github.com/jesseduffield/lazydocker/issues",
-		Donate:        "Donate",
-		Confirm:       "Confirm",
+		ErrorOccurred:    "An error occurred! Please create an issue at https://github.com/jesseduffield/lazydocker/issues",
+		ConnectionFailed: "connection to docker client failed. You may need to restart the docker client",
+		Donate:           "Donate",
+		Confirm:          "Confirm",
 
 		Navigate:           "navigate",
 		Execute:            "execute",

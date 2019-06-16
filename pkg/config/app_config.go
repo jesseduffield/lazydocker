@@ -182,7 +182,7 @@ func GetDefaultConfig() UserConfig {
 			StopService:              "{{ .DockerCompose }} stop {{ .Service.Name }}",
 			ServiceLogs:              "{{ .DockerCompose }} logs --since=60m --follow {{ .Service.Name }}",
 			ViewServiceLogs:          "{{ .DockerCompose }} logs --follow {{ .Service.Name }}",
-			AllLogs:                  "{{ .DockerCompose }} logs --since=60m --follow",
+			AllLogs:                  "{{ .DockerCompose }} logs --tail=300 --follow",
 			ViewAllLogs:              "{{ .DockerCompose }} logs",
 			DockerComposeConfig:      "{{ .DockerCompose }} config",
 			CheckDockerComposeConfig: "{{ .DockerCompose }} config --quiet",
