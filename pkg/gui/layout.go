@@ -39,6 +39,12 @@ func (gui *Gui) onFocusLost(v *gocui.View, newView *gocui.View) error {
 	if v == nil {
 		return nil
 	}
+
+	// refocusing because in responsive mode (when the window is very short) we want to ensure that after the view size changes we can still see the last selected item
+	if err := gui.focusPointInView(v); err != nil {
+		return err
+	}
+
 	gui.Log.Info(v.Name() + " focus lost")
 	return nil
 }
@@ -47,6 +53,11 @@ func (gui *Gui) onFocus(v *gocui.View) error {
 	if v == nil {
 		return nil
 	}
+
+	if err := gui.focusPointInView(v); err != nil {
+		return err
+	}
+
 	gui.Log.Info(v.Name() + " focus gained")
 	return nil
 }
@@ -260,35 +271,36 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 	}
 
-	type listViewState struct {
-		selectedLine int
-		lineCount    int
-	}
-
-	// TODO: find out if I should add the services view to this.
-	listViews := map[*gocui.View]listViewState{
-		containersView: {selectedLine: gui.State.Panels.Containers.SelectedLine, lineCount: len(gui.DockerCommand.DisplayContainers)},
-		imagesView:     {selectedLine: gui.State.Panels.Images.SelectedLine, lineCount: len(gui.DockerCommand.Images)},
-		volumesView:    {selectedLine: gui.State.Panels.Volumes.SelectedLine, lineCount: len(gui.DockerCommand.Volumes)},
-		servicesView:   {selectedLine: gui.State.Panels.Services.SelectedLine, lineCount: len(gui.DockerCommand.Services)},
-	}
-
-	// menu view might not exist so we check to be safe
-	if menuView, err := gui.g.View("menu"); err == nil {
-		listViews[menuView] = listViewState{selectedLine: gui.State.Panels.Menu.SelectedLine, lineCount: gui.State.MenuItemCount}
-	}
-	for view, state := range listViews {
-		// check if the selected line is now out of view and if so refocus it
-		if view == gui.g.CurrentView() {
-			if err := gui.focusPoint(0, state.selectedLine, state.lineCount, view); err != nil {
-				return err
-			}
-		}
-	}
-
 	// here is a good place log some stuff
 	// if you download humanlog and do tail -f development.log | humanlog
 	// this will let you see these branches as prettified json
 	// gui.Log.Info(utils.AsJson(gui.State.Branches[0:4]))
 	return gui.resizeCurrentPopupPanel(g)
+}
+
+type listViewState struct {
+	selectedLine int
+	lineCount    int
+}
+
+func (gui *Gui) focusPointInView(view *gocui.View) error {
+	if view == nil {
+		return nil
+	}
+
+	listViews := map[string]listViewState{
+		"containers": {selectedLine: gui.State.Panels.Containers.SelectedLine, lineCount: len(gui.DockerCommand.DisplayContainers)},
+		"images":     {selectedLine: gui.State.Panels.Images.SelectedLine, lineCount: len(gui.DockerCommand.Images)},
+		"volumes":    {selectedLine: gui.State.Panels.Volumes.SelectedLine, lineCount: len(gui.DockerCommand.Volumes)},
+		"services":   {selectedLine: gui.State.Panels.Services.SelectedLine, lineCount: len(gui.DockerCommand.Services)},
+		"menu":       listViewState{selectedLine: gui.State.Panels.Menu.SelectedLine, lineCount: gui.State.MenuItemCount},
+	}
+
+	if state, ok := listViews[view.Name()]; ok {
+		if err := gui.focusPoint(0, state.selectedLine, state.lineCount, view); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -158,34 +158,24 @@ func (gui *Gui) focusPoint(selectedX int, selectedY int, lineCount int, v *gocui
 
 	ly := utils.Max(height-1, 0)
 
-	// if line is above origin, move origin and set cursor to zero
-	// if line is below origin + height, move origin and set cursor to max
-	// otherwise set cursor to value - origin
-	gui.Log.Warn("ly: ", ly)
-	gui.Log.Warn("lineCount: ", lineCount)
-	gui.Log.Warn("selectedY: ", selectedY)
-	gui.Log.Warn("oy: ", oy)
-	gui.Log.Warn("cy: ", cy)
-
 	windowStart := oy
 	windowEnd := oy + ly
 
 	if selectedY < windowStart {
-		gui.Log.Warn("one")
 		oy = utils.Max(oy-(windowStart-selectedY), 0)
 	} else if selectedY > windowEnd {
-		gui.Log.Warn("two")
 		oy += (selectedY - windowEnd)
 	}
 
 	if windowEnd > lineCount-1 {
-		gui.Log.Warn("three")
 		shiftAmount := (windowEnd - (lineCount - 1))
 		oy = utils.Max(oy-shiftAmount, 0)
 	}
+
 	if originalOy != oy {
 		_ = v.SetOrigin(ox, oy)
 	}
+
 	cy = selectedY - oy
 	if originalCy != cy {
 		_ = v.SetCursor(cx, selectedY-oy)
