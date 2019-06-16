@@ -267,9 +267,10 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 
 	// TODO: find out if I should add the services view to this.
 	listViews := map[*gocui.View]listViewState{
-		containersView: {selectedLine: gui.State.Panels.Containers.SelectedLine, lineCount: len(gui.DockerCommand.Containers)},
+		containersView: {selectedLine: gui.State.Panels.Containers.SelectedLine, lineCount: len(gui.DockerCommand.DisplayContainers)},
 		imagesView:     {selectedLine: gui.State.Panels.Images.SelectedLine, lineCount: len(gui.DockerCommand.Images)},
 		volumesView:    {selectedLine: gui.State.Panels.Volumes.SelectedLine, lineCount: len(gui.DockerCommand.Volumes)},
+		servicesView:   {selectedLine: gui.State.Panels.Services.SelectedLine, lineCount: len(gui.DockerCommand.Services)},
 	}
 
 	// menu view might not exist so we check to be safe

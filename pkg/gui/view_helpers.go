@@ -146,32 +146,49 @@ func (gui *Gui) resetOrigin(v *gocui.View) error {
 }
 
 // if the cursor down past the last item, move it to the last line
-func (gui *Gui) focusPoint(cx int, cy int, lineCount int, v *gocui.View) error {
-	if cy < 0 || cy > lineCount {
+func (gui *Gui) focusPoint(selectedX int, selectedY int, lineCount int, v *gocui.View) error {
+	if selectedY < 0 || selectedY > lineCount {
 		return nil
 	}
 	ox, oy := v.Origin()
+	originalOy := oy
+	cx, cy := v.Cursor()
+	originalCy := cy
 	_, height := v.Size()
 
-	ly := height - 1
-	if ly == -1 {
-		ly = 0
-	}
+	ly := utils.Max(height-1, 0)
 
 	// if line is above origin, move origin and set cursor to zero
 	// if line is below origin + height, move origin and set cursor to max
 	// otherwise set cursor to value - origin
-	if ly > lineCount {
-		_ = v.SetCursor(cx, cy)
-		_ = v.SetOrigin(ox, 0)
-	} else if cy < oy {
-		_ = v.SetCursor(cx, 0)
-		_ = v.SetOrigin(ox, cy)
-	} else if cy > oy+ly {
-		_ = v.SetCursor(cx, ly)
-		_ = v.SetOrigin(ox, cy-ly)
-	} else {
-		_ = v.SetCursor(cx, cy-oy)
+	gui.Log.Warn("ly: ", ly)
+	gui.Log.Warn("lineCount: ", lineCount)
+	gui.Log.Warn("selectedY: ", selectedY)
+	gui.Log.Warn("oy: ", oy)
+	gui.Log.Warn("cy: ", cy)
+
+	windowStart := oy
+	windowEnd := oy + ly
+
+	if selectedY < windowStart {
+		gui.Log.Warn("one")
+		oy = utils.Max(oy-(windowStart-selectedY), 0)
+	} else if selectedY > windowEnd {
+		gui.Log.Warn("two")
+		oy += (selectedY - windowEnd)
+	}
+
+	if windowEnd > lineCount-1 {
+		gui.Log.Warn("three")
+		shiftAmount := (windowEnd - (lineCount - 1))
+		oy = utils.Max(oy-shiftAmount, 0)
+	}
+	if originalOy != oy {
+		_ = v.SetOrigin(ox, oy)
+	}
+	cy = selectedY - oy
+	if originalCy != cy {
+		_ = v.SetCursor(cx, selectedY-oy)
 	}
 	return nil
 }

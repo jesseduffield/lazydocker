@@ -95,6 +95,14 @@ func Min(x, y int) int {
 	return y
 }
 
+// Max returns the maximum of two integers
+func Max(x, y int) int {
+	if x > y {
+		return x
+	}
+	return y
+}
+
 type Displayable interface {
 	GetDisplayStrings(bool) []string
 }
