@@ -79,7 +79,7 @@ For contributor discussion about things not better discussed here in the repo, j
 
 If you would like to support the development of lazydocker, please donate
 
-[![Donate](https://d1iczxrky3cnb2.cloudfront.net/button-medium-blue.png)](https://donorbox.org/lazygit)
+[![Donate](https://d1iczxrky3cnb2.cloudfront.net/button-medium-blue.png)](https://donorbox.org/https://donorbox.org/lazydocker)
 
 ## Social
 
