@@ -4,8 +4,8 @@ builds:
   - env:
       - CGO_ENABLED=0
     goos:
-      - freebsd
-      - windows
+      # - freebsd
+      # - windows # may reenable later
       - darwin
       - linux
     goarch:
