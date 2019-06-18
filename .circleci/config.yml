@@ -36,7 +36,7 @@ jobs:
 
   release:
     docker:
-      - image: circleci/golang:1.10
+      - image: circleci/golang:1.12
     working_directory: /go/src/github.com/jesseduffield/lazydocker
     steps:
       - checkout
