@@ -97,6 +97,9 @@ type View struct {
 	HasLoader bool
 
 	writeMutex sync.Mutex
+
+	// IgnoreCarriageReturns tells us whether to ignore '\r' characters
+	IgnoreCarriageReturns bool
 }
 
 type viewLine struct {
@@ -238,6 +241,9 @@ func (v *View) Write(p []byte) (n int, err error) {
 		case '\n':
 			v.lines = append(v.lines, nil)
 		case '\r':
+			if v.IgnoreCarriageReturns {
+				continue
+			}
 			nl := len(v.lines)
 			if nl > 0 {
 				v.lines[nl-1] = nil
