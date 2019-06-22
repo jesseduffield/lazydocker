@@ -225,22 +225,20 @@ type Details struct {
 		IPPrefixLen            int         `json:"IPPrefixLen"`
 		IPv6Gateway            string      `json:"IPv6Gateway"`
 		MacAddress             string      `json:"MacAddress"`
-		Networks               struct {
-			ApdevDefault struct {
-				IPAMConfig          interface{} `json:"IPAMConfig"`
-				Links               interface{} `json:"Links"`
-				Aliases             []string    `json:"Aliases"`
-				NetworkID           string      `json:"NetworkID"`
-				EndpointID          string      `json:"EndpointID"`
-				Gateway             string      `json:"Gateway"`
-				IPAddress           string      `json:"IPAddress"`
-				IPPrefixLen         int         `json:"IPPrefixLen"`
-				IPv6Gateway         string      `json:"IPv6Gateway"`
-				GlobalIPv6Address   string      `json:"GlobalIPv6Address"`
-				GlobalIPv6PrefixLen int         `json:"GlobalIPv6PrefixLen"`
-				MacAddress          string      `json:"MacAddress"`
-				DriverOpts          interface{} `json:"DriverOpts"`
-			} `json:"apdev_default"`
+		Networks               map[string]struct {
+			IPAMConfig          interface{} `json:"IPAMConfig"`
+			Links               interface{} `json:"Links"`
+			Aliases             []string    `json:"Aliases"`
+			NetworkID           string      `json:"NetworkID"`
+			EndpointID          string      `json:"EndpointID"`
+			Gateway             string      `json:"Gateway"`
+			IPAddress           string      `json:"IPAddress"`
+			IPPrefixLen         int         `json:"IPPrefixLen"`
+			IPv6Gateway         string      `json:"IPv6Gateway"`
+			GlobalIPv6Address   string      `json:"GlobalIPv6Address"`
+			GlobalIPv6PrefixLen int         `json:"GlobalIPv6PrefixLen"`
+			MacAddress          string      `json:"MacAddress"`
+			DriverOpts          interface{} `json:"DriverOpts"`
 		} `json:"Networks"`
 	} `json:"NetworkSettings"`
 }
