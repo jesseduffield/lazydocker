@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
@@ -91,6 +92,7 @@ func (gui *Gui) renderCredits() error {
 				"Keybindings: https://github.com/jesseduffield/lazydocker/blob/master/docs/keybindings",
 				"Config Options: https://github.com/jesseduffield/lazydocker/blob/master/docs/Config.md",
 				"Raise an Issue: https://github.com/jesseduffield/lazydocker/issues",
+				utils.ColoredString("Buy Jesse a coffee: https://donorbox.org/lazydocker", color.FgMagenta), // caffeine ain't free
 			}, "\n\n")
 
 		gui.renderString(gui.g, "main", dashboardString)
