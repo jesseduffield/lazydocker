@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"strings"
 	"sync"
 
 	// "io"
@@ -267,12 +268,17 @@ func (gui *Gui) Run() error {
 		gui.goEvery(time.Millisecond*100, gui.refreshContainersAndServices)
 		gui.goEvery(time.Millisecond*100, gui.refreshVolumes)
 		gui.goEvery(time.Millisecond*1000, gui.DockerCommand.UpdateContainerDetails)
+		gui.goEvery(time.Millisecond*1000, gui.checkForContextChange)
 	}()
 
 	go gui.DockerCommand.MonitorContainerStats()
 
 	go func() {
 		for err := range gui.ErrorChan {
+			if strings.Contains(err.Error(), "No such container") {
+				// this happens all the time when e.g. restarting containers so we won't worry about it
+				gui.Log.Warn(err)
+			}
 			gui.createErrorPanel(gui.g, err.Error())
 		}
 	}()
@@ -285,6 +291,11 @@ func (gui *Gui) Run() error {
 
 	err = g.MainLoop()
 	return err
+}
+
+// checkForContextChange runs the currently focused panel's 'select' function, simulating the current item having just been selected. This will then trigger a check to see if anything's changed (e.g. a service has a new container) and if so, the appropriate code will run. For example, if you're reading logs from a service and all of a sudden its container changes, this will trigger the 'select' function, which will work out that the context is not different because of the new container, and then it will re-attempt to get the logs, this time for the correct container. This 'context' is stored in the main panel's ObjectKey. I'm using the term 'context' here more broadly than just the different tabs you can view in a panel.
+func (gui *Gui) checkForContextChange() error {
+	return gui.newLineFocused(gui.g.CurrentView())
 }
 
 func (gui *Gui) reRenderMain() error {

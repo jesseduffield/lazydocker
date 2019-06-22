@@ -109,6 +109,7 @@ type CommandTemplatesConfig struct {
 	ServiceLogs     string `yaml:"serviceLogs,omitempty"`
 	ViewServiceLogs string `yaml:"viewServiceLogs,omitempty"`
 	RebuildService  string `yaml:"rebuildService,omitempty"`
+	RecreateService string `yaml:"recreateService,omitempty"`
 
 	// ViewContainerLogs is for viewing the container logs in a subprocess. We have this as a separate command in case you want to show all the logs rather than just tail them for the sake of reducing CPU load when in the lazydocker GUI
 	ViewContainerLogs        string `yaml:"viewContainerLogs,omitempty"`
@@ -179,6 +180,7 @@ func GetDefaultConfig() UserConfig {
 			DockerCompose:            "docker-compose",
 			RestartService:           "{{ .DockerCompose }} restart {{ .Service.Name }}",
 			RebuildService:           "{{ .DockerCompose }} up -d --build {{ .Service.Name }}",
+			RecreateService:          "{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}",
 			StopService:              "{{ .DockerCompose }} stop {{ .Service.Name }}",
 			ServiceLogs:              "{{ .DockerCompose }} logs --since=60m --follow {{ .Service.Name }}",
 			ViewServiceLogs:          "{{ .DockerCompose }} logs --follow {{ .Service.Name }}",
@@ -188,7 +190,6 @@ func GetDefaultConfig() UserConfig {
 			CheckDockerComposeConfig: "{{ .DockerCompose }} config --quiet",
 			ContainerLogs:            "docker logs --timestamps --follow --since=60m {{ .Container.ID }}",
 			ViewContainerLogs:        "docker logs --timestamps --follow --since=60m {{ .Container.ID }}",
-			ContainerTTYLogs:         "docker logs --follow --since=60m {{ .Container.ID }}",
 			ServiceTop:               "{{ .DockerCompose }} top {{ .Service.Name }}",
 		},
 		CustomCommands: CustomCommands{

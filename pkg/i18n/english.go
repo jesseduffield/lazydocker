@@ -38,6 +38,7 @@ type TranslationSet struct {
 	Stop                                       string
 	Restart                                    string
 	Rebuild                                    string
+	Recreate                                   string
 	PreviousContext                            string
 	NextContext                                string
 	Attach                                     string
@@ -105,6 +106,7 @@ func englishSet() TranslationSet {
 		Stop:               "stop",
 		Restart:            "restart",
 		Rebuild:            "rebuild",
+		Recreate:           "recreate",
 		PreviousContext:    "previous tab",
 		NextContext:        "next tab",
 		Attach:             "attach",

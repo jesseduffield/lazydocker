@@ -1,10 +1,8 @@
 package gui
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -164,51 +162,18 @@ func (gui *Gui) renderContainerLogs(container *commands.Container) error {
 	mainView.Autoscroll = true
 	mainView.Wrap = true
 
-	if container.Details.Config.OpenStdin {
-		return gui.renderLogsForTTYContainer(container)
-	}
-	return gui.renderLogsForRegularContainer(container)
-}
-
-func (gui *Gui) renderLogsForRegularContainer(container *commands.Container) error {
-	return gui.renderLogs(container, gui.Config.UserConfig.CommandTemplates.ContainerLogs, func(cmd *exec.Cmd) {
-		mainView := gui.getMainView()
-		cmd.Stdout = mainView
-		cmd.Stderr = mainView
-	})
-}
-
-func (gui *Gui) renderLogsForTTYContainer(container *commands.Container) error {
-	return gui.renderLogs(container, gui.Config.UserConfig.CommandTemplates.ContainerTTYLogs, func(cmd *exec.Cmd) {
-		// for some reason just saying cmd.Stdout = mainView does not work here as it does for non-tty containers, so we feed it through line by line
-		r, err := cmd.StdoutPipe()
-		if err != nil {
-			gui.ErrorChan <- err
-		}
-
-		go func() {
-			mainView := gui.getMainView()
-			s := bufio.NewScanner(r)
-			s.Split(bufio.ScanLines)
-			for s.Scan() {
-				// I might put a check on the stopped channel here. Would mean more code duplication though
-				mainView.Write(append(s.Bytes(), '\n'))
-			}
-		}()
-	})
-}
-
-func (gui *Gui) renderLogs(container *commands.Container, template string, setup func(*exec.Cmd)) error {
 	return gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
 		gui.clearMainView()
 
 		command := utils.ApplyTemplate(
-			template,
+			gui.Config.UserConfig.CommandTemplates.ContainerLogs,
 			gui.DockerCommand.NewCommandObject(commands.CommandObject{Container: container}),
 		)
 		cmd := gui.OSCommand.RunCustomCommand(command)
 
-		setup(cmd)
+		mainView := gui.getMainView()
+		cmd.Stdout = mainView
+		cmd.Stderr = mainView
 
 		cmd.Start()
 

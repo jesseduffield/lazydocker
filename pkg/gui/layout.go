@@ -162,6 +162,9 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 		v.Wrap = true
 		v.FgColor = gocui.ColorWhite
+
+		// when you run a docker container with the -it flags (interactive mode) it adds carriage returns for some reason. This is not docker's fault, it's an os-level default.
+		v.IgnoreCarriageReturns = true
 	}
 
 	if v, err := g.SetView("status", 0, 0, leftSideWidth, vHeights["status"]-1, gocui.BOTTOM|gocui.RIGHT); err != nil {

@@ -77,20 +77,20 @@ func (gui *Gui) resetMainView() {
 	gui.getMainView().Wrap = true
 }
 
-func (gui *Gui) newLineFocused(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) newLineFocused(v *gocui.View) error {
 	switch v.Name() {
 	case "menu":
-		return gui.handleMenuSelect(g, v)
+		return gui.handleMenuSelect(gui.g, v)
 	case "status":
-		return gui.handleStatusSelect(g, v)
+		return gui.handleStatusSelect(gui.g, v)
 	case "services":
-		return gui.handleServiceSelect(g, v)
+		return gui.handleServiceSelect(gui.g, v)
 	case "containers":
-		return gui.handleContainerSelect(g, v)
+		return gui.handleContainerSelect(gui.g, v)
 	case "images":
-		return gui.handleImageSelect(g, v)
+		return gui.handleImageSelect(gui.g, v)
 	case "volumes":
-		return gui.handleVolumeSelect(g, v)
+		return gui.handleVolumeSelect(gui.g, v)
 	case "confirmation":
 		return nil
 	case "main":
@@ -137,7 +137,7 @@ func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View) error {
 		return err
 	}
 
-	return gui.newLineFocused(g, newView)
+	return gui.newLineFocused(newView)
 }
 
 func (gui *Gui) resetOrigin(v *gocui.View) error {

@@ -64,7 +64,11 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	key := "services-" + service.ID + "-" + gui.getServiceContexts()[gui.State.Panels.Services.ContextIndex]
+	containerID := ""
+	if service.Container != nil {
+		containerID = service.Container.ID
+	}
+	key := "services-" + service.ID + "-" + containerID + "-" + gui.getServiceContexts()[gui.State.Panels.Services.ContextIndex]
 	if gui.State.Panels.Main.ObjectKey == key {
 		return nil
 	} else {
@@ -305,7 +309,12 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 
 	rebuildCommand := utils.ApplyTemplate(
 		gui.Config.UserConfig.CommandTemplates.RebuildService,
-		service,
+		gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+	)
+
+	recreateCommand := utils.ApplyTemplate(
+		gui.Config.UserConfig.CommandTemplates.RecreateService,
+		gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
 	)
 
 	options := []*commandOption{
@@ -320,8 +329,21 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 					if err := service.Restart(); err != nil {
 						return gui.createErrorPanel(gui.g, err.Error())
 					}
-
-					return gui.refreshContainersAndServices()
+					return nil
+				})
+			},
+		}, {
+			description: gui.Tr.Recreate,
+			command: utils.ApplyTemplate(
+				gui.Config.UserConfig.CommandTemplates.RecreateService,
+				gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+			),
+			f: func() error {
+				return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
+					if err := gui.OSCommand.RunCommand(recreateCommand); err != nil {
+						return gui.createErrorPanel(gui.g, err.Error())
+					}
+					return nil
 				})
 			},
 		},

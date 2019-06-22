@@ -426,3 +426,8 @@ func (c *Container) RenderTop() (string, error) {
 
 	return utils.RenderTable(append([][]string{result.Titles}, result.Processes...))
 }
+
+// DetailsLoaded tells us whether we have yet loaded the details for a container. Because this is an asynchronous operation, sometimes we have the container before we have its details. Details is a struct, not a pointer to a struct, so it starts off with heaps of zero values. One of which is the container Image, which starts as a blank string. Given that every container should have an image, this is a good proxy to use
+func (c *Container) DetailsLoaded() bool {
+	return c.Details.Image != ""
+}
