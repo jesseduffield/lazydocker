@@ -15,8 +15,8 @@ gui:
     - blue
 reporting: undetermined
 commandTemplates:
-  restartService: '{{ .DockerCompose }} restart {{ .Service.Name }}'
   dockerCompose: docker-compose
+  restartService: '{{ .DockerCompose }} restart {{ .Service.Name }}'
   stopService: '{{ .DockerCompose }} stop {{ .Service.Name }}'
   serviceLogs: '{{ .DockerCompose }} logs --since=60m --follow {{ .Service.Name }}'
   viewServiceLogs: '{{ .DockerCompose }} logs --follow {{ .Service.Name }}'
