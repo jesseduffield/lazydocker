@@ -3,24 +3,53 @@
 ## Default:
 
 ```
-  gui:
-    # stuff relating to the UI
-    scrollHeight: 2 # how many lines you scroll by
-    scrollPastBottom: true # enable scrolling past the bottom
-    theme:
-      activeBorderColor:
-        - white
-        - bold
-      inactiveBorderColor:
-        - white
-      optionsTextColor:
-        - blue
-  update:
-    method: prompt # can be: prompt | background | never
-    days: 14 # how often an update is checked for
-  reporting: 'undetermined' # one of: 'on' | 'off' | 'undetermined'
-  confirmOnQuit: false
+gui:
+  scrollHeight: 2
+  theme:
+    activeBorderColor:
+    - green
+    - bold
+    inactiveBorderColor:
+    - white
+    optionsTextColor:
+    - blue
+reporting: undetermined
+commandTemplates:
+  restartService: '{{ .DockerCompose }} restart {{ .Service.Name }}'
+  dockerCompose: docker-compose
+  stopService: '{{ .DockerCompose }} stop {{ .Service.Name }}'
+  serviceLogs: '{{ .DockerCompose }} logs --since=60m --follow {{ .Service.Name }}'
+  viewServiceLogs: '{{ .DockerCompose }} logs --follow {{ .Service.Name }}'
+  rebuildService: '{{ .DockerCompose }} up -d --build {{ .Service.Name }}'
+  recreateService: '{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}'
+  viewContainerLogs: docker logs --timestamps --follow --since=60m {{ .Container.ID
+    }}
+  containerLogs: docker logs --timestamps --follow --since=60m {{ .Container.ID }}
+  allLogs: '{{ .DockerCompose }} logs --tail=300 --follow'
+  viewAlLogs: '{{ .DockerCompose }} logs'
+  dockerComposeConfig: '{{ .DockerCompose }} config'
+  checkDockerComposeConfig: '{{ .DockerCompose }} config --quiet'
+  serviceTop: '{{ .DockerCompose }} top {{ .Service.Name }}'
+customCommands:
+  containers:
+  - attach: true
+    command: docker exec -it {{ .Container.ID }} /bin/sh
+oS:
+  openCommand: open {{filename}}
+  openLinkCommand: open {{link}}
+update:
+  method: never
+stats:
+  graphs:
+  - caption: CPU (%)
+    statPath: DerivedStats.CPUPercentage
+    color: blue
+  - caption: Memory (%)
+    statPath: DerivedStats.MemoryPercentage
+    color: green
 ```
+
+## To see what all of the config options mean, and what other options you can set, see < INSERT app_config.go GODOC HERE >
 
 ## Color Attributes:
 

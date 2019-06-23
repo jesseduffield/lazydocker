@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -11,6 +12,7 @@ import (
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/lazydocker/pkg/app"
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -32,7 +34,9 @@ func main() {
 	}
 
 	if *configFlag {
-		fmt.Printf("%s\n", config.GetDefaultConfig())
+		var buf bytes.Buffer
+		yaml.NewEncoder(&buf).Encode(config.GetDefaultConfig())
+		fmt.Printf("%v\n", buf.String())
 		os.Exit(0)
 	}
 

@@ -39,19 +39,6 @@ type Container struct {
 	DockerCommand   LimitedDockerCommand
 }
 
-// RecordedStats contains both the container stats we've received from docker, and our own derived stats  from those container stats. When configuring a graph, you're basically specifying the path of a value in this struct
-type RecordedStats struct {
-	ClientStats  ContainerStats
-	DerivedStats DerivedStats
-	RecordedAt   time.Time
-}
-
-// DerivedStats contains some useful stats that we've calculated based on the raw container stats that we got back from docker
-type DerivedStats struct {
-	CPUPercentage    float64
-	MemoryPercentage float64
-}
-
 // Details is a struct containing what we get back from `docker inspect` on a container
 type Details struct {
 	ID      string    `json:"Id"`
@@ -395,15 +382,6 @@ func (c *Container) ViewLogs() (*exec.Cmd, error) {
 func (c *DockerCommand) PruneContainers() error {
 	_, err := c.Client.ContainersPrune(context.Background(), filters.Args{})
 	return err
-}
-
-// TTYLogsCommand returns a command for obtaining the logs from a TTY container
-func (c *Container) TTYLogsCommand() *exec.Cmd {
-	command := utils.ApplyTemplate(
-		c.Config.UserConfig.CommandTemplates.ContainerTTYLogs,
-		c.DockerCommand.NewCommandObject(CommandObject{Container: c}),
-	)
-	return c.OSCommand.RunCustomCommand(command)
 }
 
 // Inspect returns details about the container
