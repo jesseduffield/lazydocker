@@ -6,6 +6,8 @@ type TranslationSet struct {
 	ErrorMessage                               string
 	NotEnoughSpace                             string
 	StatusTitle                                string
+	MainTitle                                  string
+	GlobalTitle                                string
 	Navigate                                   string
 	Menu                                       string
 	Execute                                    string
@@ -123,6 +125,8 @@ func englishSet() TranslationSet {
 		AnonymousReportingTitle:  "Help make lazydocker better",
 		AnonymousReportingPrompt: "Would you like to enable anonymous reporting data to help improve lazydocker? (enter/esc)",
 
+		GlobalTitle:               "Global",
+		MainTitle:                 "Main",
 		StatusTitle:               "Status",
 		ServicesTitle:             "Services",
 		ContainersTitle:           "Containers",

@@ -26,7 +26,10 @@ type bindingSection struct {
 
 func main() {
 	langs := []string{"pl", "nl", "en"}
-	mConfig, _ := config.NewAppConfig("", "", "", "", "", true)
+	mConfig, err := config.NewAppConfig("lazydocker", "", "", "", "", true)
+	if err != nil {
+		panic(err)
+	}
 
 	for _, lang := range langs {
 		os.Setenv("LC_ALL", lang)
@@ -49,12 +52,6 @@ func writeString(file *os.File, str string) {
 	}
 }
 
-func localisedTitle(mApp *app.App, str string) string {
-	return ""
-	// viewTitle := strings.Title(str) + "Title"
-	// return mApp.Tr.ViewTitle // FIXME: this used to be dynamic but we can't make this dynamic again without reflection since we're now using a struct of translation strings
-}
-
 func formatTitle(title string) string {
 	return fmt.Sprintf("\n## %s\n\n", title)
 }
@@ -66,7 +63,6 @@ func formatBinding(binding *gui.Binding) string {
 func getBindingSections(mApp *app.App) []*bindingSection {
 	bindingSections := []*bindingSection{}
 
-	// TODO: add context-based keybindings
 	for _, binding := range mApp.Gui.GetInitialKeybindings() {
 		if binding.Description == "" {
 			continue
@@ -76,9 +72,18 @@ func getBindingSections(mApp *app.App) []*bindingSection {
 		if viewName == "" {
 			viewName = "global"
 		}
-		title := localisedTitle(mApp, viewName)
 
-		bindingSections = addBinding(title, bindingSections, binding)
+		titleMap := map[string]string{
+			"global":     mApp.Tr.GlobalTitle,
+			"main":       mApp.Tr.MainTitle,
+			"status":     mApp.Tr.StatusTitle,
+			"services":   mApp.Tr.ServicesTitle,
+			"containers": mApp.Tr.ContainersTitle,
+			"images":     mApp.Tr.ImagesTitle,
+			"volumes":    mApp.Tr.VolumesTitle,
+		}
+
+		bindingSections = addBinding(titleMap[viewName], bindingSections, binding)
 	}
 
 	// for view, contexts := range mApp.Gui.GetContextMap() {
