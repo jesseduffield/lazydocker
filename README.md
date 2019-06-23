@@ -2,6 +2,10 @@
 
 A simple terminal UI for docker, written in Go with the [gocui](https://github.com/jroimartin/gocui 'gocui') library.
 
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/8456633/59972109-8e9c8480-95cc-11e9-8350-38f7f86ba76d.png">
+</p>
+
 Are YOU tired of this workflow:
 
 - recognise your local server isn't responding
