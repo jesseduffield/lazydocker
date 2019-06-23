@@ -121,6 +121,11 @@ type guiState struct {
 	Panels           *panelStates
 	SubProcessOutput string
 	Stats            map[string]commands.ContainerStats
+
+	// SessionIndex tells us how many times we've come back from a subprocess.
+	// We increment it each time we switch to a new subprocess
+	// Every time we go to a subprocess we need to close a few goroutines so this index is used for that purpose
+	SessionIndex int
 }
 
 // NewGui builds a new gui handler
@@ -144,6 +149,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 			},
 			Status: &statusState{ContextIndex: 0},
 		},
+		SessionIndex: 0,
 	}
 
 	cyclableViews := []string{"status", "containers", "images", "volumes"}
@@ -230,9 +236,13 @@ func (gui *Gui) renderGlobalOptions() error {
 }
 
 func (gui *Gui) goEvery(interval time.Duration, function func() error) {
+	currentSessionIndex := gui.State.SessionIndex
 	_ = function() // time.Tick doesn't run immediately so we'll do that here // TODO: maybe change
 	go func() {
 		for range time.Tick(interval) {
+			if gui.State.SessionIndex > currentSessionIndex {
+				return
+			}
 			_ = function()
 		}
 	}()

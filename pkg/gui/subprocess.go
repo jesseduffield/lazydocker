@@ -23,11 +23,15 @@ func (gui *Gui) RunWithSubprocesses() error {
 			} else if err == gui.Errors.ErrSubProcess {
 				// preparing the state for when we return
 				gui.State.PreviousView = gui.currentViewName()
-				gui.State.Panels.Main.ObjectKey = ""
+				// giving goEvery goroutines time to finish
+				gui.State.SessionIndex++
 
 				if err := gui.runCommand(); err != nil {
 					return err
 				}
+
+				// ensuring we render e.g. the logs of the currently selected item upon return
+				gui.State.Panels.Main.ObjectKey = ""
 			} else {
 				return err
 			}
