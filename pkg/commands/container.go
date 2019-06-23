@@ -22,8 +22,10 @@ import (
 type Container struct {
 	Name            string
 	ServiceName     string
-	ServiceID       string
 	ContainerNumber string // might make this an int in the future if need be
+
+	// OneOff tells us if the container is just a job container or is actually bound to the service
+	OneOff          bool
 	ProjectName     string
 	ID              string
 	Container       types.Container

@@ -244,7 +244,7 @@ func (c *DockerCommand) assignContainersToServices(containers []*Container, serv
 L:
 	for _, service := range services {
 		for _, container := range containers {
-			if container.ServiceID != "" && container.ServiceID == service.ID {
+			if !container.OneOff && container.ServiceName == service.Name {
 				service.Container = container
 				continue L
 			}
@@ -253,12 +253,13 @@ L:
 	}
 }
 
+// obtainStandaloneContainers returns standalone containers. Standalone containers are containers which are either one-off containers, or whose service is not part of this docker-compose context
 func (c *DockerCommand) obtainStandaloneContainers(containers []*Container, services []*Service) []*Container {
 	standaloneContainers := []*Container{}
 L:
 	for _, container := range containers {
 		for _, service := range services {
-			if container.ServiceID != "" && container.ServiceID == service.ID {
+			if !container.OneOff && container.ServiceName != "" && container.ServiceName == service.Name {
 				continue L
 			}
 		}
@@ -313,9 +314,9 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 			newContainer.Name = strings.TrimLeft(container.Names[0], "/")
 		}
 		newContainer.ServiceName = container.Labels["com.docker.compose.service"]
-		newContainer.ServiceID = container.Labels["com.docker.compose.config-hash"]
 		newContainer.ProjectName = container.Labels["com.docker.compose.project"]
 		newContainer.ContainerNumber = container.Labels["com.docker.compose.container"]
+		newContainer.OneOff = container.Labels["com.docker.compose.oneoff"] == "True"
 
 		ownContainers[i] = newContainer
 	}
