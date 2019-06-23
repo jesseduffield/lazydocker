@@ -156,7 +156,7 @@ func (gui *Gui) refreshImages() error {
 
 // TODO: leave this to DockerCommand
 func (gui *Gui) refreshStateImages() error {
-	Images, err := gui.DockerCommand.GetImages()
+	Images, err := gui.DockerCommand.RefreshImages()
 	if err != nil {
 		return err
 	}

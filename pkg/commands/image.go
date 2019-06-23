@@ -100,8 +100,8 @@ func (i *Image) RenderHistory() (string, error) {
 	return utils.RenderList(layers, utils.WithHeader([]string{"ID", "TAG", "SIZE", "COMMAND"}))
 }
 
-// GetImages returns a slice of docker images
-func (c *DockerCommand) GetImages() ([]*Image, error) {
+// RefreshImages returns a slice of docker images
+func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 	images, err := c.Client.ImageList(context.Background(), types.ImageListOptions{})
 	if err != nil {
 		return nil, err
