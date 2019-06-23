@@ -70,7 +70,9 @@ func (gui *Gui) runCommand() error {
 
 	fmt.Fprintf(os.Stdout, "\n%s", utils.ColoredString(gui.Tr.PressEnterToReturn, color.FgGreen))
 
-	fmt.Scanln() // wait for enter press
+	if _, err := fmt.Scanln(); err != nil { // wait for enter press
+		gui.Log.Error(err)
+	}
 
 	return nil
 }

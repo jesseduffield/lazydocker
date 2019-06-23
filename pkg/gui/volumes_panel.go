@@ -2,7 +2,6 @@ package gui
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/fatih/color"
 	"github.com/go-errors/errors"
@@ -68,10 +67,8 @@ func (gui *Gui) handleVolumeSelect(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	key := "volumes-" + volume.Name + "-" + gui.getVolumeContexts()[gui.State.Panels.Volumes.ContextIndex]
-	if gui.State.Panels.Main.ObjectKey == key {
+	if !gui.shouldRefresh(key) {
 		return nil
-	} else {
-		gui.State.Panels.Main.ObjectKey = key
 	}
 
 	if err := gui.focusPoint(0, gui.State.Panels.Volumes.SelectedLine, len(gui.DockerCommand.Volumes), v); err != nil {
@@ -105,31 +102,14 @@ func (gui *Gui) renderVolumeConfig(mainView *gocui.View, volume *commands.Volume
 		output += utils.WithPadding("Driver: ", padding) + volume.Volume.Driver + "\n"
 		output += utils.WithPadding("Scope: ", padding) + volume.Volume.Scope + "\n"
 		output += utils.WithPadding("Mountpoint: ", padding) + volume.Volume.Mountpoint + "\n"
-		output += utils.WithPadding("Labels: ", padding)
-		if len(volume.Volume.Labels) > 0 {
-			output += "\n"
-			for k, v := range volume.Volume.Labels {
-				output += formatMapItem(padding, k, v)
-			}
-		} else {
-			output += "none\n"
-		}
+		output += utils.WithPadding("Labels: ", padding) + utils.FormatMap(padding, volume.Volume.Labels) + "\n"
+		output += utils.WithPadding("Options: ", padding) + utils.FormatMap(padding, volume.Volume.Options) + "\n"
 
-		output += "\n" + utils.WithPadding("Options: ", padding)
-		if len(volume.Volume.Options) > 0 {
-			output += "\n"
-			for k, v := range volume.Volume.Options {
-				output += formatMapItem(padding, k, v)
-			}
-		} else {
-			output += "none\n"
-		}
-
-		output += "\n" + utils.WithPadding("Status: ", padding)
+		output += utils.WithPadding("Status: ", padding)
 		if volume.Volume.Status != nil {
 			output += "\n"
 			for k, v := range volume.Volume.Status {
-				output += formatMapItem(padding, k, v)
+				output += utils.FormatMapItem(padding, k, v)
 			}
 		} else {
 			output += "n/a"
@@ -142,10 +122,6 @@ func (gui *Gui) renderVolumeConfig(mainView *gocui.View, volume *commands.Volume
 
 		gui.renderString(gui.g, "main", output)
 	})
-}
-
-func formatMapItem(padding int, k string, v interface{}) string {
-	return fmt.Sprintf("%s%s %v\n", strings.Repeat(" ", padding), utils.ColoredString(k+":", color.FgYellow), utils.ColoredString(fmt.Sprintf("%v", v), color.FgMagenta))
 }
 
 func (gui *Gui) refreshVolumes() error {
@@ -252,13 +228,13 @@ func (gui *Gui) handleVolumesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	options := []*removeVolumeOption{
 		{
 			description: gui.Tr.Remove,
-			command:     "docker volume rm " + volume.Name,
+			command:     utils.WithShortSha("docker volume rm " + volume.Name),
 			force:       false,
 			runCommand:  true,
 		},
 		{
 			description: gui.Tr.ForceRemove,
-			command:     "docker volume rm --force " + volume.Name,
+			command:     utils.WithShortSha("docker volume rm --force " + volume.Name),
 			force:       true,
 			runCommand:  true,
 		},

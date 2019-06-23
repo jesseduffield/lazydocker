@@ -87,7 +87,7 @@ func (t *TaskManager) NewTickerTask(duration time.Duration, before func(stop cha
 		}
 		tickChan := time.NewTicker(duration)
 		// calling f first so that we're not waiting for the first tick
-		// f(stop, notifyStopped)
+		f(stop, notifyStopped)
 		for {
 			select {
 			case <-notifyStopped:

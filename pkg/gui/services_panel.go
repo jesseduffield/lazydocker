@@ -68,11 +68,10 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 	if service.Container != nil {
 		containerID = service.Container.ID
 	}
+
 	key := "services-" + service.ID + "-" + containerID + "-" + gui.getServiceContexts()[gui.State.Panels.Services.ContextIndex]
-	if gui.State.Panels.Main.ObjectKey == key {
+	if !gui.shouldRefresh(key) {
 		return nil
-	} else {
-		gui.State.Panels.Main.ObjectKey = key
 	}
 
 	if err := gui.focusPoint(0, gui.State.Panels.Services.SelectedLine, len(gui.DockerCommand.Services), v); err != nil {

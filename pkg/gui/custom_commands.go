@@ -26,7 +26,7 @@ func (gui *Gui) createCustomCommandMenu(customCommands []config.CustomCommand, c
 
 		options[i] = &customCommandOption{
 			customCommand: command,
-			description:   resolvedCommand,
+			description:   utils.WithShortSha(resolvedCommand),
 			command:       resolvedCommand,
 			runCommand:    true,
 			attach:        command.Attach,

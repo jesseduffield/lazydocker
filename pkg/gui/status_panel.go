@@ -47,10 +47,8 @@ func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	key := gui.getStatusContexts()[gui.State.Panels.Status.ContextIndex]
-	if gui.State.Panels.Main.ObjectKey == key {
+	if !gui.shouldRefresh(key) {
 		return nil
-	} else {
-		gui.State.Panels.Main.ObjectKey = key
 	}
 
 	gui.clearMainView()

@@ -196,7 +196,7 @@ func GetDefaultConfig() UserConfig {
 			Containers: []CustomCommand{
 				{
 					Attach:  true,
-					Command: "docker exec -it {{ .Container.ID }} /bin/bash",
+					Command: "docker exec -it {{ .Container.ID }} /bin/sh",
 				},
 			},
 			Services: []CustomCommand{},

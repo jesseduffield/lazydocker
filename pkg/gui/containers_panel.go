@@ -3,6 +3,7 @@ package gui
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -70,10 +71,8 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	key := "containers-" + container.ID + "-" + gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex]
-	if gui.State.Panels.Main.ObjectKey == key {
+	if !gui.shouldRefresh(key) {
 		return nil
-	} else {
-		gui.State.Panels.Main.ObjectKey = key
 	}
 
 	if err := gui.focusPoint(0, gui.State.Panels.Containers.SelectedLine, len(gui.DockerCommand.DisplayContainers), v); err != nil {
@@ -115,13 +114,36 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 	mainView.Autoscroll = false
 	mainView.Wrap = true
 
+	padding := 15
+	output := ""
+	output += utils.WithPadding("ID: ", padding) + container.ID + "\n"
+	output += utils.WithPadding("Name: ", padding) + container.Name + "\n"
+	output += utils.WithPadding("Command: ", padding) + strings.Join(append([]string{container.Details.Path}, container.Details.Args...), " ") + "\n"
+	output += utils.WithPadding("Labels: ", padding) + utils.FormatMap(padding, container.Details.Config.Labels)
+	output += "\n"
+
+	output += utils.WithPadding("Mounts: ", padding)
+	if len(container.Details.Mounts) > 0 {
+		output += "\n"
+		for _, mount := range container.Details.Mounts {
+			if mount.Type == "volume" {
+				output += fmt.Sprintf("%s%s %s\n", strings.Repeat(" ", padding), utils.ColoredString(mount.Type+":", color.FgYellow), mount.Name)
+			} else {
+				output += fmt.Sprintf("%s%s %s:%s\n", strings.Repeat(" ", padding), utils.ColoredString(mount.Type+":", color.FgYellow), mount.Source, mount.Destination)
+			}
+		}
+	} else {
+		output += "none\n"
+	}
+
 	data, err := json.MarshalIndent(&container.Details, "", "  ")
 	if err != nil {
 		return err
 	}
+	output += fmt.Sprintf("\nFull details:\n\n%s", string(data))
 
 	return gui.T.NewTask(func(stop chan struct{}) {
-		gui.renderString(gui.g, "main", string(data))
+		gui.renderString(gui.g, "main", output)
 	})
 }
 

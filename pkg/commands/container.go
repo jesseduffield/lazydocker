@@ -195,16 +195,10 @@ type Details struct {
 			App struct {
 			} `json:"/app"`
 		} `json:"Volumes"`
-		WorkingDir string      `json:"WorkingDir"`
-		Entrypoint interface{} `json:"Entrypoint"`
-		OnBuild    interface{} `json:"OnBuild"`
-		Labels     struct {
-			ComDockerComposeOneoff  string `json:"com.docker.compose.oneoff"`
-			ComDockerComposeProject string `json:"com.docker.compose.project"`
-			ComDockerComposeService string `json:"com.docker.compose.service"`
-			ComDockerComposeSlug    string `json:"com.docker.compose.slug"`
-			ComDockerComposeVersion string `json:"com.docker.compose.version"`
-		} `json:"Labels"`
+		WorkingDir string            `json:"WorkingDir"`
+		Entrypoint interface{}       `json:"Entrypoint"`
+		OnBuild    interface{}       `json:"OnBuild"`
+		Labels     map[string]string `json:"Labels"`
 	} `json:"Config"`
 	NetworkSettings struct {
 		Bridge                 string `json:"Bridge"`

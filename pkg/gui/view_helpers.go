@@ -78,6 +78,10 @@ func (gui *Gui) resetMainView() {
 }
 
 func (gui *Gui) newLineFocused(v *gocui.View) error {
+	if v == nil {
+		return nil
+	}
+
 	switch v.Name() {
 	case "menu":
 		return gui.handleMenuSelect(gui.g, v)

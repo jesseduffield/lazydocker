@@ -70,10 +70,8 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	key := "images-" + Image.ID + "-" + gui.getImageContexts()[gui.State.Panels.Images.ContextIndex]
-	if gui.State.Panels.Main.ObjectKey == key {
+	if !gui.shouldRefresh(key) {
 		return nil
-	} else {
-		gui.State.Panels.Main.ObjectKey = key
 	}
 
 	if err := gui.focusPoint(0, gui.State.Panels.Images.SelectedLine, len(gui.DockerCommand.Images), v); err != nil {
@@ -234,16 +232,18 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
+	shortSha := Image.ID[7:17]
+
 	options := []*removeImageOption{
 		{
 			description:   gui.Tr.Remove,
-			command:       "docker image rm " + Image.ID[1:20],
+			command:       "docker image rm " + shortSha,
 			configOptions: types.ImageRemoveOptions{PruneChildren: true},
 			runCommand:    true,
 		},
 		{
 			description:   gui.Tr.RemoveWithoutPrune,
-			command:       "docker image rm --no-prune " + Image.ID[1:20],
+			command:       "docker image rm --no-prune " + shortSha,
 			configOptions: types.ImageRemoveOptions{PruneChildren: false},
 			runCommand:    true,
 		},

@@ -90,6 +90,7 @@ type menuPanelState struct {
 }
 
 type mainPanelState struct {
+	// ObjectKey tells us what context we are in. For example, if we are looking at the logs of a particular service in the services panel this key might be 'services-<service id>-logs'. The key is made so that if something changes which might require us to re-run the logs command or run a different command, the key will be different, and we'll then know to do whatever is required. Object key probably isn't the best name for this but Context is already used to refer to tabs. Maybe I should just call them tabs.
 	ObjectKey string
 }
 
@@ -278,6 +279,7 @@ func (gui *Gui) Run() error {
 			if strings.Contains(err.Error(), "No such container") {
 				// this happens all the time when e.g. restarting containers so we won't worry about it
 				gui.Log.Warn(err)
+				continue
 			}
 			gui.createErrorPanel(gui.g, err.Error())
 		}
@@ -367,4 +369,13 @@ func (gui *Gui) handleCustomCommand(g *gocui.Gui, v *gocui.View) error {
 		gui.SubProcess = gui.OSCommand.RunCustomCommand(command)
 		return gui.Errors.ErrSubProcess
 	})
+}
+
+func (gui *Gui) shouldRefresh(key string) bool {
+	if gui.State.Panels.Main.ObjectKey == key {
+		return false
+	}
+
+	gui.State.Panels.Main.ObjectKey = key
+	return true
 }

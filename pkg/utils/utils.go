@@ -8,6 +8,7 @@ import (
 	"math"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -354,4 +355,41 @@ func GetColorAttribute(key string) color.Attribute {
 		return value
 	}
 	return color.FgWhite
+}
+
+// WithShortSha returns a command but with a shorter SHA. in the terminal we're all used to 10 character SHAs but under the hood they're actually 64 characters long. No need including all the characters when we're just displaying a command
+func WithShortSha(str string) string {
+	split := strings.Split(str, " ")
+	for i, word := range split {
+		// good enough proxy for now
+		if len(word) == 64 {
+			split[i] = word[0:10]
+		}
+	}
+	return strings.Join(split, " ")
+}
+
+// FormatMapItem is for displaying items in a map
+func FormatMapItem(padding int, k string, v interface{}) string {
+	return fmt.Sprintf("%s%s %v\n", strings.Repeat(" ", padding), ColoredString(k+":", color.FgYellow), ColoredString(fmt.Sprintf("%v", v), color.FgWhite))
+}
+
+// FormatMap is for displaying a map
+func FormatMap(padding int, m map[string]string) string {
+	if len(m) == 0 {
+		return "none\n"
+	}
+
+	output := "\n"
+
+	keys := make([]string, 0, len(m))
+	for key := range m {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		output += FormatMapItem(padding, key, m[key])
+	}
+
+	return output
 }
