@@ -114,7 +114,7 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 	mainView.Autoscroll = false
 	mainView.Wrap = true
 
-	padding := 15
+	padding := 10
 	output := ""
 	output += utils.WithPadding("ID: ", padding) + container.ID + "\n"
 	output += utils.WithPadding("Name: ", padding) + container.Name + "\n"
@@ -130,6 +130,18 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 				output += fmt.Sprintf("%s%s %s\n", strings.Repeat(" ", padding), utils.ColoredString(mount.Type+":", color.FgYellow), mount.Name)
 			} else {
 				output += fmt.Sprintf("%s%s %s:%s\n", strings.Repeat(" ", padding), utils.ColoredString(mount.Type+":", color.FgYellow), mount.Source, mount.Destination)
+			}
+		}
+	} else {
+		output += "none\n"
+	}
+
+	output += utils.WithPadding("Ports: ", padding)
+	if len(container.Details.NetworkSettings.Ports) > 0 {
+		output += "\n"
+		for k, v := range container.Details.NetworkSettings.Ports {
+			for _, host := range v {
+				output += fmt.Sprintf("%s%s %s\n", strings.Repeat(" ", padding), utils.ColoredString(host.HostPort+":", color.FgYellow), k)
 			}
 		}
 	} else {

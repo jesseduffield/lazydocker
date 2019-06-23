@@ -193,7 +193,9 @@ type Details struct {
 		HairpinMode            bool   `json:"HairpinMode"`
 		LinkLocalIPv6Address   string `json:"LinkLocalIPv6Address"`
 		LinkLocalIPv6PrefixLen int    `json:"LinkLocalIPv6PrefixLen"`
-		Ports                  struct {
+		Ports                  map[string][]struct {
+			HostIP   string `json:"HostIP"`
+			HostPort string `json:"HostPort"`
 		} `json:"Ports"`
 		SandboxKey             string      `json:"SandboxKey"`
 		SecondaryIPAddresses   interface{} `json:"SecondaryIPAddresses"`
