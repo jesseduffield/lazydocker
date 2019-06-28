@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"gopkg.in/yaml.v2"
 )
 
 func (gui *Gui) getStatusContexts() []string {
@@ -20,7 +22,7 @@ func (gui *Gui) getStatusContexts() []string {
 
 func (gui *Gui) getStatusContextTitles() []string {
 	if gui.DockerCommand.InDockerComposeProject {
-		return []string{gui.Tr.LogsTitle, gui.Tr.CreditsTitle, gui.Tr.ConfigTitle}
+		return []string{gui.Tr.LogsTitle, gui.Tr.CreditsTitle, gui.Tr.DockerComposeConfigTitle}
 	}
 	return []string{gui.Tr.CreditsTitle}
 }
@@ -83,6 +85,9 @@ func (gui *Gui) renderCredits() error {
 		mainView.Autoscroll = false
 		mainView.Wrap = true
 
+		var configBuf bytes.Buffer
+		yaml.NewEncoder(&configBuf).Encode(gui.Config.UserConfig)
+
 		dashboardString := strings.Join(
 			[]string{
 				lazydockerTitle(),
@@ -91,6 +96,8 @@ func (gui *Gui) renderCredits() error {
 				"Config Options: https://github.com/jesseduffield/lazydocker/blob/master/docs/Config.md",
 				"Raise an Issue: https://github.com/jesseduffield/lazydocker/issues",
 				utils.ColoredString("Buy Jesse a coffee: https://donorbox.org/lazydocker", color.FgMagenta), // caffeine ain't free
+				"Here's what you lazydocker config is when merged with the defaults (you can open your config by pressing 'o'):",
+				configBuf.String(),
 			}, "\n\n")
 
 		gui.renderString(gui.g, "main", dashboardString)

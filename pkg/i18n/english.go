@@ -70,11 +70,12 @@ type TranslationSet struct {
 	ViewRestartOptions                         string
 	RunCustomCommand                           string
 
-	LogsTitle            string
-	ConfigTitle          string
-	StatsTitle           string
-	CreditsTitle         string
-	ContainerConfigTitle string
+	LogsTitle                string
+	ConfigTitle              string
+	DockerComposeConfigTitle string
+	StatsTitle               string
+	CreditsTitle             string
+	ContainerConfigTitle     string
 }
 
 func englishSet() TranslationSet {
@@ -98,8 +99,8 @@ func englishSet() TranslationSet {
 		Close:              "close",
 		Menu:               "menu",
 		Scroll:             "scroll",
-		OpenConfig:         "open config container",
-		EditConfig:         "edit config container",
+		OpenConfig:         "open lazydocker config",
+		EditConfig:         "edit lazydocker config",
 		Cancel:             "cancel",
 		Remove:             "remove",
 		ForceRemove:        "force remove",
@@ -137,6 +138,7 @@ func englishSet() TranslationSet {
 		ErrorTitle:                "Error",
 		LogsTitle:                 "Logs",
 		ConfigTitle:               "Config",
+		DockerComposeConfigTitle:  "Docker-Compose Config",
 		TopTitle:                  "Top",
 		StatsTitle:                "Stats",
 		CreditsTitle:              "About",
