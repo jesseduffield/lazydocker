@@ -33,13 +33,13 @@ func (gui *Gui) renderMenuOptions() error {
 	optionsMap := map[string]string{
 		"esc/q": gui.Tr.Close,
 		"↑ ↓":   gui.Tr.Navigate,
-		"space": gui.Tr.Execute,
+		"enter": gui.Tr.Execute,
 	}
 	return gui.renderOptionsMap(optionsMap)
 }
 
 func (gui *Gui) handleMenuClose(g *gocui.Gui, v *gocui.View) error {
-	for _, key := range []gocui.Key{gocui.KeySpace, gocui.KeyEnter} {
+	for _, key := range []gocui.Key{gocui.KeySpace, gocui.KeyEnter, 'y'} {
 		if err := g.DeleteKeybinding("menu", key, gocui.ModNone); err != nil {
 			return err
 		}
