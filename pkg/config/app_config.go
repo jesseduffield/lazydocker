@@ -2,6 +2,7 @@ package config
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -293,7 +294,21 @@ func loadUserConfigWithDefaults(configDir string) (*UserConfig, error) {
 }
 
 func loadUserConfig(configDir string, base *UserConfig) (*UserConfig, error) {
-	content, err := ioutil.ReadFile(filepath.Join(configDir, "config.yml"))
+	fileName := filepath.Join(configDir, "config.yml")
+
+	if _, err := os.Stat(fileName); err != nil {
+		if os.IsNotExist(err) {
+			file, err := os.Create(fileName)
+			if err != nil {
+				return nil, err
+			}
+			file.Close()
+		} else {
+			return nil, err
+		}
+	}
+
+	content, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
