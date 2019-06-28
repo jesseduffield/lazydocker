@@ -211,12 +211,26 @@ type Encoder struct {
 	encoder *encoder
 }
 
+// EncoderOption is an option for construcing an encoder
+type EncoderOption func(*encoder)
+
+// IncludeOmitted is for when we want to encode a struct but including fields that were marked to be omitted
+func IncludeOmitted(e *encoder) {
+	e.includeOmitted = true
+}
+
 // NewEncoder returns a new encoder that writes to w.
 // The Encoder should be closed after use to flush all data
 // to w.
-func NewEncoder(w io.Writer) *Encoder {
+func NewEncoder(w io.Writer, opts ...EncoderOption) *Encoder {
+	encoder := newEncoderWithWriter(w)
+
+	for _, opt := range opts {
+		opt(encoder)
+	}
+
 	return &Encoder{
-		encoder: newEncoderWithWriter(w),
+		encoder: encoder,
 	}
 }
 

@@ -12,7 +12,7 @@ import (
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/lazydocker/pkg/app"
 	"github.com/jesseduffield/lazydocker/pkg/config"
-	"gopkg.in/yaml.v2"
+	"github.com/jesseduffield/yaml"
 )
 
 var (

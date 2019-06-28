@@ -44,3 +44,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/jesseduffield/asciigraph"
+
+[[constraint]]
+  branch = "v2"
+  name = "github.com/jesseduffield/yaml"

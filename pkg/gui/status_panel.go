@@ -10,7 +10,7 @@ import (
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
-	"gopkg.in/yaml.v2"
+	"github.com/jesseduffield/yaml"
 )
 
 func (gui *Gui) getStatusContexts() []string {
@@ -86,7 +86,7 @@ func (gui *Gui) renderCredits() error {
 		mainView.Wrap = true
 
 		var configBuf bytes.Buffer
-		yaml.NewEncoder(&configBuf).Encode(gui.Config.UserConfig)
+		yaml.NewEncoder(&configBuf, yaml.IncludeOmitted).Encode(gui.Config.UserConfig)
 
 		dashboardString := strings.Join(
 			[]string{
@@ -96,7 +96,7 @@ func (gui *Gui) renderCredits() error {
 				"Config Options: https://github.com/jesseduffield/lazydocker/blob/master/docs/Config.md",
 				"Raise an Issue: https://github.com/jesseduffield/lazydocker/issues",
 				utils.ColoredString("Buy Jesse a coffee: https://donorbox.org/lazydocker", color.FgMagenta), // caffeine ain't free
-				"Here's what you lazydocker config is when merged with the defaults (you can open your config by pressing 'o'):",
+				"Here's your lazydocker config when merged in with the defaults (you can open your config by pressing 'o'):",
 				configBuf.String(),
 			}, "\n\n")
 

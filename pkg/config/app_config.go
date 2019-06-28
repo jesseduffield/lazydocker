@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"time"
 
+	yaml "github.com/jesseduffield/yaml"
 	"github.com/shibukawa/configdir"
-	yaml "gopkg.in/yaml.v2"
 )
 
 // AppConfig contains the base configuration fields required for lazygit.

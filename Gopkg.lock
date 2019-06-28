@@ -154,6 +154,14 @@
   revision = "1e272ff78dcb4c448870f464fda1cdcf2bf0b3dd"
 
 [[projects]]
+  branch = "v2"
+  digest = "1:39964c6cc97fae9e81e3f87ffdcacac8e8a8dfb44be532bb9909ff558e8914e5"
+  name = "github.com/jesseduffield/yaml"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "9e6ca978307a1aeaf98218b1880a441af4a57294"
+
+[[projects]]
   digest = "1:08c231ec84231a7e23d67e4b58f975e1423695a32467a362ee55a803f9de8061"
   name = "github.com/mattn/go-colorable"
   packages = ["."]
@@ -307,14 +315,6 @@
   pruneopts = "NUT"
   revision = "3ee3066db522c6628d440a3a91c4abdd7f5ef22f"
 
-[[projects]]
-  digest = "1:7c95b35057a0ff2e19f707173cc1a947fa43a6eb5c4d300d196ece0334046082"
-  name = "gopkg.in/yaml.v2"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
-  version = "v2.2.1"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -331,6 +331,7 @@
     "github.com/jesseduffield/asciigraph",
     "github.com/jesseduffield/gocui",
     "github.com/jesseduffield/pty",
+    "github.com/jesseduffield/yaml",
     "github.com/mcuadros/go-lookup",
     "github.com/mgutz/str",
     "github.com/shibukawa/configdir",
@@ -339,7 +340,6 @@
     "github.com/stretchr/testify/assert",
     "github.com/tcnksm/go-gitconfig",
     "golang.org/x/xerrors",
-    "gopkg.in/yaml.v2",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
