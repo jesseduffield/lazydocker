@@ -115,6 +115,12 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName: "",
+			Key:      '?',
+			Modifier: gocui.ModNone,
+			Handler:  gui.handleCreateOptionsMenu,
+		},
+		{
+			ViewName: "",
 			Key:      'X',
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleCustomCommand,
