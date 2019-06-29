@@ -414,5 +414,10 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
 			return err
 		}
 	}
+
+	if err := g.SetTabClickBinding("main", gui.onMainTabClick); err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -194,7 +194,7 @@ func GetDefaultConfig() UserConfig {
 		Gui: GuiConfig{
 			ScrollHeight:     2,
 			ScrollPastBottom: false,
-			MouseEvents:      false,
+			MouseEvents:      true,
 			Theme: ThemeConfig{
 				ActiveBorderColor:   []string{"green", "bold"},
 				InactiveBorderColor: []string{"white"},

@@ -627,3 +627,20 @@ func Loader() cell {
 func (v *View) IsTainted() bool {
 	return v.tainted
 }
+
+// GetClickedTabIndex tells us which tab was clicked
+func (v *View) GetClickedTabIndex(x int) int {
+	if len(v.Tabs) <= 1 {
+		return 0
+	}
+
+	charIndex := 0
+	for i, tab := range v.Tabs {
+		charIndex += len(tab + " - ")
+		if x < charIndex {
+			return i
+		}
+	}
+
+	return 0
+}

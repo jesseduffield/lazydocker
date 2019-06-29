@@ -31,3 +31,29 @@ func (gui *Gui) autoScrollMain(g *gocui.Gui, v *gocui.View) error {
 	gui.getMainView().Autoscroll = true
 	return nil
 }
+
+func (gui *Gui) onMainTabClick(tabIndex int) error {
+	gui.Log.Warn(tabIndex)
+
+	viewName := gui.currentViewName()
+
+	switch viewName {
+	case "services":
+		gui.State.Panels.Services.ContextIndex = tabIndex
+		return gui.handleServiceSelect(gui.g, gui.getServicesView())
+	case "containers":
+		gui.State.Panels.Containers.ContextIndex = tabIndex
+		return gui.handleContainerSelect(gui.g, gui.getContainersView())
+	case "images":
+		gui.State.Panels.Images.ContextIndex = tabIndex
+		return gui.handleImageSelect(gui.g, gui.getImagesView())
+	case "volumes":
+		gui.State.Panels.Volumes.ContextIndex = tabIndex
+		return gui.handleVolumeSelect(gui.g, gui.getVolumesView())
+	case "status":
+		gui.State.Panels.Status.ContextIndex = tabIndex
+		return gui.handleStatusSelect(gui.g, gui.getStatusView())
+	}
+
+	return nil
+}

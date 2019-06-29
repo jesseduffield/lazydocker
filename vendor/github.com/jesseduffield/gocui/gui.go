@@ -39,18 +39,26 @@ const (
 	Output216 = OutputMode(termbox.Output216)
 )
 
+type tabClickHandler func(int) error
+
+type tabClickBinding struct {
+	viewName string
+	handler  tabClickHandler
+}
+
 // Gui represents the whole User Interface, including the views, layouts
 // and keybindings.
 type Gui struct {
-	tbEvents    chan termbox.Event
-	userEvents  chan userEvent
-	views       []*View
-	currentView *View
-	managers    []Manager
-	keybindings []*keybinding
-	maxX, maxY  int
-	outputMode  OutputMode
-	stop        chan struct{}
+	tbEvents         chan termbox.Event
+	userEvents       chan userEvent
+	views            []*View
+	currentView      *View
+	managers         []Manager
+	keybindings      []*keybinding
+	tabClickBindings []*tabClickBinding
+	maxX, maxY       int
+	outputMode       OutputMode
+	stop             chan struct{}
 
 	// BgColor and FgColor allow to configure the background and foreground
 	// colors of the GUI.
@@ -323,6 +331,16 @@ func (g *Gui) DeleteKeybindings(viewname string) {
 		}
 	}
 	g.keybindings = s
+}
+
+// SetTabClickBinding sets a binding for a tab click event
+func (g *Gui) SetTabClickBinding(viewName string, handler tabClickHandler) error {
+	g.tabClickBindings = append(g.tabClickBindings, &tabClickBinding{
+		viewName: viewName,
+		handler:  handler,
+	})
+
+	return nil
 }
 
 // getKey takes an empty interface with a key and returns the corresponding
@@ -742,6 +760,17 @@ func (g *Gui) onKey(ev *termbox.Event) error {
 		v, err := g.ViewByPosition(mx, my)
 		if err != nil {
 			break
+		}
+		if v.Frame && my == v.y0 {
+			if len(v.Tabs) > 0 {
+				tabIndex := v.GetClickedTabIndex(mx - v.x0)
+
+				for _, binding := range g.tabClickBindings {
+					if binding.viewName == v.Name() {
+						return binding.handler(tabIndex)
+					}
+				}
+			}
 		}
 		if err := v.SetCursor(mx-v.x0-1, my-v.y0-1); err != nil {
 			return err
