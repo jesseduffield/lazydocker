@@ -31,6 +31,8 @@ type TranslationSet struct {
 	RemoveWithVolumes                          string
 	MustForceToRemoveContainer                 string
 	Confirm                                    string
+	Return                                     string
+	FocusMain                                  string
 	StopContainer                              string
 	RestartingStatus                           string
 	StoppingStatus                             string
@@ -94,6 +96,8 @@ func englishSet() TranslationSet {
 		Donate:           "Donate",
 		Confirm:          "Confirm",
 
+		Return:             "return",
+		FocusMain:          "focus main panel",
 		Navigate:           "navigate",
 		Execute:            "execute",
 		Close:              "close",

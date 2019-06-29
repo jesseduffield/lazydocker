@@ -155,6 +155,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "status",
+			Key:         gocui.MouseLeft,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleStatusClick,
+			Description: gui.Tr.NextContext,
+		},
+		{
+			ViewName:    "status",
 			Key:         'm',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleViewAllLogs,
@@ -366,12 +373,66 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:     gui.handlePruneVolumes,
 			Description: gui.Tr.PruneVolumes,
 		},
+		{
+			ViewName:    "main",
+			Key:         gocui.KeyEsc,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleExitMain,
+			Description: gui.Tr.Return,
+		},
+		{
+			ViewName: "main",
+			Key:      gocui.KeyArrowLeft,
+			Modifier: gocui.ModNone,
+			Handler:  gui.scrollLeftMain,
+		},
+		{
+			ViewName: "main",
+			Key:      gocui.KeyArrowRight,
+			Modifier: gocui.ModNone,
+			Handler:  gui.scrollRightMain,
+		},
+		{
+			ViewName: "main",
+			Key:      'h',
+			Modifier: gocui.ModNone,
+			Handler:  gui.scrollLeftMain,
+		},
+		{
+			ViewName: "main",
+			Key:      'l',
+			Modifier: gocui.ModNone,
+			Handler:  gui.scrollRightMain,
+		},
+		{
+			ViewName: "",
+			Key:      'J',
+			Modifier: gocui.ModNone,
+			Handler:  gui.scrollDownMain,
+		},
+		{
+			ViewName: "",
+			Key:      'K',
+			Modifier: gocui.ModNone,
+			Handler:  gui.scrollUpMain,
+		},
+		{
+			ViewName: "",
+			Key:      'H',
+			Modifier: gocui.ModNone,
+			Handler:  gui.scrollLeftMain,
+		},
+		{
+			ViewName: "",
+			Key:      'L',
+			Modifier: gocui.ModNone,
+			Handler:  gui.scrollRightMain,
+		},
 	}
 
 	// TODO: add more views here
 	for _, viewName := range []string{"status", "services", "containers", "images", "volumes", "menu"} {
 		bindings = append(bindings, []*Binding{
-			{ViewName: viewName, Key: gocui.KeyTab, Modifier: gocui.ModNone, Handler: gui.nextView},
 			{ViewName: viewName, Key: gocui.KeyArrowLeft, Modifier: gocui.ModNone, Handler: gui.previousView},
 			{ViewName: viewName, Key: gocui.KeyArrowRight, Modifier: gocui.ModNone, Handler: gui.nextView},
 			{ViewName: viewName, Key: 'h', Modifier: gocui.ModNone, Handler: gui.previousView},
@@ -379,28 +440,39 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		}...)
 	}
 
-	listPanelMap := map[string]struct {
-		prevLine func(*gocui.Gui, *gocui.View) error
-		nextLine func(*gocui.Gui, *gocui.View) error
-		focus    func(*gocui.Gui, *gocui.View) error
+	panelMap := map[string]struct {
+		onKeyUpPress   func(*gocui.Gui, *gocui.View) error
+		onKeyDownPress func(*gocui.Gui, *gocui.View) error
+		onClick        func(*gocui.Gui, *gocui.View) error
 	}{
-		"menu":       {prevLine: gui.handleMenuPrevLine, nextLine: gui.handleMenuNextLine, focus: gui.handleMenuClick},
-		"services":   {prevLine: gui.handleServicesPrevLine, nextLine: gui.handleServicesNextLine, focus: gui.handleServicesClick},
-		"containers": {prevLine: gui.handleContainersPrevLine, nextLine: gui.handleContainersNextLine, focus: gui.handleContainersClick},
-		"images":     {prevLine: gui.handleImagesPrevLine, nextLine: gui.handleImagesNextLine, focus: gui.handleImagesClick},
-		"volumes":    {prevLine: gui.handleVolumesPrevLine, nextLine: gui.handleVolumesNextLine, focus: gui.handleVolumesClick},
+		"menu":       {onKeyUpPress: gui.handleMenuPrevLine, onKeyDownPress: gui.handleMenuNextLine, onClick: gui.handleMenuClick},
+		"services":   {onKeyUpPress: gui.handleServicesPrevLine, onKeyDownPress: gui.handleServicesNextLine, onClick: gui.handleServicesClick},
+		"containers": {onKeyUpPress: gui.handleContainersPrevLine, onKeyDownPress: gui.handleContainersNextLine, onClick: gui.handleContainersClick},
+		"images":     {onKeyUpPress: gui.handleImagesPrevLine, onKeyDownPress: gui.handleImagesNextLine, onClick: gui.handleImagesClick},
+		"volumes":    {onKeyUpPress: gui.handleVolumesPrevLine, onKeyDownPress: gui.handleVolumesNextLine, onClick: gui.handleVolumesClick},
+		"main":       {onKeyUpPress: gui.scrollUpMain, onKeyDownPress: gui.scrollDownMain, onClick: gui.handleMainClick},
 	}
 
-	for viewName, functions := range listPanelMap {
+	for viewName, functions := range panelMap {
 		bindings = append(bindings, []*Binding{
-			{ViewName: viewName, Key: 'k', Modifier: gocui.ModNone, Handler: functions.prevLine},
-			{ViewName: viewName, Key: gocui.KeyArrowUp, Modifier: gocui.ModNone, Handler: functions.prevLine},
-			{ViewName: viewName, Key: gocui.MouseWheelUp, Modifier: gocui.ModNone, Handler: functions.prevLine},
-			{ViewName: viewName, Key: 'j', Modifier: gocui.ModNone, Handler: functions.nextLine},
-			{ViewName: viewName, Key: gocui.KeyArrowDown, Modifier: gocui.ModNone, Handler: functions.nextLine},
-			{ViewName: viewName, Key: gocui.MouseWheelDown, Modifier: gocui.ModNone, Handler: functions.nextLine},
-			{ViewName: viewName, Key: gocui.MouseLeft, Modifier: gocui.ModNone, Handler: functions.focus},
+			{ViewName: viewName, Key: 'k', Modifier: gocui.ModNone, Handler: functions.onKeyUpPress},
+			{ViewName: viewName, Key: gocui.KeyArrowUp, Modifier: gocui.ModNone, Handler: functions.onKeyUpPress},
+			{ViewName: viewName, Key: gocui.MouseWheelUp, Modifier: gocui.ModNone, Handler: functions.onKeyUpPress},
+			{ViewName: viewName, Key: 'j', Modifier: gocui.ModNone, Handler: functions.onKeyDownPress},
+			{ViewName: viewName, Key: gocui.KeyArrowDown, Modifier: gocui.ModNone, Handler: functions.onKeyDownPress},
+			{ViewName: viewName, Key: gocui.MouseWheelDown, Modifier: gocui.ModNone, Handler: functions.onKeyDownPress},
+			{ViewName: viewName, Key: gocui.MouseLeft, Modifier: gocui.ModNone, Handler: functions.onClick},
 		}...)
+	}
+
+	for _, viewName := range []string{"status", "services", "containers", "images", "volumes"} {
+		bindings = append(bindings, &Binding{
+			ViewName:    viewName,
+			Key:         gocui.KeyEnter,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleEnterMain,
+			Description: gui.Tr.FocusMain,
+		})
 	}
 
 	return bindings

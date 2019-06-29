@@ -301,22 +301,6 @@ func (gui *Gui) resizePopupPanel(g *gocui.Gui, v *gocui.View) error {
 	return err
 }
 
-// generalFocusLine takes a lineNumber to focus, and a bottomLine to ensure we can see
-func (gui *Gui) generalFocusLine(lineNumber int, bottomLine int, v *gocui.View) error {
-	_, height := v.Size()
-	overScroll := bottomLine - height + 1
-	if overScroll < 0 {
-		overScroll = 0
-	}
-	if err := v.SetOrigin(0, overScroll); err != nil {
-		return err
-	}
-	if err := v.SetCursor(0, lineNumber-overScroll); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (gui *Gui) changeSelectedLine(line *int, total int, up bool) {
 	if up {
 		if *line == -1 || *line == 0 {
@@ -387,6 +371,10 @@ func (gui *Gui) clearMainView() {
 func (gui *Gui) handleClick(v *gocui.View, itemCount int, selectedLine *int, handleSelect func(*gocui.Gui, *gocui.View) error) error {
 	if gui.popupPanelFocused() && v != nil && !gui.isPopupPanel(v.Name()) {
 		return nil
+	}
+
+	if _, err := gui.g.SetCurrentView(v.Name()); err != nil {
+		return err
 	}
 
 	_, cy := v.Cursor()

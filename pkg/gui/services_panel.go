@@ -39,10 +39,6 @@ func (gui *Gui) handleServicesClick(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
-	if _, err := gui.g.SetCurrentView(v.Name()); err != nil {
-		return err
-	}
-
 	service, err := gui.getSelectedService()
 	if err != nil {
 		return nil
@@ -133,7 +129,7 @@ func (gui *Gui) renderServiceLogs(service *commands.Service) error {
 }
 
 func (gui *Gui) handleServicesNextLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
+	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
 		return nil
 	}
 
@@ -144,7 +140,7 @@ func (gui *Gui) handleServicesNextLine(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleServicesPrevLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
+	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
 		return nil
 	}
 

@@ -41,6 +41,10 @@ func (gui *Gui) onFocusLost(v *gocui.View, newView *gocui.View) error {
 		return nil
 	}
 
+	if !gui.isPopupPanel(newView.Name()) {
+		v.ParentView = nil
+	}
+
 	// refocusing because in responsive mode (when the window is very short) we want to ensure that after the view size changes we can still see the last selected item
 	if err := gui.focusPointInView(v); err != nil {
 		return err

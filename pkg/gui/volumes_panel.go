@@ -38,10 +38,6 @@ func (gui *Gui) handleVolumesClick(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleVolumeSelect(g *gocui.Gui, v *gocui.View) error {
-	if _, err := gui.g.SetCurrentView(v.Name()); err != nil {
-		return err
-	}
-
 	volume, err := gui.getSelectedVolume()
 	if err != nil {
 		if err != gui.Errors.ErrNoVolumes {
@@ -144,7 +140,7 @@ func (gui *Gui) refreshVolumes() error {
 }
 
 func (gui *Gui) handleVolumesNextLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
+	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
 		return nil
 	}
 
@@ -155,7 +151,7 @@ func (gui *Gui) handleVolumesNextLine(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleVolumesPrevLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
+	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
 		return nil
 	}
 

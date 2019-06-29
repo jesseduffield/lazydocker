@@ -394,6 +394,7 @@ func (g *Gui) SetManager(managers ...Manager) {
 	g.currentView = nil
 	g.views = nil
 	g.keybindings = nil
+	g.tabClickBindings = nil
 
 	go func() { g.tbEvents <- termbox.Event{Type: termbox.EventResize} }()
 }
@@ -509,14 +510,7 @@ func (g *Gui) flush() error {
 			continue
 		}
 		if v.Frame {
-			var fgColor, bgColor Attribute
-			if g.Highlight && v == g.currentView {
-				fgColor = g.SelFgColor
-				bgColor = g.SelBgColor
-			} else {
-				fgColor = g.FgColor
-				bgColor = g.BgColor
-			}
+			fgColor, bgColor := g.viewColors(v)
 
 			if err := g.drawFrameEdges(v, fgColor, bgColor); err != nil {
 				return err
@@ -541,6 +535,13 @@ func (g *Gui) flush() error {
 	}
 	termbox.Flush()
 	return nil
+}
+
+func (g *Gui) viewColors(v *View) (Attribute, Attribute) {
+	if g.Highlight && v == g.currentView {
+		return g.SelFgColor, g.SelBgColor
+	}
+	return g.FgColor, g.BgColor
 }
 
 // drawFrameEdges draws the horizontal and vertical edges of a view.
@@ -668,10 +669,20 @@ func (g *Gui) drawTitle(v *View, fgColor, bgColor Attribute) error {
 		} else if x > v.x1-2 || x >= g.maxX {
 			break
 		}
+
 		currentFgColor := fgColor
 		currentBgColor := bgColor
+		// if you are the current view and you have multiple tabs, de-highlight the non-selected tabs
+		if v == g.currentView && len(v.Tabs) > 0 {
+			currentFgColor = v.FgColor
+			currentBgColor = v.BgColor
+		}
+
 		if i >= currentTabStart && i <= currentTabEnd {
-			currentFgColor = v.SelFgColor - AttrBold
+			currentFgColor = v.SelFgColor
+			if v != g.currentView {
+				currentFgColor -= AttrBold
+			}
 			currentBgColor = v.SelBgColor
 		}
 		if err := g.SetRune(x, v.y0, ch, currentFgColor, currentBgColor); err != nil {
@@ -787,6 +798,8 @@ func (g *Gui) onKey(ev *termbox.Event) error {
 // and event. The value of matched is true if there is a match and no errors.
 func (g *Gui) execKeybindings(v *View, ev *termbox.Event) (matched bool, err error) {
 	var globalKb *keybinding
+	var matchingParentViewKb *keybinding
+
 	for _, kb := range g.keybindings {
 		if kb.handler == nil {
 			continue
@@ -797,9 +810,15 @@ func (g *Gui) execKeybindings(v *View, ev *termbox.Event) (matched bool, err err
 		if kb.matchView(v) {
 			return g.execKeybinding(v, kb)
 		}
+		if kb.matchView(v.ParentView) {
+			matchingParentViewKb = kb
+		}
 		if kb.viewName == "" && ((v != nil && !v.Editable) || (kb.ch == 0 && kb.key != KeyCtrlU && kb.key != KeyCtrlA && kb.key != KeyCtrlE)) {
 			globalKb = kb
 		}
+	}
+	if matchingParentViewKb != nil {
+		return g.execKeybinding(v.ParentView, matchingParentViewKb)
 	}
 	if globalKb != nil {
 		return g.execKeybinding(v, globalKb)

@@ -39,13 +39,21 @@ func (gui *Gui) refreshStatus() error {
 	return nil
 }
 
-func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleStatusClick(g *gocui.Gui, v *gocui.View) error {
 	if gui.popupPanelFocused() {
 		return nil
 	}
 
 	if _, err := gui.g.SetCurrentView(v.Name()); err != nil {
 		return err
+	}
+
+	return gui.handleStatusSelect(g, v)
+}
+
+func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
+	if gui.popupPanelFocused() {
+		return nil
 	}
 
 	key := gui.getStatusContexts()[gui.State.Panels.Status.ContextIndex]

@@ -7,7 +7,7 @@ import (
 )
 
 func (gui *Gui) scrollUpMain(g *gocui.Gui, v *gocui.View) error {
-	mainView, _ := g.View("main")
+	mainView := gui.getMainView()
 	mainView.Autoscroll = false
 	ox, oy := mainView.Origin()
 	newOy := int(math.Max(0, float64(oy-gui.Config.UserConfig.Gui.ScrollHeight)))
@@ -15,7 +15,7 @@ func (gui *Gui) scrollUpMain(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) scrollDownMain(g *gocui.Gui, v *gocui.View) error {
-	mainView, _ := g.View("main")
+	mainView := gui.getMainView()
 	ox, oy := mainView.Origin()
 	y := oy
 	if !gui.Config.UserConfig.Gui.ScrollPastBottom {
@@ -27,6 +27,21 @@ func (gui *Gui) scrollDownMain(g *gocui.Gui, v *gocui.View) error {
 	return mainView.SetOrigin(ox, oy+gui.Config.UserConfig.Gui.ScrollHeight)
 }
 
+func (gui *Gui) scrollLeftMain(g *gocui.Gui, v *gocui.View) error {
+	mainView := gui.getMainView()
+	ox, oy := mainView.Origin()
+	newOx := int(math.Max(0, float64(ox-gui.Config.UserConfig.Gui.ScrollHeight)))
+
+	return mainView.SetOrigin(newOx, oy)
+}
+
+func (gui *Gui) scrollRightMain(g *gocui.Gui, v *gocui.View) error {
+	mainView := gui.getMainView()
+	ox, oy := mainView.Origin()
+
+	return mainView.SetOrigin(ox+gui.Config.UserConfig.Gui.ScrollHeight, oy)
+}
+
 func (gui *Gui) autoScrollMain(g *gocui.Gui, v *gocui.View) error {
 	gui.getMainView().Autoscroll = true
 	return nil
@@ -36,6 +51,11 @@ func (gui *Gui) onMainTabClick(tabIndex int) error {
 	gui.Log.Warn(tabIndex)
 
 	viewName := gui.currentViewName()
+
+	mainView := gui.getMainView()
+	if viewName == "main" && mainView.ParentView != nil {
+		viewName = mainView.ParentView.Name()
+	}
 
 	switch viewName {
 	case "services":
@@ -56,4 +76,24 @@ func (gui *Gui) onMainTabClick(tabIndex int) error {
 	}
 
 	return nil
+}
+
+func (gui *Gui) handleEnterMain(g *gocui.Gui, v *gocui.View) error {
+	mainView := gui.getMainView()
+	mainView.ParentView = v
+
+	return gui.switchFocus(gui.g, v, mainView)
+}
+
+func (gui *Gui) handleExitMain(g *gocui.Gui, v *gocui.View) error {
+	v.ParentView = nil
+	return gui.returnFocus(gui.g, v)
+}
+
+func (gui *Gui) handleMainClick(g *gocui.Gui, v *gocui.View) error {
+	currentView := gui.g.CurrentView()
+
+	v.ParentView = currentView
+
+	return gui.switchFocus(gui.g, currentView, v)
 }

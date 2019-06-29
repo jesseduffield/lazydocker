@@ -41,10 +41,6 @@ func (gui *Gui) handleImagesClick(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
-	if _, err := gui.g.SetCurrentView(v.Name()); err != nil {
-		return err
-	}
-
 	Image, err := gui.getSelectedImage(g)
 	if err != nil {
 		if err != gui.Errors.ErrNoImages {
@@ -151,7 +147,7 @@ func (gui *Gui) refreshStateImages() error {
 }
 
 func (gui *Gui) handleImagesNextLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
+	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
 		return nil
 	}
 
@@ -162,7 +158,7 @@ func (gui *Gui) handleImagesNextLine(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleImagesPrevLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
+	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
 		return nil
 	}
 

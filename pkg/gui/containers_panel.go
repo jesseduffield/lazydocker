@@ -42,10 +42,6 @@ func (gui *Gui) handleContainersClick(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
-	if _, err := gui.g.SetCurrentView(v.Name()); err != nil {
-		return err
-	}
-
 	container, err := gui.getSelectedContainer()
 	if err != nil {
 		if err != gui.Errors.ErrNoContainers {
@@ -314,7 +310,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 }
 
 func (gui *Gui) handleContainersNextLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
+	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
 		return nil
 	}
 
@@ -325,7 +321,7 @@ func (gui *Gui) handleContainersNextLine(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleContainersPrevLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
+	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
 		return nil
 	}
 
