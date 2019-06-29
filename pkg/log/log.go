@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/heroku/rollrus"
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	"github.com/jesseduffield/rollrus"
 	"github.com/sirupsen/logrus"
 )
 
