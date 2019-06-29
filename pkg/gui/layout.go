@@ -169,7 +169,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		if err.Error() != "unknown view" {
 			return err
 		}
-		v.Wrap = true
+		v.Wrap = false
 		v.FgColor = gocui.ColorWhite
 
 		// when you run a docker container with the -it flags (interactive mode) it adds carriage returns for some reason. This is not docker's fault, it's an os-level default.

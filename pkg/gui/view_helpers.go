@@ -74,7 +74,7 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) resetMainView() {
 	gui.State.Panels.Main.ObjectKey = ""
-	gui.getMainView().Wrap = true
+	gui.getMainView().Wrap = false
 }
 
 func (gui *Gui) newLineFocused(v *gocui.View) error {

@@ -91,7 +91,7 @@ func (gui *Gui) renderCredits() error {
 	return gui.T.NewTask(func(stop chan struct{}) {
 		mainView := gui.getMainView()
 		mainView.Autoscroll = false
-		mainView.Wrap = true
+		mainView.Wrap = false
 
 		var configBuf bytes.Buffer
 		yaml.NewEncoder(&configBuf, yaml.IncludeOmitted).Encode(gui.Config.UserConfig)
@@ -116,7 +116,7 @@ func (gui *Gui) renderAllLogs() error {
 	return gui.T.NewTask(func(stop chan struct{}) {
 		mainView := gui.getMainView()
 		mainView.Autoscroll = true
-		mainView.Wrap = true
+		mainView.Wrap = false
 
 		gui.clearMainView()
 
@@ -148,7 +148,7 @@ func (gui *Gui) renderDockerComposeConfig() error {
 	return gui.T.NewTask(func(stop chan struct{}) {
 		mainView := gui.getMainView()
 		mainView.Autoscroll = false
-		mainView.Wrap = true
+		mainView.Wrap = false
 
 		config := gui.DockerCommand.DockerComposeConfig()
 		gui.renderString(gui.g, "main", config)

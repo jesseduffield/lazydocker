@@ -92,7 +92,7 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 	mainView := gui.getMainView()
 	mainView.Autoscroll = false
-	mainView.Wrap = true
+	mainView.Wrap = false
 
 	padding := 10
 	output := ""
@@ -174,7 +174,7 @@ func (gui *Gui) renderContainerTop(container *commands.Container) error {
 func (gui *Gui) renderContainerLogs(container *commands.Container) error {
 	mainView := gui.getMainView()
 	mainView.Autoscroll = true
-	mainView.Wrap = true
+	mainView.Wrap = false
 
 	return gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
 		gui.clearMainView()
