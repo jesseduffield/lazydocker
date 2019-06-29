@@ -8,6 +8,7 @@ import (
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
@@ -376,7 +377,25 @@ func (gui *Gui) handleServicesCustomCommand(g *gocui.Gui, v *gocui.View) error {
 		Container: service.Container,
 	})
 
-	customCommands := gui.Config.UserConfig.CustomCommands.Services
+	var customCommands []config.CustomCommand
+
+	customServiceCommands := gui.Config.UserConfig.CustomCommands.Services
+	// we only include service commands if they have no serviceNames defined or if our service happens to be one of the serviceNames defined
+L:
+	for _, cmd := range customServiceCommands {
+		if len(cmd.ServiceNames) == 0 {
+			customCommands = append(customCommands, cmd)
+			continue L
+		}
+		for _, serviceName := range cmd.ServiceNames {
+			if serviceName == service.Name {
+				// appending these to the top given they're more likely to be selected
+				customCommands = append([]config.CustomCommand{cmd}, customCommands...)
+				continue L
+			}
+		}
+	}
+
 	if service.Container != nil {
 		customCommands = append(customCommands, gui.Config.UserConfig.CustomCommands.Containers...)
 	}

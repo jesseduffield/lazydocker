@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
@@ -10,13 +11,14 @@ type customCommandOption struct {
 	customCommand config.CustomCommand
 	description   string
 	command       string
+	name          string
 	runCommand    bool
 	attach        bool
 }
 
 // GetDisplayStrings is a function.
 func (r *customCommandOption) GetDisplayStrings(isFocused bool) []string {
-	return []string{r.description}
+	return []string{r.name, utils.ColoredString(r.description, color.FgCyan)}
 }
 
 func (gui *Gui) createCustomCommandMenu(customCommands []config.CustomCommand, commandObject commands.CommandObject) error {
@@ -30,11 +32,12 @@ func (gui *Gui) createCustomCommandMenu(customCommands []config.CustomCommand, c
 			command:       resolvedCommand,
 			runCommand:    true,
 			attach:        command.Attach,
+			name:          command.Name,
 		}
 	}
 	options[len(options)-1] = &customCommandOption{
-		description: gui.Tr.Cancel,
-		runCommand:  false,
+		name:       gui.Tr.Cancel,
+		runCommand: false,
 	}
 
 	handleMenuPress := func(index int) error {

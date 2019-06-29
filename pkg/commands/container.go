@@ -13,6 +13,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
@@ -39,6 +40,7 @@ type Container struct {
 	Details         Details
 	MonitoringStats bool
 	DockerCommand   LimitedDockerCommand
+	Tr              *i18n.TranslationSet
 }
 
 // Details is a struct containing what we get back from `docker inspect` on a container
@@ -342,7 +344,11 @@ func (c *Container) Restart() error {
 func (c *Container) Attach() (*exec.Cmd, error) {
 	// verify that we can in fact attach to this container
 	if !c.Details.Config.OpenStdin {
-		return nil, errors.New("Container does not support attaching. You must either run the service with the '-it' flag or use `stdin_open: true, tty: true` in the docker-compose.yml file")
+		return nil, errors.New(c.Tr.UnattachableContainerError)
+	}
+
+	if c.Container.State == "exited" {
+		return nil, errors.New(c.Tr.CannotAttachStoppedContainerError)
 	}
 
 	cmd := c.OSCommand.PrepareSubProcess("docker", "attach", "--sig-proxy=false", c.ID)

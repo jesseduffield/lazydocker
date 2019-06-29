@@ -23,54 +23,57 @@ type TranslationSet struct {
 	ConfirmQuit                                string
 	ErrorOccurred                              string
 	ConnectionFailed                           string
-	Donate                                     string
-	Cancel                                     string
-	CustomCommandTitle                         string
-	Remove                                     string
-	ForceRemove                                string
-	RemoveWithVolumes                          string
-	MustForceToRemoveContainer                 string
-	Confirm                                    string
-	Return                                     string
-	FocusMain                                  string
-	StopContainer                              string
-	RestartingStatus                           string
-	StoppingStatus                             string
-	RemovingStatus                             string
-	RunningCustomCommandStatus                 string
-	RemoveService                              string
-	Stop                                       string
-	Restart                                    string
-	Rebuild                                    string
-	Recreate                                   string
-	PreviousContext                            string
-	NextContext                                string
-	Attach                                     string
-	ViewLogs                                   string
-	ServicesTitle                              string
-	ContainersTitle                            string
-	StandaloneContainersTitle                  string
-	TopTitle                                   string
-	ImagesTitle                                string
-	VolumesTitle                               string
-	NoContainers                               string
-	NoContainer                                string
-	NoImages                                   string
-	NoVolumes                                  string
-	RemoveImage                                string
-	RemoveVolume                               string
-	RemoveWithoutPrune                         string
-	PruneImages                                string
-	PruneContainers                            string
-	PruneVolumes                               string
-	ConfirmPruneContainers                     string
-	ConfirmPruneImages                         string
-	ConfirmPruneVolumes                        string
-	PruningStatus                              string
-	StopService                                string
-	PressEnterToReturn                         string
-	ViewRestartOptions                         string
-	RunCustomCommand                           string
+	UnattachableContainerError                 string
+	CannotAttachStoppedContainerError          string
+
+	Donate                     string
+	Cancel                     string
+	CustomCommandTitle         string
+	Remove                     string
+	ForceRemove                string
+	RemoveWithVolumes          string
+	MustForceToRemoveContainer string
+	Confirm                    string
+	Return                     string
+	FocusMain                  string
+	StopContainer              string
+	RestartingStatus           string
+	StoppingStatus             string
+	RemovingStatus             string
+	RunningCustomCommandStatus string
+	RemoveService              string
+	Stop                       string
+	Restart                    string
+	Rebuild                    string
+	Recreate                   string
+	PreviousContext            string
+	NextContext                string
+	Attach                     string
+	ViewLogs                   string
+	ServicesTitle              string
+	ContainersTitle            string
+	StandaloneContainersTitle  string
+	TopTitle                   string
+	ImagesTitle                string
+	VolumesTitle               string
+	NoContainers               string
+	NoContainer                string
+	NoImages                   string
+	NoVolumes                  string
+	RemoveImage                string
+	RemoveVolume               string
+	RemoveWithoutPrune         string
+	PruneImages                string
+	PruneContainers            string
+	PruneVolumes               string
+	ConfirmPruneContainers     string
+	ConfirmPruneImages         string
+	ConfirmPruneVolumes        string
+	PruningStatus              string
+	StopService                string
+	PressEnterToReturn         string
+	ViewRestartOptions         string
+	RunCustomCommand           string
 
 	LogsTitle                string
 	ConfigTitle              string
@@ -91,10 +94,13 @@ func englishSet() TranslationSet {
 		RunningSubprocess:                          "running subprocess",
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
 
-		ErrorOccurred:    "An error occurred! Please create an issue at https://github.com/jesseduffield/lazydocker/issues",
-		ConnectionFailed: "connection to docker client failed. You may need to restart the docker client",
-		Donate:           "Donate",
-		Confirm:          "Confirm",
+		ErrorOccurred:                     "An error occurred! Please create an issue at https://github.com/jesseduffield/lazydocker/issues",
+		ConnectionFailed:                  "connection to docker client failed. You may need to restart the docker client",
+		UnattachableContainerError:        "Container does not support attaching. You must either run the service with the '-it' flag or use `stdin_open: true, tty: true` in the docker-compose.yml file",
+		CannotAttachStoppedContainerError: "You cannot attach to a stopped container, you need to start it first (which you can actually do with the 'r' key) (yes I'm too lazy to do this automatically for you) (pretty cool that I get to communicate one-on-one with you in the form of an error message though)",
+
+		Donate:  "Donate",
+		Confirm: "Confirm",
 
 		Return:             "return",
 		FocusMain:          "focus main panel",

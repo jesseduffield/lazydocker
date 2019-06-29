@@ -183,11 +183,17 @@ type CustomCommands struct {
 
 // CustomCommand is a template for a command we want to run against a service or container
 type CustomCommand struct {
+	// Name is the name of the command, purely for visual display
+	Name string `yaml:"name"`
+
 	// Attach tells us whether to switch to a subprocess to interact with the called program, or just read its output. If Attach is set to false, the command will run in the background. I'm open to the idea of having a third option where the output plays in the main panel.
-	Attach bool
+	Attach bool `yaml:"attach"`
 
 	// Command is the command we want to run. We can use the go templates here as well. One example might be `{{ .DockerCompose }} exec {{ .Service.Name }} /bin/sh`
-	Command string
+	Command string `yaml:"command"`
+
+	// ServiceNames is used to restrict this command to just one or more services. An example might be 'rails migrate' for your rails api service(s). This field has no effect on customcommands under the 'communications' part of the customCommand config.
+	ServiceNames []string `yaml:"serviceNames"`
 }
 
 // GetDefaultConfig returns the application default configuration
@@ -226,8 +232,9 @@ func GetDefaultConfig() UserConfig {
 		CustomCommands: CustomCommands{
 			Containers: []CustomCommand{
 				{
-					Attach:  true,
+					Name:    "bash",
 					Command: "docker exec -it {{ .Container.ID }} /bin/sh",
+					Attach:  true,
 				},
 			},
 			Services: []CustomCommand{},

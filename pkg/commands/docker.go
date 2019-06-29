@@ -303,6 +303,7 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 				Log:           c.Log,
 				Config:        c.Config,
 				DockerCommand: c,
+				Tr:            c.Tr,
 			}
 		}
 
