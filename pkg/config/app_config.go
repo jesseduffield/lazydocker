@@ -31,7 +31,7 @@ type UserConfig struct {
 	Reporting string `yaml:"reporting,omitempty"`
 
 	// ConfirmOnQuit when enabled prompts you to confirm you want to quit when you hit esc or q when no confirmation panels are open
-	ConfirmOnQuit bool `yaml:"confirmOnQuit,omitempty"`
+	ConfirmOnQuit bool `yaml:"confirmOnQuit"`
 
 	// CommandTemplates determines what commands actually get called when we run certain commands
 	CommandTemplates CommandTemplatesConfig `yaml:"commandTemplates,omitempty"`
@@ -62,16 +62,19 @@ type GuiConfig struct {
 	ScrollHeight int `yaml:"scrollHeight,omitempty"`
 
 	// ScrollPastBottom determines whether you can scroll past the bottom of the main view
-	ScrollPastBottom bool `yaml:"scrollPastBottom,omitempty"`
+	ScrollPastBottom bool `yaml:"scrollPastBottom"`
 
 	// MouseEvents is experimental at this point. It's purpose is to allow you to focus panels by clicking on them, and allow for clicking on links
-	MouseEvents bool `yaml:"mouseEvents,omitempty"`
+	MouseEvents bool `yaml:"mouseEvents"`
 
 	// Theme determines what colors and color attributes your panel borders have. I always set inactiveBorderColor to black because in my terminal it's more of a grey, but that doesn't work in your average terminal. I highly recommended finding a combination that works for you
 	Theme ThemeConfig `yaml:"theme,omitempty"`
 
 	// ShowAllContainers determines whether the Containers panel contains all the containers returned by `docker ps -a`, or just those containers that aren't directly linked to a service. It is probably desirable to enable this if you have multiple containers per service, but otherwise it can cause a lot of clutter
-	ShowAllContainers bool `yaml:"showAllContainers,omitempty"`
+	ShowAllContainers bool `yaml:"showAllContainers"`
+
+	// PromptToReturn determines whether you get the 'press enter to return to lazydocker' message after a subprocess has completed. You would set this to true if you often want to see the output of subprocesses before returning to lazydocker. I would default this to false but then people who want it set to true won't even know the config option exists.
+	PromptToReturn bool `yaml:"promptToReturn"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we run certain commands
