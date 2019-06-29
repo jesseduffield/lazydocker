@@ -147,11 +147,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3ab130f65766f5b7cc944d557df31c6a007ec017151705ec1e1b8719f2689021"
+  digest = "1:e0306e92cef41d02af05a9f88395ec49c94f0255d54ca88ee3c02ae8f5806ee3"
   name = "github.com/jesseduffield/termbox-go"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "1e272ff78dcb4c448870f464fda1cdcf2bf0b3dd"
+  revision = "a9796224c07f5d757b399082bfee60de9574a2d9"
 
 [[projects]]
   branch = "v2"
