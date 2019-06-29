@@ -29,28 +29,12 @@ func (gui *Gui) getSelectedVolume() (*commands.Volume, error) {
 	return gui.DockerCommand.Volumes[selectedLine], nil
 }
 
-func (gui *Gui) handleVolumesFocus(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
-		return nil
-	}
+func (gui *Gui) handleVolumesClick(g *gocui.Gui, v *gocui.View) error {
+	itemCount := len(gui.DockerCommand.Volumes)
+	handleSelect := gui.handleVolumeSelect
+	selectedLine := &gui.State.Panels.Volumes.SelectedLine
 
-	cx, cy := v.Cursor()
-	_, oy := v.Origin()
-
-	prevSelectedLine := gui.State.Panels.Volumes.SelectedLine
-	newSelectedLine := cy - oy
-
-	if newSelectedLine > len(gui.DockerCommand.Volumes)-1 || len(utils.Decolorise(gui.DockerCommand.Volumes[newSelectedLine].Name)) < cx {
-		return gui.handleVolumeSelect(gui.g, v)
-	}
-
-	gui.State.Panels.Volumes.SelectedLine = newSelectedLine
-
-	if !(prevSelectedLine == newSelectedLine && gui.currentViewName() == v.Name()) {
-		return gui.handleVolumeSelect(gui.g, v)
-	}
-
-	return nil
+	return gui.handleClick(v, itemCount, selectedLine, handleSelect)
 }
 
 func (gui *Gui) handleVolumeSelect(g *gocui.Gui, v *gocui.View) error {
@@ -66,13 +50,13 @@ func (gui *Gui) handleVolumeSelect(g *gocui.Gui, v *gocui.View) error {
 		return gui.renderString(g, "main", gui.Tr.NoVolumes)
 	}
 
+	if err := gui.focusPoint(0, gui.State.Panels.Volumes.SelectedLine, len(gui.DockerCommand.Volumes), v); err != nil {
+		return err
+	}
+
 	key := "volumes-" + volume.Name + "-" + gui.getVolumeContexts()[gui.State.Panels.Volumes.ContextIndex]
 	if !gui.shouldRefresh(key) {
 		return nil
-	}
-
-	if err := gui.focusPoint(0, gui.State.Panels.Volumes.SelectedLine, len(gui.DockerCommand.Volumes), v); err != nil {
-		return err
 	}
 
 	mainView := gui.getMainView()

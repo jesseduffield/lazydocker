@@ -33,28 +33,12 @@ func (gui *Gui) getSelectedContainer() (*commands.Container, error) {
 	return gui.DockerCommand.DisplayContainers[selectedLine], nil
 }
 
-func (gui *Gui) handleContainersFocus(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
-		return nil
-	}
+func (gui *Gui) handleContainersClick(g *gocui.Gui, v *gocui.View) error {
+	itemCount := len(gui.DockerCommand.DisplayContainers)
+	handleSelect := gui.handleContainerSelect
+	selectedLine := &gui.State.Panels.Containers.SelectedLine
 
-	cx, cy := v.Cursor()
-	_, oy := v.Origin()
-
-	prevSelectedLine := gui.State.Panels.Containers.SelectedLine
-	newSelectedLine := cy - oy
-
-	if newSelectedLine > len(gui.DockerCommand.DisplayContainers)-1 || len(utils.Decolorise(gui.DockerCommand.DisplayContainers[newSelectedLine].Name)) < cx {
-		return gui.handleContainerSelect(gui.g, v)
-	}
-
-	gui.State.Panels.Containers.SelectedLine = newSelectedLine
-
-	if prevSelectedLine == newSelectedLine && gui.currentViewName() == v.Name() {
-		return nil
-	}
-
-	return gui.handleContainerSelect(gui.g, v)
+	return gui.handleClick(v, itemCount, selectedLine, handleSelect)
 }
 
 func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
@@ -70,13 +54,13 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
+	if err := gui.focusPoint(0, gui.State.Panels.Containers.SelectedLine, len(gui.DockerCommand.DisplayContainers), v); err != nil {
+		return err
+	}
+
 	key := "containers-" + container.ID + "-" + gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex]
 	if !gui.shouldRefresh(key) {
 		return nil
-	}
-
-	if err := gui.focusPoint(0, gui.State.Panels.Containers.SelectedLine, len(gui.DockerCommand.DisplayContainers), v); err != nil {
-		return err
 	}
 
 	mainView := gui.getMainView()

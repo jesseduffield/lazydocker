@@ -30,28 +30,12 @@ func (gui *Gui) getSelectedService() (*commands.Service, error) {
 	return gui.DockerCommand.Services[selectedLine], nil
 }
 
-func (gui *Gui) handleServicesFocus(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
-		return nil
-	}
+func (gui *Gui) handleServicesClick(g *gocui.Gui, v *gocui.View) error {
+	itemCount := len(gui.DockerCommand.Services)
+	handleSelect := gui.handleServiceSelect
+	selectedLine := &gui.State.Panels.Services.SelectedLine
 
-	cx, cy := v.Cursor()
-	_, oy := v.Origin()
-
-	prevSelectedLine := gui.State.Panels.Services.SelectedLine
-	newSelectedLine := cy - oy
-
-	if newSelectedLine > len(gui.DockerCommand.Services)-1 || len(utils.Decolorise(gui.DockerCommand.Services[newSelectedLine].Name)) < cx {
-		return gui.handleServiceSelect(gui.g, v)
-	}
-
-	gui.State.Panels.Services.SelectedLine = newSelectedLine
-
-	if prevSelectedLine == newSelectedLine && gui.currentViewName() == v.Name() {
-		return nil
-	}
-
-	return gui.handleServiceSelect(gui.g, v)
+	return gui.handleClick(v, itemCount, selectedLine, handleSelect)
 }
 
 func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
@@ -69,13 +53,13 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 		containerID = service.Container.ID
 	}
 
+	if err := gui.focusPoint(0, gui.State.Panels.Services.SelectedLine, len(gui.DockerCommand.Services), v); err != nil {
+		return err
+	}
+
 	key := "services-" + service.ID + "-" + containerID + "-" + gui.getServiceContexts()[gui.State.Panels.Services.ContextIndex]
 	if !gui.shouldRefresh(key) {
 		return nil
-	}
-
-	if err := gui.focusPoint(0, gui.State.Panels.Services.SelectedLine, len(gui.DockerCommand.Services), v); err != nil {
-		return err
 	}
 
 	mainView := gui.getMainView()

@@ -161,6 +161,12 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.ViewLogs,
 		},
 		{
+			ViewName: "status",
+			Key:      gocui.MouseLeft,
+			Modifier: gocui.ModNone,
+			Handler:  gui.handleStatusSelect,
+		},
+		{
 			ViewName: "menu",
 			Key:      gocui.KeyEsc,
 			Modifier: gocui.ModNone,
@@ -379,10 +385,10 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		focus    func(*gocui.Gui, *gocui.View) error
 	}{
 		"menu":       {prevLine: gui.handleMenuPrevLine, nextLine: gui.handleMenuNextLine, focus: gui.handleMenuSelect},
-		"services":   {prevLine: gui.handleServicesPrevLine, nextLine: gui.handleServicesNextLine, focus: gui.handleServicesFocus},
-		"containers": {prevLine: gui.handleContainersPrevLine, nextLine: gui.handleContainersNextLine, focus: gui.handleContainersFocus},
-		"images":     {prevLine: gui.handleImagesPrevLine, nextLine: gui.handleImagesNextLine, focus: gui.handleImagesFocus},
-		"volumes":    {prevLine: gui.handleVolumesPrevLine, nextLine: gui.handleVolumesNextLine, focus: gui.handleVolumesFocus},
+		"services":   {prevLine: gui.handleServicesPrevLine, nextLine: gui.handleServicesNextLine, focus: gui.handleServicesClick},
+		"containers": {prevLine: gui.handleContainersPrevLine, nextLine: gui.handleContainersNextLine, focus: gui.handleContainersClick},
+		"images":     {prevLine: gui.handleImagesPrevLine, nextLine: gui.handleImagesNextLine, focus: gui.handleImagesClick},
+		"volumes":    {prevLine: gui.handleVolumesPrevLine, nextLine: gui.handleVolumesNextLine, focus: gui.handleVolumesClick},
 	}
 
 	for viewName, functions := range listPanelMap {

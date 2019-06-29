@@ -32,28 +32,12 @@ func (gui *Gui) getSelectedImage(g *gocui.Gui) (*commands.Image, error) {
 	return gui.DockerCommand.Images[selectedLine], nil
 }
 
-func (gui *Gui) handleImagesFocus(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
-		return nil
-	}
+func (gui *Gui) handleImagesClick(g *gocui.Gui, v *gocui.View) error {
+	itemCount := len(gui.DockerCommand.Images)
+	handleSelect := gui.handleImageSelect
+	selectedLine := &gui.State.Panels.Images.SelectedLine
 
-	cx, cy := v.Cursor()
-	_, oy := v.Origin()
-
-	prevSelectedLine := gui.State.Panels.Images.SelectedLine
-	newSelectedLine := cy - oy
-
-	if newSelectedLine > len(gui.DockerCommand.Images)-1 || len(utils.Decolorise(gui.DockerCommand.Images[newSelectedLine].Name)) < cx {
-		return gui.handleImageSelect(gui.g, v)
-	}
-
-	gui.State.Panels.Images.SelectedLine = newSelectedLine
-
-	if !(prevSelectedLine == newSelectedLine && gui.currentViewName() == v.Name()) {
-		return gui.handleImageSelect(gui.g, v)
-	}
-
-	return nil
+	return gui.handleClick(v, itemCount, selectedLine, handleSelect)
 }
 
 func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
@@ -69,13 +53,13 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 		return gui.renderString(g, "main", gui.Tr.NoImages)
 	}
 
+	if err := gui.focusPoint(0, gui.State.Panels.Images.SelectedLine, len(gui.DockerCommand.Images), v); err != nil {
+		return err
+	}
+
 	key := "images-" + Image.ID + "-" + gui.getImageContexts()[gui.State.Panels.Images.ContextIndex]
 	if !gui.shouldRefresh(key) {
 		return nil
-	}
-
-	if err := gui.focusPoint(0, gui.State.Panels.Images.SelectedLine, len(gui.DockerCommand.Images), v); err != nil {
-		return err
 	}
 
 	mainView := gui.getMainView()

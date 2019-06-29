@@ -383,3 +383,22 @@ func (gui *Gui) clearMainView() {
 	mainView.SetOrigin(0, 0)
 	mainView.SetCursor(0, 0)
 }
+
+func (gui *Gui) handleClick(v *gocui.View, itemCount int, selectedLine *int, handleSelect func(*gocui.Gui, *gocui.View) error) error {
+	if gui.popupPanelFocused() {
+		return nil
+	}
+
+	_, cy := v.Cursor()
+	_, oy := v.Origin()
+
+	newSelectedLine := cy - oy
+
+	if newSelectedLine > itemCount-1 {
+		newSelectedLine = itemCount - 1
+	}
+
+	*selectedLine = newSelectedLine
+
+	return handleSelect(gui.g, v)
+}
