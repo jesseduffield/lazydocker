@@ -31,7 +31,7 @@ type UserConfig struct {
 	Reporting string `yaml:"reporting,omitempty"`
 
 	// ConfirmOnQuit when enabled prompts you to confirm you want to quit when you hit esc or q when no confirmation panels are open
-	ConfirmOnQuit bool `yaml:"confirmOnQuit"`
+	ConfirmOnQuit bool `yaml:"confirmOnQuit,omitempty"`
 
 	// CommandTemplates determines what commands actually get called when we run certain commands
 	CommandTemplates CommandTemplatesConfig `yaml:"commandTemplates,omitempty"`
@@ -62,19 +62,19 @@ type GuiConfig struct {
 	ScrollHeight int `yaml:"scrollHeight,omitempty"`
 
 	// ScrollPastBottom determines whether you can scroll past the bottom of the main view
-	ScrollPastBottom bool `yaml:"scrollPastBottom"`
+	ScrollPastBottom bool `yaml:"scrollPastBottom,omitempty"`
 
-	// MouseEvents is experimental at this point. It's purpose is to allow you to focus panels by clicking on them, and allow for clicking on links
-	MouseEvents bool `yaml:"mouseEvents"`
+	// IgnoreMouseEvents is for when you do not want to use your mouse to interact with anything
+	IgnoreMouseEvents bool `yaml:"mouseEvents,omitempty"`
 
 	// Theme determines what colors and color attributes your panel borders have. I always set inactiveBorderColor to black because in my terminal it's more of a grey, but that doesn't work in your average terminal. I highly recommended finding a combination that works for you
 	Theme ThemeConfig `yaml:"theme,omitempty"`
 
 	// ShowAllContainers determines whether the Containers panel contains all the containers returned by `docker ps -a`, or just those containers that aren't directly linked to a service. It is probably desirable to enable this if you have multiple containers per service, but otherwise it can cause a lot of clutter
-	ShowAllContainers bool `yaml:"showAllContainers"`
+	ShowAllContainers bool `yaml:"showAllContainers,omitempty"`
 
 	// PromptToReturn determines whether you get the 'press enter to return to lazydocker' message after a subprocess has completed. You would set this to true if you often want to see the output of subprocesses before returning to lazydocker. I would default this to false but then people who want it set to true won't even know the config option exists.
-	PromptToReturn bool `yaml:"promptToReturn"`
+	PromptToReturn bool `yaml:"promptToReturn,omitempty"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we run certain commands
@@ -195,9 +195,9 @@ type CustomCommand struct {
 func GetDefaultConfig() UserConfig {
 	return UserConfig{
 		Gui: GuiConfig{
-			ScrollHeight:     2,
-			ScrollPastBottom: false,
-			MouseEvents:      true,
+			ScrollHeight:      2,
+			ScrollPastBottom:  false,
+			IgnoreMouseEvents: false,
 			Theme: ThemeConfig{
 				ActiveBorderColor:   []string{"green", "bold"},
 				InactiveBorderColor: []string{"white"},
@@ -337,12 +337,12 @@ func (c *AppConfig) WriteToUserConfig(updateConfig func(*UserConfig) error) erro
 		return err
 	}
 
-	out, err := yaml.Marshal(userConfig)
+	file, err := os.OpenFile(c.ConfigFilename(), os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(c.ConfigFilename(), out, 0666)
+	return yaml.NewEncoder(file).Encode(userConfig)
 }
 
 // ConfigFilename returns the filename of the current config file

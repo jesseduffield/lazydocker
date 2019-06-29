@@ -259,7 +259,8 @@ func (gui *Gui) Run() error {
 	}
 	defer g.Close()
 
-	if gui.Config.UserConfig.Gui.MouseEvents {
+	// forgive the double-negative, this is because of my yaml `omitempty` woes
+	if !gui.Config.UserConfig.Gui.IgnoreMouseEvents {
 		g.Mouse = true
 	}
 
