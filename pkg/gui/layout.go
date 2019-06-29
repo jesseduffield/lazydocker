@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
@@ -68,6 +69,10 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	width, height := g.Size()
 
 	information := gui.Config.Version
+	if gui.g.Mouse {
+		donate := color.New(color.FgMagenta, color.Underline).Sprint(gui.Tr.Donate)
+		information = donate + " " + information
+	}
 
 	minimumHeight := 9
 	minimumWidth := 10
