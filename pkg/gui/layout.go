@@ -31,7 +31,7 @@ func (gui *Gui) getFocusLayout() func(g *gocui.Gui) error {
 func (gui *Gui) onFocusChange() error {
 	currentView := gui.g.CurrentView()
 	for _, view := range gui.g.Views() {
-		view.Highlight = view == currentView
+		view.Highlight = view == currentView && view.Name() != "main"
 	}
 	return nil
 }
