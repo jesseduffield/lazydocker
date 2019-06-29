@@ -233,7 +233,11 @@ func (g *Gui) ViewByPosition(x, y int) (*View, error) {
 	// traverse views in reverse order checking top views first
 	for i := len(g.views); i > 0; i-- {
 		v := g.views[i-1]
-		if x > v.x0 && x < v.x1 && y > v.y0 && y < v.y1 {
+		frameOffset := 0
+		if v.Frame {
+			frameOffset = 1
+		}
+		if x > v.x0-frameOffset && x < v.x1+frameOffset && y > v.y0-frameOffset && y < v.y1+frameOffset {
 			return v, nil
 		}
 	}

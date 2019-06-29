@@ -394,6 +394,10 @@ func (gui *Gui) handleClick(v *gocui.View, itemCount int, selectedLine *int, han
 
 	newSelectedLine := cy - oy
 
+	if newSelectedLine < 0 {
+		newSelectedLine = 0
+	}
+
 	if newSelectedLine > itemCount-1 {
 		newSelectedLine = itemCount - 1
 	}

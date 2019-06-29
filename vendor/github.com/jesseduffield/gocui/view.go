@@ -196,7 +196,7 @@ func (v *View) setRune(x, y int, ch rune, fgColor, bgColor Attribute) error {
 func (v *View) SetCursor(x, y int) error {
 	maxX, maxY := v.Size()
 	if x < 0 || x >= maxX || y < 0 || y >= maxY {
-		return errors.New("invalid point")
+		return nil
 	}
 	v.cx = x
 	v.cy = y
