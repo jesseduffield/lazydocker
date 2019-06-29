@@ -205,12 +205,15 @@ func (gui *Gui) loadNewDirectory() error {
 func (gui *Gui) promptAnonymousReporting() error {
 	return gui.createConfirmationPanel(gui.g, nil, gui.Tr.AnonymousReportingTitle, gui.Tr.AnonymousReportingPrompt, func(g *gocui.Gui, v *gocui.View) error {
 		gui.waitForIntro.Done()
+		// setting the value here explicitly so that we don't re-request after coming back from a subprocess. The proper solution would be to reload the config but that's tricky because it's loaded at the very top level
+		gui.Config.UserConfig.Reporting = "on"
 		return gui.Config.WriteToUserConfig(func(userConfig *config.UserConfig) error {
 			userConfig.Reporting = "on"
 			return nil
 		})
 	}, func(g *gocui.Gui, v *gocui.View) error {
 		gui.waitForIntro.Done()
+		gui.Config.UserConfig.Reporting = "off"
 		return gui.Config.WriteToUserConfig(func(userConfig *config.UserConfig) error {
 			userConfig.Reporting = "off"
 			return nil
