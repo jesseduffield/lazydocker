@@ -385,7 +385,7 @@ func (gui *Gui) clearMainView() {
 }
 
 func (gui *Gui) handleClick(v *gocui.View, itemCount int, selectedLine *int, handleSelect func(*gocui.Gui, *gocui.View) error) error {
-	if gui.popupPanelFocused() {
+	if gui.popupPanelFocused() && v != nil && !gui.isPopupPanel(v.Name()) {
 		return nil
 	}
 

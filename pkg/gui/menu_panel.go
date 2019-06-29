@@ -20,6 +20,14 @@ func (gui *Gui) handleMenuNextLine(g *gocui.Gui, v *gocui.View) error {
 	return gui.handleMenuSelect(g, v)
 }
 
+func (gui *Gui) handleMenuClick(g *gocui.Gui, v *gocui.View) error {
+	itemCount := gui.State.MenuItemCount
+	handleSelect := gui.handleMenuSelect
+	selectedLine := &gui.State.Panels.Menu.SelectedLine
+
+	return gui.handleClick(v, itemCount, selectedLine, handleSelect)
+}
+
 func (gui *Gui) handleMenuPrevLine(g *gocui.Gui, v *gocui.View) error {
 	panelState := gui.State.Panels.Menu
 	gui.changeSelectedLine(&panelState.SelectedLine, v.LinesHeight(), true)

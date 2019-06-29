@@ -384,7 +384,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		nextLine func(*gocui.Gui, *gocui.View) error
 		focus    func(*gocui.Gui, *gocui.View) error
 	}{
-		"menu":       {prevLine: gui.handleMenuPrevLine, nextLine: gui.handleMenuNextLine, focus: gui.handleMenuSelect},
+		"menu":       {prevLine: gui.handleMenuPrevLine, nextLine: gui.handleMenuNextLine, focus: gui.handleMenuClick},
 		"services":   {prevLine: gui.handleServicesPrevLine, nextLine: gui.handleServicesNextLine, focus: gui.handleServicesClick},
 		"containers": {prevLine: gui.handleContainersPrevLine, nextLine: gui.handleContainersNextLine, focus: gui.handleContainersClick},
 		"images":     {prevLine: gui.handleImagesPrevLine, nextLine: gui.handleImagesNextLine, focus: gui.handleImagesClick},

@@ -33,6 +33,10 @@ func (gui *Gui) getBindings(v *gocui.View) []*Binding {
 }
 
 func (gui *Gui) handleCreateOptionsMenu(g *gocui.Gui, v *gocui.View) error {
+	if v.Name() == "menu" {
+		return nil
+	}
+
 	bindings := gui.getBindings(v)
 
 	handleMenuPress := func(index int) error {
