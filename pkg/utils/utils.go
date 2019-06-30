@@ -45,6 +45,10 @@ func WithPadding(str string, padding int) string {
 // ColoredString takes a string and a colour attribute and returns a colored
 // string with that attribute
 func ColoredString(str string, colorAttribute color.Attribute) string {
+	// fatih/color does not have a color.Default attribute, so unless we fork that repo the only way for us to express that we don't want to color a string different to the terminal's default is to not call the function in the first place, but that's annoying when you want a streamlined code path. Because I'm too lazy to fork the repo right now, we'll just assume that by FgWhite you really mean Default, for the sake of supporting users with light themed terminals.
+	if colorAttribute == color.FgWhite {
+		return str
+	}
 	colour := color.New(colorAttribute)
 	return ColoredStringDirect(str, colour)
 }
@@ -371,7 +375,7 @@ func WithShortSha(str string) string {
 
 // FormatMapItem is for displaying items in a map
 func FormatMapItem(padding int, k string, v interface{}) string {
-	return fmt.Sprintf("%s%s %v\n", strings.Repeat(" ", padding), ColoredString(k+":", color.FgYellow), ColoredString(fmt.Sprintf("%v", v), color.FgWhite))
+	return fmt.Sprintf("%s%s %v\n", strings.Repeat(" ", padding), ColoredString(k+":", color.FgYellow), fmt.Sprintf("%v", v))
 }
 
 // FormatMap is for displaying a map
