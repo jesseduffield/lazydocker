@@ -167,6 +167,6 @@ func englishSet() TranslationSet {
 		ConfirmPruneVolumes:        "Are you sure you want to prune all unused volumes?",
 		StopService:                "Are you sure you want to stop this service's containers? (enter/esc)",
 		StopContainer:              "Are you sure you want to stop this container?",
-		PressEnterToReturn:         "Press enter to return to lazydocker (this prompt can be disabled in your config)",
+		PressEnterToReturn:         "Press enter to return to lazydocker (this prompt can be disabled in your config by setting `gui.returnImmediately: true`)",
 	}
 }

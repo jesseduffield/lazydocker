@@ -92,7 +92,7 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 	mainView := gui.getMainView()
 	mainView.Autoscroll = false
-	mainView.Wrap = false
+	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
 	padding := 10
 	output := ""
@@ -142,7 +142,7 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 func (gui *Gui) renderContainerStats(container *commands.Container) error {
 	mainView := gui.getMainView()
 	mainView.Autoscroll = false
-	mainView.Wrap = false
+	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
 	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
 		width, _ := mainView.Size()
@@ -159,7 +159,7 @@ func (gui *Gui) renderContainerStats(container *commands.Container) error {
 func (gui *Gui) renderContainerTop(container *commands.Container) error {
 	mainView := gui.getMainView()
 	mainView.Autoscroll = false
-	mainView.Wrap = false
+	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
 	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
 		contents, err := container.RenderTop()
@@ -174,7 +174,7 @@ func (gui *Gui) renderContainerTop(container *commands.Container) error {
 func (gui *Gui) renderContainerLogs(container *commands.Container) error {
 	mainView := gui.getMainView()
 	mainView.Autoscroll = true
-	mainView.Wrap = false
+	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
 	return gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
 		gui.clearMainView()

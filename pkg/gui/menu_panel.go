@@ -25,7 +25,11 @@ func (gui *Gui) handleMenuClick(g *gocui.Gui, v *gocui.View) error {
 	handleSelect := gui.handleMenuSelect
 	selectedLine := &gui.State.Panels.Menu.SelectedLine
 
-	return gui.handleClick(v, itemCount, selectedLine, handleSelect)
+	if err := gui.handleClick(v, itemCount, selectedLine, handleSelect); err != nil {
+		return err
+	}
+
+	return gui.State.Panels.Menu.OnPress(g, v)
 }
 
 func (gui *Gui) handleMenuPrevLine(g *gocui.Gui, v *gocui.View) error {
@@ -88,6 +92,8 @@ func (gui *Gui) createMenu(title string, items interface{}, itemCount int, handl
 
 		return gui.returnFocus(gui.g, menuView)
 	}
+
+	gui.State.Panels.Menu.OnPress = wrappedHandlePress
 
 	for _, key := range []gocui.Key{gocui.KeySpace, gocui.KeyEnter, 'y'} {
 		_ = gui.g.DeleteKeybinding("menu", key, gocui.ModNone)

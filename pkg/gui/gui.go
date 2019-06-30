@@ -87,6 +87,7 @@ type statusState struct {
 
 type menuPanelState struct {
 	SelectedLine int
+	OnPress      func(*gocui.Gui, *gocui.View) error
 }
 
 type mainPanelState struct {

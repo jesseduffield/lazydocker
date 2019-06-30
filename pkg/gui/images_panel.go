@@ -92,7 +92,7 @@ func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image) e
 		output += "\n\n" + history
 
 		mainView.Autoscroll = false
-		mainView.Wrap = false
+		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
 		gui.renderString(gui.g, "main", output)
 	})

@@ -13,6 +13,8 @@ gui:
     - white
     optionsTextColor:
     - blue
+  returnImmediately: false
+  wrapMainPanel: false
 reporting: undetermined
 commandTemplates:
   dockerCompose: docker-compose

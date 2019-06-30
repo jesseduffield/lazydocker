@@ -96,12 +96,15 @@ type GuiConfig struct {
 	// of clutter
 	ShowAllContainers bool `yaml:"showAllContainers,omitempty"`
 
-	// PromptToReturn determines whether you get the 'press enter to return to
+	// ReturnImmediately determines whether you get the 'press enter to return to
 	// lazydocker' message after a subprocess has completed. You would set this to
 	// true if you often want to see the output of subprocesses before returning
 	// to lazydocker. I would default this to false but then people who want it
 	// set to true won't even know the config option exists.
-	PromptToReturn bool `yaml:"promptToReturn,omitempty"`
+	ReturnImmediately bool `yaml:"returnImmediately,omitempty"`
+
+	// WrapMainPanel determines whether we use word wrap on the main panel
+	WrapMainPanel bool `yaml:"wrapMainPanel,omitempty"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
@@ -296,6 +299,8 @@ func GetDefaultConfig() UserConfig {
 				OptionsTextColor:    []string{"blue"},
 			},
 			ShowAllContainers: false,
+			ReturnImmediately: false,
+			WrapMainPanel:     false,
 		},
 		Reporting:     "undetermined",
 		ConfirmOnQuit: false,

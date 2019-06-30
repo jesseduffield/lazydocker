@@ -74,7 +74,7 @@ func (gui *Gui) handleVolumeSelect(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) renderVolumeConfig(mainView *gocui.View, volume *commands.Volume) error {
 	return gui.T.NewTask(func(stop chan struct{}) {
 		mainView.Autoscroll = false
-		mainView.Wrap = false
+		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
 		padding := 15
 		output := ""

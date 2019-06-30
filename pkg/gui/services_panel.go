@@ -102,7 +102,7 @@ func (gui *Gui) renderServiceStats(service *commands.Service) error {
 func (gui *Gui) renderServiceTop(service *commands.Service) error {
 	mainView := gui.getMainView()
 	mainView.Autoscroll = false
-	mainView.Wrap = false
+	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
 	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
 		contents, err := service.RenderTop()

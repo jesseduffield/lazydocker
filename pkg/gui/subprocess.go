@@ -72,8 +72,8 @@ func (gui *Gui) runCommand() error {
 
 	signal.Stop(c)
 
-	if gui.Config.UserConfig.Gui.PromptToReturn {
-		fmt.Fprintf(os.Stdout, "\n%s", utils.ColoredString(gui.Tr.PressEnterToReturn, color.FgGreen))
+	if !gui.Config.UserConfig.Gui.ReturnImmediately {
+		fmt.Fprintf(os.Stdout, "\n\n%s", utils.ColoredString(gui.Tr.PressEnterToReturn, color.FgGreen))
 
 		// wait for enter press
 		if _, err := fmt.Scanln(); err != nil {
