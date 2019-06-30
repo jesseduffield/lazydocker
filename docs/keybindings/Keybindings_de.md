@@ -3,7 +3,7 @@
 ## Status
 
 <pre>
-  <kbd>e</kbd>: barbeite lazydocker Konfiguration
+  <kbd>e</kbd>: bearbeite lazydocker Konfiguration
   <kbd>o</kbd>: öffne lazydocker Konfiguration
   <kbd>[</kbd>: vorheriges Tab
   <kbd>]</kbd>: nächstes tab
