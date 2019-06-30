@@ -46,6 +46,10 @@ required go version: 1.12
 
 ```sh
 go get github.com/jesseduffield/lazydocker
+go install github.com/jesseduffield/lazydocker
+
+# add your go workspace bin directory to your path (you may want to do this in a shell profile):
+export PATH=$PATH:$(go env GOPATH)/bin
 ```
 
 ## Usage
