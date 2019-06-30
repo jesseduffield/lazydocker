@@ -370,6 +370,10 @@ func (c *OSCommand) PipeCommands(commandStrings ...string) error {
 
 // Kill kills a process. If the process has Setpgid == true, then we have anticipated that it might spawn its own child processes, so we've given it a process group ID (PGID) equal to its process id (PID) and given its child processes will inherit the PGID, we can kill that group, rather than killing the process itself.
 func (c *OSCommand) Kill(cmd *exec.Cmd) error {
+	if cmd.Process == nil {
+		// somebody got to it before we were able to, poor bastard
+		return nil
+	}
 	if cmd.SysProcAttr != nil && cmd.SysProcAttr.Setpgid == true {
 		// minus sign means we're talking about a PGID as opposed to a PID
 		return syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
