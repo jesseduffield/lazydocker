@@ -2,6 +2,7 @@ package app
 
 import (
 	"io"
+	"strings"
 
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
@@ -50,7 +51,9 @@ func NewApp(config *config.AppConfig) (*App, error) {
 }
 
 func (app *App) Run() error {
-	return app.Gui.RunWithSubprocesses()
+	err := app.Gui.RunWithSubprocesses()
+
+	return err
 }
 
 // Close closes any resources
@@ -62,4 +65,29 @@ func (app *App) Close() error {
 		}
 	}
 	return nil
+}
+
+type errorMapping struct {
+	originalError string
+	newError      string
+}
+
+// KnownError takes an error and tells us whether it's an error that we know about where we can print a nicely formatted version of it rather than panicking with a stack trace
+func (app *App) KnownError(err error) (string, bool) {
+	errorMessage := err.Error()
+
+	mappings := []errorMapping{
+		{
+			originalError: "Got permission denied while trying to connect to the Docker daemon socket",
+			newError:      app.Tr.CannotAccessDockerSocketError,
+		},
+	}
+
+	for _, mapping := range mappings {
+		if strings.Contains(errorMessage, mapping.originalError) {
+			return mapping.newError, true
+		}
+	}
+
+	return "", false
 }

@@ -55,6 +55,11 @@ func main() {
 	}
 
 	if err != nil {
+		if errMessage, known := app.KnownError(err); known {
+			log.Println(errMessage)
+			os.Exit(0)
+		}
+
 		if client.IsErrConnectionFailed(err) {
 			log.Println(app.Tr.ConnectionFailed)
 			os.Exit(0)
