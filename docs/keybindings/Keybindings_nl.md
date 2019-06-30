@@ -23,7 +23,7 @@
   <kbd>a</kbd>: vastmaken
   <kbd>D</kbd>: verwijder verlaten containers
   <kbd>m</kbd>: bekijk logs
-  <kbd>c</kbd>: draai vooraf bedacht aangepaste opdracht
+  <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
@@ -38,7 +38,7 @@
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab
   <kbd>R</kbd>: bekijk herstart opties
-  <kbd>c</kbd>: draai vooraf bedacht aangepaste opdracht
+  <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
