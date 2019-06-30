@@ -42,6 +42,8 @@ You can download a binary release [here](https://github.com/jesseduffield/lazydo
 
 ### Go
 
+required go version: 1.12
+
 ```sh
 go get github.com/jesseduffield/lazydocker
 ```
