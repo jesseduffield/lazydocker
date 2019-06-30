@@ -7,7 +7,6 @@
   <kbd>o</kbd>: open lazydocker config
   <kbd>[</kbd>: previous tab
   <kbd>]</kbd>: next tab
-  <kbd>￨</kbd>: next tab
   <kbd>m</kbd>: view logs
   <kbd>enter</kbd>: focus main panel
 </pre>

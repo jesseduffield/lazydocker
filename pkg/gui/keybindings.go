@@ -154,11 +154,10 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.NextContext,
 		},
 		{
-			ViewName:    "status",
-			Key:         gocui.MouseLeft,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleStatusClick,
-			Description: gui.Tr.NextContext,
+			ViewName: "status",
+			Key:      gocui.MouseLeft,
+			Modifier: gocui.ModNone,
+			Handler:  gui.handleStatusClick,
 		},
 		{
 			ViewName:    "status",
