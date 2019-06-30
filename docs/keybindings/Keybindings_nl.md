@@ -3,67 +3,67 @@
 ## Status
 
 <pre>
-  <kbd>e</kbd>: edit lazydocker config
-  <kbd>o</kbd>: open lazydocker config
-  <kbd>[</kbd>: previous tab
-  <kbd>]</kbd>: next tab
-  <kbd>￨</kbd>: next tab
-  <kbd>m</kbd>: view logs
-  <kbd>enter</kbd>: focus main panel
+  <kbd>e</kbd>: verander lazydocker configuratie
+  <kbd>o</kbd>: open lazydocker configuratie
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>￨</kbd>: volgende tab
+  <kbd>m</kbd>: bekijk logs
+  <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
 ## Containers
 
 <pre>
-  <kbd>[</kbd>: previous tab
-  <kbd>]</kbd>: next tab
-  <kbd>d</kbd>: remove
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>d</kbd>: verwijder
   <kbd>s</kbd>: stop
-  <kbd>r</kbd>: restart
-  <kbd>a</kbd>: attach
-  <kbd>D</kbd>: prune exited containers
-  <kbd>m</kbd>: view logs
-  <kbd>c</kbd>: run predefined custom command
-  <kbd>enter</kbd>: focus main panel
+  <kbd>r</kbd>: herstart
+  <kbd>a</kbd>: vastmaken
+  <kbd>D</kbd>: verwijder verlaten containers
+  <kbd>m</kbd>: bekijk logs
+  <kbd>c</kbd>: draai vooraf bedacht aangepaste opdracht
+  <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
 ## Services
 
 <pre>
-  <kbd>d</kbd>: remove containers
+  <kbd>d</kbd>: verwijder containers
   <kbd>s</kbd>: stop
-  <kbd>r</kbd>: restart
-  <kbd>a</kbd>: attach
-  <kbd>m</kbd>: view logs
-  <kbd>[</kbd>: previous tab
-  <kbd>]</kbd>: next tab
-  <kbd>R</kbd>: view restart options
-  <kbd>c</kbd>: run predefined custom command
-  <kbd>enter</kbd>: focus main panel
+  <kbd>r</kbd>: herstart
+  <kbd>a</kbd>: vermaken
+  <kbd>m</kbd>: bekijk logs
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>R</kbd>: bekijk herstart opties
+  <kbd>c</kbd>: draai vooraf bedacht aangepaste opdracht
+  <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
 ## Images
 
 <pre>
-  <kbd>[</kbd>: previous tab
-  <kbd>]</kbd>: next tab
-  <kbd>d</kbd>: remove image
-  <kbd>D</kbd>: prune unused images
-  <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>d</kbd>: verwijder image
+  <kbd>D</kbd>: verwijder nietgebruikte images
+  <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
 ## Volumes
 
 <pre>
-  <kbd>[</kbd>: previous tab
-  <kbd>]</kbd>: next tab
-  <kbd>d</kbd>: remove volume
-  <kbd>D</kbd>: prune unused volumes
-  <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>d</kbd>: verwijder volume
+  <kbd>D</kbd>: verwijder nietgebruikte images
+  <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
 ## Main
 
 <pre>
-  <kbd>esc</kbd>: return
+  <kbd>esc</kbd>: terug
 </pre>
