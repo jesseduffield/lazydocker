@@ -22,7 +22,7 @@ Memorising docker commands is hard. Memorising aliases is slightly less hard. Ke
 - [Cool Features](https://github.com/jesseduffield/lazydocker#cool-features)
 - [Contributing](https://github.com/jesseduffield/lazydocker#contributing)
 - [Video Tutorial](https://youtu.be/NICqQPxwJWw)
-- [Config Docs](https://godoc.org/github.com/jesseduffield/lazydocker/pkg/config)
+- [Config Docs](/docs/Config.md)
 - [Twitch Stream](https://www.twitch.tv/jesseduffield)
 
 ## Installation
