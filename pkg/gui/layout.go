@@ -170,7 +170,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-		v.FgColor = gocui.ColorWhite
+		v.FgColor = gocui.ColorDefault
 
 		// when you run a docker container with the -it flags (interactive mode) it adds carriage returns for some reason. This is not docker's fault, it's an os-level default.
 		v.IgnoreCarriageReturns = true
@@ -181,7 +181,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Title = gui.Tr.StatusTitle
-		v.FgColor = gocui.ColorWhite
+		v.FgColor = gocui.ColorDefault
 	}
 
 	var servicesView *gocui.View
@@ -195,7 +195,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			}
 			servicesView.Highlight = true
 			servicesView.Title = gui.Tr.ServicesTitle
-			servicesView.FgColor = gocui.ColorWhite
+			servicesView.FgColor = gocui.ColorDefault
 		}
 	}
 
@@ -210,7 +210,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		} else {
 			containersView.Title = gui.Tr.StandaloneContainersTitle
 		}
-		containersView.FgColor = gocui.ColorWhite
+		containersView.FgColor = gocui.ColorDefault
 	}
 
 	imagesView, err := g.SetViewBeneath("images", "containers", vHeights["images"])
@@ -220,7 +220,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 		imagesView.Highlight = true
 		imagesView.Title = gui.Tr.ImagesTitle
-		imagesView.FgColor = gocui.ColorWhite
+		imagesView.FgColor = gocui.ColorDefault
 	}
 
 	volumesView, err := g.SetViewBeneath("volumes", "images", vHeights["volumes"])
@@ -230,7 +230,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 		volumesView.Highlight = true
 		volumesView.Title = gui.Tr.VolumesTitle
-		volumesView.FgColor = gocui.ColorWhite
+		volumesView.FgColor = gocui.ColorDefault
 	}
 
 	if v, err := g.SetView("options", appStatusOptionsBoundary-1, height-2, optionsVersionBoundary-1, height, 0); err != nil {

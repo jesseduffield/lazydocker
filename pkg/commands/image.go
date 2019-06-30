@@ -27,7 +27,7 @@ type Image struct {
 // GetDisplayStrings returns the display string of Image
 func (i *Image) GetDisplayStrings(isFocused bool) []string {
 
-	return []string{utils.ColoredString(i.Name, color.FgWhite), utils.ColoredString(i.Tag, color.FgWhite), utils.FormatDecimalBytes(int(i.Image.Size))}
+	return []string{i.Name, i.Tag, utils.FormatDecimalBytes(int(i.Image.Size))}
 }
 
 // Remove removes the image
