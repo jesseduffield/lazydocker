@@ -10,18 +10,19 @@ A simple terminal UI for docker and docker-compose, written in Go with the [gocu
 
 ![Gif](/docs/resources/demo.gif)
 
-Something's not working? Maybe a service is down. `docker-compose ps`. Yep, it's that microservice that's still buggy. No issue, I'll just restart it: `docker-compose restart`. Okay now let's try again. Oh wait the issue is still there. Hmm. `docker-compose ps`. Right so the service must have just stopped immediately after starting. I probably would have known that if I was reading the log stream, but there is a lot of clutter in there from other services. I could get the logs for just that one service with `docker compose logs --follow myservice` but that dies everytime the service dies so I'd need to run that command every time I restart the service. I could alternatively run `docker-compose up myservice` and in that terminal window if the service is down I could just `up` it again, but now I've got one service hogging a terminal window even after I no longer care about its logs. I guess when I want to reclaim the terminal realestate I can do `ctrl+P,Q`, but... wait, that's not working for some reason. Should I use ctrl+C instead? I can't remember if that closes the foreground process or kills the actual service.
+Minor rant incoming: Something's not working? Maybe a service is down. `docker-compose ps`. Yep, it's that microservice that's still buggy. No issue, I'll just restart it: `docker-compose restart`. Okay now let's try again. Oh wait the issue is still there. Hmm. `docker-compose ps`. Right so the service must have just stopped immediately after starting. I probably would have known that if I was reading the log stream, but there is a lot of clutter in there from other services. I could get the logs for just that one service with `docker compose logs --follow myservice` but that dies everytime the service dies so I'd need to run that command every time I restart the service. I could alternatively run `docker-compose up myservice` and in that terminal window if the service is down I could just `up` it again, but now I've got one service hogging a terminal window even after I no longer care about its logs. I guess when I want to reclaim the terminal realestate I can do `ctrl+P,Q`, but... wait, that's not working for some reason. Should I use ctrl+C instead? I can't remember if that closes the foreground process or kills the actual service.
 
 What a headache!
 
-Memorising docker commands is hard. Memorising aliases is slightly less hard. Keeping track of your containers across multiple terminal windows is near impossible. What if you had all the information you needed in one terminal window with every common command living one keypress away. Lazydocker's goal is to make that dream a reality.
+Memorising docker commands is hard. Memorising aliases is slightly less hard. Keeping track of your containers across multiple terminal windows is near impossible. What if you had all the information you needed in one terminal window with every common command living one keypress away (and the ability to add custom commands as well). Lazydocker's goal is to make that dream a reality.
 
 - [Installation](https://github.com/jesseduffield/lazydocker#installation)
 - [Usage](https://github.com/jesseduffield/lazydocker#usage),
   [Keybindings](/docs/keybindings)
 - [Cool Features](https://github.com/jesseduffield/lazydocker#cool-features)
 - [Contributing](https://github.com/jesseduffield/lazydocker#contributing)
-- [Video Tutorial](https://youtu.be/VDXvbHZYeKY)
+- [Video Tutorial](https://youtu.be/NICqQPxwJWw)
+- [Config Docs](https://godoc.org/github.com/jesseduffield/lazydocker/pkg/config)
 - [Twitch Stream](https://www.twitch.tv/jesseduffield)
 
 ## Installation
@@ -53,7 +54,7 @@ echo "alias ld='lazydocker'" >> ~/.zshrc
 
 (you can substitute .zshrc for whatever rc file you're using)
 
-- Basic video tutorial [here](https://youtu.be/VDXvbHZYeKY).
+- Basic video tutorial [here](https://youtu.be/NICqQPxwJWw).
 - List of keybindings
   [here](/docs/keybindings).
 
