@@ -380,7 +380,7 @@ func NewAppConfig(name, version, commit, date string, buildSource string, debugg
 		Version:     version,
 		Commit:      commit,
 		BuildDate:   date,
-		Debug:       true, // TODO: restore os.Getenv("DEBUG") == "TRUE"
+		Debug:       debuggingFlag || os.Getenv("DEBUG") == "TRUE",
 		BuildSource: buildSource,
 		UserConfig:  userConfig,
 		ConfigDir:   configDir,
