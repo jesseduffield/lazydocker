@@ -32,8 +32,10 @@ commandTemplates:
   serviceTop: '{{ .DockerCompose }} top {{ .Service.Name }}'
 customCommands:
   containers:
-  - attach: true
+  - name: bash
+    attach: true
     command: docker exec -it {{ .Container.ID }} /bin/sh
+    serviceNames: []
 oS:
   openCommand: open {{filename}}
   openLinkCommand: open {{link}}
@@ -49,7 +51,7 @@ stats:
     color: green
 ```
 
-## To see what all of the config options mean, and what other options you can set, see < INSERT app_config.go GODOC HERE >
+## To see what all of the config options mean, and what other options you can set, see https://godoc.org/github.com/jesseduffield/lazydocker/pkg/config
 
 ## Color Attributes:
 
