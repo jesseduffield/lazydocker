@@ -60,7 +60,7 @@ echo "alias ld='lazydocker'" >> ~/.zshrc
 
 ## Cool features
 
-everything is one keypress away (or one click away! mouse support FTW):
+everything is one keypress away (or one click away! Mouse support FTW):
 
 - viewing the state of your docker or docker-compose container environment at a glance
 - viewing logs for a container/service
