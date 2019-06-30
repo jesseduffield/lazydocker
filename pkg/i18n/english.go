@@ -25,6 +25,7 @@ type TranslationSet struct {
 	ConnectionFailed                           string
 	UnattachableContainerError                 string
 	CannotAttachStoppedContainerError          string
+	CannotAccessDockerSocketError              string
 
 	Donate                     string
 	Cancel                     string
@@ -98,6 +99,7 @@ func englishSet() TranslationSet {
 		ConnectionFailed:                  "connection to docker client failed. You may need to restart the docker client",
 		UnattachableContainerError:        "Container does not support attaching. You must either run the service with the '-it' flag or use `stdin_open: true, tty: true` in the docker-compose.yml file",
 		CannotAttachStoppedContainerError: "You cannot attach to a stopped container, you need to start it first (which you can actually do with the 'r' key) (yes I'm too lazy to do this automatically for you) (pretty cool that I get to communicate one-on-one with you in the form of an error message though)",
+		CannotAccessDockerSocketError:     "Can't access docker socket at: unix:///var/run/docker.sock\nRun lazydocker as root or read https://docs.docker.com/install/linux/linux-postinstall/",
 
 		Donate:  "Donate",
 		Confirm: "Confirm",
