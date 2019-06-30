@@ -3,11 +3,13 @@
 ## Status
 
 <pre>
-  <kbd>e</kbd>: edit config container
-  <kbd>o</kbd>: open config container
+  <kbd>e</kbd>: edit lazydocker config
+  <kbd>o</kbd>: open lazydocker config
   <kbd>[</kbd>: previous tab
   <kbd>]</kbd>: next tab
+  <kbd>￨</kbd>: next tab
   <kbd>m</kbd>: view logs
+  <kbd>enter</kbd>: focus main panel
 </pre>
 
 ## Containers
@@ -22,6 +24,7 @@
   <kbd>D</kbd>: prune exited containers
   <kbd>m</kbd>: view logs
   <kbd>c</kbd>: run predefined custom command
+  <kbd>enter</kbd>: focus main panel
 </pre>
 
 ## Services
@@ -36,6 +39,7 @@
   <kbd>]</kbd>: next tab
   <kbd>R</kbd>: view restart options
   <kbd>c</kbd>: run predefined custom command
+  <kbd>enter</kbd>: focus main panel
 </pre>
 
 ## Images
@@ -45,6 +49,7 @@
   <kbd>]</kbd>: next tab
   <kbd>d</kbd>: remove image
   <kbd>D</kbd>: prune unused images
+  <kbd>enter</kbd>: focus main panel
 </pre>
 
 ## Volumes
@@ -54,4 +59,11 @@
   <kbd>]</kbd>: next tab
   <kbd>d</kbd>: remove volume
   <kbd>D</kbd>: prune unused volumes
+  <kbd>enter</kbd>: focus main panel
+</pre>
+
+## Main
+
+<pre>
+  <kbd>esc</kbd>: return
 </pre>
