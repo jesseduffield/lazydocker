@@ -193,7 +193,9 @@ func (gui *Gui) renderContainerLogs(container *commands.Container) error {
 
 		go func() {
 			<-stop
-			cmd.Process.Kill()
+			if err := gui.OSCommand.Kill(cmd); err != nil {
+				gui.Log.Warn(err)
+			}
 			gui.Log.Info("killed container logs process")
 			return
 		}()

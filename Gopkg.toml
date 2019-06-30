@@ -48,7 +48,3 @@
 [[constraint]]
   branch = "v2"
   name = "github.com/jesseduffield/yaml"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/jesseduffield/roll"
