@@ -114,6 +114,14 @@
   version = "v0.3.7"
 
 [[projects]]
+  digest = "1:9cf73012dbe62f96cd8cdd210a1123a360401967a4530284dcd2990888747e3d"
+  name = "github.com/integrii/flaggy"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "07ea7eb774047dab1bdcc7cad0f825fa419df47d"
+  version = "1.2.1"
+
+[[projects]]
   branch = "master"
   digest = "1:7b2ab5c6de135d57d3a594b53068e2712da4d376b2f78097dec7b46d18deaa78"
   name = "github.com/jesseduffield/asciigraph"
@@ -319,6 +327,7 @@
     "github.com/fatih/color",
     "github.com/go-errors/errors",
     "github.com/imdario/mergo",
+    "github.com/integrii/flaggy",
     "github.com/jesseduffield/asciigraph",
     "github.com/jesseduffield/gocui",
     "github.com/jesseduffield/rollrus",
