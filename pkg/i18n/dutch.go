@@ -37,7 +37,7 @@ func dutchSet() TranslationSet {
 		Stop:               "stop",
 		Restart:            "herstart",
 		Rebuild:            "herbouw",
-		Recreate:           "recreate",
+		Recreate:           "hercreëer",
 		PreviousContext:    "vorige tab",
 		NextContext:        "volgende tab",
 		Attach:             "verbinden",
