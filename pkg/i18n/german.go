@@ -77,7 +77,7 @@ func germanSet() TranslationSet {
 		NoImages:     "Keine Images",
 		NoVolumes:    "Keine Volumen",
 
-		ConfirmQuit:                "Bist du dir sicher, dass du verlassen möchtest?", 
+		ConfirmQuit:                "Bist du dir sicher, dass du verlassen möchtest?",
 		MustForceToRemoveContainer: "Du kannst keinen Container entfernen, der noch ausgeführt wird außer du erzwingst es. Möchtest du es erzwingen?",
 		NotEnoughSpace:             "Nicht genug Platz um die Panele darzustellen",
 		ConfirmPruneImages:         "Bist du dir sicher, dass du alle unbenutzten Images entfernen möchtest?",
