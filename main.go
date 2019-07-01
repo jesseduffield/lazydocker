@@ -44,9 +44,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	// for now we're always in debug mode so we're not passing *debuggingFlag
-	debuggingFlag = true
-
 	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag)
 	if err != nil {
 		log.Fatal(err.Error())
