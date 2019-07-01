@@ -16,6 +16,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	yaml "github.com/jesseduffield/yaml"
@@ -364,7 +365,7 @@ type AppConfig struct {
 }
 
 // NewAppConfig makes a new app config
-func NewAppConfig(name, version, commit, date string, buildSource string, debuggingFlag bool) (*AppConfig, error) {
+func NewAppConfig(name, version, commit, date string, buildSource string, debuggingFlag bool, composeFiles []string) (*AppConfig, error) {
 	configDir, err := findOrCreateConfigDir(name)
 	if err != nil {
 		return nil, err
@@ -373,6 +374,11 @@ func NewAppConfig(name, version, commit, date string, buildSource string, debugg
 	userConfig, err := loadUserConfigWithDefaults(configDir)
 	if err != nil {
 		return nil, err
+	}
+
+	// Pass compose files as individual -f flags to docker-compose
+	if len(composeFiles) > 0 {
+		userConfig.CommandTemplates.DockerCompose += " -f " + strings.Join(composeFiles, " -f ")
 	}
 
 	appConfig := &AppConfig{
