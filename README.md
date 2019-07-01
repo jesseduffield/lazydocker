@@ -55,7 +55,9 @@ go get github.com/jesseduffield/lazydocker
     - If you have a x86_64 CPU architecture
 
         ```sh
-        docker build -t lazydocker . https://github.com/jesseduffield/lazydocker.git
+        docker build -t lazydocker https://github.com/jesseduffield/lazydocker.git
+        # or locally within the repository:
+        docker build -t lazydocker .
         ```
 
     - If you have a ARM 32 bit v6 architecture
