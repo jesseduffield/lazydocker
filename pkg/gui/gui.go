@@ -131,14 +131,8 @@ type guiState struct {
 
 // NewGui builds a new gui handler
 func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
-	previousView := "containers"
-	if dockerCommand.InDockerComposeProject {
-		previousView = "services"
-	}
-
 	initialState := guiState{
-		PreviousView: previousView,
-		Platform:     *oSCommand.Platform,
+		Platform: *oSCommand.Platform,
 		Panels: &panelStates{
 			Services:   &servicePanelState{SelectedLine: -1, ContextIndex: 0},
 			Containers: &containerPanelState{SelectedLine: -1, ContextIndex: 0},
@@ -389,4 +383,11 @@ func (gui *Gui) shouldRefresh(key string) bool {
 
 	gui.State.Panels.Main.ObjectKey = key
 	return true
+}
+
+func (gui *Gui) initiallyFocusedViewName() string {
+	if gui.DockerCommand.InDockerComposeProject {
+		return "services"
+	}
+	return "containers"
 }
