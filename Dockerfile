@@ -25,5 +25,6 @@ LABEL org.label-schema.schema-version="1.0.0-rc1" \
     org.label-schema.vcs-description="The lazier way to manage everything docker" \
     org.label-schema.docker.cmd="docker run -it -v /var/run/docker.sock:/var/run/docker.sock lazydocker" \
     org.label-schema.version=${VERSION}
-ENTRYPOINT [ "/bin/sh" ]
+RUN printf "#!/bin/sh\n\nresize > /dev/null\nlazydocker \$@\n" > /usr/bin/run && chmod 500 /usr/bin/run
+ENTRYPOINT [ "/usr/bin/run" ]
 COPY --from=builder /go/src/github.com/jesseduffield/lazydocker/lazydocker /usr/bin/lazydocker
