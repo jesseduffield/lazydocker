@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"math"
@@ -59,15 +58,6 @@ func ColoredStringDirect(str string, colour *color.Color) string {
 	return colour.SprintFunc()(fmt.Sprint(str))
 }
 
-// TrimTrailingNewline - Trims the trailing newline
-// TODO: replace with `chomp` after refactor
-func TrimTrailingNewline(str string) string {
-	if strings.HasSuffix(str, "\n") {
-		return str[:len(str)-1]
-	}
-	return str
-}
-
 // NormalizeLinefeeds - Removes all Windows and Mac style line feeds
 func NormalizeLinefeeds(str string) string {
 	str = strings.Replace(str, "\r\n", "\n", -1)
@@ -90,14 +80,6 @@ func ResolvePlaceholderString(str string, arguments map[string]string) string {
 		str = strings.Replace(str, "{{"+key+"}}", value, -1)
 	}
 	return str
-}
-
-// Min returns the minimum of two integers
-func Min(x, y int) int {
-	if x < y {
-		return x
-	}
-	return y
 }
 
 // Max returns the maximum of two integers
@@ -238,42 +220,6 @@ func getDisplayStringArrays(displayables []Displayable, isFocused bool) [][]stri
 		stringArrays[i] = item.GetDisplayStrings(isFocused)
 	}
 	return stringArrays
-}
-
-// IncludesString if the list contains the string
-func IncludesString(list []string, a string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
-}
-
-// NextIndex returns the index of the element that comes after the given number
-func NextIndex(numbers []int, currentNumber int) int {
-	for index, number := range numbers {
-		if number > currentNumber {
-			return index
-		}
-	}
-	return 0
-}
-
-// PrevIndex returns the index that comes before the given number, cycling if we reach the end
-func PrevIndex(numbers []int, currentNumber int) int {
-	end := len(numbers) - 1
-	for i := end; i >= 0; i -= 1 {
-		if numbers[i] < currentNumber {
-			return i
-		}
-	}
-	return end
-}
-
-func AsJson(i interface{}) string {
-	bytes, _ := json.MarshalIndent(i, "", "    ")
-	return string(bytes)
 }
 
 func FormatBinaryBytes(b int) string {

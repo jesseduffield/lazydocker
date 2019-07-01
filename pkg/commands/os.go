@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"sync"
 	"syscall"
@@ -85,36 +84,6 @@ func (c *OSCommand) ExecutableFromString(commandStr string) *exec.Cmd {
 	splitCmd := str.ToArgv(commandStr)
 	// c.Log.Info(splitCmd)
 	return c.command(splitCmd[0], splitCmd[1:]...)
-}
-
-// RunCommandWithOutputLive runs RunCommandWithOutputLiveWrapper
-func (c *OSCommand) RunCommandWithOutputLive(command string, output func(string) string) error {
-	return RunCommandWithOutputLiveWrapper(c, command, output)
-}
-
-// DetectUnamePass detect a username / password question in a command
-// ask is a function that gets executen when this function detect you need to fillin a password
-// The ask argument will be "username" or "password" and expects the user's password or username back
-func (c *OSCommand) DetectUnamePass(command string, ask func(string) string) error {
-	ttyText := ""
-	errMessage := c.RunCommandWithOutputLive(command, func(word string) string {
-		ttyText = ttyText + " " + word
-
-		prompts := map[string]string{
-			"password": `Password\s*for\s*'.+':`,
-			"username": `Username\s*for\s*'.+':`,
-		}
-
-		for askFor, pattern := range prompts {
-			if match, _ := regexp.MatchString(pattern, ttyText); match {
-				ttyText = ""
-				return ask(askFor)
-			}
-		}
-
-		return ""
-	})
-	return errMessage
 }
 
 // RunCommand runs a command and just returns the error
