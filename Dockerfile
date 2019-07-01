@@ -1,15 +1,16 @@
-# run with:
-# docker build -t lazydocker .
-# docker run -it lazydocker:latest /bin/sh -l
+ARG BASE_IMAGE_BUILDER=golang
+ARG BASE_IMAGE=alpine
+ARG ALPINE_VERSION=3.10
+ARG GO_VERSION=1.12.6
 
-FROM golang:alpine
+FROM ${BASE_IMAGE_BUILDER}:${GO_VERSION}-alpine${ALPINE_VERSION} AS builder
+ARG GOARCH=amd64
+ARG GOARM
 WORKDIR /go/src/github.com/jesseduffield/lazydocker/
 COPY ./ .
-RUN CGO_ENABLED=0 GOOS=linux go build
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} GOARM=${GOARM} go build -a -installsuffix cgo -ldflags="-s -w"
 
-FROM alpine:latest
-RUN apk add -U git xdg-utils
-WORKDIR /go/src/github.com/jesseduffield/lazydocker/
-COPY --from=0 /go/src/github.com/jesseduffield/lazydocker /go/src/github.com/jesseduffield/lazydocker
-COPY --from=0 /go/src/github.com/jesseduffield/lazydocker/lazydocker /bin/
-RUN echo "alias gg=lazydocker" >> ~/.profile
+FROM ${BASE_IMAGE}:${ALPINE_VERSION}
+RUN apk --update add -q --progress --no-cache -U git xdg-utils
+ENTRYPOINT [ "lazydocker" ]
+COPY --from=builder /go/src/github.com/jesseduffield/lazydocker/lazydocker /usr/bin/lazydocker

@@ -48,6 +48,55 @@ required go version: 1.12
 go get github.com/jesseduffield/lazydocker
 ```
 
+### Docker
+
+1. <details><summary>Build it...</summary><p>
+
+    - If you have a x86_64 CPU architecture
+
+        ```sh
+        docker build -t lazydocker . https://github.com/jesseduffield/lazydocker.git
+        ```
+
+    - If you have a ARM 32 bit v6 architecture
+
+        ```sh
+        docker build -t lazydocker \
+        --build-arg BASE_IMAGE_BUILDER=arm32v6/golang \
+        --build-arg BASE_IMAGE=arm32v6/alpine \
+        --build-arg GOARCH=arm \
+        --build-arg GOARM=6 \
+        https://github.com/jesseduffield/lazydocker.git
+        ```
+
+    - If you have a ARM 32 bit v7 architecture
+
+        ```sh
+        docker build -t lazydocker \
+        --build-arg BASE_IMAGE_BUILDER=arm32v7/golang \
+        --build-arg BASE_IMAGE=arm32v7/alpine \
+        --build-arg GOARCH=arm \
+        --build-arg GOARM=7 \
+        https://github.com/jesseduffield/lazydocker.git
+        ```
+
+    - If you have a ARM 64 bit v8 architecture
+
+        ```sh
+        docker build -t lazydocker \
+        --build-arg BASE_IMAGE_BUILDER=arm64v8/golang \
+        --build-arg BASE_IMAGE=arm64v8/alpine \
+        --build-arg GOARCH=arm64 \
+        https://github.com/jesseduffield/lazydocker.git
+        ```
+
+    </p></details>
+1. Run it
+
+    ```sh
+    docker run -it -v /var/run/docker.sock:/var/run/docker.sock lazydocker
+    ```
+
 ## Usage
 
 Call `lazydocker` in your terminal. I personally use this a lot so I've made an alias for it like so:
