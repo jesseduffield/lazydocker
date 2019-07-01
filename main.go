@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
+	"github.com/integrii/flaggy"
 	"github.com/jesseduffield/lazydocker/pkg/app"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/yaml"
@@ -21,19 +21,23 @@ var (
 	date        string
 	buildSource = "unknown"
 
-	configFlag    = flag.Bool("config", false, "Print the current default config")
-	debuggingFlag = flag.Bool("debug", false, "a boolean")
-	versionFlag   = flag.Bool("v", false, "Print the current version")
+	configFlag    = false
+	debuggingFlag = false
 )
 
 func main() {
-	flag.Parse()
-	if *versionFlag {
-		fmt.Printf("commit=%s, build date=%s, build source=%s, version=%s, os=%s, arch=%s\n", commit, date, buildSource, version, runtime.GOOS, runtime.GOARCH)
-		os.Exit(0)
-	}
 
-	if *configFlag {
+	flaggy.SetName("lazydocker")
+	flaggy.SetDescription("The lazier way to manage everything docker")
+	flaggy.DefaultParser.AdditionalHelpPrepend = "https://github.com/jesseduffield/lazydocker"
+
+	flaggy.Bool(&configFlag, "c", "config", "Print the current default config")
+	flaggy.Bool(&debuggingFlag, "d", "debug", "a boolean")
+	flaggy.SetVersion(fmt.Sprintf("commit=%s, build date=%s, build source=%s, version=%s, os=%s, arch=%s\n", commit, date, buildSource, version, runtime.GOOS, runtime.GOARCH))
+
+	flaggy.Parse()
+
+	if configFlag {
 		var buf bytes.Buffer
 		yaml.NewEncoder(&buf).Encode(config.GetDefaultConfig())
 		fmt.Printf("%v\n", buf.String())
@@ -41,9 +45,9 @@ func main() {
 	}
 
 	// for now we're always in debug mode so we're not passing *debuggingFlag
-	*debuggingFlag = true
+	debuggingFlag = true
 
-	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, *debuggingFlag)
+	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
