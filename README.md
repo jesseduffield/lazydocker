@@ -2,7 +2,7 @@
   <img src="https://user-images.githubusercontent.com/8456633/59972109-8e9c8480-95cc-11e9-8350-38f7f86ba76d.png">
 </p>
 
-A simple terminal UI for docker and docker-compose, written in Go with the [gocui](https://github.com/jroimartin/gocui 'gocui') library.
+A simple terminal UI for both docker and docker-compose, written in Go with the [gocui](https://github.com/jroimartin/gocui 'gocui') library.
 
 [![CircleCI](https://circleci.com/gh/jesseduffield/lazydocker.svg?style=svg)](https://circleci.com/gh/jesseduffield/lazydocker) [![Go Report Card](https://goreportcard.com/badge/github.com/jesseduffield/lazydocker)](https://goreportcard.com/report/github.com/jesseduffield/lazydocker) [![GolangCI](https://golangci.com/badges/github.com/jesseduffield/lazydocker.svg)](https://golangci.com) [![GoDoc](https://godoc.org/github.com/jesseduffield/lazydocker?status.svg)](http://godoc.org/github.com/jesseduffield/lazydocker) [![GitHub tag](https://img.shields.io/github/tag/jesseduffield/lazydocker.svg)]()
 
