@@ -56,17 +56,6 @@ func (app *App) Run() error {
 	return err
 }
 
-// Close closes any resources
-func (app *App) Close() error {
-	for _, closer := range app.closers {
-		err := closer.Close()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 type errorMapping struct {
 	originalError string
 	newError      string
