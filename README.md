@@ -53,7 +53,7 @@ go get github.com/jesseduffield/lazydocker
 Call `lazydocker` in your terminal. I personally use this a lot so I've made an alias for it like so:
 
 ```
-echo "alias ld='lazydocker'" >> ~/.zshrc
+echo "alias lzd='lazydocker'" >> ~/.zshrc
 ```
 
 (you can substitute .zshrc for whatever rc file you're using)
