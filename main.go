@@ -23,6 +23,7 @@ var (
 
 	configFlag    = false
 	debuggingFlag = false
+	composeFiles  []string
 )
 
 func main() {
@@ -33,6 +34,7 @@ func main() {
 
 	flaggy.Bool(&configFlag, "c", "config", "Print the current default config")
 	flaggy.Bool(&debuggingFlag, "d", "debug", "a boolean")
+	flaggy.StringSlice(&composeFiles, "f", "file", "Specify alternate compose files")
 	flaggy.SetVersion(fmt.Sprintf("commit=%s, build date=%s, build source=%s, version=%s, os=%s, arch=%s\n", commit, date, buildSource, version, runtime.GOOS, runtime.GOARCH))
 
 	flaggy.Parse()
@@ -44,7 +46,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag)
+	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, composeFiles)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
