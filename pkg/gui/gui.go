@@ -177,10 +177,6 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 	return gui, nil
 }
 
-func (gui *Gui) handleRefresh(g *gocui.Gui, v *gocui.View) error {
-	return gui.refreshSidePanels(g)
-}
-
 func max(a, b int) int {
 	if a > b {
 		return a

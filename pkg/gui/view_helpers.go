@@ -144,11 +144,6 @@ func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View) error {
 	return gui.newLineFocused(newView)
 }
 
-func (gui *Gui) resetOrigin(v *gocui.View) error {
-	_ = v.SetCursor(0, 0)
-	return v.SetOrigin(0, 0)
-}
-
 // if the cursor down past the last item, move it to the last line
 func (gui *Gui) focusPoint(selectedX int, selectedY int, lineCount int, v *gocui.View) error {
 	if selectedY < 0 || selectedY > lineCount {
@@ -317,28 +312,6 @@ func (gui *Gui) changeSelectedLine(line *int, total int, up bool) {
 	}
 }
 
-func (gui *Gui) refreshSelectedLine(line *int, total int) {
-	if *line == -1 && total > 0 {
-		*line = 0
-	} else if total-1 < *line {
-		*line = total - 1
-	}
-}
-
-func (gui *Gui) renderListPanel(v *gocui.View, items interface{}) error {
-	gui.g.Update(func(g *gocui.Gui) error {
-		isFocused := gui.g.CurrentView().Name() == v.Name()
-		list, err := utils.RenderList(items, utils.IsFocused(isFocused))
-		if err != nil {
-			return gui.createErrorPanel(gui.g, err.Error())
-		}
-		v.Clear()
-		fmt.Fprint(v, list)
-		return nil
-	})
-	return nil
-}
-
 func (gui *Gui) renderPanelOptions() error {
 	currentView := gui.g.CurrentView()
 	switch currentView.Name() {
@@ -346,11 +319,6 @@ func (gui *Gui) renderPanelOptions() error {
 		return gui.renderMenuOptions()
 	}
 	return gui.renderGlobalOptions()
-}
-
-func (gui *Gui) handleFocusView(g *gocui.Gui, v *gocui.View) error {
-	_, err := gui.g.SetCurrentView(v.Name())
-	return err
 }
 
 func (gui *Gui) isPopupPanel(viewName string) bool {

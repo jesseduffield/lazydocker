@@ -98,10 +98,6 @@ func (gui *Gui) onNewPopupPanel() {
 	}
 }
 
-func (gui *Gui) createLoaderPanel(g *gocui.Gui, currentView *gocui.View, prompt string) error {
-	return gui.createPopupPanel(g, currentView, "", prompt, true, nil, nil)
-}
-
 // it is very important that within this function we never include the original prompt in any error messages, because it may contain e.g. a user password
 func (gui *Gui) createConfirmationPanel(g *gocui.Gui, currentView *gocui.View, title, prompt string, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
 	return gui.createPopupPanel(g, currentView, title, prompt, false, handleConfirm, handleClose)
@@ -146,10 +142,6 @@ func (gui *Gui) setKeyBindings(g *gocui.Gui, handleConfirm, handleClose func(*go
 	}
 
 	return nil
-}
-
-func (gui *Gui) createMessagePanel(g *gocui.Gui, currentView *gocui.View, title, prompt string) error {
-	return gui.createPopupPanel(g, currentView, title, prompt, false, nil, nil)
 }
 
 // createSpecificErrorPanel allows you to create an error popup, specifying the

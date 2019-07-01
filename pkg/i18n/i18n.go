@@ -34,6 +34,10 @@ func NewTranslationSet(log *logrus.Entry) *TranslationSet {
 		mergo.Merge(&set, dutchSet(), mergo.WithOverride)
 	}
 
+	if strings.HasPrefix(userLang, "de") {
+		mergo.Merge(&set, germanSet(), mergo.WithOverride)
+	}
+
 	return &set
 }
 
