@@ -7,7 +7,6 @@
   <kbd>o</kbd>: open lazydocker configuratie
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab
-  <kbd>￨</kbd>: volgende tab
   <kbd>m</kbd>: bekijk logs
   <kbd>enter</kbd>: focus hooft panneel
 </pre>
