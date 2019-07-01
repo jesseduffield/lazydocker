@@ -90,6 +90,8 @@ go get github.com/jesseduffield/lazydocker
         https://github.com/jesseduffield/lazydocker.git
         ```
 
+    You can also add `--build-arg VCS_REF=$(git rev-parse HEAD)` so that the go build and the container contain the commit used.
+
     </p></details>
 1. Run it
 
