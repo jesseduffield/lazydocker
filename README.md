@@ -97,6 +97,8 @@ go get github.com/jesseduffield/lazydocker
     docker run -it -v /var/run/docker.sock:/var/run/docker.sock lazydocker
     ```
 
+1. Then enter `lazydocker`
+
 ## Usage
 
 Call `lazydocker` in your terminal. I personally use this a lot so I've made an alias for it like so:
