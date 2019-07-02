@@ -6,8 +6,8 @@ ARG GO_VERSION=1.12.6
 FROM ${BASE_IMAGE_BUILDER}:${GO_VERSION}-alpine${ALPINE_VERSION} AS builder
 ARG GOARCH=amd64
 ARG GOARM
-ARG VERSION=0.2.4
-ARG VCS_REF=
+ARG VERSION
+ARG VCS_REF
 WORKDIR /go/src/github.com/jesseduffield/lazydocker/
 COPY ./ .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} GOARM=${GOARM} go build -a -installsuffix cgo -ldflags="-s -w \
@@ -16,8 +16,8 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} GOARM=${GOARM} go build -a -instal
     -X main.buildSource=Docker"
 
 FROM ${BASE_IMAGE}:${ALPINE_VERSION}
-ARG VERSION=0.2.4
-ARG VCS_REF=
+ARG VERSION
+ARG VCS_REF
 LABEL org.label-schema.schema-version="1.0.0-rc1" \
     maintainer="jessedduffield@gmail.com" \
     org.label-schema.vcs-ref=$VCS_REF \
