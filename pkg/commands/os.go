@@ -128,15 +128,14 @@ func sanitisedCommandOutput(output []byte, err error) (string, error) {
 }
 
 // OpenFile opens a file with the given
-func (c *OSCommand) OpenFile(filename string) error {
+func (c *OSCommand) OpenFile(filename string) (*exec.Cmd, error) {
 	commandTemplate := c.Config.UserConfig.OS.OpenCommand
 	templateValues := map[string]string{
 		"filename": c.Quote(filename),
 	}
 
-	command := utils.ResolvePlaceholderString(commandTemplate, templateValues)
-	err := c.RunCommand(command)
-	return err
+	command := c.ExecutableFromString(utils.ResolvePlaceholderString(commandTemplate, templateValues))
+	return command, nil
 }
 
 // OpenLink opens a file with the given

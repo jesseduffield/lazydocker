@@ -345,10 +345,8 @@ func (gui *Gui) editFile(filename string) error {
 }
 
 func (gui *Gui) openFile(filename string) error {
-	if err := gui.OSCommand.OpenFile(filename); err != nil {
-		return gui.createErrorPanel(gui.g, err.Error())
-	}
-	return nil
+	_, err := gui.runSyncOrAsyncCommand(gui.OSCommand.OpenFile(filename))
+	return err
 }
 
 // runSyncOrAsyncCommand takes the output of a command that may have returned
