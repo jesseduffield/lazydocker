@@ -69,7 +69,6 @@ go get github.com/jesseduffield/lazydocker
         ```sh
         docker build -t lazydocker \
         --build-arg BASE_IMAGE_BUILDER=arm32v6/golang \
-        --build-arg BASE_IMAGE=arm32v6/alpine \
         --build-arg GOARCH=arm \
         --build-arg GOARM=6 \
         https://github.com/jesseduffield/lazydocker.git
@@ -80,7 +79,6 @@ go get github.com/jesseduffield/lazydocker
         ```sh
         docker build -t lazydocker \
         --build-arg BASE_IMAGE_BUILDER=arm32v7/golang \
-        --build-arg BASE_IMAGE=arm32v7/alpine \
         --build-arg GOARCH=arm \
         --build-arg GOARM=7 \
         https://github.com/jesseduffield/lazydocker.git
@@ -91,7 +89,6 @@ go get github.com/jesseduffield/lazydocker
         ```sh
         docker build -t lazydocker \
         --build-arg BASE_IMAGE_BUILDER=arm64v8/golang \
-        --build-arg BASE_IMAGE=arm64v8/alpine \
         --build-arg GOARCH=arm64 \
         https://github.com/jesseduffield/lazydocker.git
         ```
