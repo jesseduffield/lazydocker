@@ -50,6 +50,10 @@ go get github.com/jesseduffield/lazydocker
 
 ### Docker
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/jesseduffield/lazydocker.svg)](https://hub.docker.com/r/jesseduffield/lazydocker)
+[![Docker Stars](https://img.shields.io/docker/stars/jesseduffield/lazydocker.svg)](https://hub.docker.com/r/jesseduffield/lazydocker)
+[![Docker Automated](https://img.shields.io/docker/cloud/automated/jesseduffield/lazydocker.svg)](https://hub.docker.com/r/jesseduffield/lazydocker)
+
 1. <details><summary>Build it...</summary><p>
 
     - If you have a x86_64 CPU architecture
