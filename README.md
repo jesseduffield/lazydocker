@@ -38,7 +38,13 @@ brew install lazydocker
 
 ### Binary Release (Linux/OSX)
 
-You can download a binary release [here](https://github.com/jesseduffield/lazydocker/releases).
+You can manually download a binary release from [the release page](https://github.com/jesseduffield/lazydocker/releases).
+
+Automated install/update, don't forget to always verify what you're piping into bash:
+
+```sh
+curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+```
 
 ### Go
 
