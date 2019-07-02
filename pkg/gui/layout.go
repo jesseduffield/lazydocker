@@ -275,7 +275,11 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	if gui.g.CurrentView() == nil {
 		v, err := gui.g.View(gui.State.PreviousView)
 		if err != nil {
-			v = gui.getServicesView()
+			viewName := gui.initiallyFocusedViewName()
+			v, err = gui.g.View(viewName)
+			if err != nil {
+				return err
+			}
 		}
 
 		if err := gui.switchFocus(gui.g, nil, v); err != nil {

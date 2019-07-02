@@ -2,7 +2,7 @@
   <img src="https://user-images.githubusercontent.com/8456633/59972109-8e9c8480-95cc-11e9-8350-38f7f86ba76d.png">
 </p>
 
-A simple terminal UI for docker and docker-compose, written in Go with the [gocui](https://github.com/jroimartin/gocui 'gocui') library.
+A simple terminal UI for both docker and docker-compose, written in Go with the [gocui](https://github.com/jroimartin/gocui 'gocui') library.
 
 [![CircleCI](https://circleci.com/gh/jesseduffield/lazydocker.svg?style=svg)](https://circleci.com/gh/jesseduffield/lazydocker) [![Go Report Card](https://goreportcard.com/badge/github.com/jesseduffield/lazydocker)](https://goreportcard.com/report/github.com/jesseduffield/lazydocker) [![GolangCI](https://golangci.com/badges/github.com/jesseduffield/lazydocker.svg)](https://golangci.com) [![GoDoc](https://godoc.org/github.com/jesseduffield/lazydocker?status.svg)](http://godoc.org/github.com/jesseduffield/lazydocker) [![GitHub tag](https://img.shields.io/github/tag/jesseduffield/lazydocker.svg)]()
 
@@ -48,12 +48,24 @@ required go version: 1.12
 go get github.com/jesseduffield/lazydocker
 ```
 
+### Arch Linux AUR
+
+You can install lazydocker using your AUR package manager of choice or by running:
+
+```sh
+git clone https://aur.archlinux.org/lazydocker.git ~/lazydocker
+cd ~/lazydocker
+makepkg --install
+```
+
+A development version of the AUR package is also [available](https://aur.archlinux.org/lazydocker-git.git)
+
 ## Usage
 
 Call `lazydocker` in your terminal. I personally use this a lot so I've made an alias for it like so:
 
 ```
-echo "alias ld='lazydocker'" >> ~/.zshrc
+echo "alias lzd='lazydocker'" >> ~/.zshrc
 ```
 
 (you can substitute .zshrc for whatever rc file you're using)
@@ -80,7 +92,7 @@ everything is one keypress away (or one click away! Mouse support FTW):
 There is still a lot of work to go! Please check out the [contributing guide](CONTRIBUTING.md).
 For contributor discussion about things not better discussed here in the repo, join the slack channel
 
-[![Slack](/docs/resources/slack_rgb.png)](https://join.slack.com/t/lazydocker/shared_invite/enQtNDE3MjIwNTYyMDA0LTM3Yjk3NzdiYzhhNTA1YjM4Y2M4MWNmNDBkOTI0YTE4YjQ1ZmI2YWRhZTgwNjg2YzhhYjg3NDBlMmQyMTI5N2M)
+[![Slack](/docs/resources/slack_rgb.png)](https://join.slack.com/t/lazydocker/shared_invite/enQtNjgwMjc0Njk3MzgwLTM0NThlMTZiZmNkNWJkY2VlYWYwZmY1NWYyYWViZmE0ZTcxMWZjMTFjNTU1ZTEwMDBiNWIxZTIxYzkwNDgyY2M)
 
 ## Donate
 

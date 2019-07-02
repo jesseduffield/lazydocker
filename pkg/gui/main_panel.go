@@ -91,6 +91,10 @@ func (gui *Gui) handleExitMain(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleMainClick(g *gocui.Gui, v *gocui.View) error {
+	if gui.popupPanelFocused() {
+		return nil
+	}
+
 	currentView := gui.g.CurrentView()
 
 	v.ParentView = currentView

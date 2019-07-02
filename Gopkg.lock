@@ -114,6 +114,14 @@
   version = "v0.3.7"
 
 [[projects]]
+  digest = "1:9cf73012dbe62f96cd8cdd210a1123a360401967a4530284dcd2990888747e3d"
+  name = "github.com/integrii/flaggy"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "07ea7eb774047dab1bdcc7cad0f825fa419df47d"
+  version = "1.2.1"
+
+[[projects]]
   branch = "master"
   digest = "1:7b2ab5c6de135d57d3a594b53068e2712da4d376b2f78097dec7b46d18deaa78"
   name = "github.com/jesseduffield/asciigraph"
@@ -131,14 +139,6 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a46c2f4863e5284ddb255c28750298e04bc8c0fc896bed6056e947673168b7be"
-  name = "github.com/jesseduffield/pty"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "02db52c7e406c7abec44c717a173c7715e4c1b62"
-
-[[projects]]
-  branch = "master"
   digest = "1:7429d1589cc1454e9e97ba48cb7c5025a085b32eae4d3163c517e3e5d6c7a7a0"
   name = "github.com/jesseduffield/roll"
   packages = ["."]
@@ -151,7 +151,7 @@
   name = "github.com/jesseduffield/rollrus"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "7086c0b1b1bd21ef1f502e914ff2505a68c7d638"
+  revision = "dd028cb0bfd75da456151b389d1a32b68cc57360"
 
 [[projects]]
   branch = "master"
@@ -327,9 +327,9 @@
     "github.com/fatih/color",
     "github.com/go-errors/errors",
     "github.com/imdario/mergo",
+    "github.com/integrii/flaggy",
     "github.com/jesseduffield/asciigraph",
     "github.com/jesseduffield/gocui",
-    "github.com/jesseduffield/pty",
     "github.com/jesseduffield/rollrus",
     "github.com/jesseduffield/yaml",
     "github.com/mcuadros/go-lookup",
