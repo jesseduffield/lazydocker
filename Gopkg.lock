@@ -167,7 +167,7 @@
   name = "github.com/jesseduffield/yaml"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "9e6ca978307a1aeaf98218b1880a441af4a57294"
+  revision = "b900b7e08b566370b64ce5edf6140e76284a5a49"
 
 [[projects]]
   digest = "1:08c231ec84231a7e23d67e4b58f975e1423695a32467a362ee55a803f9de8061"

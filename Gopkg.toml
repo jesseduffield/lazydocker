@@ -35,10 +35,6 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/jesseduffield/pty"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/spkg/bom"
 
 [[constraint]]
