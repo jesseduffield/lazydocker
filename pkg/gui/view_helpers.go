@@ -111,7 +111,11 @@ func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
 		// always fall back to services view if there's no 'previous' view stored
 		previousView, err = g.View("services")
 		if err != nil {
-			gui.Log.Error(err)
+			// Or fall back to the containers view if we are not in a docker-compose project
+			previousView, err = g.View("containers")
+			if err != nil {
+				gui.Log.Error(err)
+			}
 		}
 	}
 	return gui.switchFocus(g, v, previousView)
