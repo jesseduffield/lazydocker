@@ -104,11 +104,19 @@ go get github.com/jesseduffield/lazydocker
         ```
 
     </p></details>
-1. Run it
+1. Create a directory *config* on your host:
 
     ```sh
-    docker run -it -v /var/run/docker.sock:/var/run/docker.sock lazydocker
+    mkdir config
     ```
+
+1. Run the container
+
+    ```sh
+    docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/config:/.config/jesseduffield/lazydocker lazydocker
+    ```
+
+    On Windows, replace `$(pwd)` by `%cd%`
 
 ## Usage
 
