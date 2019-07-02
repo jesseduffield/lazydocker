@@ -60,8 +60,6 @@ go get github.com/jesseduffield/lazydocker
 
         ```sh
         docker build -t lazydocker https://github.com/jesseduffield/lazydocker.git
-        # or locally within the repository:
-        docker build -t lazydocker .
         ```
 
     - If you have a ARM 32 bit v6 architecture
@@ -93,7 +91,17 @@ go get github.com/jesseduffield/lazydocker
         https://github.com/jesseduffield/lazydocker.git
         ```
 
-    You can also add `--build-arg VCS_REF=$(git rev-parse HEAD)` so that the go build and the container contain the commit used.
+    - For development:
+
+        ```sh
+        git clone https://github.com/jesseduffield/lazydocker.git
+        cd lazydocker
+        docker build -t lazydocker \
+            --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+            --build-arg VCS_REF=`git rev-parse --short HEAD` \
+            --build-arg VERSION=`git describe --abbrev=0 --tag` \
+            .
+        ```
 
     </p></details>
 1. Run it
