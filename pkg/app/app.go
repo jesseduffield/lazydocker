@@ -56,17 +56,16 @@ func NewApp(config *config.AppConfig) (*App, error) {
 
 func (app *App) Run() error {
 	// before we do anything, we need to check that we have some window space available
-	for {
-		width, _, err := terminal.GetSize(int(os.Stdin.Fd()))
+	var err error
+	width := 0
+	for width == 0 {
+		width, _, err = terminal.GetSize(int(os.Stdin.Fd()))
 		if err != nil {
 			return err
 		}
-		if width == 0 {
-			time.Sleep(time.Millisecond * 50)
-		}
-		break
+		time.Sleep(time.Millisecond * 50)
 	}
-	err := app.Gui.RunWithSubprocesses()
+	err = app.Gui.RunWithSubprocesses()
 	return err
 }
 
