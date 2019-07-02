@@ -97,7 +97,11 @@ func (gui *Gui) handleMainClick(g *gocui.Gui, v *gocui.View) error {
 
 	currentView := gui.g.CurrentView()
 
-	v.ParentView = currentView
+	if currentView != nil && currentView.Name() == "main" {
+		currentView = nil
+	} else {
+		v.ParentView = currentView
+	}
 
 	return gui.switchFocus(gui.g, currentView, v)
 }
