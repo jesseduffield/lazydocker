@@ -109,7 +109,7 @@ func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
 	previousView, err := g.View(gui.State.PreviousView)
 	if err != nil {
 		// always fall back to services view if there's no 'previous' view stored
-		previousView, err = g.View("services")
+		previousView, err = g.View(gui.initiallyFocusedViewName())
 		if err != nil {
 			gui.Log.Error(err)
 		}
