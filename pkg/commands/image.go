@@ -57,7 +57,7 @@ func (l *Layer) GetDisplayStrings(isFocused bool) []string {
 	}
 	idColor := color.FgWhite
 	if id == "<missing>" {
-		idColor = color.FgBlack
+		idColor = color.FgBlue
 	}
 
 	dockerFileCommandPrefix := "/bin/sh -c #(nop) "
@@ -73,7 +73,7 @@ func (l *Layer) GetDisplayStrings(isFocused bool) []string {
 	size := utils.FormatBinaryBytes(int(l.Size))
 	sizeColor := color.FgWhite
 	if size == "0B" {
-		sizeColor = color.FgBlack
+		sizeColor = color.FgBlue
 	}
 
 	return []string{

@@ -294,7 +294,7 @@ func (c *Container) GetColor() color.Attribute {
 	switch c.Container.State {
 	case "exited":
 		if c.Details.State.ExitCode == 0 {
-			return color.FgBlue
+			return color.FgYellow
 		}
 		return color.FgRed
 	case "created":
