@@ -23,7 +23,7 @@ type Service struct {
 func (s *Service) GetDisplayStrings(isFocused bool) []string {
 
 	if s.Container == nil {
-		return []string{utils.ColoredString("none", color.FgBlack), s.Name, ""}
+		return []string{utils.ColoredString("none", color.FgBlue), s.Name, ""}
 	}
 
 	cont := s.Container
