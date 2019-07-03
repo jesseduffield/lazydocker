@@ -15,7 +15,7 @@ require (
 	github.com/imdario/mergo v0.3.7
 	github.com/integrii/flaggy v0.0.0-20190517180110-07ea7eb77404
 	github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee
-	github.com/jesseduffield/gocui v0.0.0-20190629032923-117e4fb79d29
+	github.com/jesseduffield/gocui v0.3.1-0.20190703113548-66cf087c5ed6
 	github.com/jesseduffield/rollrus v0.0.0-20190701125922-dd028cb0bfd7
 	github.com/jesseduffield/termbox-go v0.0.0-20190630083001-9dd53af7214e // indirect
 	github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56

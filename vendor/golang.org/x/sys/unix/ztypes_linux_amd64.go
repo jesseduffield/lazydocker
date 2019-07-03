@@ -514,6 +514,13 @@ const (
 	RTA_FLOW             = 0xb
 	RTA_CACHEINFO        = 0xc
 	RTA_TABLE            = 0xf
+	RTA_MARK             = 0x10
+	RTA_MFC_STATS        = 0x11
+	RTA_VIA              = 0x12
+	RTA_NEWDST           = 0x13
+	RTA_PREF             = 0x14
+	RTA_ENCAP_TYPE       = 0x15
+	RTA_ENCAP            = 0x16
 	RTN_UNSPEC           = 0x0
 	RTN_UNICAST          = 0x1
 	RTN_LOCAL            = 0x2
