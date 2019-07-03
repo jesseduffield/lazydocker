@@ -32,8 +32,14 @@ github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee h1:7Zi/OQ
 github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee/go.mod h1:Z9UKHveKXXgyo8ME7R8yxh/BUTFOK+FgfWKlhy8oOAg=
 github.com/jesseduffield/gocui v0.0.0-20190629032923-117e4fb79d29 h1:Qw+aq40UFeFBpIOvzWlGcDvDsRSHjHgfvOpZ+ax3HPw=
 github.com/jesseduffield/gocui v0.0.0-20190629032923-117e4fb79d29/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
+github.com/jesseduffield/gocui v0.3.0 h1:l7wH8MKR2p+ozuZdtdhQiX7szILbv50vkMk1tg2+xow=
+github.com/jesseduffield/gocui v0.3.0/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
 github.com/jesseduffield/gocui v0.3.1-0.20190703113548-66cf087c5ed6 h1:n5KQ8f6mtW8+2Xm2caq4uX9/Za/70AwBO8HswJ0Ym6s=
 github.com/jesseduffield/gocui v0.3.1-0.20190703113548-66cf087c5ed6/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
+github.com/jesseduffield/gocui v0.3.1-0.20190703114758-e3a97494ac41 h1:WHt3Pmhgx31HjDrhUMzS2scuLu5PW88s+hc3PAmHRSY=
+github.com/jesseduffield/gocui v0.3.1-0.20190703114758-e3a97494ac41/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
+github.com/jesseduffield/gocui v0.3.1-0.20190703115836-08c34c9081b3 h1:F9a1FHBFAEa1Jqrd1+vc1UhwVCQH8yywV1qSNadO81U=
+github.com/jesseduffield/gocui v0.3.1-0.20190703115836-08c34c9081b3/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
 github.com/jesseduffield/roll v0.0.0-20190629104057-695be2e62b00 h1:+JaOkfBNYQYlGD7dgru8mCwYNEc5tRRI8mThlVANhSM=
 github.com/jesseduffield/roll v0.0.0-20190629104057-695be2e62b00/go.mod h1:cWNQljQAWYBp4wchyGfql4q2jRNZXxiE1KhVQgz+JaM=
 github.com/jesseduffield/rollrus v0.0.0-20190701125922-dd028cb0bfd7 h1:CRD7bVjlGIiV+M0jlsa+XWpneW0KY0e7Y4z3GWb5S4o=
@@ -54,6 +60,8 @@ github.com/mcuadros/go-lookup v0.0.0-20171110082742-5650f26be767 h1:BrhJNdEFWGui
 github.com/mcuadros/go-lookup v0.0.0-20171110082742-5650f26be767/go.mod h1:ct+byCpkFokm4J0tiuAvB8cf2ttm6GcCe89Yr25nGKg=
 github.com/mgutz/str v1.2.0 h1:4IzWSdIz9qPQWLfKZ0rJcV0jcUDpxvP4JVZ4GXQyvSw=
 github.com/mgutz/str v1.2.0/go.mod h1:w1v0ofgLaJdoD0HpQ3fycxKD1WtxpjSo151pK/31q6w=
+github.com/nsf/termbox-go v0.0.0-20190624072549-eeb6cd0a1762 h1:44Lv0bNi88GweB54TCjB/lEJgp+2Ze5WFpwNu0nh0ag=
+github.com/nsf/termbox-go v0.0.0-20190624072549-eeb6cd0a1762/go.mod h1:IuKpRQcYE1Tfu+oAQqaLisqDeXgjyyltCfsaoYN18NQ=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.8.0 h1:VkHVNpR4iVnU8XQR6DBm8BqYjN7CRzw+xKUbVVbbW9w=
 github.com/onsi/ginkgo v1.8.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=

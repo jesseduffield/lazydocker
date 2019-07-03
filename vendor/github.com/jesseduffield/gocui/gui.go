@@ -14,7 +14,7 @@ import (
 	"github.com/jesseduffield/termbox-go"
 )
 
-// this comment is here for no good reason
+// this comment is here for no good reason (or is it) (I think it is)
 
 var (
 	// ErrQuit is used to decide if the MainLoop finished successfully.
