@@ -114,8 +114,22 @@ snapcrafts:
     # permissions for strict snaps can be declared as `plugs` for the app, which
     # are explained later. More info about confinement here:
     # https://snapcraft.io/docs/reference/confinement
-    confinement: classic
+    confinement: strict
 
     # Your app's license, based on SPDX license expressions: https://spdx.org/licenses
     # Default is empty.
     license: MIT
+
+    # Each binary built by GoReleaser is an app inside the snap. In this section
+    # you can declare extra details for those binaries. It is optional.
+    apps:
+
+      # The name of the app must be the same name as the binary built or the snapcraft name.
+      lazydocker:
+
+        # If your app requires extra permissions to work outside of its default
+        # confined space, declare them here.
+        # You can read the documentation about the available plugs and the
+        # things they allow:
+        # https://snapcraft.io/docs/reference/interfaces.
+        plugs: ["home", "network", "docker", "docker-support"]
