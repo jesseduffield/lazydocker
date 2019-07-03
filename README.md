@@ -18,14 +18,20 @@ What a headache!
 
 Memorising docker commands is hard. Memorising aliases is slightly less hard. Keeping track of your containers across multiple terminal windows is near impossible. What if you had all the information you needed in one terminal window with every common command living one keypress away (and the ability to add custom commands as well). Lazydocker's goal is to make that dream a reality.
 
+- [Requirements](https://github.com/jesseduffield/lazydocker#requirements)
 - [Installation](https://github.com/jesseduffield/lazydocker#installation)
-- [Usage](https://github.com/jesseduffield/lazydocker#usage),
-  [Keybindings](/docs/keybindings)
+- [Usage](https://github.com/jesseduffield/lazydocker#usage)
+- [Keybindings](/docs/keybindings)
 - [Cool Features](https://github.com/jesseduffield/lazydocker#cool-features)
 - [Contributing](https://github.com/jesseduffield/lazydocker#contributing)
 - [Video Tutorial](https://youtu.be/NICqQPxwJWw)
 - [Config Docs](/docs/Config.md)
 - [Twitch Stream](https://www.twitch.tv/jesseduffield)
+
+## Requirements
+
+- Docker (most recent version is recommended)
+- Docker-Compose >= **1.23.2** (optional)
 
 ## Installation
 
@@ -48,7 +54,7 @@ curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/i
 
 ### Go
 
-required go version: 1.12
+Required Go version >= **1.8**
 
 ```sh
 go get github.com/jesseduffield/lazydocker
