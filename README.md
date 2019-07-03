@@ -42,6 +42,13 @@ brew tap jesseduffield/lazydocker
 brew install lazydocker
 ```
 
+### Snap
+
+```sh
+snap install lazydocker
+snap connect lazydocker:docker-support
+```
+
 ### Binary Release (Linux/OSX)
 
 You can manually download a binary release from [the release page](https://github.com/jesseduffield/lazydocker/releases).
