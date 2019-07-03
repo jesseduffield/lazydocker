@@ -28,7 +28,7 @@ jobs:
           name: Compile project on every platform
           command: |
             go get github.com/mitchellh/gox
-            gox -parallel 10 -os "linux freebsd" -osarch "darwin/i386 darwin/amd64"
+            gox -mod=vendor -parallel 10 -os "linux freebsd" -osarch "darwin/i386 darwin/amd64"
       - save_cache:
           key: pkg-cache-{{ checksum "Gopkg.lock" }}-v4
           paths:
