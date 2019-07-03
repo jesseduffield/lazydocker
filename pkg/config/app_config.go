@@ -296,7 +296,7 @@ func GetDefaultConfig() UserConfig {
 			IgnoreMouseEvents: false,
 			Theme: ThemeConfig{
 				ActiveBorderColor:   []string{"green", "bold"},
-				InactiveBorderColor: []string{"white"},
+				InactiveBorderColor: []string{"default"},
 				OptionsTextColor:    []string{"blue"},
 			},
 			ShowAllContainers: false,
