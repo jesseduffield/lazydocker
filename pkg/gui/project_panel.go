@@ -3,6 +3,7 @@ package gui
 import (
 	"bytes"
 	"fmt"
+	"path"
 	"strings"
 
 	"github.com/fatih/color"
@@ -30,9 +31,11 @@ func (gui *Gui) getProjectContextTitles() []string {
 func (gui *Gui) refreshProject() error {
 	v := gui.getProjectView()
 
+	dirName := path.Base(gui.Config.ProjectDir)
+
 	gui.g.Update(func(*gocui.Gui) error {
 		v.Clear()
-		fmt.Fprint(v, "lazydocker")
+		fmt.Fprint(v, dirName)
 		return nil
 	})
 

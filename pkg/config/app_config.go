@@ -362,10 +362,11 @@ type AppConfig struct {
 	BuildSource string `long:"build-source" env:"BUILD_SOURCE" default:""`
 	UserConfig  *UserConfig
 	ConfigDir   string
+	ProjectDir  string
 }
 
 // NewAppConfig makes a new app config
-func NewAppConfig(name, version, commit, date string, buildSource string, debuggingFlag bool, composeFiles []string) (*AppConfig, error) {
+func NewAppConfig(name, version, commit, date string, buildSource string, debuggingFlag bool, composeFiles []string, projectDir string) (*AppConfig, error) {
 	configDir, err := findOrCreateConfigDir(name)
 	if err != nil {
 		return nil, err
@@ -390,6 +391,7 @@ func NewAppConfig(name, version, commit, date string, buildSource string, debugg
 		BuildSource: buildSource,
 		UserConfig:  userConfig,
 		ConfigDir:   configDir,
+		ProjectDir:  projectDir,
 	}
 
 	return appConfig, nil
