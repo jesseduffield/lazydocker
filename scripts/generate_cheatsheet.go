@@ -26,7 +26,7 @@ type bindingSection struct {
 
 func main() {
 	langs := []string{"pl", "nl", "en"}
-	mConfig, err := config.NewAppConfig("lazydocker", "", "", "", "", true)
+	mConfig, err := config.NewAppConfig("lazydocker", "", "", "", "", true, nil)
 	if err != nil {
 		panic(err)
 	}
