@@ -1,0 +1,19 @@
+language: go
+
+go:
+  - "1.x"
+  - "1.8.x"
+  - "1.9.x"
+  - "1.10.x"
+  - master
+
+install:
+  - go get github.com/mattn/goveralls
+  - go get golang.org/x/tools/cmd/cover
+  
+script:
+  - go test -v -race ./.
+  - goveralls -service=travis-ci
+
+notifications:
+  email: false
