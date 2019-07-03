@@ -31,11 +31,19 @@ func (gui *Gui) getProjectContextTitles() []string {
 func (gui *Gui) refreshProject() error {
 	v := gui.getProjectView()
 
-	dirName := path.Base(gui.Config.ProjectDir)
+	projectName := path.Base(gui.Config.ProjectDir)
+	if gui.DockerCommand.InDockerComposeProject {
+		for _, service := range gui.DockerCommand.Services {
+			if service.Container != nil {
+				projectName = service.Container.Details.Config.Labels["com.docker.compose.project"]
+				break
+			}
+		}
+	}
 
 	gui.g.Update(func(*gocui.Gui) error {
 		v.Clear()
-		fmt.Fprint(v, dirName)
+		fmt.Fprint(v, projectName)
 		return nil
 	})
 

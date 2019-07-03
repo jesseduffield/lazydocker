@@ -271,6 +271,7 @@ func (gui *Gui) Run() error {
 		gui.waitForIntro.Wait()
 		gui.goEvery(time.Millisecond*50, gui.renderAppStatus)
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
+		gui.goEvery(time.Millisecond*100, gui.refreshProject)
 		gui.goEvery(time.Millisecond*100, gui.refreshContainersAndServices)
 		gui.goEvery(time.Millisecond*100, gui.refreshVolumes)
 		gui.goEvery(time.Millisecond*1000, gui.DockerCommand.UpdateContainerDetails)

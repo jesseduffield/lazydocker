@@ -16,10 +16,6 @@ func (gui *Gui) refreshSidePanels(g *gocui.Gui) error {
 		return err
 	}
 
-	if err := gui.refreshProject(); err != nil {
-		return err
-	}
-
 	return nil
 }
 
