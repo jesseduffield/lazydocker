@@ -81,7 +81,7 @@ type containerPanelState struct {
 	ContextIndex int // for specifying if you are looking at logs/stats/config/etc
 }
 
-type statusState struct {
+type projectState struct {
 	ContextIndex int // for specifying if you are looking at credits/logs
 }
 
@@ -112,7 +112,7 @@ type panelStates struct {
 	Main       *mainPanelState
 	Images     *imagePanelState
 	Volumes    *volumePanelState
-	Status     *statusState
+	Project    *projectState
 }
 
 type guiState struct {
@@ -142,14 +142,14 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 			Main: &mainPanelState{
 				ObjectKey: "",
 			},
-			Status: &statusState{ContextIndex: 0},
+			Project: &projectState{ContextIndex: 0},
 		},
 		SessionIndex: 0,
 	}
 
-	cyclableViews := []string{"status", "containers", "images", "volumes"}
+	cyclableViews := []string{"project", "containers", "images", "volumes"}
 	if dockerCommand.InDockerComposeProject {
-		cyclableViews = []string{"status", "services", "containers", "images", "volumes"}
+		cyclableViews = []string{"project", "services", "containers", "images", "volumes"}
 	}
 
 	gui := &Gui{

@@ -5,7 +5,7 @@ type TranslationSet struct {
 	AddFavourite                               string
 	ErrorMessage                               string
 	NotEnoughSpace                             string
-	StatusTitle                                string
+	ProjectTitle                               string
 	MainTitle                                  string
 	GlobalTitle                                string
 	Navigate                                   string
@@ -140,7 +140,7 @@ func englishSet() TranslationSet {
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Main",
-		StatusTitle:               "Status",
+		ProjectTitle:              "Project",
 		ServicesTitle:             "Services",
 		ContainersTitle:           "Containers",
 		StandaloneContainersTitle: "Standalone Containers",

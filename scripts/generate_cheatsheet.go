@@ -76,7 +76,7 @@ func getBindingSections(mApp *app.App) []*bindingSection {
 		titleMap := map[string]string{
 			"global":     mApp.Tr.GlobalTitle,
 			"main":       mApp.Tr.MainTitle,
-			"status":     mApp.Tr.StatusTitle,
+			"project":    mApp.Tr.ProjectTitle,
 			"services":   mApp.Tr.ServicesTitle,
 			"containers": mApp.Tr.ContainersTitle,
 			"images":     mApp.Tr.ImagesTitle,
