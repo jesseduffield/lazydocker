@@ -25,15 +25,19 @@ func NewTranslationSet(log *logrus.Entry) *TranslationSet {
 	set := englishSet()
 
 	if strings.HasPrefix(userLang, "pl") {
-		mergo.Merge(&set, polishSet(), mergo.WithOverride)
+		_ = mergo.Merge(&set, polishSet(), mergo.WithOverride)
 	}
 
 	if strings.HasPrefix(userLang, "nl") {
-		mergo.Merge(&set, dutchSet(), mergo.WithOverride)
+		_ = mergo.Merge(&set, dutchSet(), mergo.WithOverride)
 	}
 
 	if strings.HasPrefix(userLang, "de") {
-		mergo.Merge(&set, germanSet(), mergo.WithOverride)
+		_ = mergo.Merge(&set, germanSet(), mergo.WithOverride)
+	}
+
+	if strings.HasPrefix(userLang, "tr") {
+		_ = mergo.Merge(&set, turkishSet(), mergo.WithOverride)
 	}
 
 	return &set
