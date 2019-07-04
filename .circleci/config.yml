@@ -43,6 +43,10 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install snapcraft
+          command: |
+            ./.circleci/install_snapcraft.sh
+      - run:
           name: Run gorelease
           command: |
             curl -sL https://git.io/goreleaser | bash
