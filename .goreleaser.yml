@@ -1,8 +1,12 @@
 # This is an example goreleaser.yaml file with some sane defaults.
 # Make sure to check the documentation at http://goreleaser.com
+env:
+  - CGO_ENABLED=0
+  - GOFLAGS=-mod=vendor
+  - GO111MODULE=auto
+
 builds:
-  - env:
-      - CGO_ENABLED=0
+  - id: binary
     goos:
       # - freebsd
       # - windows # may reenable later
@@ -13,23 +17,44 @@ builds:
       - arm
       - arm64
       - 386
+    goarm:
+      - 6
+      - 7
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.buildSource=binaryRelease
+  - id: snap
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+      - 386
+    goarm:
+      - 6
+      - 7
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.buildSource=snap
 
-archive:
-  replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
-    386: 32-bit
-    amd64: x86_64
-  format_overrides:
-    - goos: windows
-      format: zip
+archives:
+  - builds:
+      - binary
+    replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: x86
+      amd64: x86_64
+    format_overrides:
+      - goos: windows
+        format: zip
+
 checksum:
   name_template: 'checksums.txt'
+
 snapshot:
   name_template: '{{ .Tag }}-next'
+
 changelog:
   sort: asc
   filters:
@@ -37,16 +62,74 @@ changelog:
       - '^docs:'
       - '^test:'
       - '^bump'
-brew:
-  # Reporitory to push the tap to.
-  github:
-    owner: jesseduffield
-    name: homebrew-lazydocker
 
-  # Your app's homepage.
-  # Default is empty.
-  homepage: 'https://github.com/jesseduffield/lazydocker/'
+brews:
+  - github:
+      owner: jesseduffield
+      name: homebrew-lazydocker
 
-  # Your app's description.
-  # Default is empty.
-  description: 'A simple terminal UI for docker, written in Go'
+    # Your app's homepage.
+    # Default is empty.
+    homepage: 'https://github.com/jesseduffield/lazydocker/'
+
+    # Your app's description.
+    # Default is empty.
+    description: 'A simple terminal UI for docker, written in Go'
+
+snapcrafts:
+  - builds:
+      - snap
+
+    replacements:
+      linux: Linux
+      386: x86
+      amd64: x86_64
+
+    # Wether to publish the snap to the snapcraft store.
+    # Remember you need to `snapcraft login` first.
+    # Defaults to false.
+    publish: true
+
+    # Single-line elevator pitch for your amazing snap.
+    # 79 char long at most.
+    summary: The lazier way to manage everything docker
+
+    # This the description of your snap. You have a paragraph or two to tell the
+    # most important story about your snap. Keep it under 100 words though,
+    # we live in tweetspace and your description wants to look good in the snap
+    # store.
+    description: 'A simple terminal UI for docker, written in Go'
+
+    # A guardrail to prevent you from releasing a snap to all your users before
+    # it is ready.
+    # `devel` will let you release only to the `edge` and `beta` channels in the
+    # store. `stable` will let you release also to the `candidate` and `stable`
+    # channels. More info about channels here:
+    # https://snapcraft.io/docs/reference/channels
+    grade: stable
+
+    # Snaps can be setup to follow three different confinement policies:
+    # `strict`, `devmode` and `classic`. A strict confinement where the snap
+    # can only read and write in its own namespace is recommended. Extra
+    # permissions for strict snaps can be declared as `plugs` for the app, which
+    # are explained later. More info about confinement here:
+    # https://snapcraft.io/docs/reference/confinement
+    confinement: classic
+
+    # Your app's license, based on SPDX license expressions: https://spdx.org/licenses
+    # Default is empty.
+    license: MIT
+
+    # # Each binary built by GoReleaser is an app inside the snap. In this section
+    # # you can declare extra details for those binaries. It is optional.
+    # apps:
+
+    #   # The name of the app must be the same name as the binary built or the snapcraft name.
+    #   lazydocker:
+
+    #     # If your app requires extra permissions to work outside of its default
+    #     # confined space, declare them here.
+    #     # You can read the documentation about the available plugs and the
+    #     # things they allow:
+    #     # https://snapcraft.io/docs/reference/interfaces.
+    #     plugs: []
