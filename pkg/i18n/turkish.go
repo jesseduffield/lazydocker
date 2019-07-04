@@ -2,13 +2,13 @@ package i18n
 
 func turkishSet() TranslationSet {
 	return TranslationSet{
-		PruningStatus:              "pruning",
+		PruningStatus:              "temizleniyor",
 		RemovingStatus:             "kaldırılıyor",
 		RestartingStatus:           "yeniden başlatılıyor",
 		StoppingStatus:             "durduruluyor",
 		RunningCustomCommandStatus: "özel komut çalıştır",
 
-		RunningSubprocess:                          "Alt işlemler çalışıyor",
+		RunningSubprocess:                          "İkincil işlem yürütülüyor",
 		NoViewMachingNewLineFocusedSwitchStatement: "NewLineFocused anahtar deyimi ile eşleşen görünüm yok",
 
 		ErrorOccurred:                     "Bir hata oluştu! Lütfen https://github.com/jesseduffield/lazydocker/issues adresinden bir hataya ilişkin konu oluşturun",
