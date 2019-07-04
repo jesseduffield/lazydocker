@@ -3,6 +3,7 @@
 sudo apt-get update
 
 sudo apt-get install -y \
+    squashfs-tools \
     python3-pip \
     python3-apt \
     python3-debian \
