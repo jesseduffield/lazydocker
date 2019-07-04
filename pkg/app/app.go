@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -55,18 +56,32 @@ func NewApp(config *config.AppConfig) (*App, error) {
 }
 
 func (app *App) Run() error {
-	// before we do anything, we need to check that we have some window space available
-	var err error
-	width := 0
-	for width == 0 {
-		width, _, err = terminal.GetSize(int(os.Stdin.Fd()))
-		if err != nil {
-			return err
-		}
-		time.Sleep(time.Millisecond * 50)
+	err := waitForTerminalSpace()
+	if err != nil {
+		return err
 	}
 	err = app.Gui.RunWithSubprocesses()
 	return err
+}
+
+func waitForTerminalSpace() error {
+	// before we do anything, we need to check that we have some window space available
+	tStart := time.Now()
+	count := 0
+	for {
+		width, _, err := terminal.GetSize(int(os.Stdin.Fd()))
+		if err != nil {
+			return err
+		}
+		if width != 0 {
+			return nil
+		}
+		count++
+		time.Sleep(time.Millisecond * 50 * time.Duration(count))
+		if count > 1 {
+			fmt.Fprintf(os.Stderr, "waited %s for available terminal space\n", time.Since(tStart))
+		}
+	}
 }
 
 // Close closes any resources
