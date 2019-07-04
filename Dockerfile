@@ -9,7 +9,7 @@ ARG VERSION
 ARG VCS_REF
 WORKDIR /go/src/github.com/jesseduffield/lazydocker/
 COPY ./ .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} GOARM=${GOARM} go build -a -installsuffix cgo -ldflags="-s -w \
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} GOARM=${GOARM} go build -a -ldflags="-s -w \
     -X main.commit=${VCS_REF} \
     -X main.version=${VERSION} \
     -X main.buildSource=Docker"
