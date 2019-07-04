@@ -24,8 +24,6 @@ func NewTranslationSet(log *logrus.Entry) *TranslationSet {
 
 	set := englishSet()
 
-	userLang = "pl"
-
 	if strings.HasPrefix(userLang, "pl") {
 		mergo.Merge(&set, polishSet(), mergo.WithOverride)
 	}
