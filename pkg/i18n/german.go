@@ -56,7 +56,7 @@ func germanSet() TranslationSet {
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Haupt",
-		StatusTitle:               "Status",
+		ProjectTitle:              "Projekt",
 		ServicesTitle:             "Dienste",
 		ContainersTitle:           "Container",
 		StandaloneContainersTitle: "Alleinstehende Container",

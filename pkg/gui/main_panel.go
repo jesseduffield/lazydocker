@@ -58,6 +58,9 @@ func (gui *Gui) onMainTabClick(tabIndex int) error {
 	}
 
 	switch viewName {
+	case "project":
+		gui.State.Panels.Project.ContextIndex = tabIndex
+		return gui.handleProjectSelect(gui.g, gui.getProjectView())
 	case "services":
 		gui.State.Panels.Services.ContextIndex = tabIndex
 		return gui.handleServiceSelect(gui.g, gui.getServicesView())
@@ -70,9 +73,6 @@ func (gui *Gui) onMainTabClick(tabIndex int) error {
 	case "volumes":
 		gui.State.Panels.Volumes.ContextIndex = tabIndex
 		return gui.handleVolumeSelect(gui.g, gui.getVolumesView())
-	case "status":
-		gui.State.Panels.Status.ContextIndex = tabIndex
-		return gui.handleStatusSelect(gui.g, gui.getStatusView())
 	}
 
 	return nil

@@ -15,9 +15,6 @@ func (gui *Gui) refreshSidePanels(g *gocui.Gui) error {
 	if err := gui.refreshImages(); err != nil {
 		return err
 	}
-	if err := gui.refreshStatus(); err != nil {
-		return err
-	}
 
 	return nil
 }
@@ -85,8 +82,8 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 	switch v.Name() {
 	case "menu":
 		return gui.handleMenuSelect(gui.g, v)
-	case "status":
-		return gui.handleStatusSelect(gui.g, v)
+	case "project":
+		return gui.handleProjectSelect(gui.g, v)
 	case "services":
 		return gui.handleServiceSelect(gui.g, v)
 	case "containers":
@@ -236,6 +233,11 @@ func (gui *Gui) renderOptionsMap(optionsMap map[string]string) error {
 	return gui.renderString(gui.g, "options", gui.optionsMapToString(optionsMap))
 }
 
+func (gui *Gui) getProjectView() *gocui.View {
+	v, _ := gui.g.View("project")
+	return v
+}
+
 func (gui *Gui) getServicesView() *gocui.View {
 	v, _ := gui.g.View("services")
 	return v
@@ -258,11 +260,6 @@ func (gui *Gui) getVolumesView() *gocui.View {
 
 func (gui *Gui) getMainView() *gocui.View {
 	v, _ := gui.g.View("main")
-	return v
-}
-
-func (gui *Gui) getStatusView() *gocui.View {
-	v, _ := gui.g.View("status")
 	return v
 }
 

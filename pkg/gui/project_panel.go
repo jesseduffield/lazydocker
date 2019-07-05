@@ -3,6 +3,7 @@ package gui
 import (
 	"bytes"
 	"fmt"
+	"path"
 	"strings"
 
 	"github.com/fatih/color"
@@ -13,33 +14,43 @@ import (
 	"github.com/jesseduffield/yaml"
 )
 
-func (gui *Gui) getStatusContexts() []string {
+func (gui *Gui) getProjectContexts() []string {
 	if gui.DockerCommand.InDockerComposeProject {
-		return []string{"logs", "credits", "config"}
+		return []string{"logs", "config", "credits"}
 	}
 	return []string{"credits"}
 }
 
-func (gui *Gui) getStatusContextTitles() []string {
+func (gui *Gui) getProjectContextTitles() []string {
 	if gui.DockerCommand.InDockerComposeProject {
-		return []string{gui.Tr.LogsTitle, gui.Tr.CreditsTitle, gui.Tr.DockerComposeConfigTitle}
+		return []string{gui.Tr.LogsTitle, gui.Tr.DockerComposeConfigTitle, gui.Tr.CreditsTitle}
 	}
 	return []string{gui.Tr.CreditsTitle}
 }
 
-func (gui *Gui) refreshStatus() error {
-	v := gui.getStatusView()
+func (gui *Gui) refreshProject() error {
+	v := gui.getProjectView()
+
+	projectName := path.Base(gui.Config.ProjectDir)
+	if gui.DockerCommand.InDockerComposeProject {
+		for _, service := range gui.DockerCommand.Services {
+			if service.Container != nil {
+				projectName = service.Container.Details.Config.Labels["com.docker.compose.project"]
+				break
+			}
+		}
+	}
 
 	gui.g.Update(func(*gocui.Gui) error {
 		v.Clear()
-		fmt.Fprint(v, "lazydocker")
+		fmt.Fprint(v, projectName)
 		return nil
 	})
 
 	return nil
 }
 
-func (gui *Gui) handleStatusClick(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleProjectClick(g *gocui.Gui, v *gocui.View) error {
 	if gui.popupPanelFocused() {
 		return nil
 	}
@@ -48,15 +59,15 @@ func (gui *Gui) handleStatusClick(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 
-	return gui.handleStatusSelect(g, v)
+	return gui.handleProjectSelect(g, v)
 }
 
-func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleProjectSelect(g *gocui.Gui, v *gocui.View) error {
 	if gui.popupPanelFocused() {
 		return nil
 	}
 
-	key := gui.getStatusContexts()[gui.State.Panels.Status.ContextIndex]
+	key := gui.getProjectContexts()[gui.State.Panels.Project.ContextIndex]
 	if !gui.shouldRefresh(key) {
 		return nil
 	}
@@ -64,10 +75,10 @@ func (gui *Gui) handleStatusSelect(g *gocui.Gui, v *gocui.View) error {
 	gui.clearMainView()
 
 	mainView := gui.getMainView()
-	mainView.Tabs = gui.getStatusContextTitles()
-	mainView.TabIndex = gui.State.Panels.Status.ContextIndex
+	mainView.Tabs = gui.getProjectContextTitles()
+	mainView.TabIndex = gui.State.Panels.Project.ContextIndex
 
-	switch gui.getStatusContexts()[gui.State.Panels.Status.ContextIndex] {
+	switch gui.getProjectContexts()[gui.State.Panels.Project.ContextIndex] {
 	case "credits":
 		if err := gui.renderCredits(); err != nil {
 			return err
@@ -176,28 +187,28 @@ func lazydockerTitle() string {
 `
 }
 
-func (gui *Gui) handleStatusNextContext(g *gocui.Gui, v *gocui.View) error {
-	contexts := gui.getStatusContexts()
-	if gui.State.Panels.Status.ContextIndex >= len(contexts)-1 {
-		gui.State.Panels.Status.ContextIndex = 0
+func (gui *Gui) handleProjectNextContext(g *gocui.Gui, v *gocui.View) error {
+	contexts := gui.getProjectContexts()
+	if gui.State.Panels.Project.ContextIndex >= len(contexts)-1 {
+		gui.State.Panels.Project.ContextIndex = 0
 	} else {
-		gui.State.Panels.Status.ContextIndex++
+		gui.State.Panels.Project.ContextIndex++
 	}
 
-	gui.handleStatusSelect(gui.g, v)
+	gui.handleProjectSelect(gui.g, v)
 
 	return nil
 }
 
-func (gui *Gui) handleStatusPrevContext(g *gocui.Gui, v *gocui.View) error {
-	contexts := gui.getStatusContexts()
-	if gui.State.Panels.Status.ContextIndex <= 0 {
-		gui.State.Panels.Status.ContextIndex = len(contexts) - 1
+func (gui *Gui) handleProjectPrevContext(g *gocui.Gui, v *gocui.View) error {
+	contexts := gui.getProjectContexts()
+	if gui.State.Panels.Project.ContextIndex <= 0 {
+		gui.State.Panels.Project.ContextIndex = len(contexts) - 1
 	} else {
-		gui.State.Panels.Status.ContextIndex--
+		gui.State.Panels.Project.ContextIndex--
 	}
 
-	gui.handleStatusSelect(gui.g, v)
+	gui.handleProjectSelect(gui.g, v)
 
 	return nil
 }
