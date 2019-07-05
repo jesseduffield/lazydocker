@@ -50,22 +50,16 @@ go get github.com/jesseduffield/lazydocker
 
 ### Docker
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/jesseduffield/lazydocker.svg)](https://hub.docker.com/r/jesseduffield/lazydocker)
-[![Docker Stars](https://img.shields.io/docker/stars/jesseduffield/lazydocker.svg)](https://hub.docker.com/r/jesseduffield/lazydocker)
-[![Docker Automated](https://img.shields.io/docker/cloud/automated/jesseduffield/lazydocker.svg)](https://hub.docker.com/r/jesseduffield/lazydocker)
+[![Docker Pulls](https://img.shields.io/docker/pulls/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
+[![Docker Stars](https://img.shields.io/docker/stars/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
+[![Docker Automated](https://img.shields.io/docker/cloud/automated/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
 
-1. <details><summary>Build it...</summary><p>
-
-    - If you have a x86_64 CPU architecture
-
-        ```sh
-        docker build -t lazydocker https://github.com/jesseduffield/lazydocker.git
-        ```
+1. <details><summary>Click if you have an ARM device</summary><p>
 
     - If you have a ARM 32 bit v6 architecture
 
         ```sh
-        docker build -t lazydocker \
+        docker build -t lazyteam/lazydocker \
         --build-arg BASE_IMAGE_BUILDER=arm32v6/golang \
         --build-arg GOARCH=arm \
         --build-arg GOARM=6 \
@@ -75,7 +69,7 @@ go get github.com/jesseduffield/lazydocker
     - If you have a ARM 32 bit v7 architecture
 
         ```sh
-        docker build -t lazydocker \
+        docker build -t lazyteam/lazydocker \
         --build-arg BASE_IMAGE_BUILDER=arm32v7/golang \
         --build-arg GOARCH=arm \
         --build-arg GOARM=7 \
@@ -85,22 +79,10 @@ go get github.com/jesseduffield/lazydocker
     - If you have a ARM 64 bit v8 architecture
 
         ```sh
-        docker build -t lazydocker \
+        docker build -t lazyteam/lazydocker \
         --build-arg BASE_IMAGE_BUILDER=arm64v8/golang \
         --build-arg GOARCH=arm64 \
         https://github.com/jesseduffield/lazydocker.git
-        ```
-
-    - For development:
-
-        ```sh
-        git clone https://github.com/jesseduffield/lazydocker.git
-        cd lazydocker
-        docker build -t lazydocker \
-            --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-            --build-arg VCS_REF=`git rev-parse --short HEAD` \
-            --build-arg VERSION=`git describe --abbrev=0 --tag` \
-            .
         ```
 
     </p></details>
@@ -113,10 +95,45 @@ go get github.com/jesseduffield/lazydocker
 1. Run the container
 
     ```sh
-    docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/config:/.config/jesseduffield/lazydocker lazydocker
+    docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker
     ```
 
-    On Windows, replace `$(pwd)` by `%cd%`
+    On Windows, replace `$(pwd)` by `%cd%`.
+
+    <details><summary>You can also use docker-compose</summary><p>
+
+    ```yml
+    version: '3'
+    services:
+      lazydocker:
+        build:
+          context: https://github.com/jesseduffield/lazydocker.git
+          args:
+            BASE_IMAGE_BUILDER: golang
+            GOARCH: amd64
+            GOARM:
+        image: jesseduffield/lazydocker
+        container_name: lazydocker
+        stdin_open: true
+        tty: true
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - ./config:/.config/jesseduffield/lazydocker
+    ```
+
+    </p></details>
+
+For development, you can build the image using:
+
+```sh
+git clone https://github.com/jesseduffield/lazydocker.git
+cd lazydocker
+docker build -t lazyteam/lazydocker \
+    --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+    --build-arg VCS_REF=`git rev-parse --short HEAD` \
+    --build-arg VERSION=`git describe --abbrev=0 --tag` \
+    .
+```
 
 ## Usage
 
