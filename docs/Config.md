@@ -1,5 +1,16 @@
 # User Config:
 
+## Opening The User Config
+
+The location of the user config will differ depending on your OS. You can open it via lazydocker by opening the application, clicking on the 'project' panel at the top left and pressing 'o' (or pressing 'e' if your files open in vim).
+
+Changes to the user config will only take place after closing and re-opening lazydocker
+
+Locations:
+OSX: ~/Library/Application Support/jesseduffield/lazydocker/config.yml
+Linux: ~/.config/jesseduffield/lazydocker/config.yml
+Windows: C:\\Users\\<User>\\AppData\\Roaming\\jesseduffield\\lazydocker\\config.yml (I think)
+
 ## Default:
 
 ```
