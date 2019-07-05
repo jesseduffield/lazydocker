@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"github.com/docker/docker/api/types/container"
 	"os/exec"
 
 	"github.com/docker/docker/api/types"
@@ -61,7 +62,7 @@ func (s *Service) Attach() (*exec.Cmd, error) {
 }
 
 // Top returns process information
-func (s *Service) Top() (types.ContainerProcessList, error) {
+func (s *Service) Top() (container.ContainerTopOKBody, error) {
 	return s.Container.Top()
 }
 

@@ -21,6 +21,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	APIVersion = "1.20"
+)
+
 // DockerCommand is our main git interface
 type DockerCommand struct {
 	Log                    *logrus.Entry
@@ -61,7 +65,7 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 
 // NewDockerCommand it runs git commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
-	cli, err := client.NewEnvClient()
+	cli, err := client.NewClientWithOpts(client.WithVersion(APIVersion))
 	if err != nil {
 		return nil, err
 	}
