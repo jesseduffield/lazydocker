@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"golang.org/x/crypto/ssh/terminal"
@@ -66,21 +68,20 @@ func (app *App) Run() error {
 
 func waitForTerminalSpace() error {
 	// before we do anything, we need to check that we have some window space available
-	tStart := time.Now()
-	count := 0
-	for {
-		width, _, err := terminal.GetSize(int(os.Stdin.Fd()))
-		if err != nil {
-			return err
-		}
-		if width != 0 {
-			return nil
-		}
-		count++
-		time.Sleep(time.Millisecond * 50 * time.Duration(count))
-		if count > 1 {
-			fmt.Fprintf(os.Stderr, "waited %s for available terminal space\n", time.Since(tStart))
-		}
+	width, height, err := terminal.GetSize(int(os.Stdin.Fd()))
+	if err != nil {
+		return err
+	}
+	if width > 0 && height > 0 {
+		return nil
+	}
+	winch := make(chan os.Signal)
+	signal.Notify(winch, syscall.SIGWINCH)
+	select {
+	case <-winch:
+		return nil
+	case <-time.After(time.Second):
+		return fmt.Errorf("there is no available terminal space")
 	}
 }
 
