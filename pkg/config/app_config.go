@@ -289,6 +289,11 @@ type CustomCommand struct {
 // the boolean zero value and this will be ignored when parsing the user's
 // config
 func GetDefaultConfig() UserConfig {
+	duration, err := time.ParseDuration("3m")
+	if err != nil {
+		panic(err)
+	}
+
 	return UserConfig{
 		Gui: GuiConfig{
 			ScrollHeight:      2,
@@ -336,6 +341,7 @@ func GetDefaultConfig() UserConfig {
 			Method: "never",
 		},
 		Stats: StatsConfig{
+			MaxDuration: duration,
 			Graphs: []GraphConfig{
 				{
 					Caption:  "CPU (%)",
