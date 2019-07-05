@@ -55,6 +55,7 @@ jobs:
           command: |
             echo $SNAPCRAFT_LOGIN_FILE | base64 --decode --ignore-garbage > snapcraft.login
             snapcraft login --with snapcraft.login
+            rm snapcraft.login
       - run:
           name: Run gorelease
           command: |
