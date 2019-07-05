@@ -6,10 +6,10 @@ The location of the user config will differ depending on your OS. You can open i
 
 Changes to the user config will only take place after closing and re-opening lazydocker
 
-Locations:
-OSX: ~/Library/Application Support/jesseduffield/lazydocker/config.yml
-Linux: ~/.config/jesseduffield/lazydocker/config.yml
-Windows: C:\\Users\\<User>\\AppData\\Roaming\\jesseduffield\\lazydocker\\config.yml (I think)
+### Locations:
+- OSX: `~/Library/Application Support/jesseduffield/lazydocker/config.yml`
+- Linux: `~/.config/jesseduffield/lazydocker/config.yml`
+- Windows: `C:\\Users\\<User>\\AppData\\Roaming\\jesseduffield\\lazydocker\\config.yml` (I think)
 
 ## Default:
 
@@ -64,7 +64,7 @@ stats:
     color: green
 ```
 
-## To see what all of the config options mean, and what other options you can set, see https://godoc.org/github.com/jesseduffield/lazydocker/pkg/config
+## To see what all of the config options mean, and what other options you can set, see [here](https://godoc.org/github.com/jesseduffield/lazydocker/pkg/config)
 
 ## Color Attributes:
 
