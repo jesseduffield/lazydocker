@@ -106,7 +106,8 @@ snapcrafts:
     # store. `stable` will let you release also to the `candidate` and `stable`
     # channels. More info about channels here:
     # https://snapcraft.io/docs/reference/channels
-    grade: stable
+    # TODO: reset to `stable` when we've been manually reviewed: https://forum.snapcraft.io/t/request-for-classic-confinement-for-lazydocker/12155
+    grade: devel
 
     # Snaps can be setup to follow three different confinement policies:
     # `strict`, `devmode` and `classic`. A strict confinement where the snap
