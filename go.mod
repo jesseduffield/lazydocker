@@ -7,11 +7,12 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21
 	github.com/docker/distribution v2.7.1+incompatible // indirect
-	github.com/docker/docker v1.13.1
+	github.com/docker/docker v0.7.3-0.20190307005417-54dddadc7d5d
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/fatih/color v1.7.0
 	github.com/go-errors/errors v1.0.1
+	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/imdario/mergo v0.3.7
 	github.com/integrii/flaggy v0.0.0-20190517180110-07ea7eb77404
 	github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee
@@ -28,6 +29,7 @@ require (
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
+	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0
 	github.com/sirupsen/logrus v1.3.0
 	github.com/spkg/bom v0.0.0-20160624110644-59b7046e48ad

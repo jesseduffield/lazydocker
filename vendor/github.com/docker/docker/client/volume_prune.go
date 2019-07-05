@@ -1,12 +1,12 @@
-package client
+package client // import "github.com/docker/docker/client"
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
-	"golang.org/x/net/context"
 )
 
 // VolumesPrune requests the daemon to delete unused data
@@ -29,7 +29,7 @@ func (cli *Client) VolumesPrune(ctx context.Context, pruneFilters filters.Args) 
 	defer ensureReaderClosed(serverResp)
 
 	if err := json.NewDecoder(serverResp.body).Decode(&report); err != nil {
-		return report, fmt.Errorf("Error retrieving disk usage: %v", err)
+		return report, fmt.Errorf("Error retrieving volume prune report: %v", err)
 	}
 
 	return report, nil
