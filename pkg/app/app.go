@@ -75,7 +75,7 @@ func waitForTerminalSpace() error {
 	if width > 0 && height > 0 {
 		return nil
 	}
-	winch := make(chan os.Signal)
+	winch := make(chan os.Signal, 1)
 	signal.Notify(winch, syscall.SIGWINCH)
 	select {
 	case <-winch:
