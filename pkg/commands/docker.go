@@ -179,7 +179,12 @@ func (c *DockerCommand) createClientStatMonitor(container *Container) {
 		}
 
 		c.ContainerMutex.Lock()
-		container.StatHistory = append(container.StatHistory, recordedStats)
+		toSlice := len(container.StatHistory) - 50
+		if toSlice < 0 {
+			toSlice = 0
+		}
+		container.StatHistory = append(container.StatHistory[toSlice:], recordedStats)
+
 		container.EraseOldHistory()
 		c.ContainerMutex.Unlock()
 	}
