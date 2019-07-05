@@ -27,6 +27,7 @@ Memorising docker commands is hard. Memorising aliases is slightly less hard. Ke
 - [Video Tutorial](https://youtu.be/NICqQPxwJWw)
 - [Config Docs](/docs/Config.md)
 - [Twitch Stream](https://www.twitch.tv/jesseduffield)
+- [FAQ](https://github.com/jesseduffield/lazydocker#faq)
 
 ## Requirements
 
@@ -117,6 +118,20 @@ If you would like to support the development of lazydocker, please donate
 If you want to see what I (Jesse) am up to in terms of development, follow me on
 [twitter](https://twitter.com/DuffieldJesse) or watch me program on
 [twitch](https://www.twitch.tv/jesseduffield)
+
+## FAQ
+
+### How do I edit my config?
+By opening lazydocker, clicking on the 'project' panel in the top left, and pressing 'o' (or 'e' if your editor is vim). See [Config Docs](/docs/Config.md)
+
+### How do I get text to wrap in my main panel?
+In the future I want to make this the default, but for now there are some CPU issues that arise with wrapping. If you want to enable wrapping, use `gui.wrapMainPanel: true`
+
+### How do you select text?
+Because we support mouse events, you will need to hold option while dragging the mouse to indicate you're trying to select text rather than click on something. Alternatively you can disable mouse events via the `gui.ignoreMouseEvents` config value
+
+### Does this work with Windows?
+Currently not unless you use WSL. Instructions for setting up docker for WSL can be found here [here](https://nickjanetakis.com/blog/setting-up-docker-for-windows-and-wsl-to-work-flawlessly)
 
 ## Alternatives
 
