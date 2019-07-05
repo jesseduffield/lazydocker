@@ -56,7 +56,7 @@ func polishSet() TranslationSet {
 
 		GlobalTitle:               "Globalne",
 		MainTitle:                 "Główne",
-		StatusTitle:               "Status",
+		ProjectTitle:              "Projekt",
 		ServicesTitle:             "Serwisy",
 		ContainersTitle:           "Kontenery",
 		StandaloneContainersTitle: "Kontenery samodzielne",

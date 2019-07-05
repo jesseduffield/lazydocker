@@ -56,7 +56,7 @@ func turkishSet() TranslationSet {
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Ana",
-		StatusTitle:               "Durum",
+		ProjectTitle:              "Proje",
 		ServicesTitle:             "Servisler",
 		ContainersTitle:           "Konteynerler",
 		StandaloneContainersTitle: "Bağımsız Konteynerler",
