@@ -40,6 +40,10 @@ github.com/jesseduffield/gocui v0.3.1-0.20190703114758-e3a97494ac41 h1:WHt3Pmhgx
 github.com/jesseduffield/gocui v0.3.1-0.20190703114758-e3a97494ac41/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
 github.com/jesseduffield/gocui v0.3.1-0.20190703115836-08c34c9081b3 h1:F9a1FHBFAEa1Jqrd1+vc1UhwVCQH8yywV1qSNadO81U=
 github.com/jesseduffield/gocui v0.3.1-0.20190703115836-08c34c9081b3/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
+github.com/jesseduffield/gocui v0.3.1-0.20190705132128-68f2ad6e3532 h1:PBs+XBBrhHBIfEm9uw0EcxG4hsFkUslwrjcgEOF6cfI=
+github.com/jesseduffield/gocui v0.3.1-0.20190705132128-68f2ad6e3532/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
+github.com/jesseduffield/gocui v0.3.1-0.20190706002342-e625df489460 h1:ZE/5AVVJV5j7cVFvnQ/YsogDiUh544Qoh4ib/iVyKf8=
+github.com/jesseduffield/gocui v0.3.1-0.20190706002342-e625df489460/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
 github.com/jesseduffield/roll v0.0.0-20190629104057-695be2e62b00 h1:+JaOkfBNYQYlGD7dgru8mCwYNEc5tRRI8mThlVANhSM=
 github.com/jesseduffield/roll v0.0.0-20190629104057-695be2e62b00/go.mod h1:cWNQljQAWYBp4wchyGfql4q2jRNZXxiE1KhVQgz+JaM=
 github.com/jesseduffield/rollrus v0.0.0-20190701125922-dd028cb0bfd7 h1:CRD7bVjlGIiV+M0jlsa+XWpneW0KY0e7Y4z3GWb5S4o=

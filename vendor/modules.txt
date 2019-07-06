@@ -42,7 +42,7 @@ github.com/imdario/mergo
 github.com/integrii/flaggy
 # github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee
 github.com/jesseduffield/asciigraph
-# github.com/jesseduffield/gocui v0.3.1-0.20190703115836-08c34c9081b3
+# github.com/jesseduffield/gocui v0.3.1-0.20190706002342-e625df489460
 github.com/jesseduffield/gocui
 # github.com/jesseduffield/roll v0.0.0-20190629104057-695be2e62b00
 github.com/jesseduffield/roll
