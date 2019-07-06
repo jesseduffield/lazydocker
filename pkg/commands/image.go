@@ -57,7 +57,7 @@ func (l *Layer) GetDisplayStrings(isFocused bool) []string {
 	}
 	idColor := color.FgWhite
 	if id == "<missing>" {
-		idColor = color.FgBlack
+		idColor = color.FgBlue
 	}
 
 	dockerFileCommandPrefix := "/bin/sh -c #(nop) "
@@ -73,7 +73,7 @@ func (l *Layer) GetDisplayStrings(isFocused bool) []string {
 	size := utils.FormatBinaryBytes(int(l.Size))
 	sizeColor := color.FgWhite
 	if size == "0B" {
-		sizeColor = color.FgBlack
+		sizeColor = color.FgBlue
 	}
 
 	return []string{
@@ -112,21 +112,23 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 	for i, image := range images {
 		// func (cli *Client) ImageHistory(ctx context.Context, imageID string) ([]image.HistoryResponseItem, error)
 
-		name := "none"
+		firstTag := ""
 		tags := image.RepoTags
 		if len(tags) > 0 {
-			name = tags[0]
+			firstTag = tags[0]
 		}
 
-		nameParts := strings.Split(name, ":")
+		nameParts := strings.Split(firstTag, ":")
 		tag := ""
+		name := "none"
 		if len(nameParts) > 1 {
-			tag = nameParts[1]
+			tag = nameParts[len(nameParts)-1]
+			name = strings.Join(nameParts[:len(nameParts)-1], ":")
 		}
 
 		ownImages[i] = &Image{
 			ID:            image.ID,
-			Name:          nameParts[0],
+			Name:          name,
 			Tag:           tag,
 			Image:         image,
 			Client:        c.Client,

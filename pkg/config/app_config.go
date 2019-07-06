@@ -289,6 +289,11 @@ type CustomCommand struct {
 // the boolean zero value and this will be ignored when parsing the user's
 // config
 func GetDefaultConfig() UserConfig {
+	duration, err := time.ParseDuration("3m")
+	if err != nil {
+		panic(err)
+	}
+
 	return UserConfig{
 		Gui: GuiConfig{
 			ScrollHeight:      2,
@@ -296,7 +301,7 @@ func GetDefaultConfig() UserConfig {
 			IgnoreMouseEvents: false,
 			Theme: ThemeConfig{
 				ActiveBorderColor:   []string{"green", "bold"},
-				InactiveBorderColor: []string{"white"},
+				InactiveBorderColor: []string{"default"},
 				OptionsTextColor:    []string{"blue"},
 			},
 			ShowAllContainers: false,
@@ -336,6 +341,7 @@ func GetDefaultConfig() UserConfig {
 			Method: "never",
 		},
 		Stats: StatsConfig{
+			MaxDuration: duration,
 			Graphs: []GraphConfig{
 				{
 					Caption:  "CPU (%)",
@@ -362,10 +368,11 @@ type AppConfig struct {
 	BuildSource string `long:"build-source" env:"BUILD_SOURCE" default:""`
 	UserConfig  *UserConfig
 	ConfigDir   string
+	ProjectDir  string
 }
 
 // NewAppConfig makes a new app config
-func NewAppConfig(name, version, commit, date string, buildSource string, debuggingFlag bool, composeFiles []string) (*AppConfig, error) {
+func NewAppConfig(name, version, commit, date string, buildSource string, debuggingFlag bool, composeFiles []string, projectDir string) (*AppConfig, error) {
 	configDir, err := findOrCreateConfigDir(name)
 	if err != nil {
 		return nil, err
@@ -390,6 +397,7 @@ func NewAppConfig(name, version, commit, date string, buildSource string, debugg
 		BuildSource: buildSource,
 		UserConfig:  userConfig,
 		ConfigDir:   configDir,
+		ProjectDir:  projectDir,
 	}
 
 	return appConfig, nil

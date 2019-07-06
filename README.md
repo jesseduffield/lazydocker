@@ -18,14 +18,21 @@ What a headache!
 
 Memorising docker commands is hard. Memorising aliases is slightly less hard. Keeping track of your containers across multiple terminal windows is near impossible. What if you had all the information you needed in one terminal window with every common command living one keypress away (and the ability to add custom commands as well). Lazydocker's goal is to make that dream a reality.
 
+- [Requirements](https://github.com/jesseduffield/lazydocker#requirements)
 - [Installation](https://github.com/jesseduffield/lazydocker#installation)
-- [Usage](https://github.com/jesseduffield/lazydocker#usage),
-  [Keybindings](/docs/keybindings)
+- [Usage](https://github.com/jesseduffield/lazydocker#usage)
+- [Keybindings](/docs/keybindings)
 - [Cool Features](https://github.com/jesseduffield/lazydocker#cool-features)
 - [Contributing](https://github.com/jesseduffield/lazydocker#contributing)
 - [Video Tutorial](https://youtu.be/NICqQPxwJWw)
 - [Config Docs](/docs/Config.md)
 - [Twitch Stream](https://www.twitch.tv/jesseduffield)
+- [FAQ](https://github.com/jesseduffield/lazydocker#faq)
+
+## Requirements
+
+- Docker (most recent version is recommended)
+- Docker-Compose >= **1.23.2** (optional)
 
 ## Installation
 
@@ -38,11 +45,17 @@ brew install lazydocker
 
 ### Binary Release (Linux/OSX)
 
-You can download a binary release [here](https://github.com/jesseduffield/lazydocker/releases).
+You can manually download a binary release from [the release page](https://github.com/jesseduffield/lazydocker/releases).
+
+Automated install/update, don't forget to always verify what you're piping into bash:
+
+```sh
+curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+```
 
 ### Go
 
-required go version: 1.12
+Required Go version >= **1.8**
 
 ```sh
 go get github.com/jesseduffield/lazydocker
@@ -105,6 +118,23 @@ If you would like to support the development of lazydocker, please donate
 If you want to see what I (Jesse) am up to in terms of development, follow me on
 [twitter](https://twitter.com/DuffieldJesse) or watch me program on
 [twitch](https://www.twitch.tv/jesseduffield)
+
+## FAQ
+
+### How do I edit my config?
+By opening lazydocker, clicking on the 'project' panel in the top left, and pressing 'o' (or 'e' if your editor is vim). See [Config Docs](/docs/Config.md)
+
+### How do I get text to wrap in my main panel?
+In the future I want to make this the default, but for now there are some CPU issues that arise with wrapping. If you want to enable wrapping, use `gui.wrapMainPanel: true`
+
+### How do you select text?
+Because we support mouse events, you will need to hold option while dragging the mouse to indicate you're trying to select text rather than click on something. Alternatively you can disable mouse events via the `gui.ignoreMouseEvents` config value
+
+### Does this work with Windows?
+Currently not unless you use WSL. Instructions for setting up docker for WSL can be found here [here](https://nickjanetakis.com/blog/setting-up-docker-for-windows-and-wsl-to-work-flawlessly)
+
+### Why can't I see my container's logs?
+By default we only show logs from the last hour, so that we're not putting too much strain on the machine. This may be why you can't see logs when you first start lazydocker. This can be overwritten in the config's `commandTemplates`
 
 ## Alternatives
 

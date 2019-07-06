@@ -56,7 +56,7 @@ func dutchSet() TranslationSet {
 
 		GlobalTitle:               "Globaal",
 		MainTitle:                 "Hooft",
-		StatusTitle:               "Staat",
+		ProjectTitle:              "Project",
 		ServicesTitle:             "Diensten",
 		ContainersTitle:           "Containers",
 		StandaloneContainersTitle: "Alleenstaande Containers",

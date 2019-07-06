@@ -72,7 +72,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	g.Highlight = true
 	width, height := g.Size()
 
-	information := gui.Config.Version
+	information := "lazydocker " + gui.Config.Version
 	if gui.g.Mouse {
 		donate := color.New(color.FgMagenta, color.Underline).Sprint(gui.Tr.Donate)
 		information = donate + " " + information
@@ -117,7 +117,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	if gui.DockerCommand.InDockerComposeProject {
 		tallPanels++
 		vHeights = map[string]int{
-			"status":     3,
+			"project":    3,
 			"services":   usableSpace/tallPanels + usableSpace%tallPanels,
 			"containers": usableSpace / tallPanels,
 			"images":     usableSpace / tallPanels,
@@ -126,7 +126,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 	} else {
 		vHeights = map[string]int{
-			"status":     3,
+			"project":    3,
 			"containers": usableSpace/tallPanels + usableSpace%tallPanels,
 			"images":     usableSpace / tallPanels,
 			"volumes":    usableSpace / tallPanels,
@@ -140,7 +140,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			defaultHeight = 1
 		}
 		vHeights = map[string]int{
-			"status":     defaultHeight,
+			"project":    defaultHeight,
 			"containers": defaultHeight,
 			"images":     defaultHeight,
 			"volumes":    defaultHeight,
@@ -176,19 +176,19 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		v.IgnoreCarriageReturns = true
 	}
 
-	if v, err := g.SetView("status", 0, 0, leftSideWidth, vHeights["status"]-1, gocui.BOTTOM|gocui.RIGHT); err != nil {
+	if v, err := g.SetView("project", 0, 0, leftSideWidth, vHeights["project"]-1, gocui.BOTTOM|gocui.RIGHT); err != nil {
 		if err.Error() != "unknown view" {
 			return err
 		}
-		v.Title = gui.Tr.StatusTitle
+		v.Title = gui.Tr.ProjectTitle
 		v.FgColor = gocui.ColorDefault
 	}
 
 	var servicesView *gocui.View
-	aboveContainersView := "status"
+	aboveContainersView := "project"
 	if gui.DockerCommand.InDockerComposeProject {
 		aboveContainersView = "services"
-		servicesView, err = g.SetViewBeneath("services", "status", vHeights["services"])
+		servicesView, err = g.SetViewBeneath("services", "project", vHeights["services"])
 		if err != nil {
 			if err.Error() != "unknown view" {
 				return err

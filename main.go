@@ -46,7 +46,12 @@ func main() {
 		os.Exit(0)
 	}
 
-	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, composeFiles)
+	projectDir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, composeFiles, projectDir)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

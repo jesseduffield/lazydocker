@@ -14,7 +14,7 @@ for d in $( find ./* -maxdepth 10 ! -path "./vendor*" ! -path "./.git*" ! -path 
         if [ "$use_go_test" == true ]; then
             gotest $args
         else
-            go test $args
+            go test -mod=vendor $args
         fi
         if [ -f profile.out ]; then
             cat profile.out >> coverage.txt

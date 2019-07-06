@@ -126,51 +126,51 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:  gui.handleCustomCommand,
 		},
 		{
-			ViewName:    "status",
+			ViewName:    "project",
 			Key:         'e',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleEditConfig,
 			Description: gui.Tr.EditConfig,
 		},
 		{
-			ViewName:    "status",
+			ViewName:    "project",
 			Key:         'o',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleOpenConfig,
 			Description: gui.Tr.OpenConfig,
 		},
 		{
-			ViewName:    "status",
+			ViewName:    "project",
 			Key:         '[',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handleStatusPrevContext,
+			Handler:     gui.handleProjectPrevContext,
 			Description: gui.Tr.PreviousContext,
 		},
 		{
-			ViewName:    "status",
+			ViewName:    "project",
 			Key:         ']',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handleStatusNextContext,
+			Handler:     gui.handleProjectNextContext,
 			Description: gui.Tr.NextContext,
 		},
 		{
-			ViewName: "status",
+			ViewName: "project",
 			Key:      gocui.MouseLeft,
 			Modifier: gocui.ModNone,
-			Handler:  gui.handleStatusClick,
+			Handler:  gui.handleProjectClick,
 		},
 		{
-			ViewName:    "status",
+			ViewName:    "project",
 			Key:         'm',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleViewAllLogs,
 			Description: gui.Tr.ViewLogs,
 		},
 		{
-			ViewName: "status",
+			ViewName: "project",
 			Key:      gocui.MouseLeft,
 			Modifier: gocui.ModNone,
-			Handler:  gui.handleStatusSelect,
+			Handler:  gui.handleProjectSelect,
 		},
 		{
 			ViewName: "menu",
@@ -430,7 +430,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	}
 
 	// TODO: add more views here
-	for _, viewName := range []string{"status", "services", "containers", "images", "volumes", "menu"} {
+	for _, viewName := range []string{"project", "services", "containers", "images", "volumes", "menu"} {
 		bindings = append(bindings, []*Binding{
 			{ViewName: viewName, Key: gocui.KeyArrowLeft, Modifier: gocui.ModNone, Handler: gui.previousView},
 			{ViewName: viewName, Key: gocui.KeyArrowRight, Modifier: gocui.ModNone, Handler: gui.nextView},
@@ -464,7 +464,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		}...)
 	}
 
-	for _, viewName := range []string{"status", "services", "containers", "images", "volumes"} {
+	for _, viewName := range []string{"project", "services", "containers", "images", "volumes"} {
 		bindings = append(bindings, &Binding{
 			ViewName:    viewName,
 			Key:         gocui.KeyEnter,

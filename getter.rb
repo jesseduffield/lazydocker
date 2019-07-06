@@ -26,6 +26,7 @@ NoViewMachingNewLineFocusedSwitchStatement
 OpenConfig
 pressEnterToReturn
 previousContext
+ProjectTitle
 pruneImages
 PruningStatus
 remove
@@ -40,7 +41,6 @@ RestartingStatus
 RunningSubprocess
 scroll
 ServicesTitle
-StatusTitle
 stop
 StopContainer
 StoppingStatus
