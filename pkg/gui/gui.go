@@ -225,6 +225,7 @@ func (gui *Gui) renderGlobalOptions() error {
 		"PgUp/PgDn": gui.Tr.Scroll,
 		"← → ↑ ↓":   gui.Tr.Navigate,
 		"esc/q":     gui.Tr.Close,
+		"b":         gui.Tr.ViewBulkCommands,
 		"x":         gui.Tr.Menu,
 	})
 }
@@ -282,6 +283,9 @@ func (gui *Gui) Run() error {
 
 	go func() {
 		for err := range gui.ErrorChan {
+			if err == nil {
+				continue
+			}
 			if strings.Contains(err.Error(), "No such container") {
 				// this happens all the time when e.g. restarting containers so we won't worry about it
 				gui.Log.Warn(err)

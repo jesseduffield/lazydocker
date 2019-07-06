@@ -50,6 +50,10 @@ type UserConfig struct {
 	// those are found in the commands package
 	CustomCommands CustomCommands `yaml:"customCommands,omitempty"`
 
+	// BulkCommands are commands that apply to all items in a panel e.g.
+	// killing all containers, stopping all services, or pruning all images
+	BulkCommands CustomCommands `yaml:"bulkCommands,omitempty"`
+
 	// OS determines what defaults are set for opening files and links
 	OS OSConfig `yaml:"oS,omitempty"`
 
@@ -259,10 +263,10 @@ type CustomCommands struct {
 	// Services contains the custom commands for services
 	Services []CustomCommand `yaml:"services,omitempty"`
 
-	// Services contains the custom commands for services
+	// Images contains the custom commands for images
 	Images []CustomCommand `yaml:"images,omitempty"`
 
-	// Services contains the custom commands for services
+	// Volumes contains the custom commands for volumes
 	Volumes []CustomCommand `yaml:"volumes,omitempty"`
 }
 
@@ -288,6 +292,9 @@ type CustomCommand struct {
 	// field has no effect on customcommands under the 'communications' part of
 	// the customCommand config.
 	ServiceNames []string `yaml:"serviceNames"`
+
+	// InternalFunction is the name of a function inside lazydocker that we want to run, as opposed to a command-line command. This is only used internally and can't be configured by the user
+	InternalFunction func() error `yaml:"internalFunction"`
 }
 
 // GetDefaultConfig returns the application default configuration NOTE (to
@@ -343,6 +350,52 @@ func GetDefaultConfig() UserConfig {
 			Services: []CustomCommand{},
 			Images:   []CustomCommand{},
 			Volumes:  []CustomCommand{},
+		},
+		BulkCommands: CustomCommands{
+			Services: []CustomCommand{
+				{
+					Name:    "up",
+					Command: "{{ .DockerCompose }} up -d",
+				},
+				{
+					Name:    "up (attached)",
+					Command: "{{ .DockerCompose }} up",
+					Attach:  true,
+				},
+				{
+					Name:    "stop",
+					Command: "{{ .DockerCompose }} stop",
+				},
+				{
+					Name:    "pull",
+					Command: "{{ .DockerCompose }} pull",
+					Attach:  true,
+				},
+				{
+					Name:    "build",
+					Command: "{{ .DockerCompose }} build --parallel --force-rm",
+					Attach:  true,
+				},
+				{
+					Name:    "down",
+					Command: "{{ .DockerCompose }} down",
+				},
+				{
+					Name:    "down with volumes",
+					Command: "{{ .DockerCompose }} down --volumes",
+				},
+				{
+					Name:    "down with images",
+					Command: "{{ .DockerCompose }} down --rmi all",
+				},
+				{
+					Name:    "down with volumes and images",
+					Command: "{{ .DockerCompose }} down --volumes --rmi all",
+				},
+			},
+			Containers: []CustomCommand{},
+			Images:     []CustomCommand{},
+			Volumes:    []CustomCommand{},
 		},
 		OS: GetPlatformDefaultConfig(),
 		Update: UpdateConfig{

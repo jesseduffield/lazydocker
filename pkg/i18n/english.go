@@ -28,6 +28,7 @@ type TranslationSet struct {
 	Donate                     string
 	Cancel                     string
 	CustomCommandTitle         string
+	BulkCommandTitle           string
 	Remove                     string
 	HideStopped                string
 	ForceRemove                string
@@ -41,6 +42,7 @@ type TranslationSet struct {
 	StoppingStatus             string
 	RemovingStatus             string
 	RunningCustomCommandStatus string
+	RunningBulkCommandStatus   string
 	RemoveService              string
 	Stop                       string
 	Restart                    string
@@ -67,13 +69,18 @@ type TranslationSet struct {
 	PruneContainers            string
 	PruneVolumes               string
 	ConfirmPruneContainers     string
+	ConfirmStopContainers      string
+	ConfirmRemoveContainers    string
 	ConfirmPruneImages         string
 	ConfirmPruneVolumes        string
 	PruningStatus              string
 	StopService                string
 	PressEnterToReturn         string
+	StopAllContainers          string
+	RemoveAllContainers        string
 	ViewRestartOptions         string
 	RunCustomCommand           string
+	ViewBulkCommands           string
 
 	LogsTitle                string
 	ConfigTitle              string
@@ -93,6 +100,7 @@ func englishSet() TranslationSet {
 		RestartingStatus:           "restarting",
 		StoppingStatus:             "stopping",
 		RunningCustomCommandStatus: "running custom command",
+		RunningBulkCommandStatus:   "running bulk command",
 
 		RunningSubprocess:                          "running subprocess",
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
@@ -106,37 +114,40 @@ func englishSet() TranslationSet {
 		Donate:  "Donate",
 		Confirm: "Confirm",
 
-		Return:             "return",
-		FocusMain:          "focus main panel",
-		Navigate:           "navigate",
-		Execute:            "execute",
-		Close:              "close",
-		Menu:               "menu",
-		Scroll:             "scroll",
-		OpenConfig:         "open lazydocker config",
-		EditConfig:         "edit lazydocker config",
-		Cancel:             "cancel",
-		Remove:             "remove",
-		HideStopped:        "Hide/Show stopped containers",
-		ForceRemove:        "force remove",
-		RemoveWithVolumes:  "remove with volumes",
-		RemoveService:      "remove containers",
-		Stop:               "stop",
-		Restart:            "restart",
-		Rebuild:            "rebuild",
-		Recreate:           "recreate",
-		PreviousContext:    "previous tab",
-		NextContext:        "next tab",
-		Attach:             "attach",
-		ViewLogs:           "view logs",
-		RemoveImage:        "remove image",
-		RemoveVolume:       "remove volume",
-		RemoveWithoutPrune: "remove without deleting untagged parents",
-		PruneContainers:    "prune exited containers",
-		PruneVolumes:       "prune unused volumes",
-		PruneImages:        "prune unused images",
-		ViewRestartOptions: "view restart options",
-		RunCustomCommand:   "run predefined custom command",
+		Return:              "return",
+		FocusMain:           "focus main panel",
+		Navigate:            "navigate",
+		Execute:             "execute",
+		Close:               "close",
+		Menu:                "menu",
+		Scroll:              "scroll",
+		OpenConfig:          "open lazydocker config",
+		EditConfig:          "edit lazydocker config",
+		Cancel:              "cancel",
+		Remove:              "remove",
+		HideStopped:         "Hide/Show stopped containers",
+		ForceRemove:         "force remove",
+		RemoveWithVolumes:   "remove with volumes",
+		RemoveService:       "remove containers",
+		Stop:                "stop",
+		Restart:             "restart",
+		Rebuild:             "rebuild",
+		Recreate:            "recreate",
+		PreviousContext:     "previous tab",
+		NextContext:         "next tab",
+		Attach:              "attach",
+		ViewLogs:            "view logs",
+		RemoveImage:         "remove image",
+		RemoveVolume:        "remove volume",
+		RemoveWithoutPrune:  "remove without deleting untagged parents",
+		PruneContainers:     "prune exited containers",
+		PruneVolumes:        "prune unused volumes",
+		PruneImages:         "prune unused images",
+		StopAllContainers:   "stop all containers",
+		RemoveAllContainers: "remove all containers (forced)",
+		ViewRestartOptions:  "view restart options",
+		RunCustomCommand:    "run predefined custom command",
+		ViewBulkCommands:    "view bulk commands",
 
 		AnonymousReportingTitle:  "Help make lazydocker better",
 		AnonymousReportingPrompt: "Would you like to enable anonymous reporting data to help improve lazydocker?",
@@ -150,6 +161,7 @@ func englishSet() TranslationSet {
 		ImagesTitle:               "Images",
 		VolumesTitle:              "Volumes",
 		CustomCommandTitle:        "Custom Command:",
+		BulkCommandTitle:          "Bulk Command:",
 		ErrorTitle:                "Error",
 		LogsTitle:                 "Logs",
 		ConfigTitle:               "Config",
@@ -169,6 +181,8 @@ func englishSet() TranslationSet {
 		NotEnoughSpace:             "Not enough space to render panels",
 		ConfirmPruneImages:         "Are you sure you want to prune all unused images?",
 		ConfirmPruneContainers:     "Are you sure you want to prune all stopped containers?",
+		ConfirmStopContainers:      "Are you sure you want to stop all containers?",
+		ConfirmRemoveContainers:    "Are you sure you want to remove all containers?",
 		ConfirmPruneVolumes:        "Are you sure you want to prune all unused volumes?",
 		StopService:                "Are you sure you want to stop this service's containers?",
 		StopContainer:              "Are you sure you want to stop this container?",
