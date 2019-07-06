@@ -17,6 +17,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/app"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/gui"
+	"github.com/jesseduffield/lazydocker/pkg/i18n"
 )
 
 type bindingSection struct {
@@ -25,13 +26,12 @@ type bindingSection struct {
 }
 
 func main() {
-	langs := []string{"pl", "nl", "en"}
 	mConfig, err := config.NewAppConfig("lazydocker", "", "", "", "", true, nil, "")
 	if err != nil {
 		panic(err)
 	}
 
-	for _, lang := range langs {
+	for lang := range i18n.GetTranslationSets() {
 		os.Setenv("LC_ALL", lang)
 		mApp, _ := app.NewApp(mConfig)
 		file, err := os.Create(getProjectRoot() + "/docs/keybindings/Keybindings_" + lang + ".md")
