@@ -100,28 +100,7 @@ go get github.com/jesseduffield/lazydocker
 
     On Windows, replace `$(pwd)` by `%cd%`.
 
-    <details><summary>You can also use docker-compose</summary><p>
-
-    ```yml
-    version: '3'
-    services:
-      lazydocker:
-        build:
-          context: https://github.com/jesseduffield/lazydocker.git
-          args:
-            BASE_IMAGE_BUILDER: golang
-            GOARCH: amd64
-            GOARM:
-        image: jesseduffield/lazydocker
-        container_name: lazydocker
-        stdin_open: true
-        tty: true
-        volumes:
-          - /var/run/docker.sock:/var/run/docker.sock
-          - ./config:/.config/jesseduffield/lazydocker
-    ```
-
-    </p></details>
+    You can also use this [docker-compose.yml](https://github.com/jesseduffield/lazydocker/blob/master/docker-compose.yml)
 
 For development, you can build the image using:
 
