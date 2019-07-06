@@ -1,10 +1,10 @@
 # Lazydocker menu
 
-## Status
+## Project
 
 <pre>
-  <kbd>e</kbd>: verander lazydocker configuratie
-  <kbd>o</kbd>: open lazydocker configuratie
+  <kbd>e</kbd>: verander de lazydocker configuratie
+  <kbd>o</kbd>: open de lazydocker configuratie
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab
   <kbd>m</kbd>: bekijk logs
@@ -19,20 +19,20 @@
   <kbd>d</kbd>: verwijder
   <kbd>s</kbd>: stop
   <kbd>r</kbd>: herstart
-  <kbd>a</kbd>: vastmaken
-  <kbd>D</kbd>: verwijder verlaten containers
+  <kbd>a</kbd>: verbinden
+  <kbd>D</kbd>: vernietig bestaande containers
   <kbd>m</kbd>: bekijk logs
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
-## Services
+## Diensten
 
 <pre>
   <kbd>d</kbd>: verwijder containers
   <kbd>s</kbd>: stop
   <kbd>r</kbd>: herstart
-  <kbd>a</kbd>: vermaken
+  <kbd>a</kbd>: verbinden
   <kbd>m</kbd>: bekijk logs
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab
@@ -47,7 +47,7 @@
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab
   <kbd>d</kbd>: verwijder image
-  <kbd>D</kbd>: verwijder nietgebruikte images
+  <kbd>D</kbd>: vernietig ongebruikte images
   <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
@@ -57,11 +57,11 @@
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab
   <kbd>d</kbd>: verwijder volume
-  <kbd>D</kbd>: verwijder nietgebruikte images
+  <kbd>D</kbd>: vernietig ongebruikte volumes
   <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
-## Main
+## Hooft
 
 <pre>
   <kbd>esc</kbd>: terug

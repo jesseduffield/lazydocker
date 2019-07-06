@@ -1,6 +1,6 @@
 # Lazydocker menu
 
-## Status
+## Project
 
 <pre>
   <kbd>e</kbd>: edit lazydocker config
