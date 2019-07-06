@@ -277,7 +277,17 @@ func (gui *Gui) refreshContainersAndServices() error {
 	gui.g.Update(func(g *gocui.Gui) error {
 		containersView.Clear()
 		isFocused := gui.g.CurrentView().Name() == "containers"
-		list, err := utils.RenderList(gui.DockerCommand.DisplayContainers, utils.IsFocused(isFocused))
+		toRender := gui.DockerCommand.DisplayContainers
+		if !gui.DockerCommand.ShowExited {
+			toRender = []*commands.Container{}
+			for _, container := range gui.DockerCommand.DisplayContainers {
+				if container.Container.State != "exited" {
+					toRender = append(toRender, container)
+				}
+			}
+		}
+
+		list, err := utils.RenderList(toRender, utils.IsFocused(isFocused))
 		if err != nil {
 			return err
 		}
@@ -369,6 +379,11 @@ type removeContainerOption struct {
 // GetDisplayStrings is a function.
 func (r *removeContainerOption) GetDisplayStrings(isFocused bool) []string {
 	return []string{r.description, color.New(color.FgRed).Sprint(r.command)}
+}
+
+func (gui *Gui) handleHideStoppedContainers(g *gocui.Gui, v *gocui.View) error {
+	gui.DockerCommand.ShowExited = !gui.DockerCommand.ShowExited
+	return nil
 }
 
 func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {

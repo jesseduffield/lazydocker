@@ -29,6 +29,7 @@ type DockerCommand struct {
 	Config                 *config.AppConfig
 	Client                 *client.Client
 	InDockerComposeProject bool
+	ShowExited             bool
 	ErrorChan              chan error
 	ContainerMutex         sync.Mutex
 	ServiceMutex           sync.Mutex

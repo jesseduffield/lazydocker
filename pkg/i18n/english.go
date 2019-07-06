@@ -31,6 +31,7 @@ type TranslationSet struct {
 	Cancel                     string
 	CustomCommandTitle         string
 	Remove                     string
+	HideStopped                string
 	ForceRemove                string
 	RemoveWithVolumes          string
 	MustForceToRemoveContainer string
