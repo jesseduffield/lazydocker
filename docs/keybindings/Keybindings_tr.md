@@ -1,9 +1,9 @@
-# Lazydocker menu
+# Lazydocker menü
 
-## Status
+## Proje
 
 <pre>
-  <kbd>e</kbd>: lazydocker ayarlarını düzenle
+  <kbd>e</kbd>: lazzydocker ayarlarını düzenle
   <kbd>o</kbd>: lazydocker ayarlarını aç
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
@@ -11,7 +11,7 @@
   <kbd>enter</kbd>: ana panele odaklan
 </pre>
 
-## Containers
+## Konteynerler
 
 <pre>
   <kbd>[</kbd>: önceki sekme
@@ -19,50 +19,50 @@
   <kbd>d</kbd>: kaldır
   <kbd>s</kbd>: durdur
   <kbd>r</kbd>: yeniden başlat
-  <kbd>a</kbd>: bağlan
+  <kbd>a</kbd>: bağlan/iliştir
   <kbd>D</kbd>: çalışmayan konteynerleri temizle
   <kbd>m</kbd>: kayıt defterini görüntüle
-  <kbd>c</kbd>: önceden tanımlanmış özel bir komut çalıştır
+  <kbd>c</kbd>: önceden tanımlanmış özel komutu çalıştır
   <kbd>enter</kbd>: ana panele odaklan
 </pre>
 
-## Services
+## Servisler
 
 <pre>
   <kbd>d</kbd>: konteynerleri kaldır
   <kbd>s</kbd>: durdur
   <kbd>r</kbd>: yeniden başlat
-  <kbd>a</kbd>: bağlan
+  <kbd>a</kbd>: bağlan/iliştir
   <kbd>m</kbd>: kayıt defterini görüntüle
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
   <kbd>R</kbd>: yeniden başlatma seçeneklerini görüntüle
-  <kbd>c</kbd>: önceden tanımlanmış özel bir komut çalıştır
+  <kbd>c</kbd>: önceden tanımlanmış özel komutu çalıştır
   <kbd>enter</kbd>: ana panele odaklan
 </pre>
 
-## Images
+## Imajlar
 
 <pre>
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
   <kbd>d</kbd>: imajı kaldır
-  <kbd>D</kbd>: kullanılmayan imajları kaldır
+  <kbd>D</kbd>: kullanılmayan imajları temizle
   <kbd>enter</kbd>: ana panele odaklan
 </pre>
 
-## Volumes
+## Alanlar
 
 <pre>
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
-  <kbd>d</kbd>: alanı sil
-  <kbd>D</kbd>: kullanılmayan alanları sil
+  <kbd>d</kbd>: alanı kaldır
+  <kbd>D</kbd>: kullanılmayan alanları temizle
   <kbd>enter</kbd>: ana panele odaklan
 </pre>
 
-## Main
+## Ana
 
 <pre>
-  <kbd>esc</kbd>: geri
+  <kbd>esc</kbd>: dönüş
 </pre>

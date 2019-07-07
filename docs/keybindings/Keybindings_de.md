@@ -1,17 +1,17 @@
-# Lazydocker menu
+# Lazydocker Menü
 
-## Status
+## Projekt
 
 <pre>
   <kbd>e</kbd>: bearbeite lazydocker Konfiguration
   <kbd>o</kbd>: öffne lazydocker Konfiguration
   <kbd>[</kbd>: vorheriges Tab
-  <kbd>]</kbd>: nächstes tab
-  <kbd>m</kbd>: zeige Protokoll
+  <kbd>]</kbd>: nächstes Tab
+  <kbd>m</kbd>: zeige Protokolle
   <kbd>enter</kbd>: fokusieren aufs Hauptpanel
 </pre>
 
-## Containers
+## Container
 
 <pre>
   <kbd>[</kbd>: vorheriges Tab
@@ -26,7 +26,7 @@
   <kbd>enter</kbd>: fokusieren aufs Hauptpanel
 </pre>
 
-## Services
+## Dienste
 
 <pre>
   <kbd>d</kbd>: entferne Container
@@ -51,7 +51,7 @@
   <kbd>enter</kbd>: fokusieren aufs Hauptpanel
 </pre>
 
-## Volumes
+## Volumen
 
 <pre>
   <kbd>[</kbd>: vorheriges Tab
@@ -61,7 +61,7 @@
   <kbd>enter</kbd>: fokusieren aufs Hauptpanel
 </pre>
 
-## Main
+## Haupt
 
 <pre>
   <kbd>esc</kbd>: zurück

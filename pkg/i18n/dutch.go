@@ -48,7 +48,7 @@ func dutchSet() TranslationSet {
 		PruneContainers:    "vernietig bestaande containers",
 		PruneVolumes:       "vernietig ongebruikte volumes",
 		PruneImages:        "vernietig ongebruikte images",
-		ViewRestartOptions: "beijk herstart opties",
+		ViewRestartOptions: "bekijk herstart opties",
 		RunCustomCommand:   "draai een vooraf bedacht aangepaste opdracht",
 
 		AnonymousReportingTitle:  "Help mee met lazydocker beter maken",
