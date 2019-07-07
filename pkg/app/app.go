@@ -1,15 +1,8 @@
 package app
 
 import (
-	"fmt"
 	"io"
-	"os"
-	"os/signal"
 	"strings"
-	"syscall"
-	"time"
-
-	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
@@ -58,31 +51,8 @@ func NewApp(config *config.AppConfig) (*App, error) {
 }
 
 func (app *App) Run() error {
-	err := waitForTerminalSpace()
-	if err != nil {
-		return err
-	}
-	err = app.Gui.RunWithSubprocesses()
+	err := app.Gui.RunWithSubprocesses()
 	return err
-}
-
-func waitForTerminalSpace() error {
-	// before we do anything, we need to check that we have some window space available
-	width, height, err := terminal.GetSize(int(os.Stdin.Fd()))
-	if err != nil {
-		return err
-	}
-	if width > 0 && height > 0 {
-		return nil
-	}
-	winch := make(chan os.Signal, 1)
-	signal.Notify(winch, syscall.SIGWINCH)
-	select {
-	case <-winch:
-		return nil
-	case <-time.After(time.Second):
-		return fmt.Errorf("there is no available terminal space")
-	}
 }
 
 // Close closes any resources
