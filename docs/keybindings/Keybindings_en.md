@@ -17,7 +17,7 @@
   <kbd>[</kbd>: previous tab
   <kbd>]</kbd>: next tab
   <kbd>d</kbd>: remove
-  <kbd>h</kbd>: Hide/Show stopped containers
+  <kbd>e</kbd>: Hide/Show stopped containers
   <kbd>s</kbd>: stop
   <kbd>r</kbd>: restart
   <kbd>a</kbd>: attach

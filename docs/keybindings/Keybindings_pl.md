@@ -17,7 +17,7 @@
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka
   <kbd>d</kbd>: usuń
-  <kbd>h</kbd>: Hide/Show stopped containers
+  <kbd>e</kbd>: Hide/Show stopped containers
   <kbd>s</kbd>: zatrzymaj
   <kbd>r</kbd>: restartuj
   <kbd>a</kbd>: przyczep

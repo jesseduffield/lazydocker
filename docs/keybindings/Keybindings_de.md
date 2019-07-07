@@ -17,7 +17,7 @@
   <kbd>[</kbd>: vorheriges Tab
   <kbd>]</kbd>: nächstes Tab
   <kbd>d</kbd>: entfernen
-  <kbd>h</kbd>: Hide/Show stopped containers
+  <kbd>e</kbd>: Hide/Show stopped containers
   <kbd>s</kbd>: anhalten
   <kbd>r</kbd>: neustarten
   <kbd>a</kbd>: anbinden

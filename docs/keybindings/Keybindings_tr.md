@@ -17,7 +17,7 @@
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
   <kbd>d</kbd>: kaldır
-  <kbd>h</kbd>: Hide/Show stopped containers
+  <kbd>e</kbd>: Hide/Show stopped containers
   <kbd>s</kbd>: durdur
   <kbd>r</kbd>: yeniden başlat
   <kbd>a</kbd>: bağlan/iliştir

@@ -17,7 +17,7 @@
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab
   <kbd>d</kbd>: verwijder
-  <kbd>h</kbd>: Verberg gestopte containers
+  <kbd>e</kbd>: Verberg gestopte containers
   <kbd>s</kbd>: stop
   <kbd>r</kbd>: herstart
   <kbd>a</kbd>: verbinden
