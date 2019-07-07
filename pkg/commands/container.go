@@ -2,9 +2,14 @@ package commands
 
 import (
 	"context"
+	"golang.org/x/crypto/ssh/terminal"
+	"io"
+	"os"
 	"os/exec"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -341,18 +346,80 @@ func (c *Container) Restart() error {
 }
 
 // Attach attaches the container
-func (c *Container) Attach() (*exec.Cmd, error) {
+func (c *Container) Attach() error {
 	// verify that we can in fact attach to this container
 	if !c.Details.Config.OpenStdin {
-		return nil, errors.New(c.Tr.UnattachableContainerError)
+		return errors.New(c.Tr.UnattachableContainerError)
 	}
 
 	if c.Container.State == "exited" {
-		return nil, errors.New(c.Tr.CannotAttachStoppedContainerError)
+		return errors.New(c.Tr.CannotAttachStoppedContainerError)
 	}
 
-	cmd := c.OSCommand.PrepareSubProcess("docker", "attach", "--sig-proxy=false", c.ID)
-	return cmd, nil
+	options := types.ContainerAttachOptions{
+		Stream: true,
+		Stdin:  c.Details.Config.OpenStdin,
+		Stdout: true,
+		Stderr: true,
+	}
+
+	hijack, err := c.Client.ContainerAttach(context.Background(), c.ID, options)
+	if err != nil {
+		return err
+	}
+
+	if c.Details.Config.OpenStdin {
+		fd := int(os.Stdin.Fd())
+
+		if terminal.IsTerminal(fd) {
+			oldState, err := terminal.MakeRaw(fd)
+			if err != nil {
+				return err
+			}
+			defer terminal.Restore(fd, oldState)
+
+			go c.resizeIfChanged(fd)
+			go io.Copy(hijack.Conn, os.Stdin)
+		}
+	}
+
+	_, err = io.Copy(os.Stdout, hijack.Conn)
+	if err != nil {
+		return err
+	}
+
+	hijack.Close()
+
+	return nil
+}
+
+func (c *Container) resizeIfChanged(fd int) {
+	channel := make(chan os.Signal)
+	signal.Notify(channel, syscall.SIGWINCH)
+
+	for {
+		<-channel
+		c.Resize(fd)
+	}
+}
+
+func (c *Container) Resize(fd int) error {
+	width, height, err := terminal.GetSize(fd)
+	if err != nil {
+		return err
+	}
+
+	options := types.ResizeOptions{
+		Height: uint(height),
+		Width:  uint(width),
+	}
+
+	err = c.Client.ContainerResize(context.Background(), c.ID, options)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Top returns process information

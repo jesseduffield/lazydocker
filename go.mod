@@ -33,6 +33,7 @@ require (
 	github.com/spkg/bom v0.0.0-20160624110644-59b7046e48ad
 	github.com/stretchr/testify v1.2.2
 	github.com/tcnksm/go-gitconfig v0.1.2
+	golang.org/x/crypto v0.0.0-20180904163835-0709b304e793
 	golang.org/x/xerrors v0.0.0-20190513163551-3ee3066db522
 	gopkg.in/yaml.v2 v2.2.2 // indirect
 )

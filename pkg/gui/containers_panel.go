@@ -467,12 +467,13 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	c, err := container.Attach()
+	err = container.Attach()
 	if err != nil {
 		return gui.createErrorPanel(gui.g, err.Error())
 	}
 
-	gui.SubProcess = c
+	gui.RunWithSubprocesses()
+
 	return gui.Errors.ErrSubProcess
 }
 

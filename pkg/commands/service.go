@@ -56,7 +56,7 @@ func (s *Service) Restart() error {
 }
 
 // Attach attaches to the service
-func (s *Service) Attach() (*exec.Cmd, error) {
+func (s *Service) Attach() error {
 	return s.Container.Attach()
 }
 

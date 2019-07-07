@@ -256,13 +256,11 @@ func (gui *Gui) handleServiceAttach(g *gocui.Gui, v *gocui.View) error {
 		return gui.createErrorPanel(gui.g, gui.Tr.NoContainers)
 	}
 
-	c, err := service.Attach()
-
+	err = service.Attach()
 	if err != nil {
 		return gui.createErrorPanel(gui.g, err.Error())
 	}
 
-	gui.SubProcess = c
 	return gui.Errors.ErrSubProcess
 }
 
