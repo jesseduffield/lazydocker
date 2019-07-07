@@ -53,7 +53,7 @@ type UserConfig struct {
 	// OS determines what defaults are set for opening files and links
 	OS OSConfig `yaml:"oS,omitempty"`
 
-	// Update is currently not being used, but like lazygit, it may be used down
+	// Update is currently not being used, but like lazydocker, it may be used down
 	// the line to help you update automatically.
 	Update UpdateConfig `yaml:"update,omitempty"`
 
@@ -358,13 +358,13 @@ func GetDefaultConfig() UserConfig {
 	}
 }
 
-// AppConfig contains the base configuration fields required for lazygit.
+// AppConfig contains the base configuration fields required for lazydocker.
 type AppConfig struct {
 	Debug       bool   `long:"debug" env:"DEBUG" default:"false"`
 	Version     string `long:"version" env:"VERSION" default:"unversioned"`
 	Commit      string `long:"commit" env:"COMMIT"`
 	BuildDate   string `long:"build-date" env:"BUILD_DATE"`
-	Name        string `long:"name" env:"NAME" default:"lazygit"`
+	Name        string `long:"name" env:"NAME" default:"lazydocker"`
 	BuildSource string `long:"build-source" env:"BUILD_SOURCE" default:""`
 	UserConfig  *UserConfig
 	ConfigDir   string

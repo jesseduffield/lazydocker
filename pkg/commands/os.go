@@ -17,7 +17,6 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/mgutz/str"
 	"github.com/sirupsen/logrus"
-	gitconfig "github.com/tcnksm/go-gitconfig"
 )
 
 // Platform stores the os state
@@ -33,23 +32,21 @@ type Platform struct {
 
 // OSCommand holds all the os commands
 type OSCommand struct {
-	Log                *logrus.Entry
-	Platform           *Platform
-	Config             *config.AppConfig
-	command            func(string, ...string) *exec.Cmd
-	getGlobalGitConfig func(string) (string, error)
-	getenv             func(string) string
+	Log      *logrus.Entry
+	Platform *Platform
+	Config   *config.AppConfig
+	command  func(string, ...string) *exec.Cmd
+	getenv   func(string) string
 }
 
 // NewOSCommand os command runner
 func NewOSCommand(log *logrus.Entry, config *config.AppConfig) *OSCommand {
 	return &OSCommand{
-		Log:                log,
-		Platform:           getPlatform(),
-		Config:             config,
-		command:            exec.Command,
-		getGlobalGitConfig: gitconfig.Global,
-		getenv:             os.Getenv,
+		Log:      log,
+		Platform: getPlatform(),
+		Config:   config,
+		command:  exec.Command,
+		getenv:   os.Getenv,
 	}
 }
 
@@ -79,7 +76,7 @@ func (c *OSCommand) RunExecutable(cmd *exec.Cmd) error {
 	return err
 }
 
-// ExecutableFromString takes a string like `git status` and returns an executable command for it
+// ExecutableFromString takes a string like `docker ps -a` and returns an executable command for it
 func (c *OSCommand) ExecutableFromString(commandStr string) *exec.Cmd {
 	splitCmd := str.ToArgv(commandStr)
 	// c.Log.Info(splitCmd)
@@ -154,11 +151,7 @@ func (c *OSCommand) OpenLink(link string) error {
 // EditFile opens a file in a subprocess using whatever editor is available,
 // falling back to core.editor, VISUAL, EDITOR, then vi
 func (c *OSCommand) EditFile(filename string) (*exec.Cmd, error) {
-	editor, _ := c.getGlobalGitConfig("core.editor")
-
-	if editor == "" {
-		editor = c.getenv("VISUAL")
-	}
+	editor := c.getenv("VISUAL")
 	if editor == "" {
 		editor = c.getenv("EDITOR")
 	}
@@ -168,7 +161,7 @@ func (c *OSCommand) EditFile(filename string) (*exec.Cmd, error) {
 		}
 	}
 	if editor == "" {
-		return nil, errors.New("No editor defined in $VISUAL, $EDITOR, or git config")
+		return nil, errors.New("No editor defined in $VISUAL or $EDITOR")
 	}
 
 	return c.PrepareSubProcess(editor, filename), nil
@@ -265,7 +258,7 @@ func (c *OSCommand) RunPreparedCommand(cmd *exec.Cmd) error {
 
 // GetLazydockerPath returns the path of the currently executed file
 func (c *OSCommand) GetLazydockerPath() string {
-	ex, err := os.Executable() // get the executable path for git to use
+	ex, err := os.Executable() // get the executable path for docker to use
 	if err != nil {
 		ex = os.Args[0] // fallback to the first call argument if needed
 	}

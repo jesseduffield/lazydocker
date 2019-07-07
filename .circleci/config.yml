@@ -60,6 +60,10 @@ jobs:
           name: Run gorelease
           command: |
             curl -sL https://git.io/goreleaser | bash
+      - run:
+          name: Update docs
+          command: |
+            ./.circleci/update_docs.sh
 
 workflows:
   version: 2
