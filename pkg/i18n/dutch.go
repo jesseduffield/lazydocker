@@ -31,6 +31,7 @@ func dutchSet() TranslationSet {
 		EditConfig:         "verander de lazydocker configuratie",
 		Cancel:             "annuleren",
 		Remove:             "verwijder",
+		HideStopped:        "Verberg gestopte containers",
 		ForceRemove:        "geforceerd verwijderen",
 		RemoveWithVolumes:  "verwijder met volumes",
 		RemoveService:      "verwijder containers",

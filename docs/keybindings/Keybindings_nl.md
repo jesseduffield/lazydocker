@@ -17,6 +17,7 @@
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab
   <kbd>d</kbd>: verwijder
+  <kbd>e</kbd>: Verberg gestopte containers
   <kbd>s</kbd>: stop
   <kbd>r</kbd>: herstart
   <kbd>a</kbd>: verbinden
@@ -36,7 +37,7 @@
   <kbd>m</kbd>: bekijk logs
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab
-  <kbd>R</kbd>: beijk herstart opties
+  <kbd>R</kbd>: bekijk herstart opties
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>enter</kbd>: focus hooft panneel
 </pre>

@@ -29,6 +29,7 @@ type TranslationSet struct {
 	Cancel                     string
 	CustomCommandTitle         string
 	Remove                     string
+	HideStopped                string
 	ForceRemove                string
 	RemoveWithVolumes          string
 	MustForceToRemoveContainer string
@@ -113,6 +114,7 @@ func englishSet() TranslationSet {
 		EditConfig:         "edit lazydocker config",
 		Cancel:             "cancel",
 		Remove:             "remove",
+		HideStopped:        "Hide/Show stopped containers",
 		ForceRemove:        "force remove",
 		RemoveWithVolumes:  "remove with volumes",
 		RemoveService:      "remove containers",

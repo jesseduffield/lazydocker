@@ -213,6 +213,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "containers",
+			Key:         'e',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleHideStoppedContainers,
+			Description: gui.Tr.HideStopped,
+		},
+		{
+			ViewName:    "containers",
 			Key:         's',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainerStop,
