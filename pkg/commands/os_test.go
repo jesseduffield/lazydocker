@@ -61,11 +61,10 @@ func TestOSCommandRunCommand(t *testing.T) {
 // TestOSCommandEditFile is a function.
 func TestOSCommandEditFile(t *testing.T) {
 	type scenario struct {
-		filename           string
-		command            func(string, ...string) *exec.Cmd
-		getenv             func(string) string
-		getGlobalGitConfig func(string) (string, error)
-		test               func(*exec.Cmd, error)
+		filename string
+		command  func(string, ...string) *exec.Cmd
+		getenv   func(string) string
+		test     func(*exec.Cmd, error)
 	}
 
 	scenarios := []scenario{
@@ -77,32 +76,8 @@ func TestOSCommandEditFile(t *testing.T) {
 			func(env string) string {
 				return ""
 			},
-			func(cf string) (string, error) {
-				return "", nil
-			},
 			func(cmd *exec.Cmd, err error) {
-				assert.EqualError(t, err, "No editor defined in $VISUAL, $EDITOR, or git config")
-			},
-		},
-		{
-			"test",
-			func(name string, arg ...string) *exec.Cmd {
-				if name == "which" {
-					return exec.Command("exit", "1")
-				}
-
-				assert.EqualValues(t, "nano", name)
-
-				return nil
-			},
-			func(env string) string {
-				return ""
-			},
-			func(cf string) (string, error) {
-				return "nano", nil
-			},
-			func(cmd *exec.Cmd, err error) {
-				assert.NoError(t, err)
+				assert.EqualError(t, err, "No editor defined in $VISUAL or $EDITOR")
 			},
 		},
 		{
@@ -122,9 +97,6 @@ func TestOSCommandEditFile(t *testing.T) {
 				}
 
 				return ""
-			},
-			func(cf string) (string, error) {
-				return "", nil
 			},
 			func(cmd *exec.Cmd, err error) {
 				assert.NoError(t, err)
@@ -148,9 +120,6 @@ func TestOSCommandEditFile(t *testing.T) {
 
 				return ""
 			},
-			func(cf string) (string, error) {
-				return "", nil
-			},
 			func(cmd *exec.Cmd, err error) {
 				assert.NoError(t, err)
 			},
@@ -169,9 +138,6 @@ func TestOSCommandEditFile(t *testing.T) {
 			func(env string) string {
 				return ""
 			},
-			func(cf string) (string, error) {
-				return "", nil
-			},
 			func(cmd *exec.Cmd, err error) {
 				assert.NoError(t, err)
 			},
@@ -181,7 +147,6 @@ func TestOSCommandEditFile(t *testing.T) {
 	for _, s := range scenarios {
 		OSCmd := NewDummyOSCommand()
 		OSCmd.command = s.command
-		OSCmd.getGlobalGitConfig = s.getGlobalGitConfig
 		OSCmd.getenv = s.getenv
 
 		s.test(OSCmd.EditFile(s.filename))

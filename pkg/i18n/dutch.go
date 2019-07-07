@@ -52,7 +52,7 @@ func dutchSet() TranslationSet {
 		RunCustomCommand:   "draai een vooraf bedacht aangepaste opdracht",
 
 		AnonymousReportingTitle:  "Help mee met lazydocker beter maken",
-		AnonymousReportingPrompt: "Zou je anonieme data rapportage willen aanzetten om lazygit beter te kunnen maken? (enter/esc)",
+		AnonymousReportingPrompt: "Zou je anonieme data rapportage willen aanzetten om lazydocker beter te kunnen maken? (enter/esc)",
 
 		GlobalTitle:               "Globaal",
 		MainTitle:                 "Hooft",

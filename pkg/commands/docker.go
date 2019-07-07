@@ -21,7 +21,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// DockerCommand is our main git interface
+// DockerCommand is our main docker interface
 type DockerCommand struct {
 	Log                    *logrus.Entry
 	OSCommand              *OSCommand
@@ -59,7 +59,7 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	return defaultObj
 }
 
-// NewDockerCommand it runs git commands
+// NewDockerCommand it runs docker commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
 	cli, err := client.NewEnvClient()
 	if err != nil {
