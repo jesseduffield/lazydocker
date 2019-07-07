@@ -36,6 +36,17 @@ jobs:
           paths:
             - ~/.cache/go-build
 
+  update-docs:
+    docker:
+      - image: circleci/golang:1.12
+    working_directory: /go/src/github.com/jesseduffield/lazydocker
+    steps:
+        - checkout
+        - run:
+            name: Update docs
+            command: |
+              ./.circleci/update_docs.sh
+
   release:
     docker:
       - image: circleci/golang:1.12
@@ -66,6 +77,11 @@ workflows:
   build:
     jobs:
       - build
+      - update-docs:
+          filters:
+            branches:
+              only:
+                - master
   release:
     jobs:
       - release:
