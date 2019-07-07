@@ -74,6 +74,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		Config:                 config,
 		Client:                 cli,
 		ErrorChan:              errorChan,
+		ShowExited:             true,
 		InDockerComposeProject: true,
 	}
 
@@ -214,10 +215,8 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 
 	c.assignContainersToServices(containers, services)
 
-	var displayContainers []*Container
-	if c.Config.UserConfig.Gui.ShowAllContainers {
-		displayContainers = containers
-	} else {
+	var displayContainers = containers
+	if !c.Config.UserConfig.Gui.ShowAllContainers {
 		displayContainers = c.obtainStandaloneContainers(containers, services)
 	}
 
@@ -236,7 +235,7 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 
 	c.Containers = containers
 	c.Services = services
-	c.DisplayContainers = displayContainers
+	c.DisplayContainers = c.filterOutExited(displayContainers)
 
 	return nil
 }
@@ -252,6 +251,20 @@ L:
 		}
 		service.Container = nil
 	}
+}
+
+// filterOutExited filters out the exited containers if c.ShowExited is false
+func (c *DockerCommand) filterOutExited(containers []*Container) []*Container {
+	if c.ShowExited {
+		return containers
+	}
+	toReturn := []*Container{}
+	for _, container := range containers {
+		if container.Container.State != "exited" {
+			toReturn = append(toReturn, container)
+		}
+	}
+	return toReturn
 }
 
 // obtainStandaloneContainers returns standalone containers. Standalone containers are containers which are either one-off containers, or whose service is not part of this docker-compose context

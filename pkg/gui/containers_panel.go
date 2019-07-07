@@ -277,17 +277,8 @@ func (gui *Gui) refreshContainersAndServices() error {
 	gui.g.Update(func(g *gocui.Gui) error {
 		containersView.Clear()
 		isFocused := gui.g.CurrentView().Name() == "containers"
-		toRender := gui.DockerCommand.DisplayContainers
-		if !gui.DockerCommand.ShowExited {
-			toRender = []*commands.Container{}
-			for _, container := range gui.DockerCommand.DisplayContainers {
-				if container.Container.State != "exited" {
-					toRender = append(toRender, container)
-				}
-			}
-		}
 
-		list, err := utils.RenderList(toRender, utils.IsFocused(isFocused))
+		list, err := utils.RenderList(gui.DockerCommand.DisplayContainers, utils.IsFocused(isFocused))
 		if err != nil {
 			return err
 		}
