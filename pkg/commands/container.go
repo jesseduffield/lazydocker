@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"github.com/docker/docker/api/types/container"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -356,7 +357,7 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 }
 
 // Top returns process information
-func (c *Container) Top() (types.ContainerProcessList, error) {
+func (c *Container) Top() (container.ContainerTopOKBody, error) {
 	return c.Client.ContainerTop(context.Background(), c.ID, []string{})
 }
 

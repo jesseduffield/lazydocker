@@ -1,14 +1,14 @@
-package client
+package client // import "github.com/docker/docker/client"
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
-
-	"golang.org/x/net/context"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -29,7 +29,8 @@ func (cli *Client) ImageBuild(ctx context.Context, buildContext io.Reader, optio
 		return types.ImageBuildResponse{}, err
 	}
 	headers.Add("X-Registry-Config", base64.URLEncoding.EncodeToString(buf))
-	headers.Set("Content-Type", "application/tar")
+
+	headers.Set("Content-Type", "application/x-tar")
 
 	serverResp, err := cli.postRaw(ctx, "/build", query, buildContext, headers)
 	if err != nil {
@@ -48,6 +49,7 @@ func (cli *Client) imageBuildOptionsToQuery(options types.ImageBuildOptions) (ur
 	query := url.Values{
 		"t":           options.Tags,
 		"securityopt": options.SecurityOpt,
+		"extrahosts":  options.ExtraHosts,
 	}
 	if options.SuppressOutput {
 		query.Set("q", "1")
@@ -94,6 +96,7 @@ func (cli *Client) imageBuildOptionsToQuery(options types.ImageBuildOptions) (ur
 	query.Set("cgroupparent", options.CgroupParent)
 	query.Set("shmsize", strconv.FormatInt(options.ShmSize, 10))
 	query.Set("dockerfile", options.Dockerfile)
+	query.Set("target", options.Target)
 
 	ulimitsJSON, err := json.Marshal(options.Ulimits)
 	if err != nil {
@@ -118,6 +121,18 @@ func (cli *Client) imageBuildOptionsToQuery(options types.ImageBuildOptions) (ur
 		return query, err
 	}
 	query.Set("cachefrom", string(cacheFromJSON))
-
+	if options.SessionID != "" {
+		query.Set("session", options.SessionID)
+	}
+	if options.Platform != "" {
+		if err := cli.NewVersionError("1.32", "platform"); err != nil {
+			return query, err
+		}
+		query.Set("platform", strings.ToLower(options.Platform))
+	}
+	if options.BuildID != "" {
+		query.Set("buildid", options.BuildID)
+	}
+	query.Set("version", string(options.Version))
 	return query, nil
 }

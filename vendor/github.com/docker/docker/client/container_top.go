@@ -1,17 +1,17 @@
-package client
+package client // import "github.com/docker/docker/client"
 
 import (
+	"context"
 	"encoding/json"
 	"net/url"
 	"strings"
 
-	"github.com/docker/docker/api/types"
-	"golang.org/x/net/context"
+	"github.com/docker/docker/api/types/container"
 )
 
 // ContainerTop shows process information from within a container.
-func (cli *Client) ContainerTop(ctx context.Context, containerID string, arguments []string) (types.ContainerProcessList, error) {
-	var response types.ContainerProcessList
+func (cli *Client) ContainerTop(ctx context.Context, containerID string, arguments []string) (container.ContainerTopOKBody, error) {
+	var response container.ContainerTopOKBody
 	query := url.Values{}
 	if len(arguments) > 0 {
 		query.Set("ps_args", strings.Join(arguments, " "))
