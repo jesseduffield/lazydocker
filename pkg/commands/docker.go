@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
-	"fmt"
 	"os/exec"
 	"sort"
 	"strings"
@@ -91,14 +90,9 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 
 	log.Warn(command)
 
-	err = osCommand.RunCommand(
-		utils.ApplyTemplate(
-			config.UserConfig.CommandTemplates.CheckDockerComposeConfig,
-			dockerCommand.NewCommandObject(CommandObject{}),
-		),
-	)
+	err = osCommand.RunCommand(command)
 	if err != nil {
-		dockerCommand.InDockerComposeProject = false
+		//dockerCommand.InDockerComposeProject = false
 		log.Warn(err.Error())
 	}
 
@@ -251,6 +245,11 @@ L:
 				service.Container = container
 				continue L
 			}
+			if container.Container.Labels["com.docker.swarm.service.name"] == service.Name {
+				//Swarm service
+				service.Container = container
+				continue L
+			}
 		}
 		service.Container = nil
 	}
@@ -348,8 +347,8 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 		return nil, nil
 	}
 
-	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
-	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --hash=*", composeCommand))
+	composeConfigHash := c.Config.UserConfig.CommandTemplates.DockerComposeConfigHash
+	output, err := c.OSCommand.RunCommandWithOutput(composeConfigHash)
 	if err != nil {
 		return nil, err
 	}
