@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/pkg/term"
-	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"os"
 
@@ -372,8 +371,8 @@ func (c *Container) Attach() error {
 		return err
 	}
 
-	fd := int(os.Stdin.Fd())
-	oldState, err := terminal.MakeRaw(fd)
+	fd := os.Stdin.Fd()
+	oldState, err := term.MakeRaw(fd)
 	if err != nil {
 		return err
 	}
@@ -412,7 +411,7 @@ func (c *Container) Attach() error {
 				return err
 			}
 		} else {
-			err = terminal.Restore(fd, oldState)
+			err = term.RestoreTerminal(fd, oldState)
 			if err != nil {
 				return err
 			}
@@ -423,15 +422,15 @@ func (c *Container) Attach() error {
 	}
 }
 
-func (c *Container) Resize(fd int) error {
-	width, height, err := terminal.GetSize(fd)
+func (c *Container) Resize(fd uintptr) error {
+	size, err := term.GetWinsize(fd)
 	if err != nil {
 		return err
 	}
 
 	options := types.ResizeOptions{
-		Height: uint(height),
-		Width:  uint(width),
+		Height: uint(size.Height),
+		Width:  uint(size.Width),
 	}
 
 	err = c.Client.ContainerResize(context.Background(), c.ID, options)
