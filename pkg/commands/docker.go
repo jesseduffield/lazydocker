@@ -51,6 +51,8 @@ type CommandObject struct {
 	DockerCompose string
 	Service       *Service
 	Container     *Container
+	Image         *Image
+	Volume        *Volume
 }
 
 // NewCommandObject takes a command object and returns a default command object with the passed command object merged in

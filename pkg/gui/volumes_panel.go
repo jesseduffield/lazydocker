@@ -250,3 +250,19 @@ func (gui *Gui) handlePruneVolumes(g *gocui.Gui, v *gocui.View) error {
 		})
 	}, nil)
 }
+
+func (gui *Gui) handleVolumesCustomCommand(g *gocui.Gui, v *gocui.View) error {
+	volume, err := gui.getSelectedVolume()
+	if err != nil {
+		return nil
+	}
+
+	commandObject := gui.DockerCommand.NewCommandObject(
+		commands.CommandObject{
+			Volume: volume,
+		})
+
+	customCommands := gui.Config.UserConfig.CustomCommands.Volumes
+
+	return gui.createCustomCommandMenu(customCommands, commandObject)
+}

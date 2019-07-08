@@ -258,6 +258,12 @@ type CustomCommands struct {
 
 	// Services contains the custom commands for services
 	Services []CustomCommand `yaml:"services,omitempty"`
+
+	// Services contains the custom commands for services
+	Images []CustomCommand `yaml:"images,omitempty"`
+
+	// Services contains the custom commands for services
+	Volumes []CustomCommand `yaml:"volumes,omitempty"`
 }
 
 // CustomCommand is a template for a command we want to run against a service or
@@ -335,6 +341,8 @@ func GetDefaultConfig() UserConfig {
 				},
 			},
 			Services: []CustomCommand{},
+			Images:   []CustomCommand{},
+			Volumes:  []CustomCommand{},
 		},
 		OS: GetPlatformDefaultConfig(),
 		Update: UpdateConfig{

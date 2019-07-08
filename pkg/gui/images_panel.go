@@ -259,3 +259,19 @@ func (gui *Gui) handlePruneImages(g *gocui.Gui, v *gocui.View) error {
 		})
 	}, nil)
 }
+
+func (gui *Gui) handleImagesCustomCommand(g *gocui.Gui, v *gocui.View) error {
+	image, err := gui.getSelectedImage(g)
+	if err != nil {
+		return nil
+	}
+
+	commandObject := gui.DockerCommand.NewCommandObject(
+		commands.CommandObject{
+			Image: image,
+		})
+
+	customCommands := gui.Config.UserConfig.CustomCommands.Images
+
+	return gui.createCustomCommandMenu(customCommands, commandObject)
+}
