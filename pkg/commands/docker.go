@@ -238,20 +238,19 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 }
 
 func (c *DockerCommand) assignContainersToServices(containers []*Container, services []*Service) {
-L:
 	for _, service := range services {
 		for _, container := range containers {
 			if !container.OneOff && container.ServiceName == service.Name {
-				service.Container = container
-				continue L
+				service.Container = append(service.Container, container)
+				continue
 			}
 			if container.Container.Labels["com.docker.swarm.service.name"] == service.Name {
 				//Swarm service
-				service.Container = container
-				continue L
+				service.Container = append(service.Container, container)
+				container.ServiceName = service.Name
+				continue
 			}
 		}
-		service.Container = nil
 	}
 }
 

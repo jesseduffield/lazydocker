@@ -35,7 +35,7 @@ func (gui *Gui) refreshProject() error {
 	if gui.DockerCommand.InDockerComposeProject {
 		for _, service := range gui.DockerCommand.Services {
 			if service.Container != nil {
-				projectName = service.Container.Details.Config.Labels["com.docker.compose.project"]
+				projectName = service.Container[0].Details.Config.Labels["com.docker.compose.project"]
 				break
 			}
 		}
