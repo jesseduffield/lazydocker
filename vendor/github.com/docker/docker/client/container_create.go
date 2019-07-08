@@ -1,13 +1,14 @@
-package client
+package client // import "github.com/docker/docker/client"
 
 import (
+	"context"
 	"encoding/json"
 	"net/url"
 	"strings"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
-	"golang.org/x/net/context"
+	"github.com/docker/docker/api/types/versions"
 )
 
 type configWrapper struct {
@@ -25,6 +26,11 @@ func (cli *Client) ContainerCreate(ctx context.Context, config *container.Config
 		return response, err
 	}
 
+	// When using API 1.24 and under, the client is responsible for removing the container
+	if hostConfig != nil && versions.LessThan(cli.ClientVersion(), "1.25") {
+		hostConfig.AutoRemove = false
+	}
+
 	query := url.Values{}
 	if containerName != "" {
 		query.Set("name", containerName)
@@ -39,7 +45,7 @@ func (cli *Client) ContainerCreate(ctx context.Context, config *container.Config
 	serverResp, err := cli.post(ctx, "/containers/create", query, body, nil)
 	if err != nil {
 		if serverResp.statusCode == 404 && strings.Contains(err.Error(), "No such image") {
-			return response, imageNotFoundError{config.Image}
+			return response, objectNotFoundError{object: "image", id: config.Image}
 		}
 		return response, err
 	}

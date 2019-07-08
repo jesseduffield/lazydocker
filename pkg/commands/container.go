@@ -2,9 +2,12 @@ package commands
 
 import (
 	"context"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/pkg/term"
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"os"
+
 	"os/exec"
 	"os/signal"
 	"strconv"
@@ -368,40 +371,55 @@ func (c *Container) Attach() error {
 	if err != nil {
 		return err
 	}
-	defer hijack.Close()
 
-	if c.Details.Config.OpenStdin {
-		fd := int(os.Stdin.Fd())
-
-		if terminal.IsTerminal(fd) {
-			oldState, err := terminal.MakeRaw(fd)
-			if err != nil {
-				return err
-			}
-			defer terminal.Restore(fd, oldState)
-
-			go c.resizeIfChanged(fd)
-			go io.Copy(hijack.Conn, os.Stdin)
-		}
-	}
-
-	_, err = io.Copy(os.Stdout, hijack.Conn)
+	fd := int(os.Stdin.Fd())
+	oldState, err := terminal.MakeRaw(fd)
 	if err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func (c *Container) resizeIfChanged(fd int) {
 	channel := make(chan os.Signal, 1)
 	signal.Notify(channel, syscall.SIGWINCH)
+	// initial resize
+	channel <- syscall.SIGWINCH
+
+	// read output from container
+	go func() {
+		output := os.Stdout
+		_, _ = io.Copy(output, hijack.Conn)
+		channel <- syscall.SIGINT
+	}()
+
+	// send input to container
+	if c.Details.Config.OpenStdin {
+		go func() {
+			// the default escape key sequence: ctrl-p, ctrl-q
+			// shamelessly taken from docker/cli
+			escapeKeys := []byte{16, 17}
+			// Stop reading if escape sequence had been entered
+			input := term.NewEscapeProxy(os.Stdin, escapeKeys)
+			_, _ = io.Copy(hijack.Conn, input)
+			channel <- syscall.SIGINT
+		}()
+	}
 
 	for {
-		<-channel
-		err := c.Resize(fd)
-		if err != nil {
-			return
+		select {
+		case sig := <-channel:
+			if sig == syscall.SIGWINCH {
+				err := c.Resize(fd)
+				if err != nil {
+					return err
+				}
+			} else {
+				err = terminal.Restore(fd, oldState)
+				if err != nil {
+					return err
+				}
+
+				hijack.Close()
+				return nil
+			}
 		}
 	}
 }
@@ -426,7 +444,7 @@ func (c *Container) Resize(fd int) error {
 }
 
 // Top returns process information
-func (c *Container) Top() (types.ContainerProcessList, error) {
+func (c *Container) Top() (container.ContainerTopOKBody, error) {
 	return c.Client.ContainerTop(context.Background(), c.ID, []string{})
 }
 

@@ -41,6 +41,10 @@ func (gui *Gui) RunWithSubprocesses() error {
 }
 
 func (gui *Gui) runCommand() error {
+	if gui.SubProcess == nil {
+		return nil
+	}
+
 	gui.SubProcess.Stdout = os.Stdout
 	gui.SubProcess.Stderr = os.Stdout
 	gui.SubProcess.Stdin = os.Stdin

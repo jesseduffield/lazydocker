@@ -467,12 +467,18 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
+	gui.State.PreviousView = gui.currentViewName()
+	// giving goEvery goroutines time to finish
+	gui.State.SessionIndex++
+
 	err = container.Attach()
 	if err != nil {
 		return gui.createErrorPanel(gui.g, err.Error())
 	}
 
-	return nil
+	// ensuring we render e.g. the logs of the currently selected item upon return
+	gui.State.Panels.Main.ObjectKey = ""
+	return gui.Errors.ErrSubProcess
 }
 
 func (gui *Gui) handlePruneContainers(g *gocui.Gui, v *gocui.View) error {

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"github.com/docker/docker/api/types/image"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -41,7 +42,7 @@ func (i *Image) Remove(options types.ImageRemoveOptions) error {
 
 // Layer is a layer in an image's history
 type Layer struct {
-	types.ImageHistory
+	image.HistoryResponseItem
 }
 
 // GetDisplayStrings returns the array of strings describing the layer
