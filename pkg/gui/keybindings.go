@@ -339,6 +339,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "images",
+			Key:         'c',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleImagesCustomCommand,
+			Description: gui.Tr.RunCustomCommand,
+		},
+		{
+			ViewName:    "images",
 			Key:         'd',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleImagesRemoveMenu,
@@ -364,6 +371,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleVolumesNextContext,
 			Description: gui.Tr.NextContext,
+		},
+		{
+			ViewName:    "volumes",
+			Key:         'c',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleVolumesCustomCommand,
+			Description: gui.Tr.RunCustomCommand,
 		},
 		{
 			ViewName:    "volumes",
