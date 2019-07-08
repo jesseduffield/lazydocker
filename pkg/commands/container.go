@@ -361,12 +361,14 @@ func (c *Container) Attach() error {
 		Stdin:  c.Details.Config.OpenStdin,
 		Stdout: true,
 		Stderr: true,
+		Logs:   true,
 	}
 
 	hijack, err := c.Client.ContainerAttach(context.Background(), c.ID, options)
 	if err != nil {
 		return err
 	}
+	defer hijack.Close()
 
 	if c.Details.Config.OpenStdin {
 		fd := int(os.Stdin.Fd())
@@ -388,18 +390,19 @@ func (c *Container) Attach() error {
 		return err
 	}
 
-	hijack.Close()
-
 	return nil
 }
 
 func (c *Container) resizeIfChanged(fd int) {
-	channel := make(chan os.Signal)
+	channel := make(chan os.Signal, 1)
 	signal.Notify(channel, syscall.SIGWINCH)
 
 	for {
 		<-channel
-		c.Resize(fd)
+		err := c.Resize(fd)
+		if err != nil {
+			return
+		}
 	}
 }
 

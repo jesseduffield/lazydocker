@@ -472,9 +472,7 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 		return gui.createErrorPanel(gui.g, err.Error())
 	}
 
-	gui.RunWithSubprocesses()
-
-	return gui.Errors.ErrSubProcess
+	return nil
 }
 
 func (gui *Gui) handlePruneContainers(g *gocui.Gui, v *gocui.View) error {
