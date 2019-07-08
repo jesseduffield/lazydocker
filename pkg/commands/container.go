@@ -394,6 +394,7 @@ func (c *Container) Attach() error {
 	if c.Details.Config.OpenStdin {
 		go func() {
 			// the default escape key sequence: ctrl-p, ctrl-q
+			//
 			// shamelessly taken from docker/cli
 			escapeKeys := []byte{16, 17}
 			// Stop reading if escape sequence had been entered
@@ -404,22 +405,20 @@ func (c *Container) Attach() error {
 	}
 
 	for {
-		select {
-		case sig := <-channel:
-			if sig == syscall.SIGWINCH {
-				err := c.Resize(fd)
-				if err != nil {
-					return err
-				}
-			} else {
-				err = terminal.Restore(fd, oldState)
-				if err != nil {
-					return err
-				}
-
-				hijack.Close()
-				return nil
+		sig := <-channel
+		if sig == syscall.SIGWINCH {
+			err := c.Resize(fd)
+			if err != nil {
+				return err
 			}
+		} else {
+			err = terminal.Restore(fd, oldState)
+			if err != nil {
+				return err
+			}
+
+			hijack.Close()
+			return nil
 		}
 	}
 }
