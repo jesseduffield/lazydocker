@@ -240,14 +240,8 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 func (c *DockerCommand) assignContainersToServices(containers []*Container, services []*Service) {
 	for _, service := range services {
 		for _, container := range containers {
-			if !container.OneOff && container.ServiceName == service.Name {
+			if /*!container.OneOff &&*/ container.ServiceName == service.Name {
 				service.Container = append(service.Container, container)
-				continue
-			}
-			if container.Container.Labels["com.docker.swarm.service.name"] == service.Name {
-				//Swarm service
-				service.Container = append(service.Container, container)
-				container.ServiceName = service.Name
 				continue
 			}
 		}
@@ -330,7 +324,15 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 			newContainer.Name = strings.TrimLeft(container.Names[0], "/")
 		}
 		newContainer.ServiceName = container.Labels["com.docker.compose.service"]
+		if container.Labels["com.docker.swarm.service.name"] != "" {
+			newContainer.ServiceName = container.Labels["com.docker.swarm.service.name"]
+		}
+
 		newContainer.ProjectName = container.Labels["com.docker.compose.project"]
+		if container.Labels["com.docker.stack.namespace"] != "" {
+			newContainer.ProjectName = container.Labels["com.docker.stack.namespace"]
+		}
+
 		newContainer.ContainerNumber = container.Labels["com.docker.compose.container"]
 		newContainer.OneOff = container.Labels["com.docker.compose.oneoff"] == "True"
 
