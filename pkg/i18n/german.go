@@ -52,7 +52,7 @@ func germanSet() TranslationSet {
 		RunCustomCommand:   "führe vordefinierten benutzerdefinierten Befehl aus",
 
 		AnonymousReportingTitle:  "Mache dabei mit lazydocker besser zu machen",
-		AnonymousReportingPrompt: "Möchtest du anonymiserte Datensammlung erlauben, um zu helfen lazydocker zu erbessern? (enter/esc)",
+		AnonymousReportingPrompt: "Möchtest du anonymiserte Datensammlung erlauben, um zu helfen lazydocker zu erbessern?",
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Haupt",
@@ -83,7 +83,7 @@ func germanSet() TranslationSet {
 		ConfirmPruneImages:         "Bist du dir sicher, dass du alle unbenutzten Images entfernen möchtest?",
 		ConfirmPruneContainers:     "Bist du dir sicher, dass du alle angehaltenen Container entfernen möchtes?",
 		ConfirmPruneVolumes:        "Bist du dir sicher, dass du alle unbenutzen Volumen entfernen möchtest?",
-		StopService:                "Bist du dir sicher, dass du den Dienst dieses Containers anhalten möchtest? (enter/esc)",
+		StopService:                "Bist du dir sicher, dass du den Dienst dieses Containers anhalten möchtest?",
 		StopContainer:              "Bist du dir sicher, dass du den Container anhalten möchtest?",
 		PressEnterToReturn:         "Drücke Eingabe um zu lazydocker zurück zu kehren. (Diese Nachfrage kann in Deiner Konfiguration deaktiviert werden, indem du folgenden Wert setzt: `gui.returnImmediately: true`)",
 	}

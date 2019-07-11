@@ -52,7 +52,7 @@ func turkishSet() TranslationSet {
 		RunCustomCommand:   "önceden tanımlanmış özel komutu çalıştır",
 
 		AnonymousReportingTitle:  "lazydocker' ı daha iyi hale getirmeye yardımcı olun",
-		AnonymousReportingPrompt: "lazydocker'ın geliştirilmesine yardımcı olmak için anonim raporlama verilerini etkinleştirmek ister misiniz? (enter/esc)",
+		AnonymousReportingPrompt: "lazydocker'ın geliştirilmesine yardımcı olmak için anonim raporlama verilerini etkinleştirmek ister misiniz?",
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Ana",
@@ -83,7 +83,7 @@ func turkishSet() TranslationSet {
 		ConfirmPruneImages:         "Kullanılmayan tüm görüntüleri temizlemek istediğinize emin misiniz?",
 		ConfirmPruneContainers:     "Durdurulan tüm konteynerları temizlemek istediğinizden emin misiniz?",
 		ConfirmPruneVolumes:        "Kullanılmayan tüm alanları temizlemek istediğinizden emin misiniz?",
-		StopService:                "Bu servisin konteynerlerini durdurmak istediğinize emin misiniz? (enter/esc)",
+		StopService:                "Bu servisin konteynerlerini durdurmak istediğinize emin misiniz?",
 		StopContainer:              "Bu konteyneri durdurmak istediğinize emin misiniz?",
 		PressEnterToReturn:         "lazydocker' a geri dönmek için enter tuşuna basın ( Bu uyarı, `gui.return Immediately: true` ayarıyla devre dışı bırakılabilir)",
 	}

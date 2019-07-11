@@ -314,6 +314,8 @@ func (gui *Gui) renderPanelOptions() error {
 	switch currentView.Name() {
 	case "menu":
 		return gui.renderMenuOptions()
+	case "confirmation":
+		return gui.renderConfirmationOptions()
 	}
 	return gui.renderGlobalOptions()
 }
