@@ -386,6 +386,9 @@ func (c *Container) Attach() error {
 	// read output from container
 	go func() {
 		output := os.Stdout
+		clearScreen := "\033[2J"
+		showCursor := "\033[?25h"
+		_, _ = io.Copy(output, strings.NewReader(clearScreen+showCursor))
 		_, _ = io.Copy(output, hijack.Conn)
 		channel <- syscall.SIGINT
 	}()
