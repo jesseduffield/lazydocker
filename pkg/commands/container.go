@@ -399,7 +399,8 @@ func (c *Container) Attach() error {
 		output := os.Stdout
 		clearScreen := "\033[2J"
 		showCursor := "\033[?25h"
-		_, _ = io.Copy(output, strings.NewReader(clearScreen+showCursor))
+		noColor := "\033[0m"
+		_, _ = io.Copy(output, strings.NewReader(clearScreen+showCursor+noColor))
 		_, _ = io.Copy(output, hijack.Conn)
 		channel <- syscall.SIGINT
 	}()
