@@ -380,8 +380,19 @@ func (c *Container) Attach() error {
 
 	channel := make(chan os.Signal, 1)
 	signal.Notify(channel, syscall.SIGWINCH)
+
 	// initial resize
+	//
+	// without this user needs to manually resize terminal,
+	// to get the prompt under cursor
+	//
+	// terminal width and height is artificially incremented
+	// and then it returns to nominal size
 	channel <- syscall.SIGWINCH
+	err = c.Resize(fd, true)
+	if err != nil {
+		return err
+	}
 
 	// read output from container
 	go func() {
@@ -410,7 +421,7 @@ func (c *Container) Attach() error {
 	for {
 		sig := <-channel
 		if sig == syscall.SIGWINCH {
-			err := c.Resize(fd)
+			err := c.Resize(fd, false)
 			if err != nil {
 				return err
 			}
@@ -425,7 +436,10 @@ func (c *Container) Attach() error {
 	}
 }
 
-func (c *Container) Resize(fd uintptr) error {
+// Resize gets current terminal size and sends it to Docker.
+//
+// Bool "fool" parameter if set to true increments height and width by 1.
+func (c *Container) Resize(fd uintptr, fool bool) error {
 	size, err := term.GetWinsize(fd)
 	if err != nil {
 		return err
@@ -434,6 +448,11 @@ func (c *Container) Resize(fd uintptr) error {
 	options := types.ResizeOptions{
 		Height: uint(size.Height),
 		Width:  uint(size.Width),
+	}
+
+	if fool {
+		options.Width++
+		options.Height++
 	}
 
 	err = c.Client.ContainerResize(context.Background(), c.ID, options)
