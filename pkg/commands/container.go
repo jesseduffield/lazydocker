@@ -370,6 +370,7 @@ func (c *Container) Attach() error {
 	if err != nil {
 		return err
 	}
+	defer hijack.Close()
 
 	fd := os.Stdin.Fd()
 	oldState, err := term.MakeRaw(fd)
@@ -416,7 +417,6 @@ func (c *Container) Attach() error {
 				return err
 			}
 
-			hijack.Close()
 			return nil
 		}
 	}
