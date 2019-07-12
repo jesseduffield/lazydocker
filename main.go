@@ -50,7 +50,11 @@ func main() {
 
 	if configFlag {
 		var buf bytes.Buffer
-		yaml.NewEncoder(&buf).Encode(config.GetDefaultConfig())
+		encoder := yaml.NewEncoder(&buf)
+		err := encoder.Encode(config.GetDefaultConfig())
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 		fmt.Printf("%v\n", buf.String())
 		os.Exit(0)
 	}
@@ -66,7 +70,6 @@ func main() {
 	}
 
 	app, err := app.NewApp(appConfig)
-
 	if err == nil {
 		err = app.Run()
 	}
