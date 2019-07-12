@@ -54,7 +54,6 @@ oS:
   openLinkCommand: open {{link}}
 update:
   dockerRefreshInterval: 100ms
-  method: never
 stats:
   graphs:
   - caption: CPU (%)
