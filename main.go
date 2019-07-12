@@ -27,6 +27,15 @@ var (
 )
 
 func main() {
+	info := fmt.Sprintf(
+		"%s\nDate: %s\nBuildSource: %s\nCommit: %s\nOS: %s\nArch: %s",
+		version,
+		date,
+		buildSource,
+		commit,
+		runtime.GOOS,
+		runtime.GOARCH,
+	)
 
 	flaggy.SetName("lazydocker")
 	flaggy.SetDescription("The lazier way to manage everything docker")
@@ -35,7 +44,7 @@ func main() {
 	flaggy.Bool(&configFlag, "c", "config", "Print the current default config")
 	flaggy.Bool(&debuggingFlag, "d", "debug", "a boolean")
 	flaggy.StringSlice(&composeFiles, "f", "file", "Specify alternate compose files")
-	flaggy.SetVersion(fmt.Sprintf("commit=%s, build date=%s, build source=%s, version=%s, os=%s, arch=%s\n", commit, date, buildSource, version, runtime.GOOS, runtime.GOARCH))
+	flaggy.SetVersion(info)
 
 	flaggy.Parse()
 
