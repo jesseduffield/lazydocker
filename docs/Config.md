@@ -53,9 +53,7 @@ oS:
   openCommand: open {{filename}}
   openLinkCommand: open {{link}}
 update:
-  refreshProjectTime: 100ms
-  refreshContainersAndServicesTime: 100ms
-  refreshVolumesTime: 100ms
+  dockerRefreshInterval: 100ms
   method: never
 stats:
   graphs:

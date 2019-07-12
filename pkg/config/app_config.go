@@ -191,20 +191,12 @@ type OSConfig struct {
 }
 
 // UpdateConfig determines what the default settings are for updating the ui
-//
-// For the RefreshProjectTime, RefreshContainersAndServicesTime and RefreshVolumesTime
-// the application expects a valid duration like: 100ms, 2s, 200ns
-// for docs see: https://golang.org/pkg/time/#ParseDuration
 type UpdateConfig struct {
-	// RefreshProjectTime determines the time betweens updates of the project panel
-	RefreshProjectTime string `yaml:"refreshProjectTime,omitempty"`
-
-	// RefreshContainersAndServicesTime determines the time betweens updates of the containers and services panel
-	RefreshContainersAndServicesTime string `yaml:"refreshContainersAndServicesTime,omitempty"`
-
-	// RefreshVolumesTime determines the time betweens updates of the volumes panel
-	RefreshVolumesTime string `yaml:"refreshVolumesTime,omitempty"`
-	Method             string `yaml:"method,omitempty"`
+	// RefreshProjectTime determines the time betweens updates of all continues docker commands like docker ps, docker images, etc.
+	// It expects a valid duration like: 100ms, 2s, 200ns
+	// for docs see: https://golang.org/pkg/time/#ParseDuration
+	DockerRefreshInterval time.Duration `yaml:"dockerRefreshInterval,omitempty"`
+	Method                string        `yaml:"method,omitempty"`
 }
 
 // GraphConfig specifies how to make a graph of recorded container stats
@@ -356,10 +348,8 @@ func GetDefaultConfig() UserConfig {
 		},
 		OS: GetPlatformDefaultConfig(),
 		Update: UpdateConfig{
-			RefreshProjectTime:               "100ms",
-			RefreshContainersAndServicesTime: "100ms",
-			RefreshVolumesTime:               "100ms",
-			Method:                           "never",
+			DockerRefreshInterval: time.Millisecond * 100,
+			Method:                "never",
 		},
 		Stats: StatsConfig{
 			MaxDuration: duration,
