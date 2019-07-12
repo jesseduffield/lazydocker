@@ -168,3 +168,11 @@ func (gui *Gui) createSpecificErrorPanel(message string, nextView *gocui.View, w
 func (gui *Gui) createErrorPanel(g *gocui.Gui, message string) error {
 	return gui.createSpecificErrorPanel(message, g.CurrentView(), true)
 }
+
+func (gui *Gui) renderConfirmationOptions() error {
+	optionsMap := map[string]string{
+		"n/esc":   gui.Tr.No,
+		"y/enter": gui.Tr.Yes,
+	}
+	return gui.renderOptionsMap(optionsMap)
+}

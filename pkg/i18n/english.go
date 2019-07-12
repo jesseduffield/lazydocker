@@ -81,6 +81,9 @@ type TranslationSet struct {
 	StatsTitle               string
 	CreditsTitle             string
 	ContainerConfigTitle     string
+
+	No  string
+	Yes string
 }
 
 func englishSet() TranslationSet {
@@ -136,7 +139,7 @@ func englishSet() TranslationSet {
 		RunCustomCommand:   "run predefined custom command",
 
 		AnonymousReportingTitle:  "Help make lazydocker better",
-		AnonymousReportingPrompt: "Would you like to enable anonymous reporting data to help improve lazydocker? (enter/esc)",
+		AnonymousReportingPrompt: "Would you like to enable anonymous reporting data to help improve lazydocker?",
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Main",
@@ -167,8 +170,11 @@ func englishSet() TranslationSet {
 		ConfirmPruneImages:         "Are you sure you want to prune all unused images?",
 		ConfirmPruneContainers:     "Are you sure you want to prune all stopped containers?",
 		ConfirmPruneVolumes:        "Are you sure you want to prune all unused volumes?",
-		StopService:                "Are you sure you want to stop this service's containers? (enter/esc)",
+		StopService:                "Are you sure you want to stop this service's containers?",
 		StopContainer:              "Are you sure you want to stop this container?",
 		PressEnterToReturn:         "Press enter to return to lazydocker (this prompt can be disabled in your config by setting `gui.returnImmediately: true`)",
+
+		No:  "no",
+		Yes: "yes",
 	}
 }

@@ -52,7 +52,7 @@ func polishSet() TranslationSet {
 		RunCustomCommand:   "wykonaj predefiniowaną własną komende",
 
 		AnonymousReportingTitle:  "Pomóż czynić lazydocker lepszym",
-		AnonymousReportingPrompt: "Czy zechciałbyś włączyć anonimowe raportowanie danych w celu ulepszania programu? (enter/esc)",
+		AnonymousReportingPrompt: "Czy zechciałbyś włączyć anonimowe raportowanie danych w celu ulepszania programu?",
 
 		GlobalTitle:               "Globalne",
 		MainTitle:                 "Główne",
@@ -83,7 +83,7 @@ func polishSet() TranslationSet {
 		ConfirmPruneImages:         "Na pewno wyczyścić wszystkie nieużywane obrazy?",
 		ConfirmPruneContainers:     "Na pewno wyczyścić wszystkie nieuruchomione kontenery?",
 		ConfirmPruneVolumes:        "Na pewno wyczyścić wszystkie nieużywane wolumeny?",
-		StopService:                "Na pewno zatrzymać kontenery tego serwisu? (enter/esc)",
+		StopService:                "Na pewno zatrzymać kontenery tego serwisu?",
 		StopContainer:              "Na pewno zatrzymać ten kontener?",
 		PressEnterToReturn:         "Wciśnij enter aby powrócić do lazydockera (ten komunikat może być wyłączony w konfiguracji poprzez ustawienie `gui.returnImmediately: true`)",
 	}

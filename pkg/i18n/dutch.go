@@ -53,7 +53,7 @@ func dutchSet() TranslationSet {
 		RunCustomCommand:   "draai een vooraf bedacht aangepaste opdracht",
 
 		AnonymousReportingTitle:  "Help mee met lazydocker beter maken",
-		AnonymousReportingPrompt: "Zou je anonieme data rapportage willen aanzetten om lazydocker beter te kunnen maken? (enter/esc)",
+		AnonymousReportingPrompt: "Zou je anonieme data rapportage willen aanzetten om lazydocker beter te kunnen maken?",
 
 		GlobalTitle:               "Globaal",
 		MainTitle:                 "Hooft",
@@ -84,7 +84,7 @@ func dutchSet() TranslationSet {
 		ConfirmPruneImages:         "Weet je zeker dat je alle niet gebruikte images wil vernietigen?",
 		ConfirmPruneContainers:     "Weet je zeker dat je alle niet gestopte containers wil vernietigen?",
 		ConfirmPruneVolumes:        "Weet je zeker dat je alle niet gebruikte volumes wil vernietigen?",
-		StopService:                "Weet je zeker dat je deze service zijn containers wil stoppen (enter/esc)?",
+		StopService:                "Weet je zeker dat je deze service zijn containers wil stoppen?",
 		StopContainer:              "Weet je zeker dat je deze container wil stoppen?",
 		PressEnterToReturn:         "Druk op enter om terug te gaan naar lazydocker (Deze popup kan uit gezet worden door in de config dit neer te zetten `gui.returnImmediately: true`)",
 	}
