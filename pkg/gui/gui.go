@@ -267,13 +267,34 @@ func (gui *Gui) Run() error {
 		gui.waitForIntro.Add(1)
 	}
 
+	updates := gui.Config.UserConfig.Update
+	projectDuration := time.Millisecond * 100
+	containersAndServicesDuration := time.Millisecond * 100
+	volumesDuration := time.Millisecond * 100
+	toBind := []struct {
+		BindTo *time.Duration
+		Value  string
+	}{
+		{&projectDuration, updates.RefreshProjectTime},
+		{&containersAndServicesDuration, updates.RefreshContainersAndServicesTime},
+		{&volumesDuration, updates.RefreshVolumesTime},
+	}
+	for _, item := range toBind {
+		duration, err := time.ParseDuration(item.Value)
+		if err == nil {
+			*item.BindTo = duration
+			continue
+		}
+		gui.Log.Error("Can't parse duration:", err)
+	}
+
 	go func() {
 		gui.waitForIntro.Wait()
 		gui.goEvery(time.Millisecond*50, gui.renderAppStatus)
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
-		gui.goEvery(time.Millisecond*100, gui.refreshProject)
-		gui.goEvery(time.Millisecond*100, gui.refreshContainersAndServices)
-		gui.goEvery(time.Millisecond*100, gui.refreshVolumes)
+		gui.goEvery(projectDuration, gui.refreshProject)
+		gui.goEvery(containersAndServicesDuration, gui.refreshContainersAndServices)
+		gui.goEvery(volumesDuration, gui.refreshVolumes)
 		gui.goEvery(time.Millisecond*1000, gui.DockerCommand.UpdateContainerDetails)
 		gui.goEvery(time.Millisecond*1000, gui.checkForContextChange)
 	}()
