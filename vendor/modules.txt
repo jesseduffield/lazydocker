@@ -1,5 +1,7 @@
 # github.com/Microsoft/go-winio v0.4.12
 github.com/Microsoft/go-winio
+# github.com/OpenPeeDeeP/xdg v0.2.0
+github.com/OpenPeeDeeP/xdg
 # github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 github.com/acarl005/stripansi
 # github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21
@@ -77,8 +79,6 @@ github.com/opencontainers/image-spec/specs-go
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0
-github.com/shibukawa/configdir
 # github.com/sirupsen/logrus v1.3.0
 github.com/sirupsen/logrus
 # github.com/spkg/bom v0.0.0-20160624110644-59b7046e48ad

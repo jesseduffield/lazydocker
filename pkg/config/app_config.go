@@ -19,8 +19,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/OpenPeeDeeP/xdg"
 	yaml "github.com/jesseduffield/yaml"
-	"github.com/shibukawa/configdir"
 )
 
 // UserConfig holds all of the user-configurable options
@@ -412,14 +412,15 @@ func NewAppConfig(name, version, commit, date string, buildSource string, debugg
 }
 
 func findOrCreateConfigDir(projectName string) (string, error) {
-	configDirs := configdir.New("jesseduffield", projectName)
-	folders := configDirs.QueryFolders(configdir.Global)
+	configDirs := xdg.New("jesseduffield", projectName)
+	folder := configDirs.ConfigHome()
 
-	if err := folders[0].CreateParentDir("foo"); err != nil {
+	err := os.MkdirAll(folder, 0755)
+	if err != nil {
 		return "", err
 	}
 
-	return folders[0].Path, nil
+	return folder, nil
 }
 
 func loadUserConfigWithDefaults(configDir string) (*UserConfig, error) {
