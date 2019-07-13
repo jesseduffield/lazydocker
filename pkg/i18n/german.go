@@ -52,7 +52,7 @@ func germanSet() TranslationSet {
 		RunCustomCommand:   "führe vordefinierten benutzerdefinierten Befehl aus",
 
 		AnonymousReportingTitle:  "Mache dabei mit lazydocker besser zu machen",
-		AnonymousReportingPrompt: "Möchtest du anonymiserte Datensammlung erlauben, um zu helfen lazydocker zu erbessern?",
+		AnonymousReportingPrompt: "Möchtest du anonymisierte Datensammlung erlauben, um dabei zu helfen lazydocker zu verbessern?",
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Haupt",
@@ -79,12 +79,12 @@ func germanSet() TranslationSet {
 
 		ConfirmQuit:                "Bist du dir sicher, dass du verlassen möchtest?",
 		MustForceToRemoveContainer: "Du kannst keinen Container entfernen, der noch ausgeführt wird außer du erzwingst es. Möchtest du es erzwingen?",
-		NotEnoughSpace:             "Nicht genug Platz um die Panele darzustellen",
+		NotEnoughSpace:             "Nicht genug Platz um die Panel darzustellen",
 		ConfirmPruneImages:         "Bist du dir sicher, dass du alle unbenutzten Images entfernen möchtest?",
 		ConfirmPruneContainers:     "Bist du dir sicher, dass du alle angehaltenen Container entfernen möchtes?",
 		ConfirmPruneVolumes:        "Bist du dir sicher, dass du alle unbenutzen Volumen entfernen möchtest?",
 		StopService:                "Bist du dir sicher, dass du den Dienst dieses Containers anhalten möchtest?",
 		StopContainer:              "Bist du dir sicher, dass du den Container anhalten möchtest?",
-		PressEnterToReturn:         "Drücke Eingabe um zu lazydocker zurück zu kehren. (Diese Nachfrage kann in Deiner Konfiguration deaktiviert werden, indem du folgenden Wert setzt: `gui.returnImmediately: true`)",
+		PressEnterToReturn:         "Drücke Eingabe um zu lazydocker zurückzukehren. (Diese Nachfrage kann in Deiner Konfiguration deaktiviert werden, indem du folgenden Wert setzt: `gui.returnImmediately: true`)",
 	}
 }
