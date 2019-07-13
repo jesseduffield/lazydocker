@@ -1,6 +1,6 @@
 # github.com/Microsoft/go-winio v0.4.12
 github.com/Microsoft/go-winio
-# github.com/OpenPeeDeeP/xdg v0.2.0
+# github.com/OpenPeeDeeP/xdg v0.2.1-0.20190312153938-4ba9e1eb294c
 github.com/OpenPeeDeeP/xdg
 # github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 github.com/acarl005/stripansi
