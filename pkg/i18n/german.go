@@ -21,7 +21,7 @@ func germanSet() TranslationSet {
 		Confirm: "Bestätigen",
 
 		Return:             "zurück",
-		FocusMain:          "fokusieren aufs Hauptpanel",
+		FocusMain:          "fokussieren aufs Hauptpanel",
 		Navigate:           "navigieren",
 		Execute:            "ausführen",
 		Close:              "schließen",
