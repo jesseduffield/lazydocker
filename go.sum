@@ -44,10 +44,6 @@ github.com/integrii/flaggy v0.0.0-20190517180110-07ea7eb77404 h1:oRzqLvY7HzDWD9k
 github.com/integrii/flaggy v0.0.0-20190517180110-07ea7eb77404/go.mod h1:tnTxHeTJbah0gQ6/K0RW0J7fMUBk9MCF5blhm43LNpI=
 github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee h1:7Zi/OQlGbMz4MT2V1+prN/gv1C64NDyVb/MbJnS0ZfA=
 github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee/go.mod h1:Z9UKHveKXXgyo8ME7R8yxh/BUTFOK+FgfWKlhy8oOAg=
-github.com/jesseduffield/gocui v0.3.1-0.20190703115836-08c34c9081b3 h1:F9a1FHBFAEa1Jqrd1+vc1UhwVCQH8yywV1qSNadO81U=
-github.com/jesseduffield/gocui v0.3.1-0.20190703115836-08c34c9081b3/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
-github.com/jesseduffield/gocui v0.3.1-0.20190705132128-68f2ad6e3532 h1:PBs+XBBrhHBIfEm9uw0EcxG4hsFkUslwrjcgEOF6cfI=
-github.com/jesseduffield/gocui v0.3.1-0.20190705132128-68f2ad6e3532/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
 github.com/jesseduffield/gocui v0.3.1-0.20190706002342-e625df489460 h1:ZE/5AVVJV5j7cVFvnQ/YsogDiUh544Qoh4ib/iVyKf8=
 github.com/jesseduffield/gocui v0.3.1-0.20190706002342-e625df489460/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
 github.com/jesseduffield/roll v0.0.0-20190629104057-695be2e62b00 h1:+JaOkfBNYQYlGD7dgru8mCwYNEc5tRRI8mThlVANhSM=
@@ -96,8 +92,6 @@ github.com/spkg/bom v0.0.0-20160624110644-59b7046e48ad/go.mod h1:qLr4V1qq6nMqFKk
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2 h1:bSDNvY7ZPG5RlJ8otE/7V6gMiyenm9RtJ7IUVIAoJ1w=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
-github.com/tcnksm/go-gitconfig v0.1.2 h1:iiDhRitByXAEyjgBqsKi9QU4o2TNtv9kPP3RgPgXBPw=
-github.com/tcnksm/go-gitconfig v0.1.2/go.mod h1:/8EhP4H7oJZdIPyT+/UIsG87kTzrzM4UsLGSItWYCpE=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793 h1:u+LnwYTOOW7Ukr/fppxEb1Nwz0AtPflrblfvUudpo+I=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2 h1:VklqNMn3ovrHsnt90PveolxSbWFaJdECFbxSq0Mqo2M=
