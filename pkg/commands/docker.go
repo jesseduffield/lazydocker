@@ -219,11 +219,11 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 
 	// sort services first by whether they have a linked container, and second by alphabetical order
 	sort.Slice(services, func(i, j int) bool {
-		if services[i].Container != nil && services[j].Container == nil {
+		if len(services[i].Containers) > 0 && len(services[j].Containers) == 0 {
 			return true
 		}
 
-		if services[i].Container == nil && services[j].Container != nil {
+		if len(services[i].Containers) == 0 && len(services[j].Containers) > 0 {
 			return false
 		}
 
@@ -241,7 +241,7 @@ func (c *DockerCommand) assignContainersToServices(containers []*Container, serv
 	for _, service := range services {
 		for _, container := range containers {
 			if /*!container.OneOff &&*/ container.ServiceName == service.Name {
-				service.Container = append(service.Container, container)
+				service.Containers = append(service.Containers, container)
 				continue
 			}
 		}
