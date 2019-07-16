@@ -7,9 +7,11 @@ ARG GOARCH=amd64
 ARG GOARM
 ARG VERSION
 ARG VCS_REF
-WORKDIR /go/src/github.com/jesseduffield/lazydocker/
+WORKDIR /tmp/gobuild
 COPY ./ .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} GOARM=${GOARM} go build -a -ldflags="-s -w \
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} GOARM=${GOARM} \
+    go build -a -mod=vendor \
+    -ldflags="-s -w \
     -X main.commit=${VCS_REF} \
     -X main.version=${VERSION} \
     -X main.buildSource=Docker"
@@ -43,5 +45,5 @@ LABEL org.label-schema.schema-version="1.0.0-rc1" \
 ENTRYPOINT [ "/bin/lazydocker" ]
 VOLUME [ "/.config/jesseduffield/lazydocker" ]
 ENV PATH=/bin
-COPY --from=builder /go/src/github.com/jesseduffield/lazydocker/lazydocker /bin/lazydocker
 COPY --from=docker-builder /go/src/github.com/docker/cli/build/docker /bin/docker
+COPY --from=builder /tmp/gobuild/lazydocker /bin/lazydocker
