@@ -45,6 +45,5 @@ LABEL \
     org.opencontainers.image.title="lazydocker" \
     org.opencontainers.image.description="The lazier way to manage everything docker"
 ENTRYPOINT [ "/bin/lazydocker" ]
-ENV PATH=/bin
 COPY --from=docker-builder /go/src/github.com/docker/cli/build/docker /bin/docker
 COPY --from=builder /tmp/gobuild/lazydocker /bin/lazydocker
