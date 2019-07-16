@@ -117,6 +117,10 @@ docker build -t lazyteam/lazydocker \
     .
 ```
 
+If you encounter a compatibility issue with Docker bundled binary, try rebuilding
+the image with the build argument `--build-arg DOCKER_VERSION="v$(docker -v | cut -d" " -f3 | rev | cut -c 2- | rev)"`
+so that the bundled docker binary matches your host docker binary version.
+
 ## Usage
 
 Call `lazydocker` in your terminal. I personally use this a lot so I've made an alias for it like so:
