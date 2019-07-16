@@ -40,7 +40,8 @@ LABEL org.label-schema.schema-version="1.0.0-rc1" \
     org.label-schema.vcs-description="The lazier way to manage everything docker" \
     org.label-schema.docker.cmd="docker run -it -v /var/run/docker.sock:/var/run/docker.sock lazydocker" \
     org.label-schema.version=${VERSION}
-ENTRYPOINT [ "/lazydocker" ]
+ENTRYPOINT [ "/bin/lazydocker" ]
 VOLUME [ "/.config/jesseduffield/lazydocker" ]
-ENV PATH=/
-COPY --from=docker-builder /go/src/github.com/docker/cli/build/docker /docker
+ENV PATH=/bin
+COPY --from=builder /go/src/github.com/jesseduffield/lazydocker/lazydocker /bin/lazydocker
+COPY --from=docker-builder /go/src/github.com/docker/cli/build/docker /bin/docker
