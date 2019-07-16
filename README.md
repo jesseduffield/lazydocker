@@ -95,10 +95,13 @@ go get github.com/jesseduffield/lazydocker
 1. Run the container
 
     ```sh
-    docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker
+    docker run -it -v /var/run/docker.sock:/var/run/docker.sock lazyteam/lazydocker
     ```
 
     On Windows, replace `$(pwd)` by `%cd%`.
+
+    You can optionally bind mount the config directory with `-v $(pwd)/config:/.config/jesseduffield/lazydocker`,
+    although it is saved in a volume by default.
 
     You can also use this [docker-compose.yml](https://github.com/jesseduffield/lazydocker/blob/master/docker-compose.yml)
 
