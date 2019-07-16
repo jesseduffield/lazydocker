@@ -34,14 +34,16 @@ FROM scratch
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
-LABEL org.label-schema.schema-version="1.0.0-rc1" \
-    maintainer="jessedduffield@gmail.com" \
-    org.label-schema.build-date=$BUILD_DATE \
-    org.label-schema.vcs-ref=$VCS_REF \
-    org.label-schema.url="https://github.com/jesseduffield/lazydocker" \
-    org.label-schema.vcs-description="The lazier way to manage everything docker" \
-    org.label-schema.docker.cmd="docker run -it -v /var/run/docker.sock:/var/run/docker.sock lazydocker" \
-    org.label-schema.version=${VERSION}
+LABEL \
+    org.opencontainers.image.authors="jessedduffield@gmail.com" \
+    org.opencontainers.image.created=$BUILD_DATE \
+    org.opencontainers.image.version=$VERSION \
+    org.opencontainers.image.revision=$VCS_REF \
+    org.opencontainers.image.url="https://github.com/jesseduffield/lazydocker" \
+    org.opencontainers.image.documentation="https://github.com/jesseduffield/lazydocker" \
+    org.opencontainers.image.source="https://github.com/jesseduffield/lazydocker" \
+    org.opencontainers.image.title="lazydocker" \
+    org.opencontainers.image.description="The lazier way to manage everything docker"
 ENTRYPOINT [ "/bin/lazydocker" ]
 ENV PATH=/bin
 COPY --from=docker-builder /go/src/github.com/docker/cli/build/docker /bin/docker
