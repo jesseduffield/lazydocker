@@ -86,24 +86,25 @@ go get github.com/jesseduffield/lazydocker
         ```
 
     </p></details>
-1. Create a directory *config* on your host:
-
-    ```sh
-    mkdir config
-    ```
 
 1. Run the container
 
     ```sh
-    docker run -it -v /var/run/docker.sock:/var/run/docker.sock lazyteam/lazydocker
+    docker run -it -v \
+    /var/run/docker.sock:/var/run/docker.sock \
+    -v /yourpath:/.config/jesseduffield/lazydocker \
+    lazyteam/lazydocker
     ```
 
-    On Windows, replace `$(pwd)` by `%cd%`.
+    - Don't forget to change `/yourpath` to an actual path you created to store lazydocker's config
+    - You can also use this [docker-compose.yml](https://github.com/jesseduffield/lazydocker/blob/master/docker-compose.yml)
+    - You might want to create an alias, for example:
 
-    You can optionally bind mount the config directory with `-v $(pwd)/config:/.config/jesseduffield/lazydocker`,
-    although it is saved in a volume by default.
+        ```sh
+        echo "alias ld='docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'" >> ~/.zshrc
+        ```
 
-    You can also use this [docker-compose.yml](https://github.com/jesseduffield/lazydocker/blob/master/docker-compose.yml)
+
 
 For development, you can build the image using:
 

@@ -43,7 +43,6 @@ LABEL org.label-schema.schema-version="1.0.0-rc1" \
     org.label-schema.docker.cmd="docker run -it -v /var/run/docker.sock:/var/run/docker.sock lazydocker" \
     org.label-schema.version=${VERSION}
 ENTRYPOINT [ "/bin/lazydocker" ]
-VOLUME [ "/.config/jesseduffield/lazydocker" ]
 ENV PATH=/bin
 COPY --from=docker-builder /go/src/github.com/docker/cli/build/docker /bin/docker
 COPY --from=builder /tmp/gobuild/lazydocker /bin/lazydocker
