@@ -225,20 +225,16 @@ func (c *Container) PlotGraph(spec config.GraphConfig, width int) (string, error
 		if spec.MinType == "" {
 			if i == 0 {
 				min = floatValue
-			} else {
-				if floatValue < min {
-					min = floatValue
-				}
+			} else if floatValue < min {
+				min = floatValue
 			}
 		}
 
 		if spec.MaxType == "" {
 			if i == 0 {
 				max = floatValue
-			} else {
-				if floatValue > max {
-					max = floatValue
-				}
+			} else if floatValue > max {
+				max = floatValue
 			}
 		}
 

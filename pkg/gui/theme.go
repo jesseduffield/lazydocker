@@ -9,7 +9,7 @@ import (
 func (gui *Gui) GetColor(keys []string) gocui.Attribute {
 	var attribute gocui.Attribute
 	for _, key := range keys {
-		attribute = attribute | utils.GetGocuiAttribute(key)
+		attribute |= utils.GetGocuiAttribute(key)
 	}
 	return attribute
 }

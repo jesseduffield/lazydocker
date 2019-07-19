@@ -227,7 +227,7 @@ func FormatBinaryBytes(b int) string {
 	units := []string{"B", "kiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}
 	for _, unit := range units {
 		if n > math.Pow(2, 10) {
-			n = n / math.Pow(2, 10)
+			n /= math.Pow(2, 10)
 		} else {
 			val := fmt.Sprintf("%.2f%s", n, unit)
 			if val == "0.00B" {
@@ -244,7 +244,7 @@ func FormatDecimalBytes(b int) string {
 	units := []string{"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"}
 	for _, unit := range units {
 		if n > math.Pow(10, 3) {
-			n = n / math.Pow(10, 3)
+			n /= math.Pow(10, 3)
 		} else {
 			val := fmt.Sprintf("%.2f%s", n, unit)
 			if val == "0.00B" {
