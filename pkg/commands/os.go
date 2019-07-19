@@ -336,7 +336,7 @@ func (c *OSCommand) Kill(cmd *exec.Cmd) error {
 		// somebody got to it before we were able to, poor bastard
 		return nil
 	}
-	if cmd.SysProcAttr != nil && cmd.SysProcAttr.Setpgid == true {
+	if cmd.SysProcAttr != nil && cmd.SysProcAttr.Setpgid {
 		// minus sign means we're talking about a PGID as opposed to a PID
 		return syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 	}
