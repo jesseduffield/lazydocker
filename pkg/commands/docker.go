@@ -144,8 +144,6 @@ func (c *DockerCommand) MonitorCLIContainerStats() {
 	}
 
 	cmd.Wait()
-
-	return
 }
 
 // MonitorClientContainerStats is a function
@@ -193,7 +191,6 @@ func (c *DockerCommand) createClientStatMonitor(container *Container) {
 	}
 
 	container.MonitoringStats = false
-	return
 }
 
 // RefreshContainersAndServices returns a slice of docker containers
