@@ -52,7 +52,6 @@ func NewApp(config *config.AppConfig) (*App, error) {
 
 func (app *App) Run() error {
 	err := app.Gui.RunWithSubprocesses()
-
 	return err
 }
 

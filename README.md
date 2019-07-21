@@ -73,6 +73,81 @@ makepkg --install
 
 A development version of the AUR package is also [available](https://aur.archlinux.org/lazydocker-git.git)
 
+### Docker
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
+[![Docker Stars](https://img.shields.io/docker/stars/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
+[![Docker Automated](https://img.shields.io/docker/cloud/automated/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
+
+1. <details><summary>Click if you have an ARM device</summary><p>
+
+    - If you have a ARM 32 bit v6 architecture
+
+        ```sh
+        docker build -t lazyteam/lazydocker \
+        --build-arg BASE_IMAGE_BUILDER=arm32v6/golang \
+        --build-arg GOARCH=arm \
+        --build-arg GOARM=6 \
+        https://github.com/jesseduffield/lazydocker.git
+        ```
+
+    - If you have a ARM 32 bit v7 architecture
+
+        ```sh
+        docker build -t lazyteam/lazydocker \
+        --build-arg BASE_IMAGE_BUILDER=arm32v7/golang \
+        --build-arg GOARCH=arm \
+        --build-arg GOARM=7 \
+        https://github.com/jesseduffield/lazydocker.git
+        ```
+
+    - If you have a ARM 64 bit v8 architecture
+
+        ```sh
+        docker build -t lazyteam/lazydocker \
+        --build-arg BASE_IMAGE_BUILDER=arm64v8/golang \
+        --build-arg GOARCH=arm64 \
+        https://github.com/jesseduffield/lazydocker.git
+        ```
+
+    </p></details>
+
+1. Run the container
+
+    ```sh
+    docker run -it -v \
+    /var/run/docker.sock:/var/run/docker.sock \
+    -v /yourpath:/.config/jesseduffield/lazydocker \
+    lazyteam/lazydocker
+    ```
+
+    - Don't forget to change `/yourpath` to an actual path you created to store lazydocker's config
+    - You can also use this [docker-compose.yml](https://github.com/jesseduffield/lazydocker/blob/master/docker-compose.yml)
+    - You might want to create an alias, for example:
+
+        ```sh
+        echo "alias ld='docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'" >> ~/.zshrc
+        ```
+
+
+
+For development, you can build the image using:
+
+```sh
+git clone https://github.com/jesseduffield/lazydocker.git
+cd lazydocker
+docker build -t lazyteam/lazydocker \
+    --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+    --build-arg VCS_REF=`git rev-parse --short HEAD` \
+    --build-arg VERSION=`git describe --abbrev=0 --tag` \
+    .
+```
+
+If you encounter a compatibility issue with Docker bundled binary, try rebuilding
+the image with the build argument `--build-arg DOCKER_VERSION="v$(docker -v | cut -d" " -f3 | rev | cut -c 2- | rev)"`
+so that the bundled docker binary matches your host docker binary version.
+
+
 ## Usage
 
 Call `lazydocker` in your terminal. I personally use this a lot so I've made an alias for it like so:

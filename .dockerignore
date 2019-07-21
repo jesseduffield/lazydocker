@@ -1,0 +1,12 @@
+.circleci
+.github
+docs
+test
+.gitignore
+.goreleaser.yml
+*.md
+coverage.txt
+Dockerfile
+LICENSE
+test.sh
+.git
