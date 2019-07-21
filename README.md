@@ -126,7 +126,7 @@ A development version of the AUR package is also [available](https://aur.archlin
     - You might want to create an alias, for example:
 
         ```sh
-        echo "alias ld='docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'" >> ~/.zshrc
+        echo "alias lzd='docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'" >> ~/.zshrc
         ```
 
 
