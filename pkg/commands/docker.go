@@ -272,7 +272,9 @@ func (c *DockerCommand) assignContainersToServices(containers []*Container, serv
 
 	// Walk the list of Containers, categorizing them as either associated with a
 	// Service or as standalone.
-	standaloneContainers := make([]*Container, 0, len(containers) - len(serviceContainerIds))
+	serviceContainerCount := len(serviceContainerIds)
+	standaloneContainerCount := len(containers) - serviceContainerCount
+	standaloneContainers := make([]*Container, 0, standaloneContainerCount)
 	for _, container := range containers {
 		if !container.OneOff && serviceContainerIds[container.ID] {
 			service := serviceMap[container.ServiceName]
