@@ -216,20 +216,26 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 		}
 	}
 
-	c.assignContainersToServices(containers, services)
-
 	var displayContainers = containers
-	if !c.Config.UserConfig.Gui.ShowAllContainers {
-		displayContainers = c.obtainStandaloneContainers(containers, services)
+
+	if c.InDockerComposeProject {
+		var standaloneContainers, err = c.assignContainersToServices(containers, services)
+		if err != nil {
+			return err
+		}
+
+		if !c.Config.UserConfig.Gui.ShowAllContainers {
+			displayContainers = standaloneContainers
+		}
 	}
 
 	// sort services first by whether they have a linked container, and second by alphabetical order
 	sort.Slice(services, func(i, j int) bool {
-		if services[i].Container != nil && services[j].Container == nil {
+		if len(services[i].Containers) > 0 && len(services[j].Containers) == 0 {
 			return true
 		}
 
-		if services[i].Container == nil && services[j].Container != nil {
+		if len(services[i].Containers) == 0 && len(services[j].Containers) > 0 {
 			return false
 		}
 
@@ -243,17 +249,40 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 	return nil
 }
 
-func (c *DockerCommand) assignContainersToServices(containers []*Container, services []*Service) {
-L:
-	for _, service := range services {
-		for _, container := range containers {
-			if !container.OneOff && container.ServiceName == service.Name {
-				service.Container = container
-				continue L
-			}
-		}
-		service.Container = nil
+func (c *DockerCommand) assignContainersToServices(containers []*Container, services []*Service) ([]*Container, error) {
+	// Get a list of the Container IDs for this Docker Compose project.
+	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
+	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s ps -q", composeCommand))
+	if err != nil {
+		return nil, err
 	}
+
+	// Create an index for Container IDs to make lookups less expensive.
+	lines := utils.SplitLines(output)
+	serviceContainerIds := make(map[string]bool)
+	for _, line := range lines {
+		serviceContainerIds[line] = true
+	}
+
+	// Index Services by name.
+	serviceMap := make(map[string]*Service)
+	for _, service := range services {
+		serviceMap[service.Name] = service
+	}
+
+	// Walk the list of Containers, categorizing them as either associated with a
+	// Service or as standalone.
+	standaloneContainers := make([]*Container, 0, len(containers) - len(serviceContainerIds))
+	for _, container := range containers {
+		if !container.OneOff && serviceContainerIds[container.ID] {
+			service := serviceMap[container.ServiceName]
+			service.Containers = append(service.Containers, container)
+		} else {
+			standaloneContainers = append(standaloneContainers, container)
+		}
+	}
+
+	return standaloneContainers, nil
 }
 
 // filterOutExited filters out the exited containers if c.ShowExited is false
@@ -268,22 +297,6 @@ func (c *DockerCommand) filterOutExited(containers []*Container) []*Container {
 		}
 	}
 	return toReturn
-}
-
-// obtainStandaloneContainers returns standalone containers. Standalone containers are containers which are either one-off containers, or whose service is not part of this docker-compose context
-func (c *DockerCommand) obtainStandaloneContainers(containers []*Container, services []*Service) []*Container {
-	standaloneContainers := []*Container{}
-L:
-	for _, container := range containers {
-		for _, service := range services {
-			if !container.OneOff && container.ServiceName != "" && container.ServiceName == service.Name {
-				continue L
-			}
-		}
-		standaloneContainers = append(standaloneContainers, container)
-	}
-
-	return standaloneContainers
 }
 
 // GetContainers gets the docker containers
@@ -349,25 +362,20 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	}
 
 	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
-	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --hash=*", composeCommand))
+	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --services", composeCommand))
 	if err != nil {
 		return nil, err
 	}
 
-	// output looks like:
-	// service1 998d6d286b0499e0ff23d66302e720991a2asdkf9c30d0542034f610daf8a971
-	// service2 asdld98asdklasd9bccd02438de0994f8e19cbe691feb3755336ec5ca2c55971
-
-	lines := utils.SplitLines(output)
-	services := make([]*Service, len(lines))
-	for i, str := range lines {
-		arr := strings.Split(str, " ")
+	serviceNames := utils.SplitLines(output)
+	services := make([]*Service, len(serviceNames))
+	for i, name := range serviceNames {
 		services[i] = &Service{
-			Name:          arr[0],
-			ID:            arr[1],
+			Name:          name,
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,
 			DockerCommand: c,
+			Containers:    make([]*Container, 0, 1),
 		}
 	}
 

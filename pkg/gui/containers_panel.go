@@ -247,7 +247,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 	// see if our selected service has moved
 	if selectedService != nil {
 		for i, service := range gui.DockerCommand.Services {
-			if service.ID == selectedService.ID {
+			if service.Name == selectedService.Name {
 				if i == sl {
 					break
 				}
