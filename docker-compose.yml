@@ -7,7 +7,7 @@ services:
         BASE_IMAGE_BUILDER: golang
         GOARCH: amd64
         GOARM:
-    image: jesseduffield/lazydocker
+    image: lazyteam/lazydocker
     container_name: lazydocker
     stdin_open: true
     tty: true
