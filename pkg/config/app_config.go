@@ -196,7 +196,6 @@ type UpdateConfig struct {
 	// It expects a valid duration like: 100ms, 2s, 200ns
 	// for docs see: https://golang.org/pkg/time/#ParseDuration
 	DockerRefreshInterval time.Duration `yaml:"dockerRefreshInterval,omitempty"`
-	Method                string        `yaml:"method,omitempty"`
 }
 
 // GraphConfig specifies how to make a graph of recorded container stats
@@ -349,7 +348,6 @@ func GetDefaultConfig() UserConfig {
 		OS: GetPlatformDefaultConfig(),
 		Update: UpdateConfig{
 			DockerRefreshInterval: time.Millisecond * 100,
-			Method:                "never",
 		},
 		Stats: StatsConfig{
 			MaxDuration: duration,
