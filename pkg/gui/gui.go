@@ -267,13 +267,14 @@ func (gui *Gui) Run() error {
 		gui.waitForIntro.Add(1)
 	}
 
+	dockerRefreshInterval := gui.Config.UserConfig.Update.DockerRefreshInterval
 	go func() {
 		gui.waitForIntro.Wait()
 		gui.goEvery(time.Millisecond*50, gui.renderAppStatus)
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
-		gui.goEvery(time.Millisecond*100, gui.refreshProject)
-		gui.goEvery(time.Millisecond*100, gui.refreshContainersAndServices)
-		gui.goEvery(time.Millisecond*100, gui.refreshVolumes)
+		gui.goEvery(dockerRefreshInterval, gui.refreshProject)
+		gui.goEvery(dockerRefreshInterval, gui.refreshContainersAndServices)
+		gui.goEvery(dockerRefreshInterval, gui.refreshVolumes)
 		gui.goEvery(time.Millisecond*1000, gui.DockerCommand.UpdateContainerDetails)
 		gui.goEvery(time.Millisecond*1000, gui.checkForContextChange)
 	}()

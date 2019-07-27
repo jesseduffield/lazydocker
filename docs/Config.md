@@ -13,7 +13,7 @@ Changes to the user config will only take place after closing and re-opening laz
 
 ## Default:
 
-```
+```yml
 gui:
   scrollHeight: 2
   theme:
@@ -53,7 +53,7 @@ oS:
   openCommand: open {{filename}}
   openLinkCommand: open {{link}}
 update:
-  method: never
+  dockerRefreshInterval: 100ms
 stats:
   graphs:
   - caption: CPU (%)
