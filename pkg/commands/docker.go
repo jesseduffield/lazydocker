@@ -267,6 +267,7 @@ func (c *DockerCommand) assignContainersToServices(containers []*Container, serv
 	// Index Services by name.
 	serviceMap := make(map[string]*Service)
 	for _, service := range services {
+		service.Containers = make([]*Container, 0, 1)
 		serviceMap[service.Name] = service
 	}
 
