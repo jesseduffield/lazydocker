@@ -6,8 +6,6 @@ A simple terminal UI for both docker and docker-compose, written in Go with the 
 
 [![CircleCI](https://circleci.com/gh/jesseduffield/lazydocker.svg?style=svg)](https://circleci.com/gh/jesseduffield/lazydocker) [![Go Report Card](https://goreportcard.com/badge/github.com/jesseduffield/lazydocker)](https://goreportcard.com/report/github.com/jesseduffield/lazydocker) [![GolangCI](https://golangci.com/badges/github.com/jesseduffield/lazydocker.svg)](https://golangci.com) [![GoDoc](https://godoc.org/github.com/jesseduffield/lazydocker?status.svg)](http://godoc.org/github.com/jesseduffield/lazydocker) [![GitHub tag](https://img.shields.io/github/tag/jesseduffield/lazydocker.svg)]()
 
-
-
 ![Gif](/docs/resources/demo3.gif)
 
 [Demo](https://youtu.be/NICqQPxwJWw)
@@ -31,7 +29,7 @@ Memorising docker commands is hard. Memorising aliases is slightly less hard. Ke
 
 ## Requirements
 
-- Docker >= **1.8** (API >= **1.20**)
+- Docker >= **1.8** (API >= **1.25**)
 - Docker-Compose >= **1.23.2** (optional)
 
 ## Installation
@@ -122,18 +120,23 @@ If you want to see what I (Jesse) am up to in terms of development, follow me on
 ## FAQ
 
 ### How do I edit my config?
+
 By opening lazydocker, clicking on the 'project' panel in the top left, and pressing 'o' (or 'e' if your editor is vim). See [Config Docs](/docs/Config.md)
 
 ### How do I get text to wrap in my main panel?
+
 In the future I want to make this the default, but for now there are some CPU issues that arise with wrapping. If you want to enable wrapping, use `gui.wrapMainPanel: true`
 
 ### How do you select text?
+
 Because we support mouse events, you will need to hold option while dragging the mouse to indicate you're trying to select text rather than click on something. Alternatively you can disable mouse events via the `gui.ignoreMouseEvents` config value
 
 ### Does this work with Windows?
+
 Currently not unless you use WSL. Instructions for setting up docker for WSL can be found here [here](https://nickjanetakis.com/blog/setting-up-docker-for-windows-and-wsl-to-work-flawlessly)
 
 ### Why can't I see my container's logs?
+
 By default we only show logs from the last hour, so that we're not putting too much strain on the machine. This may be why you can't see logs when you first start lazydocker. This can be overwritten in the config's `commandTemplates`
 
 ## Alternatives

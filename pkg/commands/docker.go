@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	APIVersion = "1.20"
+	APIVersion = "1.25"
 )
 
 // DockerCommand is our main docker interface
