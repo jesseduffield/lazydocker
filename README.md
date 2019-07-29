@@ -29,7 +29,7 @@ Memorising docker commands is hard. Memorising aliases is slightly less hard. Ke
 
 ## Requirements
 
-- Docker >= **1.8** (API >= **1.25**)
+- Docker >= **1.13** (API >= **1.25**)
 - Docker-Compose >= **1.23.2** (optional)
 
 ## Installation
