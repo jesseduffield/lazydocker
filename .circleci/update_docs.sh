@@ -17,7 +17,8 @@ echo "committing updated docs"
 git config user.name "lazydocker bot"
 git config user.email "jessedduffield@gmail.com"
 
+git checkout master # just making sure we're up to date
+git pull
 git add docs/*
-git pull # just making sure we're up to date
 git commit -m "update docs"
 git push -u origin master
