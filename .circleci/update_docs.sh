@@ -18,6 +18,6 @@ git config user.name "lazydocker bot"
 git config user.email "jessedduffield@gmail.com"
 
 git add docs/*
-git pull --rebase # just making sure we're up to date
+git pull # just making sure we're up to date
 git commit -m "update docs"
 git push -u origin master
