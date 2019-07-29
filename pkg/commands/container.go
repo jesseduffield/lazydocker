@@ -2,11 +2,13 @@ package commands
 
 import (
 	"context"
-	"github.com/docker/docker/api/types/container"
+	"fmt"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/docker/docker/api/types/container"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -317,6 +319,7 @@ func (c *Container) GetColor() color.Attribute {
 
 // Remove removes the container
 func (c *Container) Remove(options types.ContainerRemoveOptions) error {
+	c.Log.Warn(fmt.Sprintf("removing container %s", c.Name))
 	if err := c.Client.ContainerRemove(context.Background(), c.ID, options); err != nil {
 		if strings.Contains(err.Error(), "Stop the container before attempting removal or force remove") {
 			return ComplexError{
@@ -333,16 +336,20 @@ func (c *Container) Remove(options types.ContainerRemoveOptions) error {
 
 // Stop stops the container
 func (c *Container) Stop() error {
+	c.Log.Warn(fmt.Sprintf("stopping container %s", c.Name))
 	return c.Client.ContainerStop(context.Background(), c.ID, nil)
 }
 
 // Restart restarts the container
 func (c *Container) Restart() error {
+	c.Log.Warn(fmt.Sprintf("restarting container %s", c.Name))
 	return c.Client.ContainerRestart(context.Background(), c.ID, nil)
 }
 
 // Attach attaches the container
 func (c *Container) Attach() (*exec.Cmd, error) {
+	c.Log.Warn(fmt.Sprintf("attaching to container %s", c.Name))
+
 	// verify that we can in fact attach to this container
 	if !c.Details.Config.OpenStdin {
 		return nil, errors.New(c.Tr.UnattachableContainerError)

@@ -241,13 +241,6 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "containers",
-			Key:         'D',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handlePruneContainers,
-			Description: gui.Tr.PruneContainers,
-		},
-		{
-			ViewName:    "containers",
 			Key:         'm',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainerViewLogs,
@@ -259,6 +252,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersCustomCommand,
 			Description: gui.Tr.RunCustomCommand,
+		},
+		{
+			ViewName:    "containers",
+			Key:         'b',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleContainersBulkCommand,
+			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
 			ViewName:    "services",
@@ -324,6 +324,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.RunCustomCommand,
 		},
 		{
+			ViewName:    "services",
+			Key:         'b',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServicesBulkCommand,
+			Description: gui.Tr.ViewBulkCommands,
+		},
+		{
 			ViewName:    "images",
 			Key:         '[',
 			Modifier:    gocui.ModNone,
@@ -353,10 +360,17 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "images",
-			Key:         'D',
+			Key:         'b',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handlePruneImages,
-			Description: gui.Tr.PruneImages,
+			Handler:     gui.handleImagesBulkCommand,
+			Description: gui.Tr.ViewBulkCommands,
+		},
+		{
+			ViewName:    "images",
+			Key:         'c',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleImagesCustomCommand,
+			Description: gui.Tr.RunCustomCommand,
 		},
 		{
 			ViewName:    "volumes",
@@ -388,10 +402,17 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "volumes",
-			Key:         'D',
+			Key:         'b',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handlePruneVolumes,
-			Description: gui.Tr.PruneVolumes,
+			Handler:     gui.handleVolumesBulkCommand,
+			Description: gui.Tr.ViewBulkCommands,
+		},
+		{
+			ViewName:    "volumes",
+			Key:         'c',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleVolumesCustomCommand,
+			Description: gui.Tr.RunCustomCommand,
 		},
 		{
 			ViewName:    "main",

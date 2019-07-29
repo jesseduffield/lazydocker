@@ -11,6 +11,7 @@ import (
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
@@ -476,8 +477,8 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 	return gui.Errors.ErrSubProcess
 }
 
-func (gui *Gui) handlePruneContainers(g *gocui.Gui, v *gocui.View) error {
-	return gui.createConfirmationPanel(gui.g, v, gui.Tr.Confirm, gui.Tr.ConfirmPruneContainers, func(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handlePruneContainers() error {
+	return gui.createConfirmationPanel(gui.g, gui.getContainersView(), gui.Tr.Confirm, gui.Tr.ConfirmPruneContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
 			err := gui.DockerCommand.PruneContainers()
 			if err != nil {
@@ -516,4 +517,52 @@ func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error
 	customCommands := gui.Config.UserConfig.CustomCommands.Containers
 
 	return gui.createCustomCommandMenu(customCommands, commandObject)
+}
+
+func (gui *Gui) handleStopContainers() error {
+	return gui.createConfirmationPanel(gui.g, gui.getContainersView(), gui.Tr.Confirm, gui.Tr.ConfirmStopContainers, func(g *gocui.Gui, v *gocui.View) error {
+		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
+
+			for _, container := range gui.DockerCommand.Containers {
+				_ = container.Stop()
+			}
+
+			return nil
+		})
+	}, nil)
+}
+
+func (gui *Gui) handleRemoveContainers() error {
+	return gui.createConfirmationPanel(gui.g, gui.getContainersView(), gui.Tr.Confirm, gui.Tr.ConfirmRemoveContainers, func(g *gocui.Gui, v *gocui.View) error {
+		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
+
+			for _, container := range gui.DockerCommand.Containers {
+				_ = container.Remove(types.ContainerRemoveOptions{Force: true})
+			}
+
+			return nil
+		})
+	}, nil)
+}
+
+func (gui *Gui) handleContainersBulkCommand(g *gocui.Gui, v *gocui.View) error {
+	baseBulkCommands := []config.CustomCommand{
+		{
+			Name:             gui.Tr.StopAllContainers,
+			InternalFunction: gui.handleStopContainers,
+		},
+		{
+			Name:             gui.Tr.RemoveAllContainers,
+			InternalFunction: gui.handleRemoveContainers,
+		},
+		{
+			Name:             gui.Tr.PruneContainers,
+			InternalFunction: gui.handlePruneContainers,
+		},
+	}
+
+	bulkCommands := append(baseBulkCommands, gui.Config.UserConfig.BulkCommands.Containers...)
+	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+
+	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }

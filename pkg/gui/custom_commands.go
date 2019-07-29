@@ -21,7 +21,7 @@ func (r *customCommandOption) GetDisplayStrings(isFocused bool) []string {
 	return []string{r.name, utils.ColoredString(r.description, color.FgCyan)}
 }
 
-func (gui *Gui) createCustomCommandMenu(customCommands []config.CustomCommand, commandObject commands.CommandObject) error {
+func (gui *Gui) createCommandMenu(customCommands []config.CustomCommand, commandObject commands.CommandObject, title string, waitingStatus string) error {
 	options := make([]*customCommandOption, len(customCommands)+1)
 	for i, command := range customCommands {
 		resolvedCommand := utils.ApplyTemplate(command.Command, commandObject)
@@ -46,6 +46,10 @@ func (gui *Gui) createCustomCommandMenu(customCommands []config.CustomCommand, c
 			return nil
 		}
 
+		if option.customCommand.InternalFunction != nil {
+			return option.customCommand.InternalFunction()
+		}
+
 		// if we have a command for attaching, we attach and return the subprocess error
 		if option.customCommand.Attach {
 			cmd := gui.OSCommand.ExecutableFromString(option.command)
@@ -53,7 +57,7 @@ func (gui *Gui) createCustomCommandMenu(customCommands []config.CustomCommand, c
 			return gui.Errors.ErrSubProcess
 		}
 
-		return gui.WithWaitingStatus(gui.Tr.RunningCustomCommandStatus, func() error {
+		return gui.WithWaitingStatus(waitingStatus, func() error {
 			if err := gui.OSCommand.RunCommand(option.command); err != nil {
 				return gui.createErrorPanel(gui.g, err.Error())
 			}
@@ -61,5 +65,13 @@ func (gui *Gui) createCustomCommandMenu(customCommands []config.CustomCommand, c
 		})
 	}
 
-	return gui.createMenu("", options, len(options), handleMenuPress)
+	return gui.createMenu(title, options, len(options), handleMenuPress)
+}
+
+func (gui *Gui) createCustomCommandMenu(customCommands []config.CustomCommand, commandObject commands.CommandObject) error {
+	return gui.createCommandMenu(customCommands, commandObject, gui.Tr.CustomCommandTitle, gui.Tr.RunningCustomCommandStatus)
+}
+
+func (gui *Gui) createBulkCommandMenu(customCommands []config.CustomCommand, commandObject commands.CommandObject) error {
+	return gui.createCommandMenu(customCommands, commandObject, gui.Tr.BulkCommandTitle, gui.Tr.RunningBulkCommandStatus)
 }

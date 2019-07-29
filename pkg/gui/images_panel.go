@@ -10,6 +10,7 @@ import (
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
@@ -23,7 +24,7 @@ func (gui *Gui) getImageContextTitles() []string {
 	return []string{gui.Tr.ConfigTitle}
 }
 
-func (gui *Gui) getSelectedImage(g *gocui.Gui) (*commands.Image, error) {
+func (gui *Gui) getSelectedImage() (*commands.Image, error) {
 	selectedLine := gui.State.Panels.Images.SelectedLine
 	if selectedLine == -1 {
 		return &commands.Image{}, gui.Errors.ErrNoImages
@@ -41,7 +42,7 @@ func (gui *Gui) handleImagesClick(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
-	Image, err := gui.getSelectedImage(g)
+	Image, err := gui.getSelectedImage()
 	if err != nil {
 		if err != gui.Errors.ErrNoImages {
 			return err
@@ -207,7 +208,7 @@ func (r *removeImageOption) GetDisplayStrings(isFocused bool) []string {
 }
 
 func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
-	Image, err := gui.getSelectedImage(g)
+	Image, err := gui.getSelectedImage()
 	if err != nil {
 		return nil
 	}
@@ -248,8 +249,8 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	return gui.createMenu("", options, len(options), handleMenuPress)
 }
 
-func (gui *Gui) handlePruneImages(g *gocui.Gui, v *gocui.View) error {
-	return gui.createConfirmationPanel(gui.g, v, gui.Tr.Confirm, gui.Tr.ConfirmPruneImages, func(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handlePruneImages() error {
+	return gui.createConfirmationPanel(gui.g, gui.getImagesView(), gui.Tr.Confirm, gui.Tr.ConfirmPruneImages, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
 			err := gui.DockerCommand.PruneImages()
 			if err != nil {
@@ -261,17 +262,30 @@ func (gui *Gui) handlePruneImages(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleImagesCustomCommand(g *gocui.Gui, v *gocui.View) error {
-	image, err := gui.getSelectedImage(g)
+	image, err := gui.getSelectedImage()
 	if err != nil {
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(
-		commands.CommandObject{
-			Image: image,
-		})
+	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+		Image: image,
+	})
 
 	customCommands := gui.Config.UserConfig.CustomCommands.Images
 
 	return gui.createCustomCommandMenu(customCommands, commandObject)
+}
+
+func (gui *Gui) handleImagesBulkCommand(g *gocui.Gui, v *gocui.View) error {
+	baseBulkCommands := []config.CustomCommand{
+		{
+			Name:             gui.Tr.PruneImages,
+			InternalFunction: gui.handlePruneImages,
+		},
+	}
+
+	bulkCommands := append(baseBulkCommands, gui.Config.UserConfig.BulkCommands.Images...)
+	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+
+	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }
