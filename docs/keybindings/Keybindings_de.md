@@ -8,7 +8,7 @@
   <kbd>[</kbd>: vorheriges Tab
   <kbd>]</kbd>: nächstes Tab
   <kbd>m</kbd>: zeige Protokolle
-  <kbd>enter</kbd>: fokusieren aufs Hauptpanel
+  <kbd>enter</kbd>: fokussieren aufs Hauptpanel
 </pre>
 
 ## Container
@@ -21,10 +21,10 @@
   <kbd>s</kbd>: anhalten
   <kbd>r</kbd>: neustarten
   <kbd>a</kbd>: anbinden
-  <kbd>D</kbd>: entferne verlassene Container
   <kbd>m</kbd>: zeige Protokolle
   <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
-  <kbd>enter</kbd>: fokusieren aufs Hauptpanel
+  <kbd>b</kbd>: view bulk commands
+  <kbd>enter</kbd>: fokussieren aufs Hauptpanel
 </pre>
 
 ## Dienste
@@ -39,7 +39,8 @@
   <kbd>]</kbd>: nächstes Tab
   <kbd>R</kbd>: zeige Neustartoptionen
   <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
-  <kbd>enter</kbd>: fokusieren aufs Hauptpanel
+  <kbd>b</kbd>: view bulk commands
+  <kbd>enter</kbd>: fokussieren aufs Hauptpanel
 </pre>
 
 ## Images
@@ -47,9 +48,11 @@
 <pre>
   <kbd>[</kbd>: vorheriges Tab
   <kbd>]</kbd>: nächstes Tab
+  <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
   <kbd>d</kbd>: entferne Image
-  <kbd>D</kbd>: entferne unbenutzte Images
-  <kbd>enter</kbd>: fokusieren aufs Hauptpanel
+  <kbd>b</kbd>: view bulk commands
+  <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
+  <kbd>enter</kbd>: fokussieren aufs Hauptpanel
 </pre>
 
 ## Volumen
@@ -57,9 +60,11 @@
 <pre>
   <kbd>[</kbd>: vorheriges Tab
   <kbd>]</kbd>: nächstes Tab
+  <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
   <kbd>d</kbd>: entferne Volumen
-  <kbd>D</kbd>: entferne unbenutzte Volumen
-  <kbd>enter</kbd>: fokusieren aufs Hauptpanel
+  <kbd>b</kbd>: view bulk commands
+  <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
+  <kbd>enter</kbd>: fokussieren aufs Hauptpanel
 </pre>
 
 ## Haupt

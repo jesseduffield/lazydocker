@@ -21,9 +21,9 @@
   <kbd>s</kbd>: zatrzymaj
   <kbd>r</kbd>: restartuj
   <kbd>a</kbd>: przyczep
-  <kbd>D</kbd>: wyczyść kontenery
   <kbd>m</kbd>: pokaż logi
   <kbd>c</kbd>: wykonaj predefiniowaną własną komende
+  <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: skup na głównym panelu
 </pre>
 
@@ -39,6 +39,7 @@
   <kbd>]</kbd>: następna zakładka
   <kbd>R</kbd>: pokaż opcje restartu
   <kbd>c</kbd>: wykonaj predefiniowaną własną komende
+  <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: skup na głównym panelu
 </pre>
 
@@ -47,8 +48,10 @@
 <pre>
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka
+  <kbd>c</kbd>: wykonaj predefiniowaną własną komende
   <kbd>d</kbd>: usuń obraz
-  <kbd>D</kbd>: wyczyść nieużywane obrazy
+  <kbd>b</kbd>: view bulk commands
+  <kbd>c</kbd>: wykonaj predefiniowaną własną komende
   <kbd>enter</kbd>: skup na głównym panelu
 </pre>
 
@@ -57,8 +60,10 @@
 <pre>
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka
+  <kbd>c</kbd>: wykonaj predefiniowaną własną komende
   <kbd>d</kbd>: usuń wolumen
-  <kbd>D</kbd>: wyczyść nieużywane wolumeny
+  <kbd>b</kbd>: view bulk commands
+  <kbd>c</kbd>: wykonaj predefiniowaną własną komende
   <kbd>enter</kbd>: skup na głównym panelu
 </pre>
 

@@ -21,9 +21,9 @@
   <kbd>s</kbd>: stop
   <kbd>r</kbd>: herstart
   <kbd>a</kbd>: verbinden
-  <kbd>D</kbd>: vernietig bestaande containers
   <kbd>m</kbd>: bekijk logs
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
+  <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
@@ -39,6 +39,7 @@
   <kbd>]</kbd>: volgende tab
   <kbd>R</kbd>: bekijk herstart opties
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
+  <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
@@ -47,8 +48,10 @@
 <pre>
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab
+  <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>d</kbd>: verwijder image
-  <kbd>D</kbd>: vernietig ongebruikte images
+  <kbd>b</kbd>: view bulk commands
+  <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
@@ -57,8 +60,10 @@
 <pre>
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab
+  <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>d</kbd>: verwijder volume
-  <kbd>D</kbd>: vernietig ongebruikte volumes
+  <kbd>b</kbd>: view bulk commands
+  <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>enter</kbd>: focus hooft panneel
 </pre>
 
