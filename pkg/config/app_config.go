@@ -63,6 +63,9 @@ type UserConfig struct {
 	// Stats determines how long lazydocker will gather container stats for, and
 	// what stat info to graph
 	Stats StatsConfig `yaml:"stats,omitempty"`
+
+	// Keybindings determines all the keybindings
+	Keybindings KeybindingsConfig `yaml:"keybindings,omitempty"`
 }
 
 // ThemeConfig is for setting the colors of panels and some text.
@@ -255,6 +258,167 @@ type StatsConfig struct {
 	MaxDuration time.Duration `yaml:"maxDuration,omitempty"`
 }
 
+// Keybindings contains all the configured keybindings
+type KeybindingsConfig struct {
+	// Quit represents all the keys that will stop the program
+	Quit []string `yaml:"quit,omitempty"`
+
+	// ScrollUpMain represents all the keys that will scroll up the main view
+	ScrollUpMain []string `yaml:"scrollUpMain,omitempty"`
+
+	// ScrollDownMain represents all the keys that will scroll down the main view
+	ScrollDownMain []string `yaml:"scrollDownMain,omitempty"`
+
+	// AutoScrollMain represents all the keys that will toggle autoscroll
+	AutoScrollMain []string `yaml:"autoScrollMain,omitempty"`
+
+	// ShowOptionsMenu represents all the keys that will show the options menu
+	ShowOptionsMenu []string `yaml:"showOptionsMenu,omitempty"`
+
+	// CustomCommand represents all the keys that will trigger the custom command view
+	CustomCommand []string `yaml:"customCommand,omitempty"`
+
+	// PreviousContext represents all the keys that will switch to the previous context
+	PreviousContext []string `yaml:"previousContext,omitempty"`
+
+	// NextContext represents all the keys that will switch to the previous context
+	NextContext []string `yaml:"nextContext,omitempty"`
+
+	// Project represents all the keys that are applied to the project view
+	Project Project `yaml:"project,omitempty"`
+
+	// Menu represents all the keys that are applied to the main view
+	Menu Menu `yaml:"menu,omitempty"`
+
+	// Information represents all the keys that are applied to the information view
+	Information Information `yaml:"information,omitempty"`
+
+	// Containers represents all the keys that are applied to the containers view
+	Containers Containers `yaml:"containers,omitempty"`
+
+	// Services represents all the keys that are applied to the services view
+	Services Services `yaml:"services,omitempty"`
+
+	// Images represents all the keys that are applied to the images view
+	Images Images `yaml:"images,omitempty"`
+
+	// Volumes represents all the keys that are applied to the volumes view
+	Volumes Volumes `yaml:"volumes,omitempty"`
+
+	// Main represents all the keys that are applied to the main view
+	Main Main `yaml:"main,omitempty"`
+}
+
+type Project struct {
+	// EditConfig represents all the keys that will open the edit view
+	EditConfig []string `yaml:"editConfig,omitempty"`
+
+	// OpenConfig represents all the keys that will open the config view
+	OpenConfig []string `yaml:"openConfig,omitempty"`
+
+	// Click represents all the keys that will trigger a click
+	Click []string `yaml:"click,omitempty"`
+
+	// ViewLogs represents all the keys that will show you the logs
+	ViewLogs []string `yaml:"viewLogs,omitempty"`
+
+	// Select represents all the keys that will trigger a select
+	Select []string `yaml:"select,omitempty"`
+}
+
+type Menu struct {
+	// Close represents all the keys that will close the main view
+	Close []string `yaml:"close,omitempty"`
+}
+
+type Information struct {
+	// Donate represents all the keys that will trigger a donation view
+	Donate []string `yaml:"donate,omitempty"`
+}
+
+type Containers struct {
+
+	// Remove represents all the keys that will remove the selected container
+	Remove []string `yaml:"remove,omitempty"`
+
+	// HideStopped represents all the keys that will hide toggle the hidestopped setting
+	HideStopped []string `yaml:"hideStopped,omitempty"`
+
+	// Stop represents all the keys that will stop the selected container
+	Stop []string `yaml:"stop,omitempty"`
+
+	// Restart represents all the keys that will restart the selected container
+	Restart []string `yaml:"restart,omitempty"`
+
+	// Attach represents all the keys that will attach the selected container
+	Attach []string `yaml:"attach,omitempty"`
+
+	// Prune represents all the keys that will prune the containers
+	Prune []string `yaml:"prune,omitempty"`
+
+	// ViewLogs represents all the keys that will show you the logs
+	ViewLogs []string `yaml:"viewLogs,omitempty"`
+
+	// RunCustomCommand represents all the keys that will run a custom command
+	RunCustomCommand []string `yaml:"runCustomCommand,omitempty"`
+}
+
+type Services struct {
+	// Remove represents all the keys that will remove the selected service
+	Remove []string `yaml:"remove,omitempty"`
+
+	// Stop represents all the keys that will stop the selected service
+	Stop []string `yaml:"stop,omitempty"`
+
+	// Restart represents all the keys that will restart the selected service
+	Restart []string `yaml:"restart,omitempty"`
+
+	// Attach represents all the keys that will attach the selected service
+	Attach []string `yaml:"attach,omitempty"`
+
+	// ViewLogs represents all the keys that will show you the logs of the current service
+	ViewLogs []string `yaml:"viewLogs,omitempty"`
+
+	// ViewRestartOptions represents all the keys that will show you the restart options
+	ViewRestartOptions []string `yaml:"viewRestartOptions,omitempty"`
+
+	// RunCustomCommand represents all the keys that will run a custom command
+	RunCustomCommand []string `yaml:"runCustomCommand,omitempty"`
+}
+
+type Images struct {
+	// Remove represents all the keys that will remove the selected image
+	Remove []string `yaml:"remove,omitempty"`
+
+	// Prune represents all the keys that will prune the images
+	Prune []string `yaml:"prune,omitempty"`
+}
+
+type Volumes struct {
+	// Remove represents all the keys that will remove the selected volume
+	Remove []string `yaml:"remove,omitempty"`
+
+	// Prune represents all the keys that will prune the volumes
+	Prune []string `yaml:"prune,omitempty"`
+}
+
+type Main struct {
+	// Return represents all the keys that will trigger a return
+	Return []string `yaml:"return,omitempty"`
+
+	// ScrollLeft represents all the keys that will scroll the main view to the left
+	ScrollLeft []string `yaml:"scrollLeft,omitempty"`
+
+	// ScrollLeft represents all the keys that will scroll the main view to the right
+	ScrollRight []string `yaml:"scrollRight,omitempty"`
+
+	// ScrollLeft represents all the keys that will scroll the main view down
+	ScrolDown []string `yaml:"scrolDown,omitempty"`
+
+	// ScrollLeft represents all the keys that will scroll the main view up
+	ScrollUp []string `yaml:"scrollUp,omitempty"`
+}
+
 // CustomCommands contains the custom commands that you might want to use on any
 // given service or container
 type CustomCommands struct {
@@ -415,6 +579,63 @@ func GetDefaultConfig() UserConfig {
 					StatPath: "DerivedStats.MemoryPercentage",
 					Color:    "green",
 				},
+			},
+		},
+		Keybindings: KeybindingsConfig{
+			Quit:            []string{},
+			ScrollUpMain:    []string{},
+			ScrollDownMain:  []string{},
+			AutoScrollMain:  []string{},
+			ShowOptionsMenu: []string{},
+			CustomCommand:   []string{},
+			PreviousContext: []string{},
+			NextContext:     []string{},
+			Project: Project{
+				EditConfig: []string{},
+				OpenConfig: []string{},
+				Click:      []string{},
+				ViewLogs:   []string{},
+				Select:     []string{},
+			},
+			Menu: Menu{
+				Close: []string{},
+			},
+			Information: Information{
+				Donate: []string{},
+			},
+			Containers: Containers{
+				Remove:           []string{},
+				HideStopped:      []string{},
+				Stop:             []string{},
+				Restart:          []string{},
+				Attach:           []string{},
+				Prune:            []string{},
+				ViewLogs:         []string{},
+				RunCustomCommand: []string{},
+			},
+			Services: Services{
+				Remove:             []string{},
+				Stop:               []string{},
+				Restart:            []string{},
+				Attach:             []string{},
+				ViewLogs:           []string{},
+				ViewRestartOptions: []string{},
+				RunCustomCommand:   []string{},
+			},
+			Images: Images{
+				Remove: []string{},
+				Prune:  []string{},
+			},
+			Volumes: Volumes{
+				Remove: []string{},
+				Prune:  []string{},
+			},
+			Main: Main{
+				Return:      []string{},
+				ScrollLeft:  []string{},
+				ScrollRight: []string{},
+				ScrolDown:   []string{},
+				ScrollUp:    []string{},
 			},
 		},
 	}
