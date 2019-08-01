@@ -295,7 +295,7 @@ type CustomCommand struct {
 	ServiceNames []string `yaml:"serviceNames"`
 
 	// InternalFunction is the name of a function inside lazydocker that we want to run, as opposed to a command-line command. This is only used internally and can't be configured by the user
-	InternalFunction func() error `yaml:"internalFunction"`
+	InternalFunction func() error `yaml:"-"`
 }
 
 // GetDefaultConfig returns the application default configuration NOTE (to
