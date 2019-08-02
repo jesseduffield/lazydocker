@@ -248,7 +248,9 @@ type ContainerCliStat struct {
 
 // GetDisplayStrings returns the dispaly string of Container
 func (c *Container) GetDisplayStrings(isFocused bool) []string {
-	return []string{c.GetDisplayStatus(), c.Name, c.GetDisplayCPUPerc()}
+	image := strings.TrimPrefix(c.Container.Image, "sha256:")
+
+	return []string{c.GetDisplayStatus(), c.Name, c.GetDisplayCPUPerc(), utils.ColoredString(image, color.FgMagenta)}
 }
 
 // GetDisplayStatus returns the colored status of the container
