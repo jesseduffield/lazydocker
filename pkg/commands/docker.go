@@ -267,7 +267,7 @@ func (c *DockerCommand) assignContainersToServices(containers []*Container, serv
 	// Index Services by name.
 	serviceMap := make(map[string]*Service)
 	for _, service := range services {
-		service.Containers = make([]*Container, 0, 1)
+		service.Containers = []*Container{}
 		serviceMap[service.Name] = service
 	}
 
@@ -378,7 +378,6 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,
 			DockerCommand: c,
-			Containers:    make([]*Container, 0, 1),
 		}
 	}
 
