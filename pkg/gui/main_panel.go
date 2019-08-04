@@ -27,11 +27,7 @@ func (gui *Gui) scrollDownMain(g *gocui.Gui, v *gocui.View) error {
 	scrollCount := gui.Config.UserConfig.Gui.ScrollHeight
 	totalLines := mainView.LinesHeight()
 	if oy+sizeY >= totalLines {
-		if newOy := totalLines - sizeY; newOy > 0 {
-			oy = newOy
-		} else {
-			scrollCount = 0
-		}
+		return nil
 	}
 
 	// for some reason we can't work out whether we've hit the bottomq
@@ -62,11 +58,7 @@ func (gui *Gui) scrollRightMain(g *gocui.Gui, v *gocui.View) error {
 	scrollCount := gui.Config.UserConfig.Gui.ScrollHeight
 	sizeX, _ := mainView.Size()
 	if ox+sizeX >= largestNumberOfCharacters {
-		if largestNumberOfCharacters > sizeX {
-			ox = largestNumberOfCharacters - sizeX
-		} else {
-			scrollCount = 0
-		}
+		return nil
 	}
 
 	return mainView.SetOrigin(ox+scrollCount, oy)
