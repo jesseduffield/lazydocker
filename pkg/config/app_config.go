@@ -269,6 +269,12 @@ type KeybindingsConfig struct {
 	// ScrollDownMain represents all the keys that will scroll down the main view
 	ScrollDownMain []string `yaml:"scrollDownMain,omitempty"`
 
+	// ScrollLeftMain represents all the keys that will scroll the main view to the left
+	ScrollLeftMain []string `yaml:"scrollLeftMain,omitempty"`
+
+	// ScrollRightMain represents all the keys that will scroll the main view to the right
+	ScrollRightMain []string `yaml:"scrollRightMain,omitempty"`
+
 	// AutoScrollMain represents all the keys that will toggle autoscroll
 	AutoScrollMain []string `yaml:"autoScrollMain,omitempty"`
 
@@ -309,6 +315,7 @@ type KeybindingsConfig struct {
 	Main Main `yaml:"main,omitempty"`
 }
 
+// Project represents all the keys that are applied to the project view
 type Project struct {
 	// EditConfig represents all the keys that will open the edit view
 	EditConfig []string `yaml:"editConfig,omitempty"`
@@ -337,7 +344,6 @@ type Information struct {
 }
 
 type Containers struct {
-
 	// Remove represents all the keys that will remove the selected container
 	Remove []string `yaml:"remove,omitempty"`
 
@@ -353,14 +359,14 @@ type Containers struct {
 	// Attach represents all the keys that will attach the selected container
 	Attach []string `yaml:"attach,omitempty"`
 
-	// Prune represents all the keys that will prune the containers
-	Prune []string `yaml:"prune,omitempty"`
-
 	// ViewLogs represents all the keys that will show you the logs
 	ViewLogs []string `yaml:"viewLogs,omitempty"`
 
 	// RunCustomCommand represents all the keys that will run a custom command
 	RunCustomCommand []string `yaml:"runCustomCommand,omitempty"`
+
+	// RunBulkCommands represents all the keys that will show you the bulk commands
+	RunBulkCommands []string `yaml:"runBulkCommands,omitempty"`
 }
 
 type Services struct {
@@ -384,24 +390,40 @@ type Services struct {
 
 	// RunCustomCommand represents all the keys that will run a custom command
 	RunCustomCommand []string `yaml:"runCustomCommand,omitempty"`
+
+	// RunBulkCommands represents all the keys that will show you the bulk commands
+	RunBulkCommands []string `yaml:"runBulkCommands,omitempty"`
+
+	// ScrollUpMain represents all the keys that will scroll up the main view
+	ScrollUpMain []string
+
+	// RunBulkCommands represents all the keys that will scroll down the main view
+	ScrollDownMain []string
 }
 
 type Images struct {
 	// Remove represents all the keys that will remove the selected image
 	Remove []string `yaml:"remove,omitempty"`
 
-	// Prune represents all the keys that will prune the images
-	Prune []string `yaml:"prune,omitempty"`
+	// RunCustomCommand represents all the keys that will run a custom command
+	RunCustomCommand []string `yaml:"runCustomCommand,omitempty"`
+
+	// RunBulkCommand represents all the
+	RunBulkCommands []string `yaml:"runBulkCommands,omitempty"`
 }
 
 type Volumes struct {
 	// Remove represents all the keys that will remove the selected volume
 	Remove []string `yaml:"remove,omitempty"`
 
-	// Prune represents all the keys that will prune the volumes
-	Prune []string `yaml:"prune,omitempty"`
+	// RunCustomCommand represents all the keys that will run a custom command
+	RunCustomCommand []string `yaml:"runCustomCommand,omitempty"`
+
+	// RunBulkCommand represents all the
+	RunBulkCommands []string `yaml:"runBulkCommands,omitempty"`
 }
 
+// Main represents all the keys that are applied to the main view
 type Main struct {
 	// Return represents all the keys that will trigger a return
 	Return []string `yaml:"return,omitempty"`
@@ -411,12 +433,6 @@ type Main struct {
 
 	// ScrollLeft represents all the keys that will scroll the main view to the right
 	ScrollRight []string `yaml:"scrollRight,omitempty"`
-
-	// ScrollLeft represents all the keys that will scroll the main view down
-	ScrolDown []string `yaml:"scrolDown,omitempty"`
-
-	// ScrollLeft represents all the keys that will scroll the main view up
-	ScrollUp []string `yaml:"scrollUp,omitempty"`
 }
 
 // CustomCommands contains the custom commands that you might want to use on any
@@ -582,60 +598,63 @@ func GetDefaultConfig() UserConfig {
 			},
 		},
 		Keybindings: KeybindingsConfig{
-			Quit:            []string{},
-			ScrollUpMain:    []string{},
-			ScrollDownMain:  []string{},
-			AutoScrollMain:  []string{},
-			ShowOptionsMenu: []string{},
-			CustomCommand:   []string{},
-			PreviousContext: []string{},
-			NextContext:     []string{},
+			Quit:            []string{"q", "ctrl+c", "escape"},
+			ScrollUpMain:    []string{"pageup", "ctrl+u", "K"},
+			ScrollDownMain:  []string{"pagedown", "ctrl+d", "J"},
+			ScrollLeftMain:  []string{"H"},
+			ScrollRightMain: []string{"L"},
+			AutoScrollMain:  []string{"end"},
+			ShowOptionsMenu: []string{"x", "?"},
+			CustomCommand:   []string{"X"},
+			PreviousContext: []string{"["},
+			NextContext:     []string{"]"},
 			Project: Project{
-				EditConfig: []string{},
-				OpenConfig: []string{},
-				Click:      []string{},
-				ViewLogs:   []string{},
-				Select:     []string{},
+				EditConfig: []string{"e"},
+				OpenConfig: []string{"o"},
+				Click:      []string{"MouseLeft"},
+				ViewLogs:   []string{"m"},
+				Select:     []string{"MouseLeft"},
 			},
 			Menu: Menu{
-				Close: []string{},
+				Close: []string{"Escape", "q"},
 			},
 			Information: Information{
-				Donate: []string{},
+				Donate: []string{"MouseLeft"},
 			},
 			Containers: Containers{
-				Remove:           []string{},
-				HideStopped:      []string{},
-				Stop:             []string{},
-				Restart:          []string{},
-				Attach:           []string{},
-				Prune:            []string{},
-				ViewLogs:         []string{},
-				RunCustomCommand: []string{},
+				Remove:           []string{"d"},
+				HideStopped:      []string{"e"},
+				Stop:             []string{"s"},
+				Restart:          []string{"r"},
+				Attach:           []string{"a"},
+				ViewLogs:         []string{"m"},
+				RunCustomCommand: []string{"c"},
+				RunBulkCommands:  []string{"b"},
 			},
 			Services: Services{
-				Remove:             []string{},
-				Stop:               []string{},
-				Restart:            []string{},
-				Attach:             []string{},
-				ViewLogs:           []string{},
-				ViewRestartOptions: []string{},
-				RunCustomCommand:   []string{},
+				Remove:             []string{"d"},
+				Stop:               []string{"s"},
+				Restart:            []string{"r"},
+				Attach:             []string{"a"},
+				ViewLogs:           []string{"m"},
+				ViewRestartOptions: []string{"R"},
+				RunCustomCommand:   []string{"c"},
+				RunBulkCommands:    []string{"b"},
 			},
 			Images: Images{
-				Remove: []string{},
-				Prune:  []string{},
+				Remove:           []string{"d"},
+				RunCustomCommand: []string{"c"},
+				RunBulkCommands:  []string{"b"},
 			},
 			Volumes: Volumes{
-				Remove: []string{},
-				Prune:  []string{},
+				Remove:           []string{"d"},
+				RunCustomCommand: []string{"c"},
+				RunBulkCommands:  []string{"b"},
 			},
 			Main: Main{
-				Return:      []string{},
-				ScrollLeft:  []string{},
-				ScrollRight: []string{},
-				ScrolDown:   []string{},
-				ScrollUp:    []string{},
+				Return:      []string{"Escape"},
+				ScrollLeft:  []string{"left", "h"},
+				ScrollRight: []string{"right", "l"},
 			},
 		},
 	}
