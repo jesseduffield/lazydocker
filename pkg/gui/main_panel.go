@@ -25,7 +25,7 @@ func (gui *Gui) scrollDownMain(g *gocui.Gui, v *gocui.View) error {
 
 	_, sizeY := mainView.Size()
 	scrollCount := gui.Config.UserConfig.Gui.ScrollHeight
-	totalLines := mainView.LinesHeight()
+	totalLines := mainView.ViewLinesHeight()
 	if oy+sizeY >= totalLines {
 		return nil
 	}
