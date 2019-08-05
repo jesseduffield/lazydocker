@@ -24,7 +24,6 @@ func (gui *Gui) scrollDownMain(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	_, sizeY := mainView.Size()
-	scrollCount := gui.Config.UserConfig.Gui.ScrollHeight
 	totalLines := mainView.ViewLinesHeight()
 	if oy+sizeY >= totalLines {
 		return nil
@@ -32,7 +31,7 @@ func (gui *Gui) scrollDownMain(g *gocui.Gui, v *gocui.View) error {
 
 	// for some reason we can't work out whether we've hit the bottomq
 	// there is a large discrepancy in the origin's y value and the length of BufferLines
-	return mainView.SetOrigin(ox, oy+scrollCount)
+	return mainView.SetOrigin(ox, oy+gui.Config.UserConfig.Gui.ScrollHeight)
 }
 
 func (gui *Gui) scrollLeftMain(g *gocui.Gui, v *gocui.View) error {
@@ -55,13 +54,12 @@ func (gui *Gui) scrollRightMain(g *gocui.Gui, v *gocui.View) error {
 		}
 	}
 
-	scrollCount := gui.Config.UserConfig.Gui.ScrollHeight
 	sizeX, _ := mainView.Size()
 	if ox+sizeX >= largestNumberOfCharacters {
 		return nil
 	}
 
-	return mainView.SetOrigin(ox+scrollCount, oy)
+	return mainView.SetOrigin(ox+gui.Config.UserConfig.Gui.ScrollHeight, oy)
 }
 
 func (gui *Gui) autoScrollMain(g *gocui.Gui, v *gocui.View) error {
