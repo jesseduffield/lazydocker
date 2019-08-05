@@ -2,6 +2,7 @@ package gui
 
 import (
 	"github.com/jesseduffield/gocui"
+	"github.com/jesseduffield/keybinding"
 )
 
 // Binding - a keybinding mapping a key and modifier to a handler. The keypress
@@ -22,38 +23,34 @@ func (b *Binding) GetDisplayStrings(isFocused bool) []string {
 
 // GetKey is a function.
 func (b *Binding) GetKey() string {
-	key := 0
 
-	switch b.Key.(type) {
-	case rune:
-		key = int(b.Key.(rune))
-	case gocui.Key:
-		key = int(b.Key.(gocui.Key))
+	result := ""
+	for _, k := range b.Keys {
+
+		// special keys
+		switch k {
+		case 27:
+			result += "esc, "
+		case 13:
+			result += "enter, "
+		case 32:
+			result += "space, "
+		case 65514:
+			result += "►, "
+		case 65515:
+			result += "◄, "
+		case 65517:
+			result += "▲, "
+		case 65516:
+			result += "▼, "
+		case 65508:
+			result += "PgUp, "
+		case 65507:
+			result += "PgDn, "
+		}
 	}
 
-	// special keys
-	switch key {
-	case 27:
-		return "esc"
-	case 13:
-		return "enter"
-	case 32:
-		return "space"
-	case 65514:
-		return "►"
-	case 65515:
-		return "◄"
-	case 65517:
-		return "▲"
-	case 65516:
-		return "▼"
-	case 65508:
-		return "PgUp"
-	case 65507:
-		return "PgDn"
-	}
-
-	return string(key)
+	return result[:len(result)-2]
 }
 
 // GetInitialKeybindings is a function.
@@ -109,213 +106,213 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "project",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Project.EditConfig),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Project.EditConfig),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleEditConfig,
 			Description: gui.Tr.EditConfig,
 		},
 		{
 			ViewName:    "project",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Project.OpenConfig),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Project.OpenConfig),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleOpenConfig,
 			Description: gui.Tr.OpenConfig,
 		},
 		{
 			ViewName:    "project",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.PreviousContext),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.PreviousContext),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleProjectPrevContext,
 			Description: gui.Tr.PreviousContext,
 		},
 		{
 			ViewName:    "project",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.NextContext),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.NextContext),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleProjectNextContext,
 			Description: gui.Tr.NextContext,
 		},
 		{
 			ViewName: "project",
-			Keys:     parsedKeybindings(gui.Config.UserConfig.Keybinding.Project.Click),
+			Keys:     parsedKeybindings(gui.Config.UserConfig.Keybindings.Project.Click),
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleProjectClick, // Possbile dub with select
 		},
 		{
 			ViewName:    "project",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Project.ViewLogs),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Project.ViewLogs),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleViewAllLogs,
 			Description: gui.Tr.ViewLogs,
 		},
 		{
 			ViewName: "project",
-			Keys:     parsedKeybindings(gui.Config.UserConfig.Keybinding.Project.Select),
+			Keys:     parsedKeybindings(gui.Config.UserConfig.Keybindings.Project.Select),
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleProjectSelect, // Possible dub with click
 		},
 		{
 			ViewName: "menu",
-			Keys:     parsedKeybindings(gui.Config.UserConfig.Keybinding.Menu.Close),
+			Keys:     parsedKeybindings(gui.Config.UserConfig.Keybindings.Menu.Close),
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleMenuClose,
 		},
 		{
 			ViewName: "information",
-			Keys:     parsedKeybindings(gui.Config.UserConfig.Keybinding.Information.Donate),
+			Keys:     parsedKeybindings(gui.Config.UserConfig.Keybindings.Information.Donate),
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleDonate,
 		},
 		{
 			ViewName:    "containers",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.PreviousContext),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.PreviousContext),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersPrevContext,
 			Description: gui.Tr.PreviousContext,
 		},
 		{
 			ViewName:    "containers",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.NextContext),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.NextContext),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersNextContext,
 			Description: gui.Tr.NextContext,
 		},
 		{
 			ViewName:    "containers",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Containers.Remove),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Containers.Remove),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersRemoveMenu,
 			Description: gui.Tr.Remove,
 		},
 		{
 			ViewName:    "containers",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Containers.HideStopped),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Containers.HideStopped),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleHideStoppedContainers,
 			Description: gui.Tr.HideStopped,
 		},
 		{
 			ViewName:    "containers",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Containers.Stop),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Containers.Stop),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainerStop,
 			Description: gui.Tr.Stop,
 		},
 		{
 			ViewName:    "containers",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Containers.Restart),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Containers.Restart),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainerRestart,
 			Description: gui.Tr.Restart,
 		},
 		{
 			ViewName:    "containers",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Containers.Attach),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Containers.Attach),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainerAttach,
 			Description: gui.Tr.Attach,
 		},
 		{
 			ViewName:    "containers",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Containers.ViewLogs),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Containers.ViewLogs),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainerViewLogs,
 			Description: gui.Tr.ViewLogs,
 		},
 		{
 			ViewName:    "containers",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Containers.RunCustomCommand),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Containers.RunCustomCommand),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersCustomCommand,
 			Description: gui.Tr.RunCustomCommand,
 		},
 		{
 			ViewName:    "containers",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Containers.RunBulkCommands),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Containers.RunBulkCommands),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersBulkCommand,
 			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
 			ViewName:    "services",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Services.Remove),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Services.Remove),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceRemoveMenu,
 			Description: gui.Tr.RemoveService,
 		},
 		{
 			ViewName:    "services",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Services.Stop),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Services.Stop),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceStop,
 			Description: gui.Tr.Stop,
 		},
 		{
 			ViewName:    "services",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Services.Restart),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Services.Restart),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceRestart,
 			Description: gui.Tr.Restart,
 		},
 		{
 			ViewName:    "services",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Services.Attach),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Services.Attach),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceAttach,
 			Description: gui.Tr.Attach,
 		},
 		{
 			ViewName:    "services",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Services.ViewLogs),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Services.ViewLogs),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceViewLogs,
 			Description: gui.Tr.ViewLogs,
 		},
 		{
 			ViewName:    "services",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.PreviousContext),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.PreviousContext),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServicesPrevContext,
 			Description: gui.Tr.PreviousContext,
 		},
 		{
 			ViewName:    "services",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.NextContext),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.NextContext),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServicesNextContext,
 			Description: gui.Tr.NextContext,
 		},
 		{
 			ViewName:    "services",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Services.ViewRestartOptions),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Services.ViewRestartOptions),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceRestartMenu,
 			Description: gui.Tr.ViewRestartOptions,
 		},
 		{
 			ViewName:    "services",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Services.RunCustomCommand),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Services.RunCustomCommand),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServicesCustomCommand,
 			Description: gui.Tr.RunCustomCommand,
 		},
 		{
 			ViewName:    "services",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.Services.RunBulkCommands),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.Services.RunBulkCommands),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServicesBulkCommand,
 			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
 			ViewName:    "images",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.PreviousContext),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.PreviousContext),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleImagesPrevContext,
 			Description: gui.Tr.PreviousContext,
 		},
 		{
 			ViewName:    "images",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.NextContext),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.NextContext),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleImagesNextContext,
 			Description: gui.Tr.NextContext,
@@ -343,14 +340,14 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "volumes",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.PreviousContext),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.PreviousContext),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleVolumesPrevContext,
 			Description: gui.Tr.PreviousContext,
 		},
 		{
 			ViewName:    "volumes",
-			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybinding.NextContext),
+			Keys:        parsedKeybindings(gui.Config.UserConfig.Keybindings.NextContext),
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleVolumesNextContext,
 			Description: gui.Tr.NextContext,
@@ -397,13 +394,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 	}
 
-	// TODO: add more views here
+	// TODO: add more views here and check use
 	for _, viewName := range []string{"project", "services", "containers", "images", "volumes", "menu"} {
 		bindings = append(bindings, []*Binding{
-			{ViewName: viewName, Key: gocui.KeyArrowLeft, Modifier: gocui.ModNone, Handler: gui.previousView},
-			{ViewName: viewName, Key: gocui.KeyArrowRight, Modifier: gocui.ModNone, Handler: gui.nextView},
-			{ViewName: viewName, Key: 'h', Modifier: gocui.ModNone, Handler: gui.previousView},
-			{ViewName: viewName, Key: 'l', Modifier: gocui.ModNone, Handler: gui.nextView},
+			{ViewName: viewName, Keys: []gocui.Key{gocui.KeyArrowLeft}, Modifier: gocui.ModNone, Handler: gui.previousView},
+			{ViewName: viewName, Keys: []gocui.Key{gocui.KeyArrowRight}, Modifier: gocui.ModNone, Handler: gui.nextView},
+			{ViewName: viewName, Keys: []gocui.Key{'h'}, Modifier: gocui.ModNone, Handler: gui.previousView},
+			{ViewName: viewName, Keys: []gocui.Key{'l'}, Modifier: gocui.ModNone, Handler: gui.nextView},
 		}...)
 	}
 
@@ -422,20 +419,20 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 
 	for viewName, functions := range panelMap {
 		bindings = append(bindings, []*Binding{
-			{ViewName: viewName, Key: 'k', Modifier: gocui.ModNone, Handler: functions.onKeyUpPress},
-			{ViewName: viewName, Key: gocui.KeyArrowUp, Modifier: gocui.ModNone, Handler: functions.onKeyUpPress},
-			{ViewName: viewName, Key: gocui.MouseWheelUp, Modifier: gocui.ModNone, Handler: functions.onKeyUpPress},
-			{ViewName: viewName, Key: 'j', Modifier: gocui.ModNone, Handler: functions.onKeyDownPress},
-			{ViewName: viewName, Key: gocui.KeyArrowDown, Modifier: gocui.ModNone, Handler: functions.onKeyDownPress},
-			{ViewName: viewName, Key: gocui.MouseWheelDown, Modifier: gocui.ModNone, Handler: functions.onKeyDownPress},
-			{ViewName: viewName, Key: gocui.MouseLeft, Modifier: gocui.ModNone, Handler: functions.onClick},
+			{ViewName: viewName, Keys: []gocui.Key{'k'}, Modifier: gocui.ModNone, Handler: functions.onKeyUpPress},
+			{ViewName: viewName, Keys: []gocui.Key{gocui.KeyArrowUp}, Modifier: gocui.ModNone, Handler: functions.onKeyUpPress},
+			{ViewName: viewName, Keys: []gocui.Key{gocui.MouseWheelUp}, Modifier: gocui.ModNone, Handler: functions.onKeyUpPress},
+			{ViewName: viewName, Keys: []gocui.Key{'j'}, Modifier: gocui.ModNone, Handler: functions.onKeyDownPress},
+			{ViewName: viewName, Keys: []gocui.Key{gocui.KeyArrowDown}, Modifier: gocui.ModNone, Handler: functions.onKeyDownPress},
+			{ViewName: viewName, Keys: []gocui.Key{gocui.MouseWheelDown}, Modifier: gocui.ModNone, Handler: functions.onKeyDownPress},
+			{ViewName: viewName, Keys: []gocui.Key{gocui.MouseLeft}, Modifier: gocui.ModNone, Handler: functions.onClick},
 		}...)
 	}
 
 	for _, viewName := range []string{"project", "services", "containers", "images", "volumes"} {
 		bindings = append(bindings, &Binding{
 			ViewName:    viewName,
-			Key:         gocui.KeyEnter,
+			Keys:        []gocui.Key{gocui.KeyEnter},
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleEnterMain,
 			Description: gui.Tr.FocusMain,
@@ -449,7 +446,7 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
 	bindings := gui.GetInitialKeybindings()
 
 	for _, binding := range bindings {
-		if err := g.SetKeybinding(binding.ViewName, binding.Key, binding.Modifier, binding.Handler); err != nil {
+		if err := g.SetKeybinding(binding.ViewName, binding.Keys, binding.Modifier, binding.Handler); err != nil {
 			return err
 		}
 	}
@@ -464,7 +461,7 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
 func parsedKeybindings(binds []string) []gocui.Key {
 	var keys []gocui.Key
 	for _, bind := range binds {
-		keys = append(keys, keybindings.MustParse(bind)) // MustParse panics on failure
+		keys = append(keys, keybinding.MustParse(bind).Value) // MustParse panics on failure
 	}
 	return keys
 }

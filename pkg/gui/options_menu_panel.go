@@ -62,7 +62,7 @@ func (gui *Gui) handleCreateOptionsMenu(g *gocui.Gui, v *gocui.View) error {
 	bindings := gui.getBindings(v)
 
 	handleMenuPress := func(index int) error {
-		if bindings[index].Key == nil {
+		if bindings[index].Keys == nil {
 			return nil
 		}
 		if index >= len(bindings) {
