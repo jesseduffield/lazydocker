@@ -16,21 +16,20 @@ func (gui *Gui) scrollUpMain(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) scrollDownMain(g *gocui.Gui, v *gocui.View) error {
 	mainView := gui.getMainView()
+	mainView.Autoscroll = false
 	ox, oy := mainView.Origin()
-	y := oy
+
+	reservedLines := 0
 	if !gui.Config.UserConfig.Gui.ScrollPastBottom {
-		_, sy := mainView.Size()
-		y += sy
+		_, sizeY := mainView.Size()
+		reservedLines = sizeY
 	}
 
-	_, sizeY := mainView.Size()
 	totalLines := mainView.ViewLinesHeight()
-	if oy+sizeY >= totalLines {
+	if oy+reservedLines >= totalLines {
 		return nil
 	}
 
-	// for some reason we can't work out whether we've hit the bottomq
-	// there is a large discrepancy in the origin's y value and the length of BufferLines
 	return mainView.SetOrigin(ox, oy+gui.Config.UserConfig.Gui.ScrollHeight)
 }
 
