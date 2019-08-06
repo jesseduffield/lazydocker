@@ -161,7 +161,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		Config:        config,
 		Tr:            tr,
 		statusManager: &statusManager{},
-		T:             tasks.NewTaskManager(log),
+		T:             tasks.NewTaskManager(log, tr),
 		ErrorChan:     errorChan,
 		CyclableViews: cyclableViews,
 	}
@@ -245,6 +245,9 @@ func (gui *Gui) goEvery(interval time.Duration, function func() error) {
 
 // Run setup the gui with keybindings and start the mainloop
 func (gui *Gui) Run() error {
+	// closing our task manager which in turn closes the current task if there is any, so we aren't leaving processes lying around after closing lazydocker
+	defer gui.T.Close()
+
 	g, err := gocui.NewGui(gocui.OutputNormal, OverlappingEdges)
 	if err != nil {
 		return err
