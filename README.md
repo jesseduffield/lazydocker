@@ -37,7 +37,6 @@ Memorising docker commands is hard. Memorising aliases is slightly less hard. Ke
 ### Homebrew
 
 ```sh
-brew tap jesseduffield/lazydocker
 brew install lazydocker
 ```
 
