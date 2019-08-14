@@ -20,7 +20,7 @@ require (
 	github.com/imdario/mergo v0.3.7
 	github.com/integrii/flaggy v0.0.0-20190517180110-07ea7eb77404
 	github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee
-	github.com/jesseduffield/gocui v0.3.1-0.20190706002342-e625df489460
+	github.com/jesseduffield/gocui v0.3.1-0.20190803023616-ad0cd60f29f9
 	github.com/jesseduffield/rollrus v0.0.0-20190701125922-dd028cb0bfd7
 	github.com/jesseduffield/termbox-go v0.0.0-20190630083001-9dd53af7214e // indirect
 	github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56
@@ -30,6 +30,7 @@ require (
 	github.com/mcuadros/go-lookup v0.0.0-20171110082742-5650f26be767
 	github.com/mgutz/str v1.2.0
 	github.com/morikuni/aec v0.0.0-20170113033406-39771216ff4c // indirect
+	github.com/nsf/termbox-go v0.0.0-20190624072549-eeb6cd0a1762 // indirect
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
