@@ -93,6 +93,14 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		return nil
 	}
 
+	// TODO: should do this once only..
+	showServicesPanel := false
+	for _, view := range gui.CyclableViews {
+		if view == "services" {
+			showServicesPanel = true
+		}
+	}
+
 	currView := gui.g.CurrentView()
 	currentCyclebleView := gui.State.PreviousView
 	if currView != nil {
@@ -114,7 +122,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 
 	tallPanels := 3
 	var vHeights map[string]int
-	if gui.DockerCommand.InDockerComposeProject {
+	if showServicesPanel {
 		tallPanels++
 		vHeights = map[string]int{
 			"project":    3,
@@ -146,7 +154,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			"volumes":    defaultHeight,
 			"options":    defaultHeight,
 		}
-		if gui.DockerCommand.InDockerComposeProject {
+		if showServicesPanel {
 			vHeights["services"] = defaultHeight
 		}
 		vHeights[currentCyclebleView] = height - defaultHeight*tallPanels - 1
@@ -186,7 +194,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 
 	var servicesView *gocui.View
 	aboveContainersView := "project"
-	if gui.DockerCommand.InDockerComposeProject {
+	if showServicesPanel {
 		aboveContainersView = "services"
 		servicesView, err = g.SetViewBeneath("services", "project", vHeights["services"])
 		if err != nil {
@@ -205,7 +213,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			return err
 		}
 		containersView.Highlight = true
-		if gui.Config.UserConfig.Gui.ShowAllContainers || !gui.DockerCommand.InDockerComposeProject {
+		if gui.Config.UserConfig.Gui.ShowAllContainers || !showServicesPanel {
 			containersView.Title = gui.Tr.ContainersTitle
 		} else {
 			containersView.Title = gui.Tr.StandaloneContainersTitle

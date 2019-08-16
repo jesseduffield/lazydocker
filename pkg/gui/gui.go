@@ -148,11 +148,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 	}
 
 	cyclableViews := []string{"project", "containers", "images"}
-	if config.DockerSwarm {
-		dockerCommand.InDockerComposeProject = true
-	}
-	if dockerCommand.InDockerComposeProject {
-		// Frustratingly, this is not actually the driver for what views are shown - the InDOckerComposeProject var is used inside the gui code
+	if dockerCommand.InDockerComposeProject || config.DockerSwarm {
 		cyclableViews = []string{"project", "services", "containers", "images", "volumes"}
 	}
 
