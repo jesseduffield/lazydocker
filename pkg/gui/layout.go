@@ -192,11 +192,10 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		v.FgColor = gocui.ColorDefault
 	}
 
-	var servicesView *gocui.View
 	aboveContainersView := "project"
 	if showServicesPanel {
 		aboveContainersView = "services"
-		servicesView, err = g.SetViewBeneath("services", "project", vHeights["services"])
+		servicesView, err := g.SetViewBeneath("services", "project", vHeights["services"])
 		if err != nil {
 			if err.Error() != "unknown view" {
 				return err
