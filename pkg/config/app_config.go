@@ -429,6 +429,7 @@ func GetDefaultConfig() UserConfig {
 // AppConfig contains the base configuration fields required for lazydocker.
 type AppConfig struct {
 	Debug       bool   `long:"debug" env:"DEBUG" default:"false"`
+	DockerSwarm bool   `long:"debug" default:"false`
 	Version     string `long:"version" env:"VERSION" default:"unversioned"`
 	Commit      string `long:"commit" env:"COMMIT"`
 	BuildDate   string `long:"build-date" env:"BUILD_DATE"`
@@ -440,7 +441,7 @@ type AppConfig struct {
 }
 
 // NewAppConfig makes a new app config
-func NewAppConfig(name, version, commit, date string, buildSource string, debuggingFlag bool, composeFiles []string, projectDir string) (*AppConfig, error) {
+func NewAppConfig(name, version, commit, date string, buildSource string, debuggingFlag, dockerSwarm bool, composeFiles []string, projectDir string) (*AppConfig, error) {
 	configDir, err := findOrCreateConfigDir(name)
 	if err != nil {
 		return nil, err
@@ -462,6 +463,7 @@ func NewAppConfig(name, version, commit, date string, buildSource string, debugg
 		Commit:      commit,
 		BuildDate:   date,
 		Debug:       debuggingFlag || os.Getenv("DEBUG") == "TRUE",
+		DockerSwarm: dockerSwarm,
 		BuildSource: buildSource,
 		UserConfig:  userConfig,
 		ConfigDir:   configDir,

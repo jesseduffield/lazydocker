@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"io"
 	"strings"
 
@@ -35,7 +36,7 @@ func NewApp(config *config.AppConfig) (*App, error) {
 	var err error
 	app.Log = log.NewLogger(config, "23432119147a4367abf7c0de2aa99a2d")
 	app.Tr = i18n.NewTranslationSet(app.Log)
-	app.OSCommand = commands.NewOSCommand(app.Log, config)
+	app.OSCommand = commands.NewOSCommand(app.Log, app.Config)
 
 	// here is the place to make use of the docker-compose.yml file in the current directory
 
@@ -43,7 +44,11 @@ func NewApp(config *config.AppConfig) (*App, error) {
 	if err != nil {
 		return app, err
 	}
-	app.Gui, err = gui.NewGui(app.Log, app.DockerCommand, app.OSCommand, app.Tr, config, app.ErrorChan)
+
+	// TODO: detect if swarm mode is on..
+	fmt.Printf("SWARM: %s\n", app.Config.DockerSwarm)
+
+	app.Gui, err = gui.NewGui(app.Log, app.DockerCommand, app.OSCommand, app.Tr, app.Config, app.ErrorChan)
 	if err != nil {
 		return app, err
 	}

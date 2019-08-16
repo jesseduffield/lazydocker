@@ -92,7 +92,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 
 	err = osCommand.RunCommand(command)
 	if err != nil {
-		//dockerCommand.InDockerComposeProject = false
+		dockerCommand.InDockerComposeProject = false
 		log.Warn(err.Error())
 	}
 
