@@ -195,21 +195,20 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		titles["containers"] = gui.Tr.ContainersTitle
 	}
 
-	if v, err := g.SetView("project", 0, 0, leftSideWidth, vHeights["project"]-1, gocui.BOTTOM|gocui.RIGHT); err != nil {
-		if err.Error() != "unknown view" {
-			return err
-		}
-		v.Title = titles["project"]
-		v.FgColor = gocui.ColorDefault
-	}
-
-	aboveContainersView := "project"
+	aboveContainersView := ""
 	for _, view := range gui.CyclableViews {
-		if view == aboveContainersView {
-			continue
-		}
-		if err = addView(g, view, aboveContainersView, titles[view], vHeights[view]); err != nil {
-			return err
+		if aboveContainersView == "" {
+			if v, err := g.SetView(view, 0, 0, leftSideWidth, vHeights[view]-1, gocui.BOTTOM|gocui.RIGHT); err != nil {
+				if err.Error() != "unknown view" {
+					return err
+				}
+				v.Title = titles[view]
+				v.FgColor = gocui.ColorDefault
+			}
+		} else {
+			if err = addView(g, view, aboveContainersView, titles[view], vHeights[view]); err != nil {
+				return err
+			}
 		}
 		aboveContainersView = view
 	}
