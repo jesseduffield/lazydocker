@@ -204,14 +204,15 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	}
 
 	aboveContainersView := "project"
-	if showServicesPanel {
-		aboveContainersView = "services"
-		addView(g, "services", "project", titles["services"], vHeights["services"])
+	for _, view := range gui.CyclableViews {
+		if view == aboveContainersView {
+			continue
+		}
+		if err = addView(g, view, aboveContainersView, titles[view], vHeights[view]); err != nil {
+			return err
+		}
+		aboveContainersView = view
 	}
-
-	addView(g, "containers", aboveContainersView, titles["containers"], vHeights["containers"])
-	addView(g, "images", "containers", titles["images"], vHeights["images"])
-	addView(g, "volumes", "images", titles["volumes"], vHeights["volumes"])
 
 	if v, err := g.SetView("options", appStatusOptionsBoundary-1, height-2, optionsVersionBoundary-1, height, 0); err != nil {
 		if err.Error() != "unknown view" {
