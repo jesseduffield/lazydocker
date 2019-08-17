@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"io"
 	"strings"
 
@@ -46,7 +45,6 @@ func NewApp(config *config.AppConfig) (*App, error) {
 	}
 
 	// TODO: detect if swarm mode is on..
-	fmt.Printf("SWARM: %s\n", app.Config.DockerSwarm)
 
 	app.Gui, err = gui.NewGui(app.Log, app.DockerCommand, app.OSCommand, app.Tr, app.Config, app.ErrorChan)
 	if err != nil {

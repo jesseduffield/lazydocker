@@ -184,27 +184,34 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		v.IgnoreCarriageReturns = true
 	}
 
+	titles := map[string]string{
+		"project":    gui.Tr.ProjectTitle,
+		"services":   gui.Tr.ServicesTitle,
+		"containers": gui.Tr.StandaloneContainersTitle,
+		"images":     gui.Tr.ImagesTitle,
+		"volumes":    gui.Tr.VolumesTitle,
+	}
+	if gui.Config.UserConfig.Gui.ShowAllContainers || !showServicesPanel {
+		titles["containers"] = gui.Tr.ContainersTitle
+	}
+
 	if v, err := g.SetView("project", 0, 0, leftSideWidth, vHeights["project"]-1, gocui.BOTTOM|gocui.RIGHT); err != nil {
 		if err.Error() != "unknown view" {
 			return err
 		}
-		v.Title = gui.Tr.ProjectTitle
+		v.Title = titles["project"]
 		v.FgColor = gocui.ColorDefault
 	}
 
 	aboveContainersView := "project"
 	if showServicesPanel {
 		aboveContainersView = "services"
-		addView(g, "services", "project", gui.Tr.ServicesTitle, vHeights["services"])
+		addView(g, "services", "project", titles["services"], vHeights["services"])
 	}
 
-	containerTitle := gui.Tr.StandaloneContainersTitle
-	if gui.Config.UserConfig.Gui.ShowAllContainers || !showServicesPanel {
-		containerTitle = gui.Tr.ContainersTitle
-	}
-	addView(g, "containers", aboveContainersView, containerTitle, vHeights["containers"])
-	addView(g, "images", "containers", gui.Tr.ImagesTitle, vHeights["images"])
-	addView(g, "volumes", "images", gui.Tr.VolumesTitle, vHeights["volumes"])
+	addView(g, "containers", aboveContainersView, titles["containers"], vHeights["containers"])
+	addView(g, "images", "containers", titles["images"], vHeights["images"])
+	addView(g, "volumes", "images", titles["volumes"], vHeights["volumes"])
 
 	if v, err := g.SetView("options", appStatusOptionsBoundary-1, height-2, optionsVersionBoundary-1, height, 0); err != nil {
 		if err.Error() != "unknown view" {
