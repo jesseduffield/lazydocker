@@ -36,6 +36,8 @@ Memorising docker commands is hard. Memorising aliases is slightly less hard. Ke
 
 ### Homebrew
 
+Normally `lazydocker` formula can be found in the Homebrew core but we suggest you to tap our formula to get frequently updated one. It works with Linux, too.
+
 ```sh
 brew tap jesseduffield/lazydocker
 brew install lazydocker
