@@ -68,7 +68,12 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 
 // NewDockerCommand it runs docker commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
-	cli, err := client.NewClientWithOpts(client.WithVersion(APIVersion))
+	opts := []func(*client.Client) error{
+		client.WithVersion(APIVersion),
+		client.FromEnv,
+	}
+
+	cli, err := client.NewClientWithOpts(opts...)
 	if err != nil {
 		return nil, err
 	}
