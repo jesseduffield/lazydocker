@@ -367,6 +367,16 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 
 // Top returns process information
 func (c *Container) Top() (container.ContainerTopOKBody, error) {
+	detail, err := c.Inspect()
+	if err != nil {
+		return container.ContainerTopOKBody{}, err
+	}
+
+	// check container status
+	if !detail.State.Running {
+		return container.ContainerTopOKBody{}, errors.New("container is not running")
+	}
+
 	return c.Client.ContainerTop(context.Background(), c.ID, []string{})
 }
 
@@ -411,7 +421,7 @@ func (c *Container) Inspect() (types.ContainerJSON, error) {
 
 // RenderTop returns details about the container
 func (c *Container) RenderTop() (string, error) {
-	result, err := c.Client.ContainerTop(context.Background(), c.ID, []string{})
+	result, err := c.Top()
 	if err != nil {
 		return "", err
 	}
