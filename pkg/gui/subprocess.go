@@ -22,7 +22,7 @@ func (gui *Gui) RunWithSubprocesses() error {
 				break
 			} else if err == gui.Errors.ErrSubProcess {
 				// preparing the state for when we return
-				gui.State.PreviousView = gui.currentViewName()
+				gui.State.PreviousViews.Push(gui.currentViewName())
 				// giving goEvery goroutines time to finish
 				gui.State.SessionIndex++
 
