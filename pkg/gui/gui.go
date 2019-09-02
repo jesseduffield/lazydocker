@@ -132,10 +132,6 @@ type guiState struct {
 
 // NewGui builds a new gui handler
 func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
-	previousViews := stack.New()
-	// push dummy initial string
-	previousViews.Push("")
-
 	initialState := guiState{
 		Platform: *oSCommand.Platform,
 		Panels: &panelStates{
@@ -150,8 +146,18 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 			Project: &projectState{ContextIndex: 0},
 		},
 		SessionIndex:  0,
-		PreviousViews: previousViews,
+		PreviousViews: stack.New(),
 	}
+
+	/*
+		// debugging PreviousViews
+		go func() {
+			for {
+				<-time.After(time.Second * 2)
+				log.Println("HERE", initialState.PreviousViews.Len())
+			}
+		}()
+	*/
 
 	cyclableViews := []string{"project", "containers", "images", "volumes"}
 	if dockerCommand.InDockerComposeProject {

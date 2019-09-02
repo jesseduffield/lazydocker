@@ -41,7 +41,7 @@ func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 		panic(err)
 	}
 	gui.resetMainView()
-	gui.State.PreviousViews.Pop()
+	gui.popPreviousView()
 	return gui.switchFocus(g, v, focusedView, false)
 }
 
@@ -67,7 +67,7 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 		panic(err)
 	}
 	gui.resetMainView()
-	gui.State.PreviousViews.Pop()
+	gui.popPreviousView()
 	return gui.switchFocus(g, v, focusedView, false)
 }
 
@@ -104,8 +104,28 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 	}
 }
 
+func (gui *Gui) popPreviousView() string {
+	if gui.State.PreviousViews.Len() > 0 {
+		return gui.State.PreviousViews.Pop().(string)
+	}
+
+	return ""
+}
+
+func (gui *Gui) peekPreviousView() string {
+	if gui.State.PreviousViews.Len() > 0 {
+		return gui.State.PreviousViews.Peek().(string)
+	}
+
+	return ""
+}
+
+func (gui *Gui) pushPreviousView(name string) {
+	gui.State.PreviousViews.Push(name)
+}
+
 func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
-	previousViewName := gui.State.PreviousViews.Pop().(string)
+	previousViewName := gui.popPreviousView()
 	previousView, err := g.View(previousViewName)
 	if err != nil {
 		// always fall back to services view if there's no 'previous' view stored
@@ -123,7 +143,7 @@ func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View, returnin
 	// we assume we'll never want to return focus to a popup panel i.e.
 	// we should never stack popup panels
 	if oldView != nil && !gui.isPopupPanel(oldView.Name()) && !returning {
-		gui.State.PreviousViews.Push(oldView.Name())
+		gui.pushPreviousView(oldView.Name())
 	}
 
 	gui.Log.Info("setting highlight to true for view " + newView.Name())

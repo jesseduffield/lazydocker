@@ -22,7 +22,7 @@ func (gui *Gui) RunWithSubprocesses() error {
 				break
 			} else if err == gui.Errors.ErrSubProcess {
 				// preparing the state for when we return
-				gui.State.PreviousViews.Push(gui.currentViewName())
+				gui.pushPreviousView(gui.currentViewName())
 				// giving goEvery goroutines time to finish
 				gui.State.SessionIndex++
 
@@ -31,7 +31,7 @@ func (gui *Gui) RunWithSubprocesses() error {
 				}
 
 				// pop here so we don't stack up view names
-				gui.State.PreviousViews.Pop()
+				gui.popPreviousView()
 				// ensuring we render e.g. the logs of the currently selected item upon return
 				gui.State.Panels.Main.ObjectKey = ""
 			} else {
