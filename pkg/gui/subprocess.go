@@ -30,6 +30,8 @@ func (gui *Gui) RunWithSubprocesses() error {
 					return err
 				}
 
+				// pop here so we don't stack up view names
+				gui.State.PreviousViews.Pop()
 				// ensuring we render e.g. the logs of the currently selected item upon return
 				gui.State.Panels.Main.ObjectKey = ""
 			} else {

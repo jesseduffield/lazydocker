@@ -282,7 +282,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			}
 		}
 
-		if err := gui.switchFocus(gui.g, nil, v); err != nil {
+		if err := gui.switchFocus(gui.g, nil, v, false); err != nil {
 			return err
 		}
 	}

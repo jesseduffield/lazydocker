@@ -41,7 +41,8 @@ func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 		panic(err)
 	}
 	gui.resetMainView()
-	return gui.switchFocus(g, v, focusedView)
+	gui.State.PreviousViews.Pop()
+	return gui.switchFocus(g, v, focusedView, false)
 }
 
 func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
@@ -66,7 +67,8 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 		panic(err)
 	}
 	gui.resetMainView()
-	return gui.switchFocus(g, v, focusedView)
+	gui.State.PreviousViews.Pop()
+	return gui.switchFocus(g, v, focusedView, false)
 }
 
 func (gui *Gui) resetMainView() {
@@ -112,15 +114,15 @@ func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
 			gui.Log.Error(err)
 		}
 	}
-	return gui.switchFocus(g, v, previousView)
+	return gui.switchFocus(g, v, previousView, true)
 }
 
 // pass in oldView = nil if you don't want to be able to return to your old view
 // TODO: move some of this logic into our onFocusLost and onFocus hooks
-func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View) error {
+func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View, returning bool) error {
 	// we assume we'll never want to return focus to a popup panel i.e.
 	// we should never stack popup panels
-	if oldView != nil && !gui.isPopupPanel(oldView.Name()) {
+	if oldView != nil && !gui.isPopupPanel(oldView.Name()) && !returning {
 		gui.State.PreviousViews.Push(oldView.Name())
 	}
 
