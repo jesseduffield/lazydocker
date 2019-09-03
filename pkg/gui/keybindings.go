@@ -67,6 +67,12 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName: "",
+			Key:      gocui.KeyF10,
+			Modifier: gocui.ModNone,
+			Handler:  gui.quit,
+		},
+		{
+			ViewName: "",
 			Key:      gocui.KeyCtrlC,
 			Modifier: gocui.ModNone,
 			Handler:  gui.quit,
@@ -406,13 +412,6 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleVolumesBulkCommand,
 			Description: gui.Tr.ViewBulkCommands,
-		},
-		{
-			ViewName:    "volumes",
-			Key:         'c',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleVolumesCustomCommand,
-			Description: gui.Tr.RunCustomCommand,
 		},
 		{
 			ViewName:    "main",
