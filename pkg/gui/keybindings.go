@@ -408,13 +408,6 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
-			ViewName:    "volumes",
-			Key:         'c',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleVolumesCustomCommand,
-			Description: gui.Tr.RunCustomCommand,
-		},
-		{
 			ViewName:    "main",
 			Key:         gocui.KeyEsc,
 			Modifier:    gocui.ModNone,
