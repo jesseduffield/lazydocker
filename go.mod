@@ -38,7 +38,7 @@ require (
 	github.com/spkg/bom v0.0.0-20160624110644-59b7046e48ad
 	github.com/stretchr/testify v1.2.2
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
-	golang.org/x/xerrors v0.0.0-20190513163551-3ee3066db522
+	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
 	google.golang.org/grpc v1.22.0 // indirect
 	gopkg.in/yaml.v2 v2.2.2 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
