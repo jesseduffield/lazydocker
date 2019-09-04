@@ -1,35 +1,41 @@
 version: 2
+
+build-shared: &build-shared
+  steps:
+    - checkout
+    - run:
+        name: Run gofmt -s
+        command: |
+          if [ $(find . ! -path "./vendor/*" -name "*.go" -exec gofmt -s -d {} \;|wc -l) -gt 0 ]; then
+           find . ! -path "./vendor/*" -name "*.go" -exec gofmt -s -d {} \;
+           exit 1;
+          fi
+    - restore_cache:
+        keys:
+          - pkg-cache-{{ checksum "go.sum" }}-v5
+    - run:
+        name: Run tests
+        command: |
+          go test -v -mod=vendor ./...
+    - run:
+        name: Compile project on every platform
+        command: |
+          go get github.com/mitchellh/gox
+          gox -mod=vendor -parallel 10 -os "linux freebsd" -osarch "darwin/i386 darwin/amd64"
+    - save_cache:
+        key: pkg-cache-{{ checksum "go.sum" }}-v5
+        paths:
+          - ~/.cache/go-build
+
 jobs:
-  build:
+  "golang:1.12":
+    <<: *build-shared
     docker:
       - image: circleci/golang:1.12
+  "golang:latest":
+    <<: *build-shared
+    docker:
       - image: circleci/golang:latest
-    steps:
-      - checkout
-      - run:
-          name: Run gofmt -s
-          command: |
-            if [ $(find . ! -path "./vendor/*" -name "*.go" -exec gofmt -s -d {} \;|wc -l) -gt 0 ]; then
-             find . ! -path "./vendor/*" -name "*.go" -exec gofmt -s -d {} \;
-             exit 1;
-            fi
-      - restore_cache:
-          keys:
-            - pkg-cache-{{ checksum "go.sum" }}-v5
-      - run:
-          name: Run tests
-          command: |
-            go test -v -mod=vendor ./...
-      - run:
-          name: Compile project on every platform
-          command: |
-            go get github.com/mitchellh/gox
-            gox -mod=vendor -parallel 10 -os "linux freebsd" -osarch "darwin/i386 darwin/amd64"
-      - save_cache:
-          key: pkg-cache-{{ checksum "go.sum" }}-v5
-          paths:
-            - ~/.cache/go-build
-
   release:
     docker:
       - image: circleci/golang:1.12
@@ -62,7 +68,8 @@ workflows:
   version: 2
   build:
     jobs:
-      - build
+      - "golang:1.12"
+      - "golang:latest"
   release:
     jobs:
       - release:
