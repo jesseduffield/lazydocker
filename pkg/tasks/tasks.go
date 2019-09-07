@@ -1,9 +1,11 @@
 package tasks
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
+	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,19 +15,43 @@ type TaskManager struct {
 	waitingMutex      sync.Mutex
 	taskIDMutex       sync.Mutex
 	Log               *logrus.Entry
+	Tr                *i18n.TranslationSet
 	waitingTaskAlerts chan struct{}
 	newTaskId         int
 }
 
 type Task struct {
 	stop          chan struct{}
+	stopped       bool
+	stopMutex     sync.Mutex
 	notifyStopped chan struct{}
 	Log           *logrus.Entry
 	f             func(chan struct{})
 }
 
-func NewTaskManager(log *logrus.Entry) *TaskManager {
-	return &TaskManager{Log: log}
+func NewTaskManager(log *logrus.Entry, translationSet *i18n.TranslationSet) *TaskManager {
+	return &TaskManager{Log: log, Tr: translationSet}
+}
+
+// Close closes the task manager, killing whatever task may currently be running
+func (t *TaskManager) Close() {
+	if t.currentTask == nil {
+		return
+	}
+
+	c := make(chan struct{}, 1)
+
+	go func() {
+		t.currentTask.Stop()
+		c <- struct{}{}
+	}()
+
+	select {
+	case <-c:
+		return
+	case <-time.After(3 * time.Second):
+		fmt.Println(t.Tr.CannotKillChildError)
+	}
 }
 
 func (t *TaskManager) NewTask(f func(stop chan struct{})) error {
@@ -68,10 +94,16 @@ func (t *TaskManager) NewTask(f func(stop chan struct{})) error {
 }
 
 func (t *Task) Stop() {
+	t.stopMutex.Lock()
+	defer t.stopMutex.Unlock()
+	if t.stopped {
+		return
+	}
 	close(t.stop)
 	t.Log.Info("closed stop channel, waiting for notifyStopped message")
 	<-t.notifyStopped
 	t.Log.Info("received notifystopped message")
+	t.stopped = true
 	return
 }
 
