@@ -200,11 +200,7 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 
 	currentServices := c.Services
 
-	containers, err := c.GetContainers()
-	if err != nil {
-		return err
-	}
-
+	var err error
 	var services []*Service
 	// we only need to get these services once because they won't change in the runtime of the program
 	if currentServices != nil {
@@ -216,10 +212,12 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 		}
 	}
 
-	var displayContainers = containers
+	var containers []*Container
+	var displayContainers []*Container
 
 	if c.InDockerComposeProject {
-		var standaloneContainers, err = c.assignContainersToServices(containers, services)
+		var standaloneContainers []*Container
+		standaloneContainers, containers, err = c.assignContainersToServices(services)
 		if err != nil {
 			return err
 		}
@@ -227,6 +225,12 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 		if !c.Config.UserConfig.Gui.ShowAllContainers {
 			displayContainers = standaloneContainers
 		}
+	} else {
+		containers, err = c.GetContainers()
+		if err != nil {
+			return err
+		}
+		displayContainers = containers
 	}
 
 	// sort services first by whether they have a linked container, and second by alphabetical order
@@ -249,12 +253,17 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 	return nil
 }
 
-func (c *DockerCommand) assignContainersToServices(containers []*Container, services []*Service) ([]*Container, error) {
+func (c *DockerCommand) assignContainersToServices(services []*Service) ([]*Container, []*Container, error) {
 	// Get a list of the Container IDs for this Docker Compose project.
 	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
 	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s ps -q", composeCommand))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+
+	containers, err := c.GetContainers()
+	if err != nil {
+		return nil, nil, err
 	}
 
 	// Create an index for Container IDs to make lookups less expensive.
@@ -273,9 +282,14 @@ func (c *DockerCommand) assignContainersToServices(containers []*Container, serv
 
 	// Walk the list of Containers, categorizing them as either associated with a
 	// Service or as standalone.
-	serviceContainerCount := len(serviceContainerIds)
-	standaloneContainerCount := len(containers) - serviceContainerCount
-	standaloneContainers := make([]*Container, 0, standaloneContainerCount)
+
+	// source of truth is the containers variable because it's the fastest, and the latest
+	// we don't want to compare the lengths, we want to compare the members of each group and see which ones are actually standalone.
+
+	// serviceContainerCount := len(serviceContainerIds)
+	// standaloneContainerCount := len(containers) - serviceContainerCount
+	// standaloneContainers := make([]*Container, 0, standaloneContainerCount)
+	standaloneContainers := []*Container{}
 	for _, container := range containers {
 		if !container.OneOff && serviceContainerIds[container.ID] {
 			service := serviceMap[container.ServiceName]
@@ -285,7 +299,7 @@ func (c *DockerCommand) assignContainersToServices(containers []*Container, serv
 		}
 	}
 
-	return standaloneContainers, nil
+	return standaloneContainers, containers, nil
 }
 
 // filterOutExited filters out the exited containers if c.ShowExited is false
