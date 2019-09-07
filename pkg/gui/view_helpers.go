@@ -41,7 +41,8 @@ func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 		panic(err)
 	}
 	gui.resetMainView()
-	return gui.switchFocus(g, v, focusedView)
+	gui.popPreviousView()
+	return gui.switchFocus(g, v, focusedView, false)
 }
 
 func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
@@ -66,7 +67,8 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 		panic(err)
 	}
 	gui.resetMainView()
-	return gui.switchFocus(g, v, focusedView)
+	gui.popPreviousView()
+	return gui.switchFocus(g, v, focusedView, false)
 }
 
 func (gui *Gui) resetMainView() {
@@ -102,8 +104,29 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 	}
 }
 
+func (gui *Gui) popPreviousView() string {
+	if gui.State.PreviousViews.Len() > 0 {
+		return gui.State.PreviousViews.Pop().(string)
+	}
+
+	return ""
+}
+
+func (gui *Gui) peekPreviousView() string {
+	if gui.State.PreviousViews.Len() > 0 {
+		return gui.State.PreviousViews.Peek().(string)
+	}
+
+	return ""
+}
+
+func (gui *Gui) pushPreviousView(name string) {
+	gui.State.PreviousViews.Push(name)
+}
+
 func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
-	previousView, err := g.View(gui.State.PreviousView)
+	previousViewName := gui.popPreviousView()
+	previousView, err := g.View(previousViewName)
 	if err != nil {
 		// always fall back to services view if there's no 'previous' view stored
 		previousView, err = g.View(gui.initiallyFocusedViewName())
@@ -111,16 +134,16 @@ func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
 			gui.Log.Error(err)
 		}
 	}
-	return gui.switchFocus(g, v, previousView)
+	return gui.switchFocus(g, v, previousView, true)
 }
 
 // pass in oldView = nil if you don't want to be able to return to your old view
 // TODO: move some of this logic into our onFocusLost and onFocus hooks
-func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View) error {
+func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View, returning bool) error {
 	// we assume we'll never want to return focus to a popup panel i.e.
 	// we should never stack popup panels
-	if oldView != nil && !gui.isPopupPanel(oldView.Name()) {
-		gui.State.PreviousView = oldView.Name()
+	if oldView != nil && !gui.isPopupPanel(oldView.Name()) && !returning {
+		gui.pushPreviousView(oldView.Name())
 	}
 
 	gui.Log.Info("setting highlight to true for view " + newView.Name())

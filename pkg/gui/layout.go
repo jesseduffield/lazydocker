@@ -94,7 +94,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	}
 
 	currView := gui.g.CurrentView()
-	currentCyclebleView := gui.State.PreviousView
+	currentCyclebleView := gui.peekPreviousView()
 	if currView != nil {
 		viewName := currView.Name()
 		usePreviouseView := true
@@ -106,7 +106,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			}
 		}
 		if usePreviouseView {
-			currentCyclebleView = gui.State.PreviousView
+			currentCyclebleView = gui.peekPreviousView()
 		}
 	}
 
@@ -273,7 +273,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	}
 
 	if gui.g.CurrentView() == nil {
-		v, err := gui.g.View(gui.State.PreviousView)
+		v, err := gui.g.View(gui.peekPreviousView())
 		if err != nil {
 			viewName := gui.initiallyFocusedViewName()
 			v, err = gui.g.View(viewName)
@@ -282,7 +282,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			}
 		}
 
-		if err := gui.switchFocus(gui.g, nil, v); err != nil {
+		if err := gui.switchFocus(gui.g, nil, v, false); err != nil {
 			return err
 		}
 	}

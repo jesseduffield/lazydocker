@@ -42,6 +42,8 @@ github.com/fatih/color
 github.com/go-errors/errors
 # github.com/gogo/protobuf v1.2.1
 github.com/gogo/protobuf/proto
+# github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3
+github.com/golang-collections/collections/stack
 # github.com/imdario/mergo v0.3.7
 github.com/imdario/mergo
 # github.com/integrii/flaggy v0.0.0-20190517180110-07ea7eb77404

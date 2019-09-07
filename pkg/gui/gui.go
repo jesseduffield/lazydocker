@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"github.com/golang-collections/collections/stack"
 	"strings"
 	"sync"
 
@@ -117,7 +118,7 @@ type panelStates struct {
 
 type guiState struct {
 	MenuItemCount    int // can't store the actual list because it's of interface{} type
-	PreviousView     string
+	PreviousViews    *stack.Stack
 	Platform         commands.Platform
 	Panels           *panelStates
 	SubProcessOutput string
@@ -144,7 +145,8 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 			},
 			Project: &projectState{ContextIndex: 0},
 		},
-		SessionIndex: 0,
+		SessionIndex:  0,
+		PreviousViews: stack.New(),
 	}
 
 	cyclableViews := []string{"project", "containers", "images", "volumes"}
