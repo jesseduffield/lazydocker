@@ -63,7 +63,6 @@
   <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
   <kbd>d</kbd>: entferne Volume
   <kbd>b</kbd>: view bulk commands
-  <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
   <kbd>enter</kbd>: fokussieren aufs Hauptpanel
 </pre>
 

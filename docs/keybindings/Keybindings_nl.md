@@ -63,7 +63,6 @@
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>d</kbd>: verwijder volume
   <kbd>b</kbd>: view bulk commands
-  <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>enter</kbd>: focus hooft panneel
 </pre>
 

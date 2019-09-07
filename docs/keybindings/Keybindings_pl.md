@@ -63,7 +63,6 @@
   <kbd>c</kbd>: wykonaj predefiniowaną własną komende
   <kbd>d</kbd>: usuń wolumen
   <kbd>b</kbd>: view bulk commands
-  <kbd>c</kbd>: wykonaj predefiniowaną własną komende
   <kbd>enter</kbd>: skup na głównym panelu
 </pre>
 

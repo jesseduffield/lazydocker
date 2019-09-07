@@ -63,7 +63,6 @@
   <kbd>c</kbd>: run predefined custom command
   <kbd>d</kbd>: remove volume
   <kbd>b</kbd>: view bulk commands
-  <kbd>c</kbd>: run predefined custom command
   <kbd>enter</kbd>: focus main panel
 </pre>
 
