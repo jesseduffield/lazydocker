@@ -34,7 +34,7 @@ func main() {
 	for lang := range i18n.GetTranslationSets() {
 		os.Setenv("LC_ALL", lang)
 		mApp, _ := app.NewApp(mConfig)
-		file, err := os.Create(getProjectRoot() + "/docs/keybindings/Keybindings_" + lang + ".md")
+		file, err := os.Create("./docs/keybindings/Keybindings_" + lang + ".md")
 		if err != nil {
 			panic(err)
 		}
