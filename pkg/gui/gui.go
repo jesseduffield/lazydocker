@@ -149,16 +149,6 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		PreviousViews: stack.New(),
 	}
 
-	/*
-		// debugging PreviousViews
-		go func() {
-			for {
-				<-time.After(time.Second * 2)
-				log.Println("HERE", initialState.PreviousViews.Len())
-			}
-		}()
-	*/
-
 	cyclableViews := []string{"project", "containers", "images", "volumes"}
 	if dockerCommand.InDockerComposeProject {
 		cyclableViews = []string{"project", "services", "containers", "images", "volumes"}
