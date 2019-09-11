@@ -1,4 +1,6 @@
 lazydocker*
 TODO.md
 Lazydocker.code-workspace
-.vscode
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json

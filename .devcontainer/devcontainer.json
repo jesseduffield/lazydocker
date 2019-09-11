@@ -1,0 +1,23 @@
+{
+    "name": "lazydocker dev",
+    "dockerFile": "Dockerfile",
+    "extensions": [
+        "ms-vscode.go",
+        "davidanson.vscode-markdownlint",
+        "shardulm94.trailing-spaces"
+    ],
+    "settings": {
+        "go.gopath": "/go",
+        "go.inferGopath": false,
+        "go.useLanguageServer": true
+    },
+    "postCreateCommand": "go mod download",
+    "runArgs": [
+        // Comment out the next line to run as root instead.
+        "-u",
+        "vscode",
+        "--cap-add=SYS_PTRACE",
+        "--security-opt",
+        "seccomp=unconfined"
+    ]
+}

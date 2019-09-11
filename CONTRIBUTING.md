@@ -53,6 +53,18 @@ go mod vendor
 
 Hopefully this will be much more streamlined in the future :)
 
+## Dev environment
+
+### Visual Studio Code
+
+If you use Visual Studio Code:
+1. Install the recommended extensions from the popup when you open this repository with it. It will essentially install
+    - the Go extension
+    - the Remote Containers extension
+1. You can then open the command palette (CTRL+Shift+P) and enter `Remote-Containers: Open Folder in container...`
+1. Select this directory
+1. Your dev environment will then be in a container so no need to setup any dependency on your host OS.
+
 ## Code of conduct
 
 Please note by participating in this project, you agree to abide by the [code of conduct].
