@@ -221,6 +221,8 @@ Currently not unless you use WSL. Instructions for setting up docker for WSL can
 
 By default we only show logs from the last hour, so that we're not putting too much strain on the machine. This may be why you can't see logs when you first start lazydocker. This can be overwritten in the config's `commandTemplates`
 
+If you are running lazydocker in Docker container, it is a know bug, that you can't see logs or CPU usage.
+
 ## Alternatives
 
 - [docui](https://github.com/skanehira/docui) - Skanehira beat me to the punch on making a docker terminal UI, so definitely check out that repo as well! I think the two repos can live in harmony though: lazydocker is more about managing existing containers/services, and docui is more about creating and configuring them.
