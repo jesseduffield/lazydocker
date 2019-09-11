@@ -366,13 +366,6 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
-			ViewName:    "images",
-			Key:         'c',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleImagesCustomCommand,
-			Description: gui.Tr.RunCustomCommand,
-		},
-		{
 			ViewName:    "volumes",
 			Key:         '[',
 			Modifier:    gocui.ModNone,
