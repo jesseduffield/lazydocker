@@ -1,9 +1,12 @@
 version: 2
 
+# global environment variables
+# '& ' syntax is a YAML thing for creating referenceable documents
 env-shared: &env-shared
   environment:
     GOFLAGS: "-mod=vendor"
 
+# build steps shared across different jobs
 build-shared: &build-shared
   steps:
     - checkout
@@ -23,6 +26,7 @@ build-shared: &build-shared
           go test -v ./...
     - run:
         name: Get gox
+        # -mod=vendor doesn't work with go get while in source tree with go.mod in it
         working_directory: "/tmp"
         command: |
           go get github.com/mitchellh/gox
@@ -36,6 +40,9 @@ build-shared: &build-shared
           - ~/.cache/go-build
 
 jobs:
+  # matrix build jobs run on every commit
+  # building on versioned Go and the latest one
+  # '<<: *' syntax is a YAML thing for including documents
   "golang:1.12":
     <<: *env-shared
     <<: *build-shared
@@ -46,6 +53,7 @@ jobs:
     <<: *build-shared
     docker:
       - image: circleci/golang:latest
+  # release job run only when a commit is tagged
   release:
     <<: *env-shared
     docker:
@@ -79,6 +87,7 @@ workflows:
   version: 2
   build:
     jobs:
+      # build matrix
       - "golang:1.12"
       - "golang:latest"
   release:
