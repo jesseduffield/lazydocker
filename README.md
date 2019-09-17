@@ -8,8 +8,10 @@ A simple terminal UI for both docker and docker-compose, written in Go with the 
 [![Go Report Card](https://goreportcard.com/badge/github.com/jesseduffield/lazydocker)](https://goreportcard.com/report/github.com/jesseduffield/lazydocker)
 [![GolangCI](https://golangci.com/badges/github.com/jesseduffield/lazydocker.svg)](https://golangci.com)
 [![GoDoc](https://godoc.org/github.com/jesseduffield/lazydocker?status.svg)](http://godoc.org/github.com/jesseduffield/lazydocker)
+![GitHub repo size](https://img.shields.io/github/repo-size/jesseduffield/lazydocker)
+[![GitHub Releases](https://img.shields.io/github/downloads/jesseduffield/lazydocker/total)](https://github.com/jesseduffield/lazydocker/releases)
 [![GitHub tag](https://img.shields.io/github/tag/jesseduffield/lazydocker.svg)](https://github.com/jesseduffield/lazydocker/releases/latest)
-![homebrew](https://img.shields.io/homebrew/v/lazydocker)
+[![homebrew](https://img.shields.io/homebrew/v/lazydocker)](https://github.com/Homebrew/homebrew-core/blob/master/Formula/lazydocker.rb)
 
 ![Gif](/docs/resources/demo3.gif)
 
