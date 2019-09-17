@@ -9,6 +9,7 @@ A simple terminal UI for both docker and docker-compose, written in Go with the 
 [![GolangCI](https://golangci.com/badges/github.com/jesseduffield/lazydocker.svg)](https://golangci.com)
 [![GoDoc](https://godoc.org/github.com/jesseduffield/lazydocker?status.svg)](http://godoc.org/github.com/jesseduffield/lazydocker)
 [![GitHub tag](https://img.shields.io/github/tag/jesseduffield/lazydocker.svg)](https://github.com/jesseduffield/lazydocker/releases/latest)
+![homebrew](https://img.shields.io/homebrew/v/lazydocker)
 
 ![Gif](/docs/resources/demo3.gif)
 
