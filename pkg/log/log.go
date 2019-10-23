@@ -15,7 +15,7 @@ import (
 func NewLogger(config *config.AppConfig, rollrusHook string) *logrus.Entry {
 	var log *logrus.Logger
 	environment := "production"
-	if true || config.Debug || os.Getenv("DEBUG") == "TRUE" { // TODO: remove true here
+	if config.Debug || os.Getenv("DEBUG") == "TRUE" {
 		environment = "development"
 		log = newDevelopmentLogger(config)
 	} else {
