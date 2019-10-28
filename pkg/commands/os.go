@@ -60,7 +60,7 @@ func (c *OSCommand) SetCommand(cmd func(string, ...string) *exec.Cmd) {
 func (c *OSCommand) RunCommandWithOutput(command string) (string, error) {
 	cmd := c.ExecutableFromString(command)
 	before := time.Now()
-	output, err := sanitisedCommandOutput(cmd.CombinedOutput())
+	output, err := sanitisedCommandOutput(cmd.Output())
 	c.Log.Warn(fmt.Sprintf("'%s': %s", command, time.Since(before)))
 	return output, err
 }
