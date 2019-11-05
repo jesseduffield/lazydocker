@@ -60,7 +60,7 @@ func (c *OSCommand) SetCommand(cmd func(string, ...string) *exec.Cmd) {
 func (c *OSCommand) RunCommandWithOutput(command string) (string, error) {
 	cmd := c.ExecutableFromString(command)
 	before := time.Now()
-	output, err := sanitisedCommandOutput(cmd.CombinedOutput())
+	output, err := sanitisedCommandOutput(cmd.Output())
 	c.Log.Warn(fmt.Sprintf("'%s': %s", command, time.Since(before)))
 	return output, err
 }
@@ -115,11 +115,12 @@ func sanitisedCommandOutput(output []byte, err error) (string, error) {
 	outputString := string(output)
 	if err != nil {
 		// errors like 'exit status 1' are not very useful so we'll create an error
-		// from the combined output
-		if outputString == "" {
-			return "", WrapError(err)
+		// from stderr if we got an ExitError
+		exitError, ok := err.(*exec.ExitError)
+		if ok {
+			return outputString, errors.New(string(exitError.Stderr))
 		}
-		return outputString, errors.New(outputString)
+		return "", WrapError(err)
 	}
 	return outputString, nil
 }
