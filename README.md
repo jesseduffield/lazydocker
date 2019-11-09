@@ -198,9 +198,7 @@ For contributor discussion about things not better discussed here in the repo, j
 
 ## Donate
 
-If you would like to support the development of lazydocker, please donate
-
-[![Donate](https://d1iczxrky3cnb2.cloudfront.net/button-medium-blue.png)](https://donorbox.org/lazydocker)
+If you would like to support the development of lazydocker, consider [sponsoring me](https://github.com/sponsors/jesseduffield) (github is matching all donations dollar-for-dollar for 12 months)
 
 ## Social
 
