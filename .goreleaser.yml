@@ -9,7 +9,7 @@ builds:
   - id: binary
     goos:
       # - freebsd
-      # - windows # may reenable later
+      - windows
       - darwin
       - linux
     goarch:
