@@ -57,7 +57,15 @@ brew install jesseduffield/lazydocker/lazydocker
 brew install lazydocker
 ```
 
-### Binary Release (Linux/OSX)
+### Scoop (Windows)
+
+You can install `lazydocker` using [scoop](https://scoop.sh/) from `extras` bucket.
+
+```sh
+scoop install lazydocker
+```
+
+### Binary Release (Linux/OSX/Windows)
 
 You can manually download a binary release from [the release page](https://github.com/jesseduffield/lazydocker/releases).
 
@@ -219,10 +227,6 @@ In the future I want to make this the default, but for now there are some CPU is
 ### How do you select text?
 
 Because we support mouse events, you will need to hold option while dragging the mouse to indicate you're trying to select text rather than click on something. Alternatively you can disable mouse events via the `gui.ignoreMouseEvents` config value
-
-### Does this work with Windows?
-
-Currently not unless you use WSL. Instructions for setting up docker for WSL can be found here [here](https://nickjanetakis.com/blog/setting-up-docker-for-windows-and-wsl-to-work-flawlessly)
 
 ### Why can't I see my container's logs?
 
