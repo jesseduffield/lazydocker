@@ -51,7 +51,6 @@
   <kbd>c</kbd>: önceden tanımlanmış özel komutu çalıştır
   <kbd>d</kbd>: imajı kaldır
   <kbd>b</kbd>: view bulk commands
-  <kbd>c</kbd>: önceden tanımlanmış özel komutu çalıştır
   <kbd>enter</kbd>: ana panele odaklan
 </pre>
 

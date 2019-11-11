@@ -51,7 +51,6 @@
   <kbd>c</kbd>: run predefined custom command
   <kbd>d</kbd>: remove image
   <kbd>b</kbd>: view bulk commands
-  <kbd>c</kbd>: run predefined custom command
   <kbd>enter</kbd>: focus main panel
 </pre>
 
