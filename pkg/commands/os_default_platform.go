@@ -3,7 +3,9 @@
 package commands
 
 import (
+	"os/exec"
 	"runtime"
+	"syscall"
 )
 
 func getPlatform() *Platform {
