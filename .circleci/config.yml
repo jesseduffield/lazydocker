@@ -33,7 +33,7 @@ build-shared: &build-shared
     - run:
         name: Compile project on every platform
         command: |
-          gox -parallel 10 -os "linux freebsd" -osarch "darwin/i386 darwin/amd64 windows/amd64"
+          gox -parallel 10 -os "linux freebsd" -osarch "darwin/i386 darwin/amd64 windows/i386 windows/amd64"
     - save_cache:
         key: pkg-cache-{{ checksum "go.sum" }}-v5
         paths:
