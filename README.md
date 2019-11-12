@@ -59,7 +59,7 @@ brew install lazydocker
 
 ### Scoop (Windows)
 
-You can install `lazydocker` using [scoop](https://scoop.sh/) from `extras` bucket.
+You can install `lazydocker` using [scoop](https://scoop.sh/):
 
 ```sh
 scoop install lazydocker
