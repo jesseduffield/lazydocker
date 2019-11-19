@@ -118,6 +118,7 @@ func (t *TaskManager) NewTickerTask(duration time.Duration, before func(stop cha
 			before(stop)
 		}
 		tickChan := time.NewTicker(duration)
+		defer tickChan.Stop()
 		// calling f first so that we're not waiting for the first tick
 		f(stop, notifyStopped)
 		for {
