@@ -1,5 +1,6 @@
-# github.com/Microsoft/go-winio v0.4.12
+# github.com/Microsoft/go-winio v0.4.14
 github.com/Microsoft/go-winio
+github.com/Microsoft/go-winio/pkg/guid
 # github.com/OpenPeeDeeP/xdg v0.2.1-0.20190312153938-4ba9e1eb294c
 github.com/OpenPeeDeeP/xdg
 # github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
@@ -40,13 +41,13 @@ github.com/docker/go-units
 github.com/fatih/color
 # github.com/go-errors/errors v1.0.1
 github.com/go-errors/errors
-# github.com/gogo/protobuf v1.2.1
+# github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/proto
 # github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3
 github.com/golang-collections/collections/stack
-# github.com/imdario/mergo v0.3.7
+# github.com/imdario/mergo v0.3.8
 github.com/imdario/mergo
-# github.com/integrii/flaggy v0.0.0-20190517180110-07ea7eb77404
+# github.com/integrii/flaggy v1.4.0
 github.com/integrii/flaggy
 # github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee
 github.com/jesseduffield/asciigraph
@@ -60,13 +61,13 @@ github.com/jesseduffield/rollrus
 github.com/jesseduffield/termbox-go
 # github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56
 github.com/jesseduffield/yaml
-# github.com/konsorten/go-windows-terminal-sequences v1.0.1
+# github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
-# github.com/mattn/go-colorable v0.0.9
+# github.com/mattn/go-colorable v0.1.4
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.3
+# github.com/mattn/go-isatty v0.0.11
 github.com/mattn/go-isatty
-# github.com/mattn/go-runewidth v0.0.2
+# github.com/mattn/go-runewidth v0.0.7
 github.com/mattn/go-runewidth
 # github.com/mcuadros/go-lookup v0.0.0-20171110082742-5650f26be767
 github.com/mcuadros/go-lookup
@@ -81,20 +82,18 @@ github.com/opencontainers/image-spec/specs-go/v1
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/sirupsen/logrus v1.3.0
+# github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
 # github.com/spkg/bom v0.0.0-20160624110644-59b7046e48ad
 github.com/spkg/bom
 # github.com/stretchr/testify v1.2.2
 github.com/stretchr/testify/assert
-# golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
-golang.org/x/crypto/ssh/terminal
-# golang.org/x/net v0.0.0-20190311183353-d8887717615a
+# golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
-# golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a
+# golang.org/x/sys v0.0.0-20191210023423-ac6580df4449
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+# golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
