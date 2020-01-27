@@ -52,6 +52,13 @@ func ColoredString(str string, colorAttribute color.Attribute) string {
 	return ColoredStringDirect(str, colour)
 }
 
+// MultiColoredString takes a string and an array of colour attributes and returns a colored
+// string with those attributes
+func MultiColoredString(str string, colorAttribute ...color.Attribute) string {
+	colour := color.New(colorAttribute...)
+	return ColoredStringDirect(str, colour)
+}
+
 // ColoredStringDirect used for aggregating a few color attributes rather than
 // just sending a single one
 func ColoredStringDirect(str string, colour *color.Color) string {

@@ -53,17 +53,18 @@ type Details struct {
 	Path    string    `json:"Path"`
 	Args    []string  `json:"Args"`
 	State   struct {
-		Status     string    `json:"Status"`
-		Running    bool      `json:"Running"`
-		Paused     bool      `json:"Paused"`
-		Restarting bool      `json:"Restarting"`
-		OOMKilled  bool      `json:"OOMKilled"`
-		Dead       bool      `json:"Dead"`
-		Pid        int       `json:"Pid"`
-		ExitCode   int       `json:"ExitCode"`
-		Error      string    `json:"Error"`
-		StartedAt  time.Time `json:"StartedAt"`
-		FinishedAt time.Time `json:"FinishedAt"`
+		Status     string       `json:"Status"`
+		Running    bool         `json:"Running"`
+		Paused     bool         `json:"Paused"`
+		Restarting bool         `json:"Restarting"`
+		OOMKilled  bool         `json:"OOMKilled"`
+		Dead       bool         `json:"Dead"`
+		Pid        int          `json:"Pid"`
+		ExitCode   int          `json:"ExitCode"`
+		Error      string       `json:"Error"`
+		StartedAt  time.Time    `json:"StartedAt"`
+		FinishedAt time.Time    `json:"FinishedAt"`
+		Health     types.Health `json:"Health"`
 	} `json:"State"`
 	Image           string      `json:"Image"`
 	ResolvConfPath  string      `json:"ResolvConfPath"`
@@ -259,6 +260,12 @@ func (c *Container) GetDisplayStatus() string {
 	if c.Container.State == "exited" {
 		state += " (" + strconv.Itoa(c.Details.State.ExitCode) + ")"
 	}
+	if c.Container.State == "running" && c.Details.State.Health.Status != "" {
+		state += " (" + c.Details.State.Health.Status + ")";
+	}
+	if c.Container.State == "running" && c.Details.State.Health.Status == "unhealthy" {
+		return utils.MultiColoredString(state, c.GetColor(), color.BgRed)
+	}
 
 	return utils.ColoredString(state, c.GetColor())
 }
@@ -305,6 +312,12 @@ func (c *Container) GetColor() color.Attribute {
 	case "created":
 		return color.FgCyan
 	case "running":
+		if c.Details.State.Health.Status == "starting" {
+			return color.FgYellow
+		}
+		if c.Details.State.Health.Status == "unhealthy" {
+			return color.FgBlack
+		}
 		return color.FgGreen
 	case "paused":
 		return color.FgYellow
