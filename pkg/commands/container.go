@@ -261,7 +261,7 @@ func (c *Container) GetDisplayStatus() string {
 		state += " (" + strconv.Itoa(c.Details.State.ExitCode) + ")"
 	}
 	if c.Container.State == "running" && c.Details.State.Health.Status != "" {
-		state += " (" + c.Details.State.Health.Status + ")";
+		state += " (" + c.Details.State.Health.Status + ")"
 	}
 	if c.Container.State == "running" && c.Details.State.Health.Status == "unhealthy" {
 		return utils.MultiColoredString(state, c.GetColor(), color.BgRed)
