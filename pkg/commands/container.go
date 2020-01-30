@@ -258,16 +258,26 @@ func (c *Container) GetDisplayStrings(isFocused bool) []string {
 func (c *Container) GetDisplayStatus() string {
 	state := c.Container.State
 	if c.Container.State == "exited" {
-		state += " (" + strconv.Itoa(c.Details.State.ExitCode) + ")"
-	}
-	if c.Container.State == "running" && c.Details.State.Health.Status != "" {
-		state += " (" + c.Details.State.Health.Status + ")"
-	}
-	if c.Container.State == "running" && c.Details.State.Health.Status == "unhealthy" {
-		return utils.MultiColoredString(state, c.GetColor(), color.BgRed)
+		return utils.ColoredString(state+" ("+strconv.Itoa(c.Details.State.ExitCode)+")", c.GetColor())
 	}
 
-	return utils.ColoredString(state, c.GetColor())
+	return utils.ColoredString(state, c.GetColor()) + c.healthStatusString()
+}
+
+func (c *Container) healthStatusString() string {
+	healthStatusColorMap := map[string]color.Attribute{
+		"healthy":   color.FgGreen,
+		"unhealthy": color.FgRed,
+		"starting":  color.FgYellow,
+	}
+	if c.Container.State != "running" {
+		return ""
+	}
+	healthStatus := c.Details.State.Health.Status
+	if healthStatusColor, ok := healthStatusColorMap[healthStatus]; ok {
+		return utils.ColoredString(" ("+healthStatus+")", healthStatusColor)
+	}
+	return ""
 }
 
 // GetDisplayCPUPerc colors the cpu percentage based on how extreme it is
@@ -312,12 +322,6 @@ func (c *Container) GetColor() color.Attribute {
 	case "created":
 		return color.FgCyan
 	case "running":
-		if c.Details.State.Health.Status == "starting" {
-			return color.FgYellow
-		}
-		if c.Details.State.Health.Status == "unhealthy" {
-			return color.FgBlack
-		}
 		return color.FgGreen
 	case "paused":
 		return color.FgYellow
