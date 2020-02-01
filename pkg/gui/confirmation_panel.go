@@ -79,6 +79,7 @@ func (gui *Gui) prepareConfirmationPanel(currentView *gocui.View, title, prompt 
 			return nil, err
 		}
 		confirmationView.HasLoader = hasLoader
+		gui.g.StartTicking()
 		confirmationView.Title = title
 		confirmationView.Wrap = true
 		confirmationView.FgColor = gocui.ColorWhite

@@ -214,14 +214,6 @@ func (gui *Gui) promptAnonymousReporting() error {
 	})
 }
 
-func (gui *Gui) renderAppStatus() error {
-	appStatus := gui.statusManager.getStatusString()
-	if appStatus != "" {
-		return gui.renderString(gui.g, "appStatus", appStatus)
-	}
-	return nil
-}
-
 func (gui *Gui) renderGlobalOptions() error {
 	return gui.renderOptionsMap(map[string]string{
 		"PgUp/PgDn": gui.Tr.Scroll,
@@ -236,7 +228,9 @@ func (gui *Gui) goEvery(interval time.Duration, function func() error) {
 	currentSessionIndex := gui.State.SessionIndex
 	_ = function() // time.Tick doesn't run immediately so we'll do that here // TODO: maybe change
 	go func() {
-		for range time.Tick(interval) {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for range ticker.C {
 			if gui.State.SessionIndex > currentSessionIndex {
 				return
 			}
@@ -276,7 +270,6 @@ func (gui *Gui) Run() error {
 	dockerRefreshInterval := gui.Config.UserConfig.Update.DockerRefreshInterval
 	go func() {
 		gui.waitForIntro.Wait()
-		gui.goEvery(time.Millisecond*50, gui.renderAppStatus)
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
 		gui.goEvery(dockerRefreshInterval, gui.refreshProject)
 		gui.goEvery(dockerRefreshInterval, gui.refreshContainersAndServices)
@@ -285,7 +278,7 @@ func (gui *Gui) Run() error {
 		gui.goEvery(time.Millisecond*1000, gui.checkForContextChange)
 	}()
 
-	go gui.DockerCommand.MonitorContainerStats()
+	gui.DockerCommand.MonitorContainerStats()
 
 	go func() {
 		for err := range gui.ErrorChan {

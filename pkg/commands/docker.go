@@ -107,6 +107,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 
 // MonitorContainerStats is a function
 func (c *DockerCommand) MonitorContainerStats() {
+	// TODO: pass in a stop channel to these so we don't restart every time we come back from a subprocess
 	go c.MonitorCLIContainerStats()
 	go c.MonitorClientContainerStats()
 }
@@ -150,7 +151,9 @@ func (c *DockerCommand) MonitorCLIContainerStats() {
 func (c *DockerCommand) MonitorClientContainerStats() {
 	// periodically loop through running containers and see if we need to create a monitor goroutine for any
 	// every second we check if we need to spawn a new goroutine
-	for range time.Tick(time.Second) {
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+	for range ticker.C {
 		for _, container := range c.Containers {
 			if !container.MonitoringStats {
 				go c.createClientStatMonitor(container)
