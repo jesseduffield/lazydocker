@@ -21,14 +21,14 @@ require (
 	github.com/imdario/mergo v0.3.8
 	github.com/integrii/flaggy v1.4.0
 	github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee
-	github.com/jesseduffield/gocui v0.3.1-0.20190803023616-ad0cd60f29f9
+	github.com/jesseduffield/gocui v0.3.1-0.20200201013258-57fdcf23edc5
 	github.com/jesseduffield/rollrus v0.0.0-20190701125922-dd028cb0bfd7
-	github.com/jesseduffield/termbox-go v0.0.0-20190630083001-9dd53af7214e // indirect
+	github.com/jesseduffield/termbox-go v0.0.0-20200130214842-1d31d1faa3c9 // indirect
 	github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.11 // indirect
-	github.com/mattn/go-runewidth v0.0.7 // indirect
+	github.com/mattn/go-runewidth v0.0.8 // indirect
 	github.com/mcuadros/go-lookup v0.0.0-20171110082742-5650f26be767
 	github.com/mgutz/str v1.2.0
 	github.com/morikuni/aec v0.0.0-20170113033406-39771216ff4c // indirect

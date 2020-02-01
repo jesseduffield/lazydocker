@@ -50,12 +50,16 @@ github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee h1:7Zi/OQ
 github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee/go.mod h1:Z9UKHveKXXgyo8ME7R8yxh/BUTFOK+FgfWKlhy8oOAg=
 github.com/jesseduffield/gocui v0.3.1-0.20190803023616-ad0cd60f29f9 h1:v2Pf3RaIN+MlFfSDnJw2d9Qksr4Tw08+pjL4LEY+JLM=
 github.com/jesseduffield/gocui v0.3.1-0.20190803023616-ad0cd60f29f9/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
+github.com/jesseduffield/gocui v0.3.1-0.20200201013258-57fdcf23edc5 h1:tE0w3tuL/bj1o5VMhjjE0ep6i7Fva+RYjKcMFcniJEY=
+github.com/jesseduffield/gocui v0.3.1-0.20200201013258-57fdcf23edc5/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
 github.com/jesseduffield/roll v0.0.0-20190629104057-695be2e62b00 h1:+JaOkfBNYQYlGD7dgru8mCwYNEc5tRRI8mThlVANhSM=
 github.com/jesseduffield/roll v0.0.0-20190629104057-695be2e62b00/go.mod h1:cWNQljQAWYBp4wchyGfql4q2jRNZXxiE1KhVQgz+JaM=
 github.com/jesseduffield/rollrus v0.0.0-20190701125922-dd028cb0bfd7 h1:CRD7bVjlGIiV+M0jlsa+XWpneW0KY0e7Y4z3GWb5S4o=
 github.com/jesseduffield/rollrus v0.0.0-20190701125922-dd028cb0bfd7/go.mod h1:VspA3aTkEo0Q7TPCLmX1uHNP+Wb4iSDX09hmTRo1QYc=
 github.com/jesseduffield/termbox-go v0.0.0-20190630083001-9dd53af7214e h1:tth7wr6+sfSbdpRWWrwvLYyS56HyIRVfq0Qcl2h28wM=
 github.com/jesseduffield/termbox-go v0.0.0-20190630083001-9dd53af7214e/go.mod h1:anMibpZtqNxjDbxrcDEAwSdaJ37vyUeM1f/M4uekib4=
+github.com/jesseduffield/termbox-go v0.0.0-20200130214842-1d31d1faa3c9 h1:iBBk1lhFwjwJw//J2m1yyz9S368GeXQTpMVACTyQMh0=
+github.com/jesseduffield/termbox-go v0.0.0-20200130214842-1d31d1faa3c9/go.mod h1:anMibpZtqNxjDbxrcDEAwSdaJ37vyUeM1f/M4uekib4=
 github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56 h1:33wSxJWU/f2TAozHYtJ8zqBxEnEVYM+22moLoiAkxvg=
 github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56/go.mod h1:FZJBwOhE+RXz8EVZfY+xnbCw2cVOwxlK3/aIi581z/s=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
@@ -71,6 +75,8 @@ github.com/mattn/go-isatty v0.0.11 h1:FxPOTFNqGkuDUGi3H/qkUbQO4ZiBa2brKq5r0l8TGe
 github.com/mattn/go-isatty v0.0.11/go.mod h1:PhnuNfih5lzO57/f3n+odYbM4JtupLOxQOAqxQCu2WE=
 github.com/mattn/go-runewidth v0.0.7 h1:Ei8KR0497xHyKJPAv59M1dkC+rOZCMBJ+t3fZ+twI54=
 github.com/mattn/go-runewidth v0.0.7/go.mod h1:H031xJmbD/WCDINGzjvQ9THkh0rPKHF+m2gUSrubnMI=
+github.com/mattn/go-runewidth v0.0.8 h1:3tS41NlGYSmhhe/8fhGRzc+z3AYCw1Fe1WAyLuujKs0=
+github.com/mattn/go-runewidth v0.0.8/go.mod h1:H031xJmbD/WCDINGzjvQ9THkh0rPKHF+m2gUSrubnMI=
 github.com/mcuadros/go-lookup v0.0.0-20171110082742-5650f26be767 h1:BrhJNdEFWGuiJk/3/SwsG5Rex3zjFxYsDi2bpd7382Y=
 github.com/mcuadros/go-lookup v0.0.0-20171110082742-5650f26be767/go.mod h1:ct+byCpkFokm4J0tiuAvB8cf2ttm6GcCe89Yr25nGKg=
 github.com/mgutz/str v1.2.0 h1:4IzWSdIz9qPQWLfKZ0rJcV0jcUDpxvP4JVZ4GXQyvSw=
