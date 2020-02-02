@@ -53,10 +53,6 @@ github.com/integrii/flaggy
 github.com/jesseduffield/asciigraph
 # github.com/jesseduffield/gocui v0.3.1-0.20200201013258-57fdcf23edc5
 github.com/jesseduffield/gocui
-# github.com/jesseduffield/roll v0.0.0-20190629104057-695be2e62b00
-github.com/jesseduffield/roll
-# github.com/jesseduffield/rollrus v0.0.0-20190701125922-dd028cb0bfd7
-github.com/jesseduffield/rollrus
 # github.com/jesseduffield/termbox-go v0.0.0-20200130214842-1d31d1faa3c9
 github.com/jesseduffield/termbox-go
 # github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56

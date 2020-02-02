@@ -7,16 +7,13 @@ import (
 	"path/filepath"
 
 	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/rollrus"
 	"github.com/sirupsen/logrus"
 )
 
 // NewLogger returns a new logger
 func NewLogger(config *config.AppConfig, rollrusHook string) *logrus.Entry {
 	var log *logrus.Logger
-	environment := "production"
 	if config.Debug || os.Getenv("DEBUG") == "TRUE" {
-		environment = "development"
 		log = newDevelopmentLogger(config)
 	} else {
 		log = newProductionLogger()
@@ -26,11 +23,6 @@ func NewLogger(config *config.AppConfig, rollrusHook string) *logrus.Entry {
 	// https://github.com/aybabtme/humanlog
 	log.Formatter = &logrus.JSONFormatter{}
 
-	if config.UserConfig.Reporting == "on" && rollrusHook != "" {
-		// this isn't really a secret token: it only has permission to push new rollbar items
-		hook := rollrus.NewHook(rollrusHook, environment)
-		log.Hooks.Add(hook)
-	}
 	return log.WithFields(logrus.Fields{
 		"debug":     config.Debug,
 		"version":   config.Version,
