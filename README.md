@@ -64,6 +64,13 @@ You can install `lazydocker` using [scoop](https://scoop.sh/):
 ```sh
 scoop install lazydocker
 ```
+### Chocolatey (Windows)
+
+You can install `lazydocker` using [Chocolatey](https://chocolatey.org/):
+
+```sh
+choco install lazydocker
+```
 
 ### Binary Release (Linux/OSX/Windows)
 
