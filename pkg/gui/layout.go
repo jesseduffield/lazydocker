@@ -93,6 +93,14 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		return nil
 	}
 
+	// TODO: should do this once only..
+	showServicesPanel := false
+	for _, view := range gui.CyclableViews {
+		if view == "services" {
+			showServicesPanel = true
+		}
+	}
+
 	currView := gui.g.CurrentView()
 	currentCyclebleView := gui.peekPreviousView()
 	if currView != nil {
@@ -114,7 +122,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 
 	tallPanels := 3
 	var vHeights map[string]int
-	if gui.DockerCommand.InDockerComposeProject {
+	if showServicesPanel {
 		tallPanels++
 		vHeights = map[string]int{
 			"project":    3,
@@ -146,7 +154,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			"volumes":    defaultHeight,
 			"options":    defaultHeight,
 		}
-		if gui.DockerCommand.InDockerComposeProject {
+		if showServicesPanel {
 			vHeights["services"] = defaultHeight
 		}
 		vHeights[currentCyclebleView] = height - defaultHeight*tallPanels - 1
@@ -176,61 +184,33 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		v.IgnoreCarriageReturns = true
 	}
 
-	if v, err := g.SetView("project", 0, 0, leftSideWidth, vHeights["project"]-1, gocui.BOTTOM|gocui.RIGHT); err != nil {
-		if err.Error() != "unknown view" {
-			return err
-		}
-		v.Title = gui.Tr.ProjectTitle
-		v.FgColor = gocui.ColorDefault
+	titles := map[string]string{
+		"project":    gui.Tr.ProjectTitle,
+		"services":   gui.Tr.ServicesTitle,
+		"containers": gui.Tr.StandaloneContainersTitle,
+		"images":     gui.Tr.ImagesTitle,
+		"volumes":    gui.Tr.VolumesTitle,
+	}
+	if gui.Config.UserConfig.Gui.ShowAllContainers || !showServicesPanel {
+		titles["containers"] = gui.Tr.ContainersTitle
 	}
 
-	var servicesView *gocui.View
-	aboveContainersView := "project"
-	if gui.DockerCommand.InDockerComposeProject {
-		aboveContainersView = "services"
-		servicesView, err = g.SetViewBeneath("services", "project", vHeights["services"])
-		if err != nil {
-			if err.Error() != "unknown view" {
+	aboveContainersView := ""
+	for _, view := range gui.CyclableViews {
+		if aboveContainersView == "" {
+			if v, err := g.SetView(view, 0, 0, leftSideWidth, vHeights[view]-1, gocui.BOTTOM|gocui.RIGHT); err != nil {
+				if err.Error() != "unknown view" {
+					return err
+				}
+				v.Title = titles[view]
+				v.FgColor = gocui.ColorDefault
+			}
+		} else {
+			if err = addView(g, view, aboveContainersView, titles[view], vHeights[view]); err != nil {
 				return err
 			}
-			servicesView.Highlight = true
-			servicesView.Title = gui.Tr.ServicesTitle
-			servicesView.FgColor = gocui.ColorDefault
 		}
-	}
-
-	containersView, err := g.SetViewBeneath("containers", aboveContainersView, vHeights["containers"])
-	if err != nil {
-		if err.Error() != "unknown view" {
-			return err
-		}
-		containersView.Highlight = true
-		if gui.Config.UserConfig.Gui.ShowAllContainers || !gui.DockerCommand.InDockerComposeProject {
-			containersView.Title = gui.Tr.ContainersTitle
-		} else {
-			containersView.Title = gui.Tr.StandaloneContainersTitle
-		}
-		containersView.FgColor = gocui.ColorDefault
-	}
-
-	imagesView, err := g.SetViewBeneath("images", "containers", vHeights["images"])
-	if err != nil {
-		if err.Error() != "unknown view" {
-			return err
-		}
-		imagesView.Highlight = true
-		imagesView.Title = gui.Tr.ImagesTitle
-		imagesView.FgColor = gocui.ColorDefault
-	}
-
-	volumesView, err := g.SetViewBeneath("volumes", "images", vHeights["volumes"])
-	if err != nil {
-		if err.Error() != "unknown view" {
-			return err
-		}
-		volumesView.Highlight = true
-		volumesView.Title = gui.Tr.VolumesTitle
-		volumesView.FgColor = gocui.ColorDefault
+		aboveContainersView = view
 	}
 
 	if v, err := g.SetView("options", appStatusOptionsBoundary-1, height-2, optionsVersionBoundary-1, height, 0); err != nil {
@@ -292,6 +272,19 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	// this will let you see these branches as prettified json
 	// gui.Log.Info(utils.AsJson(gui.State.Branches[0:4]))
 	return gui.resizeCurrentPopupPanel(g)
+}
+
+func addView(g *gocui.Gui, name, after, title string, height int) error {
+	imagesView, err := g.SetViewBeneath(name, after, height)
+	if err != nil {
+		if err.Error() != "unknown view" {
+			return err
+		}
+		imagesView.Highlight = true
+		imagesView.Title = title
+		imagesView.FgColor = gocui.ColorDefault
+	}
+	return nil
 }
 
 type listViewState struct {

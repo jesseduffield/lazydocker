@@ -23,6 +23,7 @@ var (
 
 	configFlag    = false
 	debuggingFlag = false
+	dockerSwarm   = false
 	composeFiles  []string
 )
 
@@ -44,6 +45,7 @@ func main() {
 	flaggy.Bool(&configFlag, "c", "config", "Print the current default config")
 	flaggy.Bool(&debuggingFlag, "d", "debug", "a boolean")
 	flaggy.StringSlice(&composeFiles, "f", "file", "Specify alternate compose files")
+	flaggy.Bool(&dockerSwarm, "s", "swarm", "ue DOcker Swarm mode")
 	flaggy.SetVersion(info)
 
 	flaggy.Parse()
@@ -64,7 +66,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, composeFiles, projectDir)
+	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, dockerSwarm, composeFiles, projectDir)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

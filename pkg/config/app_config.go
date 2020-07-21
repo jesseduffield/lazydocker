@@ -175,6 +175,11 @@ type CommandTemplatesConfig struct {
 	// file(s)
 	DockerComposeConfig string `yaml:"dockerComposeConfig,omitempty"`
 
+	// Print the service config hash, one per line.
+	// Set "service1,service2" for a list of specified services
+	// or use the wildcard symbol to display all services
+	DockerComposeConfigHash string `yaml:"dockerComposeConfigHash,omitempty"`
+
 	// CheckDockerComposeConfig is what we use to check whether we are in a
 	// docker-compose context. If the command returns an error then we clearly
 	// aren't in a docker-compose config and we then just hide the services panel
@@ -335,6 +340,7 @@ func GetDefaultConfig() UserConfig {
 			AllLogs:                  "{{ .DockerCompose }} logs --tail=300 --follow",
 			ViewAllLogs:              "{{ .DockerCompose }} logs",
 			DockerComposeConfig:      "{{ .DockerCompose }} config",
+			DockerComposeConfigHash:  "{{ .DockerCompose }} config --hash=*",
 			CheckDockerComposeConfig: "{{ .DockerCompose }} config --quiet",
 			ContainerLogs:            "docker logs --timestamps --follow --since=60m {{ .Container.ID }}",
 			ViewContainerLogs:        "docker logs --timestamps --follow --since=60m {{ .Container.ID }}",
@@ -423,6 +429,7 @@ func GetDefaultConfig() UserConfig {
 // AppConfig contains the base configuration fields required for lazydocker.
 type AppConfig struct {
 	Debug       bool   `long:"debug" env:"DEBUG" default:"false"`
+	DockerSwarm bool   `long:"debug" default:"false`
 	Version     string `long:"version" env:"VERSION" default:"unversioned"`
 	Commit      string `long:"commit" env:"COMMIT"`
 	BuildDate   string `long:"build-date" env:"BUILD_DATE"`
@@ -434,7 +441,7 @@ type AppConfig struct {
 }
 
 // NewAppConfig makes a new app config
-func NewAppConfig(name, version, commit, date string, buildSource string, debuggingFlag bool, composeFiles []string, projectDir string) (*AppConfig, error) {
+func NewAppConfig(name, version, commit, date string, buildSource string, debuggingFlag, dockerSwarm bool, composeFiles []string, projectDir string) (*AppConfig, error) {
 	configDir, err := findOrCreateConfigDir(name)
 	if err != nil {
 		return nil, err
@@ -456,6 +463,7 @@ func NewAppConfig(name, version, commit, date string, buildSource string, debugg
 		Commit:      commit,
 		BuildDate:   date,
 		Debug:       debuggingFlag || os.Getenv("DEBUG") == "TRUE",
+		DockerSwarm: dockerSwarm,
 		BuildSource: buildSource,
 		UserConfig:  userConfig,
 		ConfigDir:   configDir,

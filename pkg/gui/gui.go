@@ -150,7 +150,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 	}
 
 	cyclableViews := []string{"project", "containers", "images", "volumes"}
-	if dockerCommand.InDockerComposeProject {
+	if dockerCommand.InDockerComposeProject || config.DockerSwarm {
 		cyclableViews = []string{"project", "services", "containers", "images", "volumes"}
 	}
 

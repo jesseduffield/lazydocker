@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
-	"fmt"
 	"os/exec"
 	"sort"
 	"strings"
@@ -91,12 +90,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 
 	log.Warn(command)
 
-	err = osCommand.RunCommand(
-		utils.ApplyTemplate(
-			config.UserConfig.CommandTemplates.CheckDockerComposeConfig,
-			dockerCommand.NewCommandObject(CommandObject{}),
-		),
-	)
+	err = osCommand.RunCommand(command)
 	if err != nil {
 		dockerCommand.InDockerComposeProject = false
 		log.Warn(err.Error())
@@ -228,11 +222,11 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 
 	// sort services first by whether they have a linked container, and second by alphabetical order
 	sort.Slice(services, func(i, j int) bool {
-		if services[i].Container != nil && services[j].Container == nil {
+		if len(services[i].Containers) > 0 && len(services[j].Containers) == 0 {
 			return true
 		}
 
-		if services[i].Container == nil && services[j].Container != nil {
+		if len(services[i].Containers) == 0 && len(services[j].Containers) > 0 {
 			return false
 		}
 
@@ -247,15 +241,13 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 }
 
 func (c *DockerCommand) assignContainersToServices(containers []*Container, services []*Service) {
-L:
 	for _, service := range services {
 		for _, container := range containers {
-			if !container.OneOff && container.ServiceName == service.Name {
-				service.Container = container
-				continue L
+			if /*!container.OneOff &&*/ container.ServiceName == service.Name {
+				service.Containers = append(service.Containers, container)
+				continue
 			}
 		}
-		service.Container = nil
 	}
 }
 
@@ -335,7 +327,15 @@ func (c *DockerCommand) GetContainers() ([]*Container, error) {
 			newContainer.Name = strings.TrimLeft(container.Names[0], "/")
 		}
 		newContainer.ServiceName = container.Labels["com.docker.compose.service"]
+		if container.Labels["com.docker.swarm.service.name"] != "" {
+			newContainer.ServiceName = container.Labels["com.docker.swarm.service.name"]
+		}
+
 		newContainer.ProjectName = container.Labels["com.docker.compose.project"]
+		if container.Labels["com.docker.stack.namespace"] != "" {
+			newContainer.ProjectName = container.Labels["com.docker.stack.namespace"]
+		}
+
 		newContainer.ContainerNumber = container.Labels["com.docker.compose.container"]
 		newContainer.OneOff = container.Labels["com.docker.compose.oneoff"] == "True"
 
@@ -351,8 +351,8 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 		return nil, nil
 	}
 
-	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
-	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --hash=*", composeCommand))
+	composeConfigHash := c.Config.UserConfig.CommandTemplates.DockerComposeConfigHash
+	output, err := c.OSCommand.RunCommandWithOutput(composeConfigHash)
 	if err != nil {
 		return nil, err
 	}
