@@ -46,15 +46,17 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	containerID := ""
-	if service.Container != nil {
-		containerID = service.Container.ID
+	containerNum := ""
+	if len(service.Containers) != 0 {
+		containerID = service.Containers[0].ID
+		containerNum = service.Containers[0].ContainerNumber
 	}
 
 	if err := gui.focusPoint(0, gui.State.Panels.Services.SelectedLine, len(gui.DockerCommand.Services), v); err != nil {
 		return err
 	}
 
-	key := "services-" + service.ID + "-" + containerID + "-" + gui.getServiceContexts()[gui.State.Panels.Services.ContextIndex]
+	key := "services-" + service.Name + "-" + containerID + "-" + containerNum + "-" + gui.getServiceContexts()[gui.State.Panels.Services.ContextIndex]
 	if !gui.shouldRefresh(key) {
 		return nil
 	}
@@ -74,10 +76,10 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	case "container-config":
-		if service.Container == nil {
+		if len(service.Containers) == 0 {
 			return gui.renderString(gui.g, "main", gui.Tr.NoContainer)
 		}
-		if err := gui.renderContainerConfig(service.Container); err != nil {
+		if err := gui.renderContainerConfig(service.Containers[0]); err != nil {
 			return err
 		}
 	case "top":
@@ -92,11 +94,11 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) renderServiceStats(service *commands.Service) error {
-	if service.Container == nil {
+	if len(service.Containers) == 0 {
 		return nil
 	}
 
-	return gui.renderContainerStats(service.Container)
+	return gui.renderContainerStats(service.Containers[0])
 }
 
 func (gui *Gui) renderServiceTop(service *commands.Service) error {
@@ -120,13 +122,13 @@ func (gui *Gui) renderServiceLogs(service *commands.Service) error {
 		return nil
 	}
 
-	if service.Container == nil {
+	if len(service.Containers) == 0 {
 		return gui.T.NewTask(func(stop chan struct{}) {
 			gui.clearMainView()
 		})
 	}
 
-	return gui.renderContainerLogs(service.Container)
+	return gui.renderContainerLogs(service.Containers[0])
 }
 
 func (gui *Gui) handleServicesNextLine(g *gocui.Gui, v *gocui.View) error {
@@ -252,7 +254,7 @@ func (gui *Gui) handleServiceAttach(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	if service.Container == nil {
+	if len(service.Containers) == 0 {
 		return gui.createErrorPanel(gui.g, gui.Tr.NoContainers)
 	}
 
@@ -374,7 +376,7 @@ func (gui *Gui) handleServicesCustomCommand(g *gocui.Gui, v *gocui.View) error {
 
 	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
 		Service:   service,
-		Container: service.Container,
+		Container: service.Containers[0],
 	})
 
 	var customCommands []config.CustomCommand
@@ -396,7 +398,7 @@ L:
 		}
 	}
 
-	if service.Container != nil {
+	if len(service.Containers) > 0 {
 		customCommands = append(customCommands, gui.Config.UserConfig.CustomCommands.Containers...)
 	}
 
