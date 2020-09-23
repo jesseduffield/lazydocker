@@ -251,31 +251,38 @@ type ContainerCliStat struct {
 func (c *Container) GetDisplayStrings(isFocused bool) []string {
 	image := strings.TrimPrefix(c.Container.Image, "sha256:")
 
-	return []string{c.GetDisplayStatus(), c.Name, c.GetDisplayCPUPerc(), utils.ColoredString(image, color.FgMagenta)}
+	return []string{c.GetDisplayStatus(), c.GetDisplaySubstatus(), c.Name, c.GetDisplayCPUPerc(), utils.ColoredString(image, color.FgMagenta)}
 }
 
 // GetDisplayStatus returns the colored status of the container
 func (c *Container) GetDisplayStatus() string {
-	state := c.Container.State
-	if c.Container.State == "exited" {
-		return utils.ColoredString(state+" ("+strconv.Itoa(c.Details.State.ExitCode)+")", c.GetColor())
-	}
-
-	return utils.ColoredString(state, c.GetColor()) + c.healthStatusString()
+	return utils.ColoredString(c.Container.State, c.GetColor())
 }
 
-func (c *Container) healthStatusString() string {
+// GetDisplayStatus returns the exit code if the container has exited, and the health status if the container is running (and has a health check)
+func (c *Container) GetDisplaySubstatus() string {
+	switch c.Container.State {
+	case "exited":
+		return utils.ColoredString(
+			fmt.Sprintf("(%s)", strconv.Itoa(c.Details.State.ExitCode)), c.GetColor(),
+		)
+	case "running":
+		return c.getHealthStatus()
+	default:
+		return ""
+	}
+}
+
+func (c *Container) getHealthStatus() string {
 	healthStatusColorMap := map[string]color.Attribute{
 		"healthy":   color.FgGreen,
 		"unhealthy": color.FgRed,
 		"starting":  color.FgYellow,
 	}
-	if c.Container.State != "running" {
-		return ""
-	}
+
 	healthStatus := c.Details.State.Health.Status
 	if healthStatusColor, ok := healthStatusColorMap[healthStatus]; ok {
-		return utils.ColoredString(" ("+healthStatus+")", healthStatusColor)
+		return utils.ColoredString(fmt.Sprintf("(%s)", healthStatus), healthStatusColor)
 	}
 	return ""
 }
