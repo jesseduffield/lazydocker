@@ -97,7 +97,7 @@ func (gui *Gui) renderVolumeConfig(mainView *gocui.View, volume *commands.Volume
 		}
 
 		if volume.Volume.UsageData != nil {
-			output += utils.WithPadding("RefCount: ", padding) + string(volume.Volume.UsageData.RefCount) + "\n"
+			output += utils.WithPadding("RefCount: ", padding) + fmt.Sprintf("%d", volume.Volume.UsageData.RefCount) + "\n"
 			output += utils.WithPadding("Size: ", padding) + utils.FormatBinaryBytes(int(volume.Volume.UsageData.Size)) + "\n"
 		}
 

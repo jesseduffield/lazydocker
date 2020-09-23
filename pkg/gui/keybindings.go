@@ -1,6 +1,8 @@
 package gui
 
 import (
+	"strconv"
+
 	"github.com/jesseduffield/gocui"
 )
 
@@ -53,7 +55,7 @@ func (b *Binding) GetKey() string {
 		return "PgDn"
 	}
 
-	return string(key)
+	return strconv.Itoa(key)
 }
 
 // GetInitialKeybindings is a function.
