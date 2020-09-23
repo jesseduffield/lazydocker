@@ -8,7 +8,7 @@
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab
   <kbd>m</kbd>: bekijk logs
-  <kbd>enter</kbd>: focus hooft panneel
+  <kbd>enter</kbd>: focus hoofdpaneel
 </pre>
 
 ## Containers
@@ -24,7 +24,7 @@
   <kbd>m</kbd>: bekijk logs
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>b</kbd>: view bulk commands
-  <kbd>enter</kbd>: focus hooft panneel
+  <kbd>enter</kbd>: focus hoofdpaneel
 </pre>
 
 ## Diensten
@@ -40,7 +40,7 @@
   <kbd>R</kbd>: bekijk herstart opties
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>b</kbd>: view bulk commands
-  <kbd>enter</kbd>: focus hooft panneel
+  <kbd>enter</kbd>: focus hoofdpaneel
 </pre>
 
 ## Images
@@ -51,7 +51,7 @@
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>d</kbd>: verwijder image
   <kbd>b</kbd>: view bulk commands
-  <kbd>enter</kbd>: focus hooft panneel
+  <kbd>enter</kbd>: focus hoofdpaneel
 </pre>
 
 ## Volumes
@@ -62,10 +62,10 @@
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>d</kbd>: verwijder volume
   <kbd>b</kbd>: view bulk commands
-  <kbd>enter</kbd>: focus hooft panneel
+  <kbd>enter</kbd>: focus hoofdpaneel
 </pre>
 
-## Hooft
+## Hoofd
 
 <pre>
   <kbd>esc</kbd>: terug
