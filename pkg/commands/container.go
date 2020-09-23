@@ -53,17 +53,18 @@ type Details struct {
 	Path    string    `json:"Path"`
 	Args    []string  `json:"Args"`
 	State   struct {
-		Status     string    `json:"Status"`
-		Running    bool      `json:"Running"`
-		Paused     bool      `json:"Paused"`
-		Restarting bool      `json:"Restarting"`
-		OOMKilled  bool      `json:"OOMKilled"`
-		Dead       bool      `json:"Dead"`
-		Pid        int       `json:"Pid"`
-		ExitCode   int       `json:"ExitCode"`
-		Error      string    `json:"Error"`
-		StartedAt  time.Time `json:"StartedAt"`
-		FinishedAt time.Time `json:"FinishedAt"`
+		Status     string       `json:"Status"`
+		Running    bool         `json:"Running"`
+		Paused     bool         `json:"Paused"`
+		Restarting bool         `json:"Restarting"`
+		OOMKilled  bool         `json:"OOMKilled"`
+		Dead       bool         `json:"Dead"`
+		Pid        int          `json:"Pid"`
+		ExitCode   int          `json:"ExitCode"`
+		Error      string       `json:"Error"`
+		StartedAt  time.Time    `json:"StartedAt"`
+		FinishedAt time.Time    `json:"FinishedAt"`
+		Health     types.Health `json:"Health"`
 	} `json:"State"`
 	Image           string      `json:"Image"`
 	ResolvConfPath  string      `json:"ResolvConfPath"`
@@ -257,10 +258,26 @@ func (c *Container) GetDisplayStrings(isFocused bool) []string {
 func (c *Container) GetDisplayStatus() string {
 	state := c.Container.State
 	if c.Container.State == "exited" {
-		state += " (" + strconv.Itoa(c.Details.State.ExitCode) + ")"
+		return utils.ColoredString(state+" ("+strconv.Itoa(c.Details.State.ExitCode)+")", c.GetColor())
 	}
 
-	return utils.ColoredString(state, c.GetColor())
+	return utils.ColoredString(state, c.GetColor()) + c.healthStatusString()
+}
+
+func (c *Container) healthStatusString() string {
+	healthStatusColorMap := map[string]color.Attribute{
+		"healthy":   color.FgGreen,
+		"unhealthy": color.FgRed,
+		"starting":  color.FgYellow,
+	}
+	if c.Container.State != "running" {
+		return ""
+	}
+	healthStatus := c.Details.State.Health.Status
+	if healthStatusColor, ok := healthStatusColorMap[healthStatus]; ok {
+		return utils.ColoredString(" ("+healthStatus+")", healthStatusColor)
+	}
+	return ""
 }
 
 // GetDisplayCPUPerc colors the cpu percentage based on how extreme it is
