@@ -21,7 +21,7 @@ func dutchSet() TranslationSet {
 		Confirm: "Bevestigen",
 
 		Return:             "terug",
-		FocusMain:          "focus hooft panneel",
+		FocusMain:          "focus hoofdpaneel",
 		Navigate:           "navigeer",
 		Execute:            "voer uit",
 		Close:              "sluit",
@@ -56,7 +56,7 @@ func dutchSet() TranslationSet {
 		AnonymousReportingPrompt: "Zou je anonieme data rapportage willen aanzetten om lazydocker beter te kunnen maken?",
 
 		GlobalTitle:               "Globaal",
-		MainTitle:                 "Hooft",
+		MainTitle:                 "Hoofd",
 		ProjectTitle:              "Project",
 		ServicesTitle:             "Diensten",
 		ContainersTitle:           "Containers",
