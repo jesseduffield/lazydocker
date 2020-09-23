@@ -1,8 +1,9 @@
 package commands
 
 import (
-	"github.com/docker/docker/api/types/container"
 	"os/exec"
+
+	"github.com/docker/docker/api/types/container"
 
 	"github.com/docker/docker/api/types"
 	"github.com/fatih/color"
@@ -24,11 +25,11 @@ type Service struct {
 func (s *Service) GetDisplayStrings(isFocused bool) []string {
 
 	if s.Container == nil {
-		return []string{utils.ColoredString("none", color.FgBlue), s.Name, ""}
+		return []string{utils.ColoredString("none", color.FgBlue), "", s.Name, ""}
 	}
 
 	cont := s.Container
-	return []string{cont.GetDisplayStatus(), s.Name, cont.GetDisplayCPUPerc()}
+	return []string{cont.GetDisplayStatus(), cont.GetDisplaySubstatus(), s.Name, cont.GetDisplayCPUPerc()}
 }
 
 // Remove removes the service's containers
