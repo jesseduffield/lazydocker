@@ -186,6 +186,11 @@ func (gui *Gui) renderContainerLogs(container *commands.Container) error {
 		)
 		cmd := gui.OSCommand.RunCustomCommand(command)
 
+		// Ensure the child process is treated as a group, as the child process spawns
+		// its own children. Termination requires sending the signal to the group
+		// process ID.
+		gui.OSCommand.PrepareForChildren(cmd)
+
 		mainView := gui.getMainView()
 		cmd.Stdout = mainView
 		cmd.Stderr = mainView
