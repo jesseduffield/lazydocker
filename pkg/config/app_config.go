@@ -465,9 +465,26 @@ func NewAppConfig(name, version, commit, date string, buildSource string, debugg
 	return appConfig, nil
 }
 
+func configDirForVendor(vendor string, projectName string) string {
+	envConfigDir := os.Getenv("CONFIG_DIR")
+	if envConfigDir != "" {
+		return envConfigDir
+	}
+	configDirs := xdg.New(vendor, projectName)
+	return configDirs.ConfigHome()
+}
+
+func configDir(projectName string) string {
+	legacyConfigDirectory := configDirForVendor("jesseduffield", projectName)
+	if _, err := os.Stat(legacyConfigDirectory); !os.IsNotExist(err) {
+		return legacyConfigDirectory
+	}
+	configDirectory := configDirForVendor("", projectName)
+	return configDirectory
+}
+
 func findOrCreateConfigDir(projectName string) (string, error) {
-	configDirs := xdg.New("jesseduffield", projectName)
-	folder := configDirs.ConfigHome()
+	folder := configDir(projectName)
 
 	err := os.MkdirAll(folder, 0755)
 	if err != nil {
