@@ -250,6 +250,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "containers",
+			Key:         'E',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleContainersExecShell,
+			Description: gui.Tr.ExecShell,
+		},
+		{
+			ViewName:    "containers",
 			Key:         'c',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersCustomCommand,
