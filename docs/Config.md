@@ -35,6 +35,7 @@ commandTemplates:
   viewServiceLogs: '{{ .DockerCompose }} logs --follow {{ .Service.Name }}'
   rebuildService: '{{ .DockerCompose }} up -d --build {{ .Service.Name }}'
   recreateService: '{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}'
+  recreateServiceDropVolumes: '{{ .DockerCompose }} up -d --force-recreate --renew-anon-volumes {{ .Service.Name }}'
   viewContainerLogs: docker logs --timestamps --follow --since=60m {{ .Container.ID
     }}
   containerLogs: docker logs --timestamps --follow --since=60m {{ .Container.ID }}
