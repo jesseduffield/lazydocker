@@ -82,6 +82,7 @@ type TranslationSet struct {
 	ViewRestartOptions         string
 	RunCustomCommand           string
 	ViewBulkCommands           string
+	OpenInBrowser              string
 
 	LogsTitle                string
 	ConfigTitle              string
@@ -150,6 +151,7 @@ func englishSet() TranslationSet {
 		ViewRestartOptions:  "view restart options",
 		RunCustomCommand:    "run predefined custom command",
 		ViewBulkCommands:    "view bulk commands",
+		OpenInBrowser:       "open in browser (first port is http)",
 
 		AnonymousReportingTitle:  "Help make lazydocker better",
 		AnonymousReportingPrompt: "Would you like to enable anonymous reporting data to help improve lazydocker?",
