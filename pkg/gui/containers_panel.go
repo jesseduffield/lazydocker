@@ -571,3 +571,26 @@ func (gui *Gui) handleContainersBulkCommand(g *gocui.Gui, v *gocui.View) error {
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }
+
+// Open first port in browser
+func (gui *Gui) handleContainersOpenInBrowserCommand(g *gocui.Gui, v *gocui.View) error {
+	container, err := gui.getSelectedContainer()
+	if err != nil {
+		return nil
+	}
+	// skip if no any ports
+	if len(container.Container.Ports) == 0 {
+		return nil
+	}
+	// skip if the first port is not published
+	port := container.Container.Ports[0]
+	if port.IP == "" {
+		return nil
+	}
+	ip := port.IP
+	if ip == "0.0.0.0" {
+		ip = "localhost"
+	}
+	link := fmt.Sprintf("http://%s:%d/", ip, port.PublicPort)
+	return gui.OSCommand.OpenLink(link)
+}

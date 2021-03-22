@@ -263,6 +263,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
+			ViewName:    "containers",
+			Key:         'w',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleContainersOpenInBrowserCommand,
+			Description: gui.Tr.OpenInBrowser,
+		},
+		{
 			ViewName:    "services",
 			Key:         'd',
 			Modifier:    gocui.ModNone,
