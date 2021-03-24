@@ -80,6 +80,7 @@ type TranslationSet struct {
 	StopAllContainers          string
 	RemoveAllContainers        string
 	ViewRestartOptions         string
+	ExecShell                  string
 	RunCustomCommand           string
 	ViewBulkCommands           string
 	OpenInBrowser              string
@@ -149,6 +150,7 @@ func englishSet() TranslationSet {
 		StopAllContainers:   "stop all containers",
 		RemoveAllContainers: "remove all containers (forced)",
 		ViewRestartOptions:  "view restart options",
+		ExecShell:           "exec shell",
 		RunCustomCommand:    "run predefined custom command",
 		ViewBulkCommands:    "view bulk commands",
 		OpenInBrowser:       "open in browser (first port is http)",

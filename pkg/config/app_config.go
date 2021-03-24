@@ -344,7 +344,7 @@ func GetDefaultConfig() UserConfig {
 			Containers: []CustomCommand{
 				{
 					Name:    "bash",
-					Command: "docker exec -it {{ .Container.ID }} /bin/sh",
+					Command: "docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'",
 					Attach:  true,
 				},
 			},
