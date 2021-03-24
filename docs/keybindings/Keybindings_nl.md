@@ -22,8 +22,10 @@
   <kbd>r</kbd>: herstart
   <kbd>a</kbd>: verbinden
   <kbd>m</kbd>: bekijk logs
+  <kbd>E</kbd>: exec shell
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>b</kbd>: view bulk commands
+  <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: focus hoofdpaneel
 </pre>
 

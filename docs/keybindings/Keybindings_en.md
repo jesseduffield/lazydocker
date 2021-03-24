@@ -22,8 +22,10 @@
   <kbd>r</kbd>: restart
   <kbd>a</kbd>: attach
   <kbd>m</kbd>: view logs
+  <kbd>E</kbd>: exec shell
   <kbd>c</kbd>: run predefined custom command
   <kbd>b</kbd>: view bulk commands
+  <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: focus main panel
 </pre>
 

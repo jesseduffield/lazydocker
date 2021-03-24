@@ -22,8 +22,10 @@
   <kbd>r</kbd>: yeniden başlat
   <kbd>a</kbd>: bağlan/iliştir
   <kbd>m</kbd>: kayıt defterini görüntüle
+  <kbd>E</kbd>: exec shell
   <kbd>c</kbd>: önceden tanımlanmış özel komutu çalıştır
   <kbd>b</kbd>: view bulk commands
+  <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: ana panele odaklan
 </pre>
 
