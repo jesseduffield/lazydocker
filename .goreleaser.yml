@@ -47,32 +47,31 @@ archives:
         format: zip
 
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "checksums.txt"
 
 snapshot:
-  name_template: '{{ .Tag }}-next'
+  name_template: "{{ .Tag }}-next"
 
 changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
-      - '^bump'
+      - "^docs:"
+      - "^test:"
+      - "^bump"
 
 brews:
-  - github:
+  - tap:
       owner: jesseduffield
       name: homebrew-lazydocker
 
     # Your app's homepage.
     # Default is empty.
-    homepage: 'https://github.com/jesseduffield/lazydocker/'
+    homepage: "https://github.com/jesseduffield/lazydocker/"
 
     # Your app's description.
     # Default is empty.
-    description: 'A simple terminal UI for docker, written in Go'
-
+    description: "A simple terminal UI for docker, written in Go"
 #snapcrafts:
 #  - builds:
 #      - snap
