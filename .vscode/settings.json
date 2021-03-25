@@ -1,0 +1,5 @@
+{
+    "go.useLanguageServer": true,
+    "go.inferGopath": false,
+    "go.autocompleteUnimportedPackages": true
+}

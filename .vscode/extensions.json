@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "ms-vscode.Go",
+        "ms-vscode-remote.remote-containers",
+        "ms-azuretools.vscode-docker",
+        "davidanson.vscode-markdownlint",
+        "shardulm94.trailing-spaces"
+    ]
+}
