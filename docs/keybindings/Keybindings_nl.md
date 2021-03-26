@@ -42,6 +42,7 @@
   <kbd>R</kbd>: bekijk herstart opties
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>b</kbd>: view bulk commands
+  <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: focus hoofdpaneel
 </pre>
 
