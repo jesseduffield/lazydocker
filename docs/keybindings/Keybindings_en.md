@@ -42,6 +42,7 @@
   <kbd>R</kbd>: view restart options
   <kbd>c</kbd>: run predefined custom command
   <kbd>b</kbd>: view bulk commands
+  <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: focus main panel
 </pre>
 
