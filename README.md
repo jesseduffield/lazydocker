@@ -82,6 +82,14 @@ Automated install/update, don't forget to always verify what you're piping into 
 curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
 ```
 
+#### Or Use [asdf-vm](https://asdf-vm.com/) to install the [asdf-lazydocker plugin](https://github.com/comdotlinux/asdf-lazydocker) once and then keep updating to get the latest version whenever you want.
+```sh
+asdf plugin add https://github.com/comdotlinux/asdf-lazydocker.git
+asdf list all lazydocker
+asdf install lazydocker 0.12
+asdf global lazydocker 0.12
+```
+
 The script installs downloaded binary to `/usr/local/bin` directory by default, but it can be changed by setting `DIR` environment variable.
 
 ### Go
