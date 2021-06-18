@@ -71,6 +71,20 @@ You can install `lazydocker` using [Chocolatey](https://chocolatey.org/):
 ```sh
 choco install lazydocker
 ```
+### asdf-vm
+
+You can install [asdf-lazydocker plugin](https://github.com/comdotlinux/asdf-lazydocker) using [asdf-vm](https://asdf-vm.com/):
+#### Setup (Once)
+```sh
+asdf plugin add https://github.com/comdotlinux/asdf-lazydocker.git
+```
+
+#### For Install / Upgrade
+```sh
+asdf list all lazydocker
+asdf install lazydocker 0.12
+asdf global lazydocker 0.12
+```
 
 ### Binary Release (Linux/OSX/Windows)
 
@@ -81,7 +95,6 @@ Automated install/update, don't forget to always verify what you're piping into 
 ```sh
 curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
 ```
-
 The script installs downloaded binary to `/usr/local/bin` directory by default, but it can be changed by setting `DIR` environment variable.
 
 ### Go
