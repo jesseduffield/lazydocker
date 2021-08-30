@@ -79,6 +79,9 @@ type GuiConfig struct {
 	// scrolling the main panel
 	ScrollHeight int `yaml:"scrollHeight,omitempty"`
 
+	// Language determines which language the GUI displayed.
+	Language string `yaml:"language,omitempty"`
+
 	// ScrollPastBottom determines whether you can scroll past the bottom of the
 	// main view
 	ScrollPastBottom bool `yaml:"scrollPastBottom,omitempty"`
@@ -311,6 +314,7 @@ func GetDefaultConfig() UserConfig {
 	return UserConfig{
 		Gui: GuiConfig{
 			ScrollHeight:      2,
+			Language:          "auto",
 			ScrollPastBottom:  false,
 			IgnoreMouseEvents: false,
 			Theme: ThemeConfig{

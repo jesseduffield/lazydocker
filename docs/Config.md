@@ -16,6 +16,7 @@ Changes to the user config will only take place after closing and re-opening laz
 ```yml
 gui:
   scrollHeight: 2
+  language: 'auto' # one of 'auto' | 'en' | 'pl' | 'nl' | 'de' | 'tr'
   theme:
     activeBorderColor:
     - green
