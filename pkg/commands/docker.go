@@ -5,10 +5,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net"
+	"net/url"
+	"os"
 	"os/exec"
+	"path"
 	"sort"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/acarl005/stripansi"
@@ -66,9 +72,113 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	return defaultObj
 }
 
+func handleSSHHosts(c *client.Client) error {
+	ctx := context.Background()
+	u, err := url.Parse(os.Getenv("DOCKER_HOST"))
+	if err != nil {
+		// if no or an invalid docker host is specified, continue nominally
+		return nil
+	}
+
+	// if the docker host scheme is "ssh", forward the docker socket before creating the client
+	if u.Scheme == "ssh" {
+		newDockerHost, err := tunneledDockerHost(ctx, u.Host)
+		if err != nil {
+			return fmt.Errorf("tunnel ssh docker host: %w", err)
+		}
+		return client.WithHost(newDockerHost)(c)
+	}
+	return nil
+}
+
+func tunneledDockerHost(ctx context.Context, remoteHost string) (string, error) {
+	socketDir, err := ioutil.TempDir("/tmp", "lazydocker-sshtunnel-")
+	if err != nil {
+		return "", fmt.Errorf("create ssh tunnel tmp file: %w", err)
+	}
+	localSocket := path.Join(socketDir, "dockerhost.sock")
+
+	err = tunnelSSH(ctx, remoteHost, localSocket)
+	if err != nil {
+		return "", fmt.Errorf("tunnel docker host over ssh: %w", err)
+	}
+
+	// set a reasonable timeout, then wait for the socket to dial successfully
+	// before attempting to create a new docker client
+	const socketTunnelTimeout = 8 * time.Second
+	ctx, cancel := context.WithTimeout(ctx, 8*time.Second)
+	defer cancel()
+
+	err = retrySocketDial(ctx, localSocket)
+	if err != nil {
+		return "", fmt.Errorf("ssh tunneled socket never became available: %w", err)
+	}
+
+	// construct the new DOCKER_HOST url with the proper scheme
+	newDockerHostURL := url.URL{Scheme: "unix", Path: localSocket}
+	return newDockerHostURL.String(), nil
+}
+
+// Attempt to dial the socket until it becomes available.
+// The retry loop will continue until the parent context is canceled.
+func retrySocketDial(ctx context.Context, socketPath string) error {
+	t := time.NewTicker(1 * time.Second)
+	defer t.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-t.C:
+		}
+		// attempt to dial the socket, exit on success
+		err := tryDial(ctx, socketPath)
+		if err != nil {
+			continue
+		}
+		return nil
+	}
+}
+
+// Try to dial the specified unix socket, immediately close the connection if successfully created.
+func tryDial(ctx context.Context, socketPath string) error {
+	var dialer net.Dialer
+	conn, err := dialer.DialContext(ctx, "unix", socketPath)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	return nil
+}
+
+func tunnelSSH(ctx context.Context, host, localSocket string) error {
+	cmd := exec.CommandContext(ctx, "ssh", "-L", localSocket+":/var/run/docker.sock", host, "-N")
+	// when lazydocker exits, kill the SSH tunnel
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		// TODO: ensure we get this behavior on all platforms
+		Pdeathsig: syscall.SIGKILL,
+	}
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Build a new docker client from the enviornment.
+//
+// Handle special cases including `ssh://` host schemes.
+func clientBuilder(c *client.Client) error {
+	err := client.FromEnv(c)
+	if err != nil {
+		return err
+	}
+	return handleSSHHosts(c)
+}
+
 // NewDockerCommand it runs docker commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithVersion(APIVersion))
+	cli, err := client.NewClientWithOpts(clientBuilder, client.WithVersion(APIVersion))
 	if err != nil {
 		return nil, err
 	}
