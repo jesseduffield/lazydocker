@@ -112,6 +112,11 @@ type GuiConfig struct {
 
 	// WrapMainPanel determines whether we use word wrap on the main panel
 	WrapMainPanel bool `yaml:"wrapMainPanel,omitempty"`
+
+	// SortContainersByName determines if containers should be sorted by name.
+	// By default, containers are now sorted by status. This setting allows users to
+	// use legacy behaviour instead.
+	SortContainersByName bool `yaml:"sortContainersByName, omitempty"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
@@ -325,6 +330,7 @@ func GetDefaultConfig() UserConfig {
 			ShowAllContainers: false,
 			ReturnImmediately: false,
 			WrapMainPanel:     false,
+			SortContainersByName: false,
 		},
 		Reporting:     "undetermined",
 		ConfirmOnQuit: false,
