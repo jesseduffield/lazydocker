@@ -6,6 +6,7 @@ import (
 	"github.com/imdario/mergo"
 
 	"github.com/cloudfoundry/jibber_jabber"
+	"github.com/go-errors/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,16 +17,28 @@ type Localizer struct {
 	S        TranslationSet
 }
 
-// NewTranslationSet creates a new Localizer
-func NewTranslationSet(log *logrus.Entry) *TranslationSet {
-	userLang := detectLanguage(jibber_jabber.DetectLanguage)
+func NewTranslationSetFromConfig(log *logrus.Entry, configLanguage string) (*TranslationSet, error) {
+	if configLanguage == "auto" {
+		language := detectLanguage(jibber_jabber.DetectLanguage)
+		return NewTranslationSet(log, language), nil
+	}
 
-	log.Info("language: " + userLang)
+	for key := range GetTranslationSets() {
+		if key == configLanguage {
+			return NewTranslationSet(log, configLanguage), nil
+		}
+	}
+
+	return NewTranslationSet(log, "en"), errors.New("Language not found: " + configLanguage)
+}
+
+func NewTranslationSet(log *logrus.Entry, language string) *TranslationSet {
+	log.Info("language: " + language)
 
 	baseSet := englishSet()
 
 	for languageCode, translationSet := range GetTranslationSets() {
-		if strings.HasPrefix(userLang, languageCode) {
+		if strings.HasPrefix(language, languageCode) {
 			_ = mergo.Merge(&baseSet, translationSet, mergo.WithOverride)
 		}
 	}

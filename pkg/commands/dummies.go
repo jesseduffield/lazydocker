@@ -42,10 +42,11 @@ func NewDummyDockerCommand() *DockerCommand {
 
 // NewDummyDockerCommandWithOSCommand creates a new dummy DockerCommand for testing
 func NewDummyDockerCommandWithOSCommand(osCommand *OSCommand) *DockerCommand {
+	newAppConfig := NewDummyAppConfig()
 	return &DockerCommand{
 		Log:       NewDummyLog(),
 		OSCommand: osCommand,
-		Tr:        i18n.NewTranslationSet(NewDummyLog()),
-		Config:    NewDummyAppConfig(),
+		Tr:        i18n.NewTranslationSet(NewDummyLog(), newAppConfig.UserConfig.Gui.Language),
+		Config:    newAppConfig,
 	}
 }

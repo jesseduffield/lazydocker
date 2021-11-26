@@ -42,6 +42,7 @@
   <kbd>R</kbd>: zeige Neustartoptionen
   <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
   <kbd>b</kbd>: view bulk commands
+  <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: fokussieren aufs Hauptpanel
 </pre>
 

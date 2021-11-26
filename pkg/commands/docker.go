@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	ogLog "log"
 	"net"
 	"net/url"
 	"os"
@@ -174,7 +175,7 @@ func clientBuilder(c *client.Client) error {
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
 	cli, err := client.NewClientWithOpts(clientBuilder, client.WithVersion(APIVersion))
 	if err != nil {
-		return nil, err
+		ogLog.Fatal(err)
 	}
 
 	dockerCommand := &DockerCommand{
