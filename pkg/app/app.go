@@ -34,7 +34,10 @@ func NewApp(config *config.AppConfig) (*App, error) {
 	}
 	var err error
 	app.Log = log.NewLogger(config, "23432119147a4367abf7c0de2aa99a2d")
-	app.Tr = i18n.NewTranslationSet(app.Log)
+	app.Tr, err = i18n.NewTranslationSetFromConfig(app.Log, config.UserConfig.Gui.Language)
+	if err != nil {
+		return app, err
+	}
 	app.OSCommand = commands.NewOSCommand(app.Log, config)
 
 	// here is the place to make use of the docker-compose.yml file in the current directory
