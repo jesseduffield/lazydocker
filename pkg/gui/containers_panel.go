@@ -178,58 +178,62 @@ func (gui *Gui) renderContainerLogs(container *commands.Container) error {
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
 	return gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
-		gui.clearMainView()
+		gui.renderContainerLogsAux(container, stop, notifyStopped)
+	})
+}
 
-		command := utils.ApplyTemplate(
-			gui.Config.UserConfig.CommandTemplates.ContainerLogs,
-			gui.DockerCommand.NewCommandObject(commands.CommandObject{Container: container}),
-		)
-		cmd := gui.OSCommand.RunCustomCommand(command)
+func (gui *Gui) renderContainerLogsAux(container *commands.Container, stop, notifyStopped chan struct{}) {
+	gui.clearMainView()
 
-		// Ensure the child process is treated as a group, as the child process spawns
-		// its own children. Termination requires sending the signal to the group
-		// process ID.
-		gui.OSCommand.PrepareForChildren(cmd)
+	command := utils.ApplyTemplate(
+		gui.Config.UserConfig.CommandTemplates.ContainerLogs,
+		gui.DockerCommand.NewCommandObject(commands.CommandObject{Container: container}),
+	)
+	cmd := gui.OSCommand.RunCustomCommand(command)
 
-		mainView := gui.getMainView()
-		cmd.Stdout = mainView
-		cmd.Stderr = mainView
+	// Ensure the child process is treated as a group, as the child process spawns
+	// its own children. Termination requires sending the signal to the group
+	// process ID.
+	gui.OSCommand.PrepareForChildren(cmd)
 
-		cmd.Start()
+	mainView := gui.getMainView()
+	cmd.Stdout = mainView
+	cmd.Stderr = mainView
 
-		go func() {
-			<-stop
-			if err := gui.OSCommand.Kill(cmd); err != nil {
-				gui.Log.Warn(err)
-			}
-			gui.Log.Info("killed container logs process")
+	cmd.Start()
+
+	go func() {
+		<-stop
+		if err := gui.OSCommand.Kill(cmd); err != nil {
+			gui.Log.Warn(err)
+		}
+		gui.Log.Info("killed container logs process")
+		return
+	}()
+
+	cmd.Wait()
+
+	// if we are here because the task has been stopped, we should return
+	// if we are here then the container must have exited, meaning we should wait until it's back again before
+	ticker := time.NewTicker(time.Millisecond * 100)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-stop:
 			return
-		}()
-
-		cmd.Wait()
-
-		// if we are here because the task has been stopped, we should return
-		// if we are here then the container must have exited, meaning we should wait until it's back again before
-	L:
-		for {
-			select {
-			case <-stop:
+		case <-ticker.C:
+			result, err := container.Inspect()
+			if err != nil {
+				// if we get an error, then the container has probably been removed so we'll get out of here
+				gui.Log.Error(err)
+				notifyStopped <- struct{}{}
 				return
-			default:
-				result, err := container.Inspect()
-				if err != nil {
-					// if we get an error, then the container has probably been removed so we'll get out of here
-					gui.Log.Error(err)
-					notifyStopped <- struct{}{}
-					return
-				}
-				if result.State.Running {
-					break L
-				}
-				time.Sleep(time.Millisecond * 100)
+			}
+			if result.State.Running {
+				return
 			}
 		}
-	})
+	}
 }
 
 func (gui *Gui) refreshContainersAndServices() error {

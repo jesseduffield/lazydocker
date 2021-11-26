@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	ogLog "log"
 	"os/exec"
 	"sort"
 	"strings"
@@ -70,7 +71,7 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithVersion(APIVersion))
 	if err != nil {
-		return nil, err
+		ogLog.Fatal(err)
 	}
 
 	dockerCommand := &DockerCommand{
