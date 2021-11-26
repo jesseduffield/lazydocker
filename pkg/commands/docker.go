@@ -14,7 +14,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/acarl005/stripansi"
@@ -106,7 +105,7 @@ func tunneledDockerHost(ctx context.Context, remoteHost string) (string, error) 
 	// set a reasonable timeout, then wait for the socket to dial successfully
 	// before attempting to create a new docker client
 	const socketTunnelTimeout = 8 * time.Second
-	ctx, cancel := context.WithTimeout(ctx, 8*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, socketTunnelTimeout)
 	defer cancel()
 
 	err = retrySocketDial(ctx, localSocket)
@@ -153,11 +152,6 @@ func tryDial(ctx context.Context, socketPath string) error {
 
 func tunnelSSH(ctx context.Context, host, localSocket string) error {
 	cmd := exec.CommandContext(ctx, "ssh", "-L", localSocket+":/var/run/docker.sock", host, "-N")
-	// when lazydocker exits, kill the SSH tunnel
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		// TODO: ensure we get this behavior on all platforms
-		Pdeathsig: syscall.SIGKILL,
-	}
 	err := cmd.Start()
 	if err != nil {
 		return err
