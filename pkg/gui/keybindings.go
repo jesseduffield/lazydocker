@@ -347,6 +347,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
+			ViewName:    "services",
+			Key:         'w',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServicesOpenInBrowserCommand,
+			Description: gui.Tr.OpenInBrowser,
+		},
+		{
 			ViewName:    "images",
 			Key:         '[',
 			Modifier:    gocui.ModNone,
