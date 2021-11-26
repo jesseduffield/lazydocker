@@ -593,6 +593,11 @@ func (gui *Gui) handleContainersOpenInBrowserCommand(g *gocui.Gui, v *gocui.View
 	if err != nil {
 		return nil
 	}
+
+	return gui.openContainerInBrowser(container)
+}
+
+func (gui *Gui) openContainerInBrowser(container *commands.Container) error {
 	// skip if no any ports
 	if len(container.Container.Ports) == 0 {
 		return nil

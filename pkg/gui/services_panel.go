@@ -421,19 +421,5 @@ func (gui *Gui) handleServicesOpenInBrowserCommand(g *gocui.Gui, v *gocui.View) 
 		return gui.createErrorPanel(gui.g, gui.Tr.NoContainers)
 	}
 
-	// skip if no any ports
-	if len(container.Container.Ports) == 0 {
-		return nil
-	}
-	// skip if the first port is not published
-	port := container.Container.Ports[0]
-	if port.IP == "" {
-		return nil
-	}
-	ip := port.IP
-	if ip == "0.0.0.0" {
-		ip = "localhost"
-	}
-	link := fmt.Sprintf("http://%s:%d/", ip, port.PublicPort)
-	return gui.OSCommand.OpenLink(link)
+	return gui.openContainerInBrowser(container)
 }
