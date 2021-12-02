@@ -115,7 +115,10 @@ cd ~/lazydocker
 makepkg --install
 ```
 
-A development version of the AUR package is also [available](https://github.com/jesseduffield/lazydocker)
+A development version of the AUR package is also [available](https://github.com/jesseduffield/lazydocker):
+```sh
+yay -S lazydocker
+```
 
 ### Docker
 
