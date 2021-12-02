@@ -76,7 +76,7 @@ choco install lazydocker
 You can install [asdf-lazydocker plugin](https://github.com/comdotlinux/asdf-lazydocker) using [asdf-vm](https://asdf-vm.com/):
 #### Setup (Once)
 ```sh
-asdf plugin add https://github.com/comdotlinux/asdf-lazydocker.git
+asdf plugin add lazydocker https://github.com/comdotlinux/asdf-lazydocker.git
 ```
 
 #### For Install / Upgrade
