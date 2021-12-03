@@ -107,15 +107,11 @@ go get github.com/jesseduffield/lazydocker
 
 ### Arch Linux AUR
 
-You can install lazydocker using your AUR package manager of choice or by running:
+You can install lazydocker using the [AUR](https://aur.archlinux.org/packages/lazydocker) by running:
 
 ```sh
-git clone https://aur.archlinux.org/lazydocker.git ~/lazydocker
-cd ~/lazydocker
-makepkg --install
+yay -S lazydocker
 ```
-
-A development version of the AUR package is also [available](https://aur.archlinux.org/lazydocker-git.git)
 
 ### Docker
 
