@@ -618,4 +618,3 @@ func (gui *Gui) openContainerInBrowser(container *commands.Container) error {
 	link := fmt.Sprintf("http://%s:%d/", ip, port.PublicPort)
 	return gui.OSCommand.OpenLink(link)
 }
-

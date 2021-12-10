@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/OpenPeeDeeP/xdg"
-	yaml "github.com/jesseduffield/yaml"
+	"github.com/jesseduffield/yaml"
 )
 
 // UserConfig holds all of the user-configurable options
@@ -327,9 +327,9 @@ func GetDefaultConfig() UserConfig {
 				InactiveBorderColor: []string{"default"},
 				OptionsTextColor:    []string{"blue"},
 			},
-			ShowAllContainers: false,
-			ReturnImmediately: false,
-			WrapMainPanel:     false,
+			ShowAllContainers:    false,
+			ReturnImmediately:    false,
+			WrapMainPanel:        false,
 			SortContainersByName: false,
 		},
 		Reporting:     "undetermined",
