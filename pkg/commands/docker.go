@@ -285,7 +285,7 @@ func (c *DockerCommand) sortedContainers(containers []*Container) []*Container {
 				"exited":  2,
 				"created": 3,
 			}
-			return states[containers[i].Container.State] < states[containers[j].Container.State]
+			return states[containers[i].Container.State] > states[containers[j].Container.State]
 		})
 	}
 	return containers
