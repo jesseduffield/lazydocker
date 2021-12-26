@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/acarl005/stripansi"
@@ -151,16 +152,30 @@ func tryDial(ctx context.Context, socketPath string) error {
 	return nil
 }
 
+// CloseDockerSocketConnection kills the docker socket SSH forwarding process, if it exists.
+//
+// If will exist when DOCKER_HOST has the protocol scheme `ssh://`.
+func CloseDockerSocketConnection() {
+	if dockerSSHConnection != nil {
+		syscall.Kill(-dockerSSHConnection.Process.Pid, syscall.SIGKILL)
+	}
+}
+
+// dockerSSHConnection holds package-level state for the last-opened SSH tunnel to a remote docker socket.
+var dockerSSHConnection *exec.Cmd
+
 func tunnelSSH(ctx context.Context, host, localSocket string) error {
 	cmd := exec.CommandContext(ctx, "ssh", "-L", localSocket+":/var/run/docker.sock", host, "-N")
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	err := cmd.Start()
 	if err != nil {
 		return err
 	}
+	dockerSSHConnection = cmd
 	return nil
 }
 
-// Build a new docker client from the enviornment.
+// Build a new docker client from the environment.
 //
 // Handle special cases including `ssh://` host schemes.
 func clientBuilder(c *client.Client) error {
