@@ -72,4 +72,5 @@
 
 <pre>
   <kbd>esc</kbd>: return
+  <kbd>left/right</kbd> panel navigation
 </pre>
