@@ -72,5 +72,6 @@
 
 <pre>
   <kbd>esc</kbd>: return
-  <kbd>left/right</kbd> panel navigation
+  <kbd>left</kbd>: previous panel
+  <kbd>right</kbd>: next panel
 </pre>
