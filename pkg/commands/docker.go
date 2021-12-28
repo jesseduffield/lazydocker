@@ -73,9 +73,12 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	return defaultObj
 }
 
-func handleSSHHosts(c *client.Client) error {
+// handleSSHDockerHost overrides the DOCKER_HOST environment variable
+// to point towards a local unix socket tunneled over SSH to the specified ssh host.
+func handleSSHDockerHost() error {
+	const key = "DOCKER_HOST"
 	ctx := context.Background()
-	u, err := url.Parse(os.Getenv("DOCKER_HOST"))
+	u, err := url.Parse(os.Getenv(key))
 	if err != nil {
 		// if no or an invalid docker host is specified, continue nominally
 		return nil
@@ -87,7 +90,12 @@ func handleSSHHosts(c *client.Client) error {
 		if err != nil {
 			return fmt.Errorf("tunnel ssh docker host: %w", err)
 		}
-		return client.WithHost(newDockerHost)(c)
+		err = os.Setenv(key, newDockerHost)
+		if err != nil {
+			return fmt.Errorf("override DOCKER_HOST to tunneled socket: %w", err)
+		}
+
+		return nil
 	}
 	return nil
 }
@@ -179,11 +187,15 @@ func tunnelSSH(ctx context.Context, host, localSocket string) error {
 //
 // Handle special cases including `ssh://` host schemes.
 func clientBuilder(c *client.Client) error {
-	err := client.FromEnv(c)
+	err := handleSSHDockerHost()
 	if err != nil {
 		return err
 	}
-	return handleSSHHosts(c)
+	err = client.FromEnv(c)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // NewDockerCommand it runs docker commands
