@@ -149,7 +149,7 @@ func TestLegacySortedContainers(t *testing.T) {
 	ct := command.sortedContainers(containers)
 
 	for i := 0; i < len(ct); i++ {
-		assert.Equal(t, sorted[i].Container.State, ct[i].Container.State,)
+		assert.Equal(t, sorted[i].Container.State, ct[i].Container.State)
 		assert.Equal(t, sorted[i].Container.ID, ct[i].Container.ID)
 	}
 }
