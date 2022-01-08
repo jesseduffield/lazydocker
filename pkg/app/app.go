@@ -9,6 +9,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/gui"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/log"
+	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -46,6 +47,7 @@ func NewApp(config *config.AppConfig) (*App, error) {
 	if err != nil {
 		return app, err
 	}
+	app.closers = append(app.closers, app.DockerCommand)
 	app.Gui, err = gui.NewGui(app.Log, app.DockerCommand, app.OSCommand, app.Tr, config, app.ErrorChan)
 	if err != nil {
 		return app, err
@@ -56,6 +58,10 @@ func NewApp(config *config.AppConfig) (*App, error) {
 func (app *App) Run() error {
 	err := app.Gui.RunWithSubprocesses()
 	return err
+}
+
+func (app *App) Close() error {
+	return utils.CloseMany(app.closers)
 }
 
 type errorMapping struct {

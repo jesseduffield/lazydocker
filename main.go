@@ -11,7 +11,6 @@ import (
 	"github.com/go-errors/errors"
 	"github.com/integrii/flaggy"
 	"github.com/jesseduffield/lazydocker/pkg/app"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/yaml"
 )
@@ -74,7 +73,7 @@ func main() {
 	if err == nil {
 		err = app.Run()
 	}
-	commands.CloseDockerSocketConnection()
+	app.Close()
 
 	if err != nil {
 		if errMessage, known := app.KnownError(err); known {

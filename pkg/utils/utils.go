@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"io"
 	"math"
 	"reflect"
 	"regexp"
@@ -350,3 +351,26 @@ func FormatMap(padding int, m map[string]string) string {
 
 	return output
 }
+
+type multiErr []error
+
+func (m multiErr) Error() string {
+	var b bytes.Buffer
+	b.WriteString("encountered multiple errors:")
+	for _, err := range m {
+		b.WriteString("\n\t... " + err.Error())
+	}
+	return b.String()
+}
+
+func CloseMany(closers []io.Closer) error {
+	errs := make([]error, 0, len(closers))
+	for _, c := range closers {
+		err := c.Close()
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return multiErr(errs)
+}
+
