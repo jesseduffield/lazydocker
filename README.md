@@ -99,7 +99,13 @@ The script installs downloaded binary to `/usr/local/bin` directory by default, 
 
 ### Go
 
-Required Go version >= **1.8**
+Required Go Version >= **1.16**
+
+```sh
+go install github.com/jesseduffield/lazydocker@latest
+```
+
+Required Go version >= **1.8**, <= **1.17**
 
 ```sh
 go get github.com/jesseduffield/lazydocker
