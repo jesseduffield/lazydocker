@@ -23,6 +23,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/imdario/mergo"
+	"github.com/jesseduffield/lazydocker/pkg/commands/ssh"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
@@ -53,6 +54,8 @@ type DockerCommand struct {
 	Volumes           []*Volume
 	Closers           []io.Closer
 }
+
+var _ io.Closer = &DockerCommand{}
 
 // LimitedDockerCommand is a stripped-down DockerCommand with just the methods the container/service/image might need
 type LimitedDockerCommand interface {
@@ -198,7 +201,7 @@ func clientBuilder(c *client.Client) error {
 
 // NewDockerCommand it runs docker commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
-	tunnelCloser, err := handleSSHDockerHost()
+	tunnelCloser, err := ssh.NewSSHHandler().HandleSSHDockerHost()
 	if err != nil {
 		ogLog.Fatal(err)
 	}
