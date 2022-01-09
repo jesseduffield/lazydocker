@@ -371,5 +371,8 @@ func CloseMany(closers []io.Closer) error {
 			errs = append(errs, err)
 		}
 	}
-	return multiErr(errs)
+	if len(errs) > 0 {
+		return multiErr(errs)
+	}
+	return nil
 }
