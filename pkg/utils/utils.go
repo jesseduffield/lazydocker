@@ -373,4 +373,3 @@ func CloseMany(closers []io.Closer) error {
 	}
 	return multiErr(errs)
 }
-
