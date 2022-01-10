@@ -73,6 +73,7 @@ func main() {
 	if err == nil {
 		err = app.Run()
 	}
+	app.Close()
 
 	if err != nil {
 		if errMessage, known := app.KnownError(err); known {

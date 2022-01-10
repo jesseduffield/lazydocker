@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	ogLog "log"
 	"os/exec"
 	"sort"
@@ -16,6 +17,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/imdario/mergo"
+	"github.com/jesseduffield/lazydocker/pkg/commands/ssh"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
@@ -44,7 +46,10 @@ type DockerCommand struct {
 	DisplayContainers []*Container
 	Images            []*Image
 	Volumes           []*Volume
+	Closers           []io.Closer
 }
+
+var _ io.Closer = &DockerCommand{}
 
 // LimitedDockerCommand is a stripped-down DockerCommand with just the methods the container/service/image might need
 type LimitedDockerCommand interface {
@@ -69,6 +74,11 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 
 // NewDockerCommand it runs docker commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
+	tunnelCloser, err := ssh.NewSSHHandler().HandleSSHDockerHost()
+	if err != nil {
+		ogLog.Fatal(err)
+	}
+
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithVersion(APIVersion))
 	if err != nil {
 		ogLog.Fatal(err)
@@ -83,6 +93,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		ErrorChan:              errorChan,
 		ShowExited:             true,
 		InDockerComposeProject: true,
+		Closers:                []io.Closer{tunnelCloser},
 	}
 
 	command := utils.ApplyTemplate(
@@ -104,6 +115,10 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 	}
 
 	return dockerCommand, nil
+}
+
+func (c *DockerCommand) Close() error {
+	return utils.CloseMany(c.Closers)
 }
 
 // MonitorContainerStats is a function
