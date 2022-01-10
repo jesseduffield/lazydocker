@@ -125,7 +125,10 @@ func (gui *Gui) pushPreviousView(name string) {
 }
 
 func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
-	previousViewName := gui.popPreviousView()
+	previousViewName := gui.peekPreviousView()
+	if g.CurrentView() != nil && !gui.isPopupPanel(g.CurrentView().Name()) {
+		gui.popPreviousView()
+	}
 	previousView, err := g.View(previousViewName)
 	if err != nil {
 		// always fall back to services view if there's no 'previous' view stored
@@ -143,6 +146,7 @@ func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View, returnin
 	// we assume we'll never want to return focus to a popup panel i.e.
 	// we should never stack popup panels
 	if oldView != nil && !gui.isPopupPanel(oldView.Name()) && !returning {
+		gui.popPreviousView()
 		gui.pushPreviousView(oldView.Name())
 	}
 
