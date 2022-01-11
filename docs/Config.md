@@ -8,7 +8,7 @@ Changes to the user config will only take place after closing and re-opening laz
 
 ### Locations:
 - OSX: `~/Library/Application Support/jesseduffield/lazydocker/config.yml`
-- Linux: `~/.config/jesseduffield/lazydocker/config.yml`
+- Linux: `~/.config/lazydocker/config.yml`
 - Windows: `C:\\Users\\<User>\\AppData\\Roaming\\jesseduffield\\lazydocker\\config.yml` (I think)
 
 ## Default:
