@@ -116,7 +116,7 @@ type GuiConfig struct {
 	// SortContainersByName determines if containers should be sorted by name.
 	// By default, containers are now sorted by status. This setting allows users to
 	// use legacy behaviour instead.
-	SortContainersByName bool `yaml:"sortContainersByName, omitempty"`
+	SortContainersByName bool `yaml:"sortContainersByName,omitempty"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
