@@ -60,9 +60,9 @@ func TestWritingToConfigFile(t *testing.T) {
 		t.Fatalf("Unexpected error: %s", err)
 	}
 
-	testFn := func(ac *AppConfig, newReportingValue string, t *testing.T) {
+	testFn := func(ac *AppConfig, newValue bool, t *testing.T) {
 		updateFn := func(uc *UserConfig) error {
-			uc.Reporting = newReportingValue
+			uc.ConfirmOnQuit = newValue
 			return nil
 		}
 
@@ -87,14 +87,14 @@ func TestWritingToConfigFile(t *testing.T) {
 			t.Fatalf("Unexpected error: %s", err)
 		}
 
-		if sampleUC.Reporting != newReportingValue {
-			t.Fatalf("Got %s, Expected %s\n", sampleUC.Reporting, newReportingValue)
+		if sampleUC.ConfirmOnQuit != newValue {
+			t.Fatalf("Got %v, Expected %v\n", sampleUC.ConfirmOnQuit, newValue)
 		}
 	}
 
 	// insert value into an empty file
-	testFn(conf, "on", t)
+	testFn(conf, true, t)
 
-	// modifying an existing file that already has 'Reporting'
-	testFn(conf, "off", t)
+	// modifying an existing file that already has 'ConfirmOnQuit'
+	testFn(conf, false, t)
 }

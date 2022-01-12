@@ -43,11 +43,11 @@ jobs:
   # matrix build jobs run on every commit
   # building on versioned Go and the latest one
   # '<<: *' syntax is a YAML thing for including documents
-  "golang:1.12":
+  "golang:1.17":
     <<: *env-shared
     <<: *build-shared
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.17
   "golang:latest":
     <<: *env-shared
     <<: *build-shared
@@ -57,7 +57,7 @@ jobs:
   release:
     <<: *env-shared
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.17
     steps:
       - checkout
       #- run:
@@ -88,7 +88,7 @@ workflows:
   build:
     jobs:
       # build matrix
-      - "golang:1.12"
+      - "golang:1.17"
       - "golang:latest"
   release:
     jobs:

@@ -51,9 +51,6 @@ func germanSet() TranslationSet {
 		ViewRestartOptions: "zeige Neustartoptionen",
 		RunCustomCommand:   "führe vordefinierten benutzerdefinierten Befehl aus",
 
-		AnonymousReportingTitle:  "Mache dabei mit lazydocker besser zu machen",
-		AnonymousReportingPrompt: "Möchtest du anonymisierte Datensammlung erlauben, um dabei zu helfen lazydocker zu verbessern?",
-
 		GlobalTitle:               "Global",
 		MainTitle:                 "Haupt",
 		ProjectTitle:              "Projekt",
