@@ -29,12 +29,6 @@ type UserConfig struct {
 	// hide things
 	Gui GuiConfig `yaml:"gui,omitempty"`
 
-	// Reporting determines whether events are reported such as errors (and maybe
-	// application opens but I'm not decided on that yet because it sounds kinda
-	// creepy but I also would love to know how many people are using this
-	// program)
-	Reporting string `yaml:"reporting,omitempty"`
-
 	// ConfirmOnQuit when enabled prompts you to confirm you want to quit when you
 	// hit esc or q when no confirmation panels are open
 	ConfirmOnQuit bool `yaml:"confirmOnQuit,omitempty"`
@@ -326,7 +320,6 @@ func GetDefaultConfig() UserConfig {
 			ReturnImmediately: false,
 			WrapMainPanel:     false,
 		},
-		Reporting:     "undetermined",
 		ConfirmOnQuit: false,
 		CommandTemplates: CommandTemplatesConfig{
 			DockerCompose:            "docker-compose",

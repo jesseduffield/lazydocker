@@ -27,7 +27,6 @@ gui:
     - blue
   returnImmediately: false
   wrapMainPanel: false
-reporting: undetermined
 commandTemplates:
   dockerCompose: docker-compose
   restartService: '{{ .DockerCompose }} restart {{ .Service.Name }}'

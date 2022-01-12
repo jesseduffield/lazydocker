@@ -8,7 +8,6 @@ package gui
 
 import (
 	"strings"
-	"time"
 
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
@@ -151,16 +150,6 @@ func (gui *Gui) setKeyBindings(g *gocui.Gui, handleConfirm, handleClose func(*go
 // this function is to be used over the more generic createErrorPanel, with
 // willLog set to false
 func (gui *Gui) createSpecificErrorPanel(message string, nextView *gocui.View, willLog bool) error {
-	if willLog {
-		go func() {
-			// when reporting is switched on this log call sometimes introduces
-			// a delay on the error panel popping up. Here I'm adding a second wait
-			// so that the error is logged while the user is reading the error message
-			time.Sleep(time.Second)
-			gui.Log.Error(message)
-		}()
-	}
-
 	colorFunction := color.New(color.FgRed).SprintFunc()
 	coloredMessage := colorFunction(strings.TrimSpace(message))
 	return gui.createConfirmationPanel(gui.g, nextView, gui.Tr.ErrorTitle, coloredMessage, nil, nil)

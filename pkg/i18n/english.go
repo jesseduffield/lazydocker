@@ -16,8 +16,6 @@ type TranslationSet struct {
 	NoViewMachingNewLineFocusedSwitchStatement string
 	OpenConfig                                 string
 	EditConfig                                 string
-	AnonymousReportingTitle                    string
-	AnonymousReportingPrompt                   string
 	ConfirmQuit                                string
 	ErrorOccurred                              string
 	ConnectionFailed                           string
@@ -154,9 +152,6 @@ func englishSet() TranslationSet {
 		RunCustomCommand:    "run predefined custom command",
 		ViewBulkCommands:    "view bulk commands",
 		OpenInBrowser:       "open in browser (first port is http)",
-
-		AnonymousReportingTitle:  "Help make lazydocker better",
-		AnonymousReportingPrompt: "Would you like to enable anonymous reporting data to help improve lazydocker?",
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Main",

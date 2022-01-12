@@ -51,9 +51,6 @@ func turkishSet() TranslationSet {
 		ViewRestartOptions: "yeniden başlatma seçeneklerini görüntüle",
 		RunCustomCommand:   "önceden tanımlanmış özel komutu çalıştır",
 
-		AnonymousReportingTitle:  "lazydocker' ı daha iyi hale getirmeye yardımcı olun",
-		AnonymousReportingPrompt: "lazydocker'ın geliştirilmesine yardımcı olmak için anonim raporlama verilerini etkinleştirmek ister misiniz?",
-
 		GlobalTitle:               "Global",
 		MainTitle:                 "Ana",
 		ProjectTitle:              "Proje",

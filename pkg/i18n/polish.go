@@ -51,9 +51,6 @@ func polishSet() TranslationSet {
 		ViewRestartOptions: "pokaż opcje restartu",
 		RunCustomCommand:   "wykonaj predefiniowaną własną komende",
 
-		AnonymousReportingTitle:  "Pomóż czynić lazydocker lepszym",
-		AnonymousReportingPrompt: "Czy zechciałbyś włączyć anonimowe raportowanie danych w celu ulepszania programu?",
-
 		GlobalTitle:               "Globalne",
 		MainTitle:                 "Główne",
 		ProjectTitle:              "Projekt",
