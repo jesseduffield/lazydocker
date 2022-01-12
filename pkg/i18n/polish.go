@@ -63,6 +63,7 @@ func polishSet() TranslationSet {
 		ErrorTitle:                "Błąd",
 		LogsTitle:                 "Logi",
 		ConfigTitle:               "Konfiguracja",
+		EnvTitle:                  "Env",
 		DockerComposeConfigTitle:  "Konfiguracja docker-compose",
 		TopTitle:                  "Top",
 		StatsTitle:                "Staty",

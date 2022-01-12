@@ -64,6 +64,7 @@ func dutchSet() TranslationSet {
 		ErrorTitle:                "Fout",
 		LogsTitle:                 "Logs",
 		ConfigTitle:               "Config",
+		EnvTitle:                  "Env",
 		DockerComposeConfigTitle:  "Docker-Compose Configuratie",
 		TopTitle:                  "Top",
 		StatsTitle:                "Stats",

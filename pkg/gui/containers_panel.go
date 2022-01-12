@@ -18,11 +18,11 @@ import (
 // list panel functions
 
 func (gui *Gui) getContainerContexts() []string {
-	return []string{"logs", "stats", "config", "top"}
+	return []string{"logs", "stats", "env", "config", "top"}
 }
 
 func (gui *Gui) getContainerContextTitles() []string {
-	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.ConfigTitle, gui.Tr.TopTitle}
+	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.EnvTitle, gui.Tr.ConfigTitle, gui.Tr.TopTitle}
 }
 
 func (gui *Gui) getSelectedContainer() (*commands.Container, error) {
@@ -75,6 +75,10 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 		if err := gui.renderContainerConfig(container); err != nil {
 			return err
 		}
+	case "env":
+		if err := gui.renderContainerEnv(container); err != nil {
+			return err
+		}
 	case "stats":
 		if err := gui.renderContainerStats(container); err != nil {
 			return err
@@ -88,6 +92,37 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	return nil
+}
+
+func (gui *Gui) renderContainerEnv(container *commands.Container) error {
+	mainView := gui.getMainView()
+	mainView.Autoscroll = false
+	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
+	outputList := []string{""}
+	envMapping := map[string]string{}
+	padding := 0
+	if len(container.Details.Config.Env) > 0 {
+		for _, env := range container.Details.Config.Env {
+			splitEnv := strings.Split(env, "=")
+			// get the length of environment variable with longest name in order to determine padding
+			if len(splitEnv[0]) > padding {
+				padding = len(splitEnv[0])
+			}
+			// if the value has = in it, lets say export "test=foo=bar" then split will result in the following
+			// {"test", "foo","bar"} hence join all the elements in the slice except the first one to get value
+			envMapping[utils.ColoredString(splitEnv[0], color.FgBlue)] = utils.ColoredString(
+				strings.Join(splitEnv[1:], "="), color.FgYellow)
+		}
+		padding += 5
+		for envName, envValue := range envMapping {
+			outputList = append(outputList, fmt.Sprintf("%s: %s", utils.WithPadding(envName, padding), envValue))
+		}
+	} else {
+		outputList[0] = "Nothing to display"
+	}
+	return gui.T.NewTask(func(stop chan struct{}) {
+		gui.renderString(gui.g, "main", strings.Join(outputList, "\n"))
+	})
 }
 
 func (gui *Gui) renderContainerConfig(container *commands.Container) error {

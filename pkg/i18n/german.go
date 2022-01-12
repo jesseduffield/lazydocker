@@ -63,6 +63,7 @@ func germanSet() TranslationSet {
 		ErrorTitle:                "Fehler",
 		LogsTitle:                 "Protokoll",
 		ConfigTitle:               "Konfiguration",
+		EnvTitle:                  "Env",
 		DockerComposeConfigTitle:  "Docker-Compose Konfiguration",
 		TopTitle:                  "Top",
 		StatsTitle:                "Statistiken",
