@@ -98,30 +98,28 @@ func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 	mainView := gui.getMainView()
 	mainView.Autoscroll = false
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-	outputList := []string{""}
-	envMapping := map[string]string{}
-	padding := 0
+	envVariablesList := [][]string{}
 	if len(container.Details.Config.Env) > 0 {
 		for _, env := range container.Details.Config.Env {
 			splitEnv := strings.Split(env, "=")
-			// get the length of environment variable with longest name in order to determine padding
-			if len(splitEnv[0]) > padding {
-				padding = len(splitEnv[0])
-			}
 			// if the value has = in it, lets say export "test=foo=bar" then split will result in the following
 			// {"test", "foo","bar"} hence join all the elements in the slice except the first one to get value
-			envMapping[utils.ColoredString(splitEnv[0], color.FgBlue)] = utils.ColoredString(
-				strings.Join(splitEnv[1:], "="), color.FgYellow)
-		}
-		padding += 5
-		for envName, envValue := range envMapping {
-			outputList = append(outputList, fmt.Sprintf("%s: %s", utils.WithPadding(envName, padding), envValue))
+			envVariablesList = append(envVariablesList,
+				[]string{
+					utils.ColoredString(splitEnv[0]+":", color.FgBlue),
+					utils.ColoredString(strings.Join(splitEnv[1:], "="), color.FgYellow),
+				})
 		}
 	} else {
-		outputList[0] = "Nothing to display"
+		envVariablesList = append(envVariablesList, []string{"Nothing to display"})
+	}
+	renderedTable, err := utils.RenderTable(envVariablesList)
+	// in case of some error
+	if err != nil {
+		renderedTable = "Something went wrong while displaying environment variables"
 	}
 	return gui.T.NewTask(func(stop chan struct{}) {
-		gui.renderString(gui.g, "main", strings.Join(outputList, "\n"))
+		gui.renderString(gui.g, "main", renderedTable)
 	})
 }
 
