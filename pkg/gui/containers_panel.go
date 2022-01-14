@@ -116,6 +116,8 @@ func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 	renderedTable, err := utils.RenderTable(envVariablesList)
 	// in case of some error
 	if err != nil {
+		// log the error
+		gui.Log.Error(err)
 		renderedTable = "Something went wrong while displaying environment variables"
 	}
 	return gui.T.NewTask(func(stop chan struct{}) {
