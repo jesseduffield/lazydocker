@@ -2,11 +2,11 @@ package commands
 
 import (
 	"context"
-	"github.com/docker/docker/api/types/image"
 	"strings"
 
+	"github.com/docker/docker/api/types/image"
+
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
@@ -99,51 +99,4 @@ func (i *Image) RenderHistory() (string, error) {
 	}
 
 	return utils.RenderList(layers, utils.WithHeader([]string{"ID", "TAG", "SIZE", "COMMAND"}))
-}
-
-// RefreshImages returns a slice of docker images
-func (c *DockerCommand) RefreshImages() ([]*Image, error) {
-	images, err := c.Client.ImageList(context.Background(), types.ImageListOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	ownImages := make([]*Image, len(images))
-
-	for i, image := range images {
-		// func (cli *Client) ImageHistory(ctx context.Context, imageID string) ([]image.HistoryResponseItem, error)
-
-		firstTag := ""
-		tags := image.RepoTags
-		if len(tags) > 0 {
-			firstTag = tags[0]
-		}
-
-		nameParts := strings.Split(firstTag, ":")
-		tag := ""
-		name := "none"
-		if len(nameParts) > 1 {
-			tag = nameParts[len(nameParts)-1]
-			name = strings.Join(nameParts[:len(nameParts)-1], ":")
-		}
-
-		ownImages[i] = &Image{
-			ID:            image.ID,
-			Name:          name,
-			Tag:           tag,
-			Image:         image,
-			Client:        c.Client,
-			OSCommand:     c.OSCommand,
-			Log:           c.Log,
-			DockerCommand: c,
-		}
-	}
-
-	return ownImages, nil
-}
-
-// PruneImages prunes images
-func (c *DockerCommand) PruneImages() error {
-	_, err := c.Client.ImagesPrune(context.Background(), filters.Args{})
-	return err
 }

@@ -15,6 +15,7 @@ import (
 
 	"github.com/acarl005/stripansi"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/imdario/mergo"
 	"github.com/jesseduffield/lazydocker/pkg/commands/ssh"
@@ -40,6 +41,7 @@ type DockerCommand struct {
 	ErrorChan              chan error
 	ContainerMutex         sync.Mutex
 	ServiceMutex           sync.Mutex
+	ImageMutex             sync.Mutex
 	Services               []*Service
 	Containers             []*Container
 	// DisplayContainers is the array of containers we will display in the containers panel. If Gui.ShowAllContainers is false, this will only be those containers which aren't based on a service. This reduces clutter and duplication in the UI
@@ -451,4 +453,54 @@ func (c *DockerCommand) DockerComposeConfig() string {
 		output = err.Error()
 	}
 	return output
+}
+
+// RefreshImages returns a slice of docker images
+func (c *DockerCommand) RefreshImages() error {
+	c.ImageMutex.Lock()
+	defer c.ImageMutex.Unlock()
+	images, err := c.Client.ImageList(context.Background(), types.ImageListOptions{})
+	if err != nil {
+		return err
+	}
+
+	ownImages := make([]*Image, len(images))
+
+	for i, image := range images {
+		// func (cli *Client) ImageHistory(ctx context.Context, imageID string) ([]image.HistoryResponseItem, error)
+
+		firstTag := ""
+		tags := image.RepoTags
+		if len(tags) > 0 {
+			firstTag = tags[0]
+		}
+
+		nameParts := strings.Split(firstTag, ":")
+		tag := ""
+		name := "none"
+		if len(nameParts) > 1 {
+			tag = nameParts[len(nameParts)-1]
+			name = strings.Join(nameParts[:len(nameParts)-1], ":")
+		}
+
+		ownImages[i] = &Image{
+			ID:            image.ID,
+			Name:          name,
+			Tag:           tag,
+			Image:         image,
+			Client:        c.Client,
+			OSCommand:     c.OSCommand,
+			Log:           c.Log,
+			DockerCommand: c,
+		}
+	}
+
+	c.Images = ownImages
+	return nil
+}
+
+// PruneImages prunes images
+func (c *DockerCommand) PruneImages() error {
+	_, err := c.Client.ImagesPrune(context.Background(), filters.Args{})
+	return err
 }

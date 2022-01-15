@@ -12,9 +12,9 @@ import (
 
 func (gui *Gui) refreshSidePanels(g *gocui.Gui) error {
 	// not refreshing containers and services here given that we do it every few milliseconds anyway
-	if err := gui.refreshImages(); err != nil {
-		return err
-	}
+	// if err := gui.refreshImages(); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }

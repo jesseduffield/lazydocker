@@ -105,7 +105,7 @@ func (gui *Gui) refreshImages() error {
 		// if the ImagesView hasn't been instantiated yet we just return
 		return nil
 	}
-	if err := gui.refreshStateImages(); err != nil {
+	if err := gui.DockerCommand.RefreshImages(); err != nil {
 		return err
 	}
 
@@ -131,18 +131,6 @@ func (gui *Gui) refreshImages() error {
 		}
 		return nil
 	})
-
-	return nil
-}
-
-// TODO: leave this to DockerCommand
-func (gui *Gui) refreshStateImages() error {
-	Images, err := gui.DockerCommand.RefreshImages()
-	if err != nil {
-		return err
-	}
-
-	gui.DockerCommand.Images = Images
 
 	return nil
 }
