@@ -370,7 +370,7 @@ func (gui *Gui) handleClick(v *gocui.View, itemCount int, selectedLine *int, han
 	_, cy := v.Cursor()
 	_, oy := v.Origin()
 
-	newSelectedLine := cy - oy
+	newSelectedLine := cy + oy
 
 	if newSelectedLine < 0 {
 		newSelectedLine = 0
