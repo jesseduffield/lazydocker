@@ -99,26 +99,22 @@ func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 	mainView.Autoscroll = false
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 	envVariablesList := [][]string{}
+	renderedTable := gui.Tr.NothingToDisplay
 	if len(container.Details.Config.Env) > 0 {
+		var err error
 		for _, env := range container.Details.Config.Env {
-			splitEnv := strings.Split(env, "=")
-			// if the value has = in it, lets say export "test=foo=bar" then split will result in the following
-			// {"test", "foo","bar"} hence join all the elements in the slice except the first one to get value
+			splitEnv := strings.SplitN(env, "=", 2)
 			envVariablesList = append(envVariablesList,
 				[]string{
-					utils.ColoredString(splitEnv[0]+":", color.FgBlue),
-					utils.ColoredString(strings.Join(splitEnv[1:], "="), color.FgYellow),
+					utils.ColoredString(splitEnv[0]+":", color.FgGreen),
+					utils.ColoredString(splitEnv[1], color.FgYellow),
 				})
 		}
-	} else {
-		envVariablesList = append(envVariablesList, []string{"Nothing to display"})
-	}
-	renderedTable, err := utils.RenderTable(envVariablesList)
-	// in case of some error
-	if err != nil {
-		// log the error
-		gui.Log.Error(err)
-		renderedTable = "Something went wrong while displaying environment variables"
+		renderedTable, err = utils.RenderTable(envVariablesList)
+		if err != nil {
+			gui.Log.Error(err)
+			renderedTable = gui.Tr.CannotDisplayEnvVairables
+		}
 	}
 	return gui.T.NewTask(func(stop chan struct{}) {
 		gui.renderString(gui.g, "main", renderedTable)

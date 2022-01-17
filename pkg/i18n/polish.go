@@ -69,6 +69,9 @@ func polishSet() TranslationSet {
 		StatsTitle:                "Staty",
 		CreditsTitle:              "O",
 		ContainerConfigTitle:      "Konfiguracja kontenera",
+		ContainerEnvTitle:         "Container Env",
+		NothingToDisplay:          "Nothing to display",
+		CannotDisplayEnvVairables:  "Something went wrong while displaying environment variables",
 
 		NoContainers: "Brak kontenerów",
 		NoContainer:  "Brak kontenera",

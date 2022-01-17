@@ -15,11 +15,16 @@ import (
 // list panel functions
 
 func (gui *Gui) getServiceContexts() []string {
-	return []string{"logs", "stats", "container-config", "top"}
+	return []string{"logs", "stats", "container-env", "container-config", "top"}
 }
 
 func (gui *Gui) getServiceContextTitles() []string {
-	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.ContainerConfigTitle, gui.Tr.TopTitle}
+	return []string{
+		gui.Tr.LogsTitle,
+		gui.Tr.StatsTitle,
+		gui.Tr.ContainerEnvTitle,
+		gui.Tr.ContainerConfigTitle,
+		gui.Tr.TopTitle}
 }
 
 func (gui *Gui) getSelectedService() (*commands.Service, error) {
@@ -71,6 +76,13 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 		}
 	case "stats":
 		if err := gui.renderServiceStats(service); err != nil {
+			return err
+		}
+	case "container-env":
+		if service.Container == nil {
+			return gui.renderString(gui.g, "main", gui.Tr.NoContainer)
+		}
+		if err := gui.renderContainerEnv(service.Container); err != nil {
 			return err
 		}
 	case "container-config":

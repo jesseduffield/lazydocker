@@ -69,6 +69,9 @@ func germanSet() TranslationSet {
 		StatsTitle:                "Statistiken",
 		CreditsTitle:              "Über Uns",
 		ContainerConfigTitle:      "Container Konfiguration",
+		ContainerEnvTitle:         "Container Env",
+		NothingToDisplay:          "Nothing to display",
+		CannotDisplayEnvVairables:  "Something went wrong while displaying environment variables",
 
 		NoContainers: "Keine Container",
 		NoContainer:  "Kein Container",

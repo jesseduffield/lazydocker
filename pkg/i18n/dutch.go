@@ -70,6 +70,9 @@ func dutchSet() TranslationSet {
 		StatsTitle:                "Stats",
 		CreditsTitle:              "Over",
 		ContainerConfigTitle:      "Container Configuratie",
+		ContainerEnvTitle:         "Container Env",
+		NothingToDisplay:          "Nothing to display",
+		CannotDisplayEnvVairables:  "Something went wrong while displaying environment variables",
 
 		NoContainers: "Geen containers",
 		NoContainer:  "Geen container",

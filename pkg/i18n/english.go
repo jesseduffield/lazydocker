@@ -83,13 +83,16 @@ type TranslationSet struct {
 	ViewBulkCommands           string
 	OpenInBrowser              string
 
-	LogsTitle                string
-	ConfigTitle              string
-	EnvTitle                 string
-	DockerComposeConfigTitle string
-	StatsTitle               string
-	CreditsTitle             string
-	ContainerConfigTitle     string
+	LogsTitle                 string
+	ConfigTitle               string
+	EnvTitle                  string
+	DockerComposeConfigTitle  string
+	StatsTitle                string
+	CreditsTitle              string
+	ContainerConfigTitle      string
+	ContainerEnvTitle         string
+	NothingToDisplay          string
+	CannotDisplayEnvVairables string
 
 	No  string
 	Yes string
@@ -173,6 +176,9 @@ func englishSet() TranslationSet {
 		StatsTitle:                "Stats",
 		CreditsTitle:              "About",
 		ContainerConfigTitle:      "Container Config",
+		ContainerEnvTitle:         "Container Env",
+		NothingToDisplay:          "Nothing to display",
+		CannotDisplayEnvVairables: "Something went wrong while displaying environment variables",
 
 		NoContainers: "No containers",
 		NoContainer:  "No container",
