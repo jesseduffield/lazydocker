@@ -467,7 +467,6 @@ func (c *DockerCommand) RefreshImages() error {
 	ownImages := make([]*Image, len(images))
 
 	for i, image := range images {
-		// func (cli *Client) ImageHistory(ctx context.Context, imageID string) ([]image.HistoryResponseItem, error)
 
 		firstTag := ""
 		tags := image.RepoTags

@@ -197,6 +197,11 @@ type UpdateConfig struct {
 	// It expects a valid duration like: 100ms, 2s, 200ns
 	// for docs see: https://golang.org/pkg/time/#ParseDuration
 	DockerRefreshInterval time.Duration `yaml:"dockerRefreshInterval,omitempty"`
+
+	// ImageRefreshInterval determines the time betweens updates of docker images
+	// It expects a valid duration like: 100ms, 2s, 200ns
+	// for docs see: https://golang.org/pkg/time/#ParseDuration
+	ImageRefreshInterval time.Duration `yaml:"imageRefreshInterval,omitempty"`
 }
 
 // GraphConfig specifies how to make a graph of recorded container stats
@@ -398,6 +403,7 @@ func GetDefaultConfig() UserConfig {
 		OS: GetPlatformDefaultConfig(),
 		Update: UpdateConfig{
 			DockerRefreshInterval: time.Millisecond * 100,
+			ImageRefreshInterval:  time.Millisecond * 30000,
 		},
 		Stats: StatsConfig{
 			MaxDuration: duration,
