@@ -113,10 +113,10 @@ type GuiConfig struct {
 	// WrapMainPanel determines whether we use word wrap on the main panel
 	WrapMainPanel bool `yaml:"wrapMainPanel,omitempty"`
 
-	// SortContainersByName determines if containers should be sorted by name.
+	// LegacySortContainers determines if containers should be sorted using legacy approach.
 	// By default, containers are now sorted by status. This setting allows users to
 	// use legacy behaviour instead.
-	SortContainersByName bool `yaml:"sortContainersByName,omitempty"`
+	LegacySortContainers bool `yaml:"legacySortContainers,omitempty"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
@@ -330,7 +330,7 @@ func GetDefaultConfig() UserConfig {
 			ShowAllContainers:    false,
 			ReturnImmediately:    false,
 			WrapMainPanel:        false,
-			SortContainersByName: false,
+			LegacySortContainers: false,
 		},
 		Reporting:     "undetermined",
 		ConfirmOnQuit: false,

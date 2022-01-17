@@ -11,6 +11,7 @@ func sampleContainers(userConfig *config.AppConfig) []*Container {
 	return []*Container{
 		{
 			ID: "1",
+			Name:"1",
 			Container: types.Container{
 				State: "exited",
 			},
@@ -18,6 +19,7 @@ func sampleContainers(userConfig *config.AppConfig) []*Container {
 		},
 		{
 			ID: "2",
+			Name:"2",
 			Container: types.Container{
 				State: "running",
 			},
@@ -25,6 +27,7 @@ func sampleContainers(userConfig *config.AppConfig) []*Container {
 		},
 		{
 			ID: "3",
+			Name:"3",
 			Container: types.Container{
 				State: "running",
 			},
@@ -32,6 +35,7 @@ func sampleContainers(userConfig *config.AppConfig) []*Container {
 		},
 		{
 			ID: "4",
+			Name:"4",
 			Container: types.Container{
 				State: "created",
 			},
@@ -44,6 +48,7 @@ func expectedPerStatusContainers(appConfig *config.AppConfig) []*Container {
 	return []*Container{
 		{
 			ID: "2",
+			Name:"2",
 			Container: types.Container{
 				State: "running",
 			},
@@ -51,6 +56,7 @@ func expectedPerStatusContainers(appConfig *config.AppConfig) []*Container {
 		},
 		{
 			ID: "3",
+			Name:"3",
 			Container: types.Container{
 				State: "running",
 			},
@@ -58,6 +64,7 @@ func expectedPerStatusContainers(appConfig *config.AppConfig) []*Container {
 		},
 		{
 			ID: "1",
+			Name:"1",
 			Container: types.Container{
 				State: "exited",
 			},
@@ -65,6 +72,7 @@ func expectedPerStatusContainers(appConfig *config.AppConfig) []*Container {
 		},
 		{
 			ID: "4",
+			Name:"4",
 			Container: types.Container{
 				State: "created",
 			},
@@ -77,6 +85,7 @@ func expectedLegacySortedContainers(appConfig *config.AppConfig) []*Container {
 	return []*Container{
 		{
 			ID: "1",
+			Name:"1",
 			Container: types.Container{
 				State: "exited",
 			},
@@ -84,6 +93,7 @@ func expectedLegacySortedContainers(appConfig *config.AppConfig) []*Container {
 		},
 		{
 			ID: "2",
+			Name:"2",
 			Container: types.Container{
 				State: "running",
 			},
@@ -91,6 +101,7 @@ func expectedLegacySortedContainers(appConfig *config.AppConfig) []*Container {
 		},
 		{
 			ID: "3",
+			Name:"3",
 			Container: types.Container{
 				State: "running",
 			},
@@ -98,6 +109,7 @@ func expectedLegacySortedContainers(appConfig *config.AppConfig) []*Container {
 		},
 		{
 			ID: "4",
+			Name:"4",
 			Container: types.Container{
 				State: "created",
 			},
@@ -106,11 +118,17 @@ func expectedLegacySortedContainers(appConfig *config.AppConfig) []*Container {
 	}
 }
 
+func assertEqualContainers(t *testing.T, left *Container, right *Container) {
+	assert.Equal(t, left.Container.State, right.Container.State)
+	assert.Equal(t, left.Container.ID, right.Container.ID)
+	assert.Equal(t, left.Name, right.Name)
+}
+
 func TestSortContainers(t *testing.T) {
 	appConfig := NewDummyAppConfig()
 	appConfig.UserConfig = &config.UserConfig{
 		Gui: config.GuiConfig{
-			SortContainersByName: false,
+			LegacySortContainers: false,
 		},
 	}
 	command := &DockerCommand{
@@ -126,8 +144,7 @@ func TestSortContainers(t *testing.T) {
 	assert.Equal(t, len(ct), len(sorted))
 
 	for i := 0; i < len(ct); i++ {
-		assert.Equal(t, ct[i].Container.State, sorted[i].Container.State)
-		assert.Equal(t, ct[i].Container.ID, sorted[i].Container.ID)
+		assertEqualContainers(t, sorted[i], ct[i])
 	}
 }
 
@@ -135,7 +152,7 @@ func TestLegacySortedContainers(t *testing.T) {
 	appConfig := NewDummyAppConfig()
 	appConfig.UserConfig = &config.UserConfig{
 		Gui: config.GuiConfig{
-			SortContainersByName: true,
+			LegacySortContainers: true,
 		},
 	}
 	command := &DockerCommand{
@@ -149,7 +166,6 @@ func TestLegacySortedContainers(t *testing.T) {
 	ct := command.sortedContainers(containers)
 
 	for i := 0; i < len(ct); i++ {
-		assert.Equal(t, sorted[i].Container.State, ct[i].Container.State)
-		assert.Equal(t, sorted[i].Container.ID, ct[i].Container.ID)
+		assertEqualContainers(t, sorted[i], ct[i])
 	}
 }

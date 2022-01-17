@@ -278,13 +278,18 @@ func (c *DockerCommand) filterOutExited(containers []*Container) []*Container {
 // sortedContainers returns containers sorted by state if c.SortContainersByState is true (follows 1- running, 2- exited, 3- created)
 // and sorted by name if c.SortContainersByState is false
 func (c *DockerCommand) sortedContainers(containers []*Container) []*Container {
-	if !c.Config.UserConfig.Gui.SortContainersByName {
+	if !c.Config.UserConfig.Gui.LegacySortContainers {
 		states := map[string]int{
 			"running": 1,
 			"exited":  2,
 			"created": 3,
 		}
 		sort.Slice(containers, func(i, j int) bool {
+			stateLeft := states[containers[i].Container.State]
+			stateRight := states[containers[j].Container.State]
+			if  stateLeft == stateRight {
+				return containers[i].Name < containers[j].Name
+			}
 			return states[containers[i].Container.State] < states[containers[j].Container.State]
 		})
 	}
