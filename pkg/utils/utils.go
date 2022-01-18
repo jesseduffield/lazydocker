@@ -165,7 +165,6 @@ func renderDisplayableList(items []Displayable, config RenderListConfig) (string
 
 // RenderTable takes an array of string arrays and returns a table containing the values
 func RenderTable(stringArrays [][]string) (string, error) {
-	// if empty array is given then getPadWidths will panic hence return an empty string
 	if len(stringArrays) == 0 {
 		return "", nil
 	}

@@ -113,7 +113,7 @@ func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 		renderedTable, err = utils.RenderTable(envVariablesList)
 		if err != nil {
 			gui.Log.Error(err)
-			renderedTable = gui.Tr.CannotDisplayEnvVairables
+			renderedTable = gui.Tr.CannotDisplayEnvVariables
 		}
 	}
 	return gui.T.NewTask(func(stop chan struct{}) {
