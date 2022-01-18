@@ -36,13 +36,7 @@ func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 			}
 		}
 	}
-	focusedView, err := g.View(focusedViewName)
-	if err != nil {
-		panic(err)
-	}
-	gui.resetMainView()
-	gui.popPreviousView()
-	return gui.switchFocus(g, v, focusedView, false)
+	return gui.switchView(focusedViewName, g, v)
 }
 
 func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
@@ -62,7 +56,25 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 			}
 		}
 	}
-	focusedView, err := g.View(focusedViewName)
+	return gui.switchView(focusedViewName, g, v)
+}
+
+func (gui *Gui) isViewAvailable(viewName string) bool {
+	for _, view := range gui.CyclableViews {
+		if view == viewName {
+			return true
+		}
+	}
+	return false
+}
+
+func (gui *Gui) switchView(viewName string, g *gocui.Gui, v *gocui.View) error {
+	// Check if already on the view needed to avoid ugly rerendering
+	if !gui.isViewAvailable(viewName) || gui.currentViewName() == viewName {
+		return nil
+	}
+
+	focusedView, err := g.View(viewName)
 	if err != nil {
 		panic(err)
 	}
