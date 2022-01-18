@@ -287,7 +287,7 @@ func (c *DockerCommand) sortedContainers(containers []*Container) []*Container {
 		sort.Slice(containers, func(i, j int) bool {
 			stateLeft := states[containers[i].Container.State]
 			stateRight := states[containers[j].Container.State]
-			if  stateLeft == stateRight {
+			if stateLeft == stateRight {
 				return containers[i].Name < containers[j].Name
 			}
 			return states[containers[i].Container.State] < states[containers[j].Container.State]

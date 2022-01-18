@@ -10,32 +10,32 @@ import (
 func sampleContainers(userConfig *config.AppConfig) []*Container {
 	return []*Container{
 		{
-			ID: "1",
-			Name:"1",
+			ID:   "1",
+			Name: "1",
 			Container: types.Container{
 				State: "exited",
 			},
 			Config: userConfig,
 		},
 		{
-			ID: "2",
-			Name:"2",
+			ID:   "2",
+			Name: "2",
 			Container: types.Container{
 				State: "running",
 			},
 			Config: userConfig,
 		},
 		{
-			ID: "3",
-			Name:"3",
+			ID:   "3",
+			Name: "3",
 			Container: types.Container{
 				State: "running",
 			},
 			Config: userConfig,
 		},
 		{
-			ID: "4",
-			Name:"4",
+			ID:   "4",
+			Name: "4",
 			Container: types.Container{
 				State: "created",
 			},
@@ -47,32 +47,32 @@ func sampleContainers(userConfig *config.AppConfig) []*Container {
 func expectedPerStatusContainers(appConfig *config.AppConfig) []*Container {
 	return []*Container{
 		{
-			ID: "2",
-			Name:"2",
+			ID:   "2",
+			Name: "2",
 			Container: types.Container{
 				State: "running",
 			},
 			Config: appConfig,
 		},
 		{
-			ID: "3",
-			Name:"3",
+			ID:   "3",
+			Name: "3",
 			Container: types.Container{
 				State: "running",
 			},
 			Config: appConfig,
 		},
 		{
-			ID: "1",
-			Name:"1",
+			ID:   "1",
+			Name: "1",
 			Container: types.Container{
 				State: "exited",
 			},
 			Config: appConfig,
 		},
 		{
-			ID: "4",
-			Name:"4",
+			ID:   "4",
+			Name: "4",
 			Container: types.Container{
 				State: "created",
 			},
@@ -84,32 +84,32 @@ func expectedPerStatusContainers(appConfig *config.AppConfig) []*Container {
 func expectedLegacySortedContainers(appConfig *config.AppConfig) []*Container {
 	return []*Container{
 		{
-			ID: "1",
-			Name:"1",
+			ID:   "1",
+			Name: "1",
 			Container: types.Container{
 				State: "exited",
 			},
 			Config: appConfig,
 		},
 		{
-			ID: "2",
-			Name:"2",
+			ID:   "2",
+			Name: "2",
 			Container: types.Container{
 				State: "running",
 			},
 			Config: appConfig,
 		},
 		{
-			ID: "3",
-			Name:"3",
+			ID:   "3",
+			Name: "3",
 			Container: types.Container{
 				State: "running",
 			},
 			Config: appConfig,
 		},
 		{
-			ID: "4",
-			Name:"4",
+			ID:   "4",
+			Name: "4",
 			Container: types.Container{
 				State: "created",
 			},
