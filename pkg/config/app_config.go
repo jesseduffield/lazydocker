@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/OpenPeeDeeP/xdg"
-	yaml "github.com/jesseduffield/yaml"
+	"github.com/jesseduffield/yaml"
 )
 
 // UserConfig holds all of the user-configurable options
@@ -106,6 +106,11 @@ type GuiConfig struct {
 
 	// WrapMainPanel determines whether we use word wrap on the main panel
 	WrapMainPanel bool `yaml:"wrapMainPanel,omitempty"`
+
+	// LegacySortContainers determines if containers should be sorted using legacy approach.
+	// By default, containers are now sorted by status. This setting allows users to
+	// use legacy behaviour instead.
+	LegacySortContainers bool `yaml:"legacySortContainers,omitempty"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
@@ -316,9 +321,10 @@ func GetDefaultConfig() UserConfig {
 				InactiveBorderColor: []string{"default"},
 				OptionsTextColor:    []string{"blue"},
 			},
-			ShowAllContainers: false,
-			ReturnImmediately: false,
-			WrapMainPanel:     false,
+			ShowAllContainers:    false,
+			ReturnImmediately:    false,
+			WrapMainPanel:        false,
+			LegacySortContainers: false,
 		},
 		ConfirmOnQuit: false,
 		CommandTemplates: CommandTemplatesConfig{

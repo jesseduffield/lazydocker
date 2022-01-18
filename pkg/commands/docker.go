@@ -258,6 +258,7 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 	c.Containers = containers
 	c.Services = services
 	c.DisplayContainers = c.filterOutExited(displayContainers)
+	c.DisplayContainers = c.sortedContainers(c.DisplayContainers)
 
 	return nil
 }
@@ -287,6 +288,27 @@ func (c *DockerCommand) filterOutExited(containers []*Container) []*Container {
 		}
 	}
 	return toReturn
+}
+
+// sortedContainers returns containers sorted by state if c.SortContainersByState is true (follows 1- running, 2- exited, 3- created)
+// and sorted by name if c.SortContainersByState is false
+func (c *DockerCommand) sortedContainers(containers []*Container) []*Container {
+	if !c.Config.UserConfig.Gui.LegacySortContainers {
+		states := map[string]int{
+			"running": 1,
+			"exited":  2,
+			"created": 3,
+		}
+		sort.Slice(containers, func(i, j int) bool {
+			stateLeft := states[containers[i].Container.State]
+			stateRight := states[containers[j].Container.State]
+			if stateLeft == stateRight {
+				return containers[i].Name < containers[j].Name
+			}
+			return states[containers[i].Container.State] < states[containers[j].Container.State]
+		})
+	}
+	return containers
 }
 
 // obtainStandaloneContainers returns standalone containers. Standalone containers are containers which are either one-off containers, or whose service is not part of this docker-compose context
