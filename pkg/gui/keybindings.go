@@ -487,6 +487,11 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			{ViewName: viewName, Key: gocui.KeyArrowRight, Modifier: gocui.ModNone, Handler: gui.nextView},
 			{ViewName: viewName, Key: 'h', Modifier: gocui.ModNone, Handler: gui.previousView},
 			{ViewName: viewName, Key: 'l', Modifier: gocui.ModNone, Handler: gui.nextView},
+			{ViewName: viewName, Key: '1', Modifier: gocui.ModNone, Handler: gui.switchToProjectView},
+			{ViewName: viewName, Key: '2', Modifier: gocui.ModNone, Handler: gui.switchToServicesView},
+			{ViewName: viewName, Key: '3', Modifier: gocui.ModNone, Handler: gui.switchToContainersView},
+			{ViewName: viewName, Key: '4', Modifier: gocui.ModNone, Handler: gui.switchToImagesView},
+			{ViewName: viewName, Key: '5', Modifier: gocui.ModNone, Handler: gui.switchToVolumesView},
 		}...)
 	}
 

@@ -83,6 +83,26 @@ func (gui *Gui) switchView(viewName string, g *gocui.Gui, v *gocui.View) error {
 	return gui.switchFocus(g, v, focusedView, false)
 }
 
+func (gui *Gui) switchToProjectView(g *gocui.Gui, v *gocui.View) error {
+	return gui.switchView("project", g, v)
+}
+
+func (gui *Gui) switchToServicesView(g *gocui.Gui, v *gocui.View) error {
+	return gui.switchView("services", g, v)
+}
+
+func (gui *Gui) switchToContainersView(g *gocui.Gui, v *gocui.View) error {
+	return gui.switchView("containers", g, v)
+}
+
+func (gui *Gui) switchToImagesView(g *gocui.Gui, v *gocui.View) error {
+	return gui.switchView("images", g, v)
+}
+
+func (gui *Gui) switchToVolumesView(g *gocui.Gui, v *gocui.View) error {
+	return gui.switchView("volumes", g, v)
+}
+
 func (gui *Gui) resetMainView() {
 	gui.State.Panels.Main.ObjectKey = ""
 	gui.getMainView().Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
