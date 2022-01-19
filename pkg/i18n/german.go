@@ -71,7 +71,7 @@ func germanSet() TranslationSet {
 		ContainerConfigTitle:      "Container Konfiguration",
 		ContainerEnvTitle:         "Container Env",
 		NothingToDisplay:          "Nothing to display",
-		CannotDisplayEnvVariables:  "Something went wrong while displaying environment variables",
+		CannotDisplayEnvVariables: "Something went wrong while displaying environment variables",
 
 		NoContainers: "Keine Container",
 		NoContainer:  "Kein Container",

@@ -71,7 +71,7 @@ func turkishSet() TranslationSet {
 		ContainerConfigTitle:      "Konteyner Ayar",
 		ContainerEnvTitle:         "Konteyner Env",
 		NothingToDisplay:          "Nothing to display",
-		CannotDisplayEnvVariables:  "Something went wrong while displaying environment variables",
+		CannotDisplayEnvVariables: "Something went wrong while displaying environment variables",
 
 		NoContainers: "Konteynerler yok",
 		NoContainer:  "Konteyner yok",

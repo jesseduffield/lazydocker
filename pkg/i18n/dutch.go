@@ -72,7 +72,7 @@ func dutchSet() TranslationSet {
 		ContainerConfigTitle:      "Container Configuratie",
 		ContainerEnvTitle:         "Container Env",
 		NothingToDisplay:          "Nothing to display",
-		CannotDisplayEnvVariables:  "Something went wrong while displaying environment variables",
+		CannotDisplayEnvVariables: "Something went wrong while displaying environment variables",
 
 		NoContainers: "Geen containers",
 		NoContainer:  "Geen container",
