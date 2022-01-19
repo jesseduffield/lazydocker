@@ -18,11 +18,11 @@ import (
 // list panel functions
 
 func (gui *Gui) getContainerContexts() []string {
-	return []string{"logs", "stats", "config", "top"}
+	return []string{"logs", "stats", "env", "config", "top"}
 }
 
 func (gui *Gui) getContainerContextTitles() []string {
-	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.ConfigTitle, gui.Tr.TopTitle}
+	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.EnvTitle, gui.Tr.ConfigTitle, gui.Tr.TopTitle}
 }
 
 func (gui *Gui) getSelectedContainer() (*commands.Container, error) {
@@ -75,6 +75,10 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 		if err := gui.renderContainerConfig(container); err != nil {
 			return err
 		}
+	case "env":
+		if err := gui.renderContainerEnv(container); err != nil {
+			return err
+		}
 	case "stats":
 		if err := gui.renderContainerStats(container); err != nil {
 			return err
@@ -88,6 +92,33 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	return nil
+}
+
+func (gui *Gui) renderContainerEnv(container *commands.Container) error {
+	mainView := gui.getMainView()
+	mainView.Autoscroll = false
+	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
+	envVariablesList := [][]string{}
+	renderedTable := gui.Tr.NothingToDisplay
+	if len(container.Details.Config.Env) > 0 {
+		var err error
+		for _, env := range container.Details.Config.Env {
+			splitEnv := strings.SplitN(env, "=", 2)
+			envVariablesList = append(envVariablesList,
+				[]string{
+					utils.ColoredString(splitEnv[0]+":", color.FgGreen),
+					utils.ColoredString(splitEnv[1], color.FgYellow),
+				})
+		}
+		renderedTable, err = utils.RenderTable(envVariablesList)
+		if err != nil {
+			gui.Log.Error(err)
+			renderedTable = gui.Tr.CannotDisplayEnvVariables
+		}
+	}
+	return gui.T.NewTask(func(stop chan struct{}) {
+		gui.renderString(gui.g, "main", renderedTable)
+	})
 }
 
 func (gui *Gui) renderContainerConfig(container *commands.Container) error {

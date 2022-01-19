@@ -84,12 +84,16 @@ type TranslationSet struct {
 	OpenInBrowser              string
 	SortContainersByState      string
 
-	LogsTitle                string
-	ConfigTitle              string
-	DockerComposeConfigTitle string
-	StatsTitle               string
-	CreditsTitle             string
-	ContainerConfigTitle     string
+	LogsTitle                 string
+	ConfigTitle               string
+	EnvTitle                  string
+	DockerComposeConfigTitle  string
+	StatsTitle                string
+	CreditsTitle              string
+	ContainerConfigTitle      string
+	ContainerEnvTitle         string
+	NothingToDisplay          string
+	CannotDisplayEnvVariables string
 
 	No  string
 	Yes string
@@ -168,11 +172,15 @@ func englishSet() TranslationSet {
 		ErrorTitle:                "Error",
 		LogsTitle:                 "Logs",
 		ConfigTitle:               "Config",
+		EnvTitle:                  "Env",
 		DockerComposeConfigTitle:  "Docker-Compose Config",
 		TopTitle:                  "Top",
 		StatsTitle:                "Stats",
 		CreditsTitle:              "About",
 		ContainerConfigTitle:      "Container Config",
+		ContainerEnvTitle:         "Container Env",
+		NothingToDisplay:          "Nothing to display",
+		CannotDisplayEnvVariables: "Something went wrong while displaying environment variables",
 
 		NoContainers: "No containers",
 		NoContainer:  "No container",
