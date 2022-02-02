@@ -104,10 +104,15 @@ func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 		var err error
 		for _, env := range container.Details.Config.Env {
 			splitEnv := strings.SplitN(env, "=", 2)
+			key := splitEnv[0]
+			value := ""
+			if len(splitEnv) > 1 {
+				value = splitEnv[1]
+			}
 			envVariablesList = append(envVariablesList,
 				[]string{
-					utils.ColoredString(splitEnv[0]+":", color.FgGreen),
-					utils.ColoredString(splitEnv[1], color.FgYellow),
+					utils.ColoredString(key+":", color.FgGreen),
+					utils.ColoredString(value, color.FgYellow),
 				})
 		}
 		renderedTable, err = utils.RenderTable(envVariablesList)
