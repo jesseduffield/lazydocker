@@ -215,7 +215,7 @@ everything is one keypress away (or one click away! Mouse support FTW):
 - viewing the state of your docker or docker-compose container environment at a glance
 - viewing logs for a container/service
 - viewing ascii graphs of your containers' metrics so that you can not only feel but also look like a developer
-- customising those graphs to measure nearly any metric you want
+- customizing those graphs to measure nearly any metric you want
 - attaching to a container/service
 - restarting/removing/rebuilding containers/services
 - viewing the ancestor layers of a given image
