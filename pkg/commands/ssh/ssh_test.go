@@ -65,7 +65,6 @@ func TestSSHHandlerHandleSSHDockerHost(t *testing.T) {
 			startCmdCount := 0
 			startCmd := func(cmd *exec.Cmd) error {
 				assert.EqualValues(t, []string{"ssh", "-L", "/tmp/lazydocker-ssh-tunnel-12345/dockerhost.sock:/var/run/docker.sock", "192.168.5.178", "-N"}, cmd.Args)
-				assert.Equal(t, true, cmd.SysProcAttr.Setpgid)
 
 				startCmdCount++
 
@@ -83,13 +82,13 @@ func TestSSHHandlerHandleSSHDockerHost(t *testing.T) {
 			}
 
 			handler := &SSHHandler{
-				deps: dependencies{
-					dialContext: dialContext,
-					startCmd:    startCmd,
-					tempDir:     tempDir,
-					getenv:      getenv,
-					setenv:      setenv,
-				},
+				oSCommand: &fakeCmdKiller{},
+
+				dialContext: dialContext,
+				startCmd:    startCmd,
+				tempDir:     tempDir,
+				getenv:      getenv,
+				setenv:      setenv,
 			}
 
 			_, err := handler.HandleSSHDockerHost()
@@ -100,3 +99,11 @@ func TestSSHHandlerHandleSSHDockerHost(t *testing.T) {
 		})
 	}
 }
+
+type fakeCmdKiller struct{}
+
+func (self *fakeCmdKiller) Kill(cmd *exec.Cmd) error {
+	return nil
+}
+
+func (self *fakeCmdKiller) PrepareForChildren(cmd *exec.Cmd) {}
