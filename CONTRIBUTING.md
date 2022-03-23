@@ -37,6 +37,7 @@ c) if you need to bump a dependency e.g. jesseduffield/gocui, use
 
 ```
 GOFLAGS= go get -u github.com/jesseduffield/gocui@master
+go mod tidy
 go mod vendor
 ```
 
@@ -48,6 +49,7 @@ c) if you need to bump a dependency e.g. jesseduffield/gocui, use
 
 ```
 go get -u github.com/jesseduffield/gocui@master
+go mod tidy
 go mod vendor
 ```
 
