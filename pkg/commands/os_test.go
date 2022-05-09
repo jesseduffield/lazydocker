@@ -169,6 +169,8 @@ func TestOSCommandQuoteSingleQuote(t *testing.T) {
 	osCommand := NewDummyOSCommand()
 
 	osCommand.Platform.os = "linux"
+	osCommand.Platform.fallbackEscapedQuote = "\""
+	osCommand.Platform.escapedQuote = "'"
 
 	actual := osCommand.Quote("hello 'test'")
 
