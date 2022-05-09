@@ -1,21 +1,23 @@
 package gui
 
 import (
+	"context"
+	"os/exec"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/docker/docker/api/types"
 	"github.com/golang-collections/collections/stack"
 
 	// "io"
 	// "io/ioutil"
 
-	"os/exec"
-	"time"
-
 	"github.com/go-errors/errors"
 
 	// "strings"
 
+	throttle "github.com/boz/go-throttle"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
@@ -240,15 +242,22 @@ func (gui *Gui) Run() error {
 
 	gui.waitForIntro.Add(1)
 
-	dockerRefreshInterval := gui.Config.UserConfig.Update.DockerRefreshInterval
+	throttledRefresh := throttle.ThrottleFunc(time.Millisecond*50, true, gui.refresh)
+	defer throttledRefresh.Stop()
+
+	finish := make(chan struct{})
+	defer func() { close(finish) }()
+
+	go gui.listenForEvents(finish, throttledRefresh.Trigger)
+
 	go func() {
 		gui.waitForIntro.Wait()
+		throttledRefresh.Trigger()
+
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
-		gui.goEvery(dockerRefreshInterval, gui.refreshProject)
-		gui.goEvery(dockerRefreshInterval, gui.refreshContainersAndServices)
-		gui.goEvery(dockerRefreshInterval, gui.refreshVolumes)
 		gui.goEvery(time.Millisecond*1000, gui.DockerCommand.UpdateContainerDetails)
 		gui.goEvery(time.Millisecond*1000, gui.checkForContextChange)
+		gui.goEvery(time.Millisecond*2000, gui.rerenderContainersAndServices)
 	}()
 
 	gui.DockerCommand.MonitorContainerStats()
@@ -263,7 +272,7 @@ func (gui *Gui) Run() error {
 				gui.Log.Warn(err)
 				continue
 			}
-			gui.createErrorPanel(gui.g, err.Error())
+			_ = gui.createErrorPanel(gui.g, err.Error())
 		}
 	}()
 
@@ -275,6 +284,44 @@ func (gui *Gui) Run() error {
 
 	err = g.MainLoop()
 	return err
+}
+
+func (gui *Gui) rerenderContainersAndServices() error {
+	// we need to regularly re-render these because their stats will be changed in the background
+	gui.renderContainersAndServices()
+	return nil
+}
+
+func (gui *Gui) refresh() {
+	gui.refreshProject()
+	if err := gui.refreshContainersAndServices(); err != nil {
+		gui.Log.Error(err)
+	}
+	if err := gui.refreshVolumes(); err != nil {
+		gui.Log.Error(err)
+	}
+}
+
+func (gui *Gui) listenForEvents(finish chan struct{}, refresh func()) {
+	for {
+		messageChan, errChan := gui.DockerCommand.Client.Events(context.Background(), types.EventsOptions{})
+		for {
+			select {
+			case <-finish:
+				return
+			case message := <-messageChan:
+				// We could be more granular about what events should trigger which refreshes.
+				// At the moment it's pretty efficient though, and it might not be worth
+				// the maintenance burden of mapping specific events to specific refreshes
+				refresh()
+
+				gui.Log.Infof("received event of type: %s", message.Type)
+			case err := <-errChan:
+				gui.ErrorChan <- errors.Errorf("Docker event stream returned error: %s", err.Error())
+				break
+			}
+		}
+	}
 }
 
 // checkForContextChange runs the currently focused panel's 'select' function, simulating the current item having just been selected. This will then trigger a check to see if anything's changed (e.g. a service has a new container) and if so, the appropriate code will run. For example, if you're reading logs from a service and all of a sudden its container changes, this will trigger the 'select' function, which will work out that the context is not different because of the new container, and then it will re-attempt to get the logs, this time for the correct container. This 'context' is stored in the main panel's ObjectKey. I'm using the term 'context' here more broadly than just the different tabs you can view in a panel.

@@ -51,9 +51,6 @@ type UserConfig struct {
 	// OS determines what defaults are set for opening files and links
 	OS OSConfig `yaml:"oS,omitempty"`
 
-	// UpdateConfig determines what the default settings are for updating the ui
-	Update UpdateConfig `yaml:"update,omitempty"`
-
 	// Stats determines how long lazydocker will gather container stats for, and
 	// what stat info to graph
 	Stats StatsConfig `yaml:"stats,omitempty"`
@@ -194,14 +191,6 @@ type OSConfig struct {
 
 	// OpenCommand is the command for opening a link
 	OpenLinkCommand string `yaml:"openLinkCommand,omitempty"`
-}
-
-// UpdateConfig determines what the default settings are for updating the ui
-type UpdateConfig struct {
-	// RefreshProjectTime determines the time betweens updates of all continues docker commands like docker ps, docker images, etc.
-	// It expects a valid duration like: 100ms, 2s, 200ns
-	// for docs see: https://golang.org/pkg/time/#ParseDuration
-	DockerRefreshInterval time.Duration `yaml:"dockerRefreshInterval,omitempty"`
 }
 
 // GraphConfig specifies how to make a graph of recorded container stats
@@ -402,9 +391,6 @@ func GetDefaultConfig() UserConfig {
 			Volumes:    []CustomCommand{},
 		},
 		OS: GetPlatformDefaultConfig(),
-		Update: UpdateConfig{
-			DockerRefreshInterval: time.Millisecond * 100,
-		},
 		Stats: StatsConfig{
 			MaxDuration: duration,
 			Graphs: []GraphConfig{
@@ -489,7 +475,7 @@ func configDir(projectName string) string {
 func findOrCreateConfigDir(projectName string) (string, error) {
 	folder := configDir(projectName)
 
-	err := os.MkdirAll(folder, 0755)
+	err := os.MkdirAll(folder, 0o755)
 	if err != nil {
 		return "", err
 	}
@@ -544,7 +530,7 @@ func (c *AppConfig) WriteToUserConfig(updateConfig func(*UserConfig) error) erro
 		return err
 	}
 
-	file, err := os.OpenFile(c.ConfigFilename(), os.O_WRONLY|os.O_CREATE, 0666)
+	file, err := os.OpenFile(c.ConfigFilename(), os.O_WRONLY|os.O_CREATE, 0o666)
 	if err != nil {
 		return err
 	}

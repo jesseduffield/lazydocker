@@ -50,9 +50,7 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 		return gui.renderString(g, "main", gui.Tr.NoImages)
 	}
 
-	if err := gui.focusPoint(0, gui.State.Panels.Images.SelectedLine, len(gui.DockerCommand.Images), v); err != nil {
-		return err
-	}
+	gui.focusPoint(0, gui.State.Panels.Images.SelectedLine, len(gui.DockerCommand.Images), v)
 
 	key := "images-" + Image.ID + "-" + gui.getImageContexts()[gui.State.Panels.Images.ContextIndex]
 	if !gui.shouldRefresh(key) {
@@ -117,7 +115,6 @@ func (gui *Gui) refreshImages() error {
 	}
 
 	gui.g.Update(func(g *gocui.Gui) error {
-
 		ImagesView.Clear()
 		isFocused := gui.g.CurrentView().Name() == "Images"
 		list, err := utils.RenderList(gui.DockerCommand.Images, utils.IsFocused(isFocused))

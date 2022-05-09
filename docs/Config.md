@@ -7,6 +7,7 @@ The location of the user config will differ depending on your OS. You can open i
 Changes to the user config will only take place after closing and re-opening lazydocker
 
 ### Locations:
+
 - OSX: `~/Library/Application Support/jesseduffield/lazydocker/config.yml`
 - Linux: `~/.config/lazydocker/config.yml`
 - Windows: `C:\\Users\\<User>\\AppData\\Roaming\\jesseduffield\\lazydocker\\config.yml` (I think)
@@ -19,12 +20,12 @@ gui:
   language: 'auto' # one of 'auto' | 'en' | 'pl' | 'nl' | 'de' | 'tr'
   theme:
     activeBorderColor:
-    - green
-    - bold
+      - green
+      - bold
     inactiveBorderColor:
-    - white
+      - white
     optionsTextColor:
-    - blue
+      - blue
   returnImmediately: false
   wrapMainPanel: false
 commandTemplates:
@@ -35,7 +36,8 @@ commandTemplates:
   viewServiceLogs: '{{ .DockerCompose }} logs --follow {{ .Service.Name }}'
   rebuildService: '{{ .DockerCompose }} up -d --build {{ .Service.Name }}'
   recreateService: '{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}'
-  viewContainerLogs: docker logs --timestamps --follow --since=60m {{ .Container.ID
+  viewContainerLogs:
+    docker logs --timestamps --follow --since=60m {{ .Container.ID
     }}
   containerLogs: docker logs --timestamps --follow --since=60m {{ .Container.ID }}
   allLogs: '{{ .DockerCompose }} logs --tail=300 --follow'
@@ -45,23 +47,21 @@ commandTemplates:
   serviceTop: '{{ .DockerCompose }} top {{ .Service.Name }}'
 customCommands:
   containers:
-  - name: bash
-    attach: true
-    command: "docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'"
-    serviceNames: []
+    - name: bash
+      attach: true
+      command: "docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'"
+      serviceNames: []
 oS:
   openCommand: open {{filename}}
   openLinkCommand: open {{link}}
-update:
-  dockerRefreshInterval: 100ms
 stats:
   graphs:
-  - caption: CPU (%)
-    statPath: DerivedStats.CPUPercentage
-    color: blue
-  - caption: Memory (%)
-    statPath: DerivedStats.MemoryPercentage
-    color: green
+    - caption: CPU (%)
+      statPath: DerivedStats.CPUPercentage
+      color: blue
+    - caption: Memory (%)
+      statPath: DerivedStats.MemoryPercentage
+      color: green
 ```
 
 ## To see what all of the config options mean, and what other options you can set, see [here](https://godoc.org/github.com/jesseduffield/lazydocker/pkg/config)

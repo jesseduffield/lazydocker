@@ -28,26 +28,29 @@ func (gui *Gui) getProjectContextTitles() []string {
 	return []string{gui.Tr.CreditsTitle}
 }
 
-func (gui *Gui) refreshProject() error {
+func (gui *Gui) refreshProject() {
 	v := gui.getProjectView()
 
-	projectName := path.Base(gui.Config.ProjectDir)
-	if gui.DockerCommand.InDockerComposeProject {
-		for _, service := range gui.DockerCommand.Services {
-			if service.Container != nil {
-				projectName = service.Container.Details.Config.Labels["com.docker.compose.project"]
-				break
-			}
-		}
-	}
+	projectName := gui.getProjectName()
 
 	gui.g.Update(func(*gocui.Gui) error {
 		v.Clear()
 		fmt.Fprint(v, projectName)
 		return nil
 	})
+}
 
-	return nil
+func (gui *Gui) getProjectName() string {
+	projectName := path.Base(gui.Config.ProjectDir)
+	if gui.DockerCommand.InDockerComposeProject {
+		for _, service := range gui.DockerCommand.Services {
+			if service.Container != nil {
+				return service.Container.Details.Config.Labels["com.docker.compose.project"]
+			}
+		}
+	}
+
+	return projectName
 }
 
 func (gui *Gui) handleProjectClick(g *gocui.Gui, v *gocui.View) error {

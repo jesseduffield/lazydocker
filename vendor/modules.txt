@@ -10,6 +10,9 @@ github.com/OpenPeeDeeP/xdg
 # github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 ## explicit
 github.com/acarl005/stripansi
+# github.com/boz/go-throttle v0.0.0-20160922054636-fdc4eab740c1
+## explicit
+github.com/boz/go-throttle
 # github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21
 ## explicit
 github.com/cloudfoundry/jibber_jabber
@@ -119,15 +122,21 @@ github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
 github.com/pmezard/go-difflib/difflib
+# github.com/samber/lo v1.20.0
+## explicit; go 1.18
+github.com/samber/lo
 # github.com/sirupsen/logrus v1.4.2
 ## explicit
 github.com/sirupsen/logrus
 # github.com/spkg/bom v0.0.0-20160624110644-59b7046e48ad
 ## explicit
 github.com/spkg/bom
-# github.com/stretchr/testify v1.2.2
-## explicit
+# github.com/stretchr/testify v1.7.0
+## explicit; go 1.13
 github.com/stretchr/testify/assert
+# golang.org/x/exp v0.0.0-20220428152302-39d4317da171
+## explicit; go 1.18
+golang.org/x/exp/constraints
 # golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
 ## explicit; go 1.11
 golang.org/x/net/internal/socks
@@ -139,7 +148,7 @@ golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 ## explicit
-# golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+# golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 ## explicit; go 1.11
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
@@ -147,5 +156,8 @@ golang.org/x/xerrors/internal
 ## explicit
 # gopkg.in/yaml.v2 v2.2.2
 ## explicit
+# gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+## explicit
+gopkg.in/yaml.v3
 # gotest.tools v2.2.0+incompatible
 ## explicit
