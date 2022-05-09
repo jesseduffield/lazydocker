@@ -165,9 +165,9 @@ func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View, returnin
 }
 
 // if the cursor down past the last item, move it to the last line
-func (gui *Gui) focusPoint(selectedX int, selectedY int, lineCount int, v *gocui.View) error {
+func (gui *Gui) focusPoint(selectedX int, selectedY int, lineCount int, v *gocui.View) {
 	if selectedY < 0 || selectedY > lineCount {
-		return nil
+		return
 	}
 	ox, oy := v.Origin()
 	originalOy := oy
@@ -199,7 +199,7 @@ func (gui *Gui) focusPoint(selectedX int, selectedY int, lineCount int, v *gocui
 	if originalCy != cy {
 		_ = v.SetCursor(cx, selectedY-oy)
 	}
-	return nil
+	return
 }
 
 func (gui *Gui) cleanString(s string) string {

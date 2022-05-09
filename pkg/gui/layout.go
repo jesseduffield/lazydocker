@@ -16,12 +16,8 @@ func (gui *Gui) getFocusLayout() func(g *gocui.Gui) error {
 		}
 		// for now we don't consider losing focus to a popup panel as actually losing focus
 		if newView != previousView && !gui.isPopupPanel(newView.Name()) {
-			if err := gui.onFocusLost(previousView, newView); err != nil {
-				return err
-			}
-			if err := gui.onFocus(newView); err != nil {
-				return err
-			}
+			gui.onFocusLost(previousView, newView)
+			gui.onFocus(newView)
 			previousView = newView
 		}
 		return nil
@@ -36,9 +32,9 @@ func (gui *Gui) onFocusChange() error {
 	return nil
 }
 
-func (gui *Gui) onFocusLost(v *gocui.View, newView *gocui.View) error {
+func (gui *Gui) onFocusLost(v *gocui.View, newView *gocui.View) {
 	if v == nil {
-		return nil
+		return
 	}
 
 	if !gui.isPopupPanel(newView.Name()) {
@@ -46,25 +42,19 @@ func (gui *Gui) onFocusLost(v *gocui.View, newView *gocui.View) error {
 	}
 
 	// refocusing because in responsive mode (when the window is very short) we want to ensure that after the view size changes we can still see the last selected item
-	if err := gui.focusPointInView(v); err != nil {
-		return err
-	}
+	gui.focusPointInView(v)
 
 	gui.Log.Info(v.Name() + " focus lost")
-	return nil
 }
 
-func (gui *Gui) onFocus(v *gocui.View) error {
+func (gui *Gui) onFocus(v *gocui.View) {
 	if v == nil {
-		return nil
+		return
 	}
 
-	if err := gui.focusPointInView(v); err != nil {
-		return err
-	}
+	gui.focusPointInView(v)
 
 	gui.Log.Info(v.Name() + " focus gained")
-	return nil
 }
 
 // layout is called for every screen re-render e.g. when the screen is resized
@@ -299,9 +289,9 @@ type listViewState struct {
 	lineCount    int
 }
 
-func (gui *Gui) focusPointInView(view *gocui.View) error {
+func (gui *Gui) focusPointInView(view *gocui.View) {
 	if view == nil {
-		return nil
+		return
 	}
 
 	listViews := map[string]listViewState{
@@ -313,10 +303,6 @@ func (gui *Gui) focusPointInView(view *gocui.View) error {
 	}
 
 	if state, ok := listViews[view.Name()]; ok {
-		if err := gui.focusPoint(0, state.selectedLine, state.lineCount, view); err != nil {
-			return err
-		}
+		gui.focusPoint(0, state.selectedLine, state.lineCount, view)
 	}
-
-	return nil
 }

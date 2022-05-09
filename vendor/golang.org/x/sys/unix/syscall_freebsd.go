@@ -54,6 +54,10 @@ type SockaddrDatalink struct {
 	raw    RawSockaddrDatalink
 }
 
+func anyToSockaddrGOOS(fd int, rsa *RawSockaddrAny) (Sockaddr, error) {
+	return nil, EAFNOSUPPORT
+}
+
 // Translate "kern.hostname" to []_C_int{0,1,2,3}.
 func nametomib(name string) (mib []_C_int, err error) {
 	const siz = unsafe.Sizeof(mib[0])
@@ -106,8 +110,10 @@ func Pipe2(p []int, flags int) error {
 	}
 	var pp [2]_C_int
 	err := pipe2(&pp, flags)
-	p[0] = int(pp[0])
-	p[1] = int(pp[1])
+	if err == nil {
+		p[0] = int(pp[0])
+		p[1] = int(pp[1])
+	}
 	return err
 }
 
@@ -120,6 +126,15 @@ func GetsockoptIPMreqn(fd, level, opt int) (*IPMreqn, error) {
 
 func SetsockoptIPMreqn(fd, level, opt int, mreq *IPMreqn) (err error) {
 	return setsockopt(fd, level, opt, unsafe.Pointer(mreq), unsafe.Sizeof(*mreq))
+}
+
+// GetsockoptXucred is a getsockopt wrapper that returns an Xucred struct.
+// The usual level and opt are SOL_LOCAL and LOCAL_PEERCRED, respectively.
+func GetsockoptXucred(fd, level, opt int) (*Xucred, error) {
+	x := new(Xucred)
+	vallen := _Socklen(SizeofXucred)
+	err := getsockopt(fd, level, opt, unsafe.Pointer(x), &vallen)
+	return x, err
 }
 
 func Accept4(fd, flags int) (nfd int, sa Sockaddr, err error) {
@@ -140,22 +155,7 @@ func Accept4(fd, flags int) (nfd int, sa Sockaddr, err error) {
 	return
 }
 
-const ImplementsGetwd = true
-
 //sys	Getcwd(buf []byte) (n int, err error) = SYS___GETCWD
-
-func Getwd() (string, error) {
-	var buf [PathMax]byte
-	_, err := Getcwd(buf[0:])
-	if err != nil {
-		return "", err
-	}
-	n := clen(buf[:])
-	if n < 1 {
-		return "", EINVAL
-	}
-	return string(buf[:n]), nil
-}
 
 func Getfsstat(buf []Statfs_t, flags int) (n int, err error) {
 	var (
@@ -194,14 +194,9 @@ func Getfsstat(buf []Statfs_t, flags int) (n int, err error) {
 	return
 }
 
-func setattrlistTimes(path string, times []Timespec, flags int) error {
-	// used on Darwin for UtimesNano
-	return ENOSYS
-}
+//sys	ioctl(fd int, req uint, arg uintptr) (err error)
 
-//sys   ioctl(fd int, req uint, arg uintptr) (err error)
-
-//sys   sysctl(mib []_C_int, old *byte, oldlen *uintptr, new *byte, newlen uintptr) (err error) = SYS___SYSCTL
+//sys	sysctl(mib []_C_int, old *byte, oldlen *uintptr, new *byte, newlen uintptr) (err error) = SYS___SYSCTL
 
 func Uname(uname *Utsname) error {
 	mib := []_C_int{CTL_KERN, KERN_OSTYPE}
@@ -521,18 +516,8 @@ func PtraceGetFpRegs(pid int, fpregsout *FpReg) (err error) {
 	return ptrace(PTRACE_GETFPREGS, pid, uintptr(unsafe.Pointer(fpregsout)), 0)
 }
 
-func PtraceGetFsBase(pid int, fsbase *int64) (err error) {
-	return ptrace(PTRACE_GETFSBASE, pid, uintptr(unsafe.Pointer(fsbase)), 0)
-}
-
 func PtraceGetRegs(pid int, regsout *Reg) (err error) {
 	return ptrace(PTRACE_GETREGS, pid, uintptr(unsafe.Pointer(regsout)), 0)
-}
-
-func PtraceIO(req int, pid int, addr uintptr, out []byte, countin int) (count int, err error) {
-	ioDesc := PtraceIoDesc{Op: int32(req), Offs: (*byte)(unsafe.Pointer(addr)), Addr: (*byte)(unsafe.Pointer(&out[0])), Len: uint(countin)}
-	err = ptrace(PTRACE_IO, pid, uintptr(unsafe.Pointer(&ioDesc)), 0)
-	return int(ioDesc.Len), err
 }
 
 func PtraceLwpEvents(pid int, enable int) (err error) {
@@ -648,8 +633,8 @@ func PtraceSingleStep(pid int) (err error) {
 //sys	Open(path string, mode int, perm uint32) (fd int, err error)
 //sys	Openat(fdat int, path string, mode int, perm uint32) (fd int, err error)
 //sys	Pathconf(path string, name int) (val int, err error)
-//sys	Pread(fd int, p []byte, offset int64) (n int, err error)
-//sys	Pwrite(fd int, p []byte, offset int64) (n int, err error)
+//sys	pread(fd int, p []byte, offset int64) (n int, err error)
+//sys	pwrite(fd int, p []byte, offset int64) (n int, err error)
 //sys	read(fd int, p []byte) (n int, err error)
 //sys	Readlink(path string, buf []byte) (n int, err error)
 //sys	Readlinkat(dirfd int, path string, buf []byte) (n int, err error)
@@ -686,8 +671,8 @@ func PtraceSingleStep(pid int) (err error) {
 //sys	Unlinkat(dirfd int, path string, flags int) (err error)
 //sys	Unmount(path string, flags int) (err error)
 //sys	write(fd int, p []byte) (n int, err error)
-//sys   mmap(addr uintptr, length uintptr, prot int, flag int, fd int, pos int64) (ret uintptr, err error)
-//sys   munmap(addr uintptr, length uintptr) (err error)
+//sys	mmap(addr uintptr, length uintptr, prot int, flag int, fd int, pos int64) (ret uintptr, err error)
+//sys	munmap(addr uintptr, length uintptr) (err error)
 //sys	readlen(fd int, buf *byte, nbuf int) (n int, err error) = SYS_READ
 //sys	writelen(fd int, buf *byte, nbuf int) (n int, err error) = SYS_WRITE
 //sys	accept4(fd int, rsa *RawSockaddrAny, addrlen *_Socklen, flags int) (nfd int, err error)

@@ -31,6 +31,10 @@ type SockaddrDatalink struct {
 	raw    RawSockaddrDatalink
 }
 
+func anyToSockaddrGOOS(fd int, rsa *RawSockaddrAny) (Sockaddr, error) {
+	return nil, EAFNOSUPPORT
+}
+
 func Syscall9(trap, a1, a2, a3, a4, a5, a6, a7, a8, a9 uintptr) (r1, r2 uintptr, err syscall.Errno)
 
 func nametomib(name string) (mib []_C_int, err error) {
@@ -55,23 +59,6 @@ func direntNamlen(buf []byte) (uint64, bool) {
 	return readInt(buf, unsafe.Offsetof(Dirent{}.Namlen), unsafe.Sizeof(Dirent{}.Namlen))
 }
 
-func SysctlClockinfo(name string) (*Clockinfo, error) {
-	mib, err := sysctlmib(name)
-	if err != nil {
-		return nil, err
-	}
-
-	n := uintptr(SizeofClockinfo)
-	var ci Clockinfo
-	if err := sysctl(mib, (*byte)(unsafe.Pointer(&ci)), &n, nil, 0); err != nil {
-		return nil, err
-	}
-	if n != SizeofClockinfo {
-		return nil, EIO
-	}
-	return &ci, nil
-}
-
 func SysctlUvmexp(name string) (*Uvmexp, error) {
 	mib, err := sysctlmib(name)
 	if err != nil {
@@ -89,19 +76,27 @@ func SysctlUvmexp(name string) (*Uvmexp, error) {
 	return &u, nil
 }
 
-//sysnb pipe(p *[2]_C_int) (err error)
 func Pipe(p []int) (err error) {
+	return Pipe2(p, 0)
+}
+
+//sysnb	pipe2(p *[2]_C_int, flags int) (err error)
+
+func Pipe2(p []int, flags int) error {
 	if len(p) != 2 {
 		return EINVAL
 	}
 	var pp [2]_C_int
-	err = pipe(&pp)
-	p[0] = int(pp[0])
-	p[1] = int(pp[1])
-	return
+	err := pipe2(&pp, flags)
+	if err == nil {
+		p[0] = int(pp[0])
+		p[1] = int(pp[1])
+	}
+	return err
 }
 
-//sys Getdents(fd int, buf []byte) (n int, err error)
+//sys	Getdents(fd int, buf []byte) (n int, err error)
+
 func Getdirentries(fd int, buf []byte, basep *uintptr) (n int, err error) {
 	n, err = Getdents(fd, buf)
 	if err != nil || basep == nil {
@@ -127,22 +122,7 @@ func Getdirentries(fd int, buf []byte, basep *uintptr) (n int, err error) {
 	return
 }
 
-const ImplementsGetwd = true
-
 //sys	Getcwd(buf []byte) (n int, err error) = SYS___GETCWD
-
-func Getwd() (string, error) {
-	var buf [PathMax]byte
-	_, err := Getcwd(buf[0:])
-	if err != nil {
-		return "", err
-	}
-	n := clen(buf[:])
-	if n < 1 {
-		return "", EINVAL
-	}
-	return string(buf[:n]), nil
-}
 
 func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) {
 	if raceenabled {
@@ -171,14 +151,9 @@ func Getfsstat(buf []Statfs_t, flags int) (n int, err error) {
 	return
 }
 
-func setattrlistTimes(path string, times []Timespec, flags int) error {
-	// used on Darwin for UtimesNano
-	return ENOSYS
-}
-
 //sys	ioctl(fd int, req uint, arg uintptr) (err error)
 
-//sys   sysctl(mib []_C_int, old *byte, oldlen *uintptr, new *byte, newlen uintptr) (err error) = SYS___SYSCTL
+//sys	sysctl(mib []_C_int, old *byte, oldlen *uintptr, new *byte, newlen uintptr) (err error) = SYS___SYSCTL
 
 //sys	ppoll(fds *PollFd, nfds int, timeout *Timespec, sigmask *Sigset_t) (n int, err error)
 
@@ -248,6 +223,7 @@ func Uname(uname *Utsname) error {
 //sys	Close(fd int) (err error)
 //sys	Dup(fd int) (nfd int, err error)
 //sys	Dup2(from int, to int) (err error)
+//sys	Dup3(from int, to int, flags int) (err error)
 //sys	Exit(code int)
 //sys	Faccessat(dirfd int, path string, mode uint32, flags int) (err error)
 //sys	Fchdir(fd int) (err error)
@@ -295,8 +271,8 @@ func Uname(uname *Utsname) error {
 //sys	Open(path string, mode int, perm uint32) (fd int, err error)
 //sys	Openat(dirfd int, path string, mode int, perm uint32) (fd int, err error)
 //sys	Pathconf(path string, name int) (val int, err error)
-//sys	Pread(fd int, p []byte, offset int64) (n int, err error)
-//sys	Pwrite(fd int, p []byte, offset int64) (n int, err error)
+//sys	pread(fd int, p []byte, offset int64) (n int, err error)
+//sys	pwrite(fd int, p []byte, offset int64) (n int, err error)
 //sys	read(fd int, p []byte) (n int, err error)
 //sys	Readlink(path string, buf []byte) (n int, err error)
 //sys	Readlinkat(dirfd int, path string, buf []byte) (n int, err error)
@@ -352,7 +328,6 @@ func Uname(uname *Utsname) error {
 // clock_settime
 // closefrom
 // execve
-// fcntl
 // fhopen
 // fhstat
 // fhstatfs

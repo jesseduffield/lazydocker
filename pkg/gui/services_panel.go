@@ -24,7 +24,8 @@ func (gui *Gui) getServiceContextTitles() []string {
 		gui.Tr.StatsTitle,
 		gui.Tr.ContainerEnvTitle,
 		gui.Tr.ContainerConfigTitle,
-		gui.Tr.TopTitle}
+		gui.Tr.TopTitle,
+	}
 }
 
 func (gui *Gui) getSelectedService() (*commands.Service, error) {
@@ -55,9 +56,7 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 		containerID = service.Container.ID
 	}
 
-	if err := gui.focusPoint(0, gui.State.Panels.Services.SelectedLine, len(gui.DockerCommand.Services), v); err != nil {
-		return err
-	}
+	gui.focusPoint(0, gui.State.Panels.Services.SelectedLine, len(gui.DockerCommand.Services), v)
 
 	key := "services-" + service.ID + "-" + containerID + "-" + gui.getServiceContexts()[gui.State.Panels.Services.ContextIndex]
 	if !gui.shouldRefresh(key) {
@@ -239,7 +238,6 @@ func (gui *Gui) handleServiceStop(g *gocui.Gui, v *gocui.View) error {
 
 			return gui.refreshContainersAndServices()
 		})
-
 	}, nil)
 }
 
@@ -269,7 +267,6 @@ func (gui *Gui) handleServiceAttach(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	c, err := service.Attach()
-
 	if err != nil {
 		return gui.createErrorPanel(gui.g, err.Error())
 	}
@@ -324,7 +321,8 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 					return nil
 				})
 			},
-		}, {
+		},
+		{
 			description: gui.Tr.Recreate,
 			command: utils.ApplyTemplate(
 				gui.Config.UserConfig.CommandTemplates.RecreateService,
