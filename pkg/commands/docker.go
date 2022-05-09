@@ -74,7 +74,7 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 
 // NewDockerCommand it runs docker commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
-	tunnelCloser, err := ssh.NewSSHHandler().HandleSSHDockerHost()
+	tunnelCloser, err := ssh.NewSSHHandler(osCommand).HandleSSHDockerHost()
 	if err != nil {
 		ogLog.Fatal(err)
 	}
@@ -237,7 +237,7 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 
 	c.assignContainersToServices(containers, services)
 
-	var displayContainers = containers
+	displayContainers := containers
 	if !c.Config.UserConfig.Gui.ShowAllContainers {
 		displayContainers = c.obtainStandaloneContainers(containers, services)
 	}
@@ -468,7 +468,6 @@ func (c *DockerCommand) DockerComposeConfig() string {
 			c.NewCommandObject(CommandObject{}),
 		),
 	)
-
 	if err != nil {
 		output = err.Error()
 	}
