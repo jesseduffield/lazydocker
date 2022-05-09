@@ -42,11 +42,13 @@ type TranslationSet struct {
 	RestartingStatus            string
 	StartingStatus              string
 	StoppingStatus              string
+	PausingStatus               string
 	RemovingStatus              string
 	RunningCustomCommandStatus  string
 	RunningBulkCommandStatus    string
 	RemoveService               string
 	Stop                        string
+	Pause                       string
 	Restart                     string
 	Start                       string
 	Rebuild                     string
@@ -112,6 +114,7 @@ func englishSet() TranslationSet {
 		RestartingStatus:           "restarting",
 		StartingStatus:             "starting",
 		StoppingStatus:             "stopping",
+		PausingStatus:              "pausing",
 		RunningCustomCommandStatus: "running custom command",
 		RunningBulkCommandStatus:   "running bulk command",
 
@@ -146,6 +149,7 @@ func englishSet() TranslationSet {
 		RemoveWithVolumes:           "remove with volumes",
 		RemoveService:               "remove containers",
 		Stop:                        "stop",
+		Pause:                       "pause",
 		Restart:                     "restart",
 		Start:                       "start",
 		Rebuild:                     "rebuild",

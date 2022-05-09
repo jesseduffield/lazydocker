@@ -175,6 +175,18 @@ func (c *Container) Stop() error {
 	return c.Client.ContainerStop(context.Background(), c.ID, nil)
 }
 
+// Pause pauses the container
+func (c *Container) Pause() error {
+	c.Log.Warn(fmt.Sprintf("pausing container %s", c.Name))
+	return c.Client.ContainerPause(context.Background(), c.ID)
+}
+
+// Unpause unpauses the container
+func (c *Container) Unpause() error {
+	c.Log.Warn(fmt.Sprintf("unpausing container %s", c.Name))
+	return c.Client.ContainerUnpause(context.Background(), c.ID)
+}
+
 // Restart restarts the container
 func (c *Container) Restart() error {
 	c.Log.Warn(fmt.Sprintf("restarting container %s", c.Name))
