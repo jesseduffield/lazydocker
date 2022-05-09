@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/jesseduffield/lazydocker/pkg/app"
 	"github.com/jesseduffield/lazydocker/pkg/config"
@@ -134,12 +133,4 @@ func formatSections(mApp *app.App, bindingSections []*bindingSection) string {
 	}
 
 	return content
-}
-
-func getProjectRoot() string {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	return strings.Split(dir, "lazydocker")[0] + "lazydocker"
 }

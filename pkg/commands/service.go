@@ -23,7 +23,6 @@ type Service struct {
 
 // GetDisplayStrings returns the dispaly string of Container
 func (s *Service) GetDisplayStrings(isFocused bool) []string {
-
 	if s.Container == nil {
 		return []string{utils.ColoredString("none", color.FgBlue), "", s.Name, ""}
 	}

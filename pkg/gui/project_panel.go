@@ -108,7 +108,7 @@ func (gui *Gui) renderCredits() error {
 		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
 		var configBuf bytes.Buffer
-		yaml.NewEncoder(&configBuf, yaml.IncludeOmitted).Encode(gui.Config.UserConfig)
+		_ = yaml.NewEncoder(&configBuf, yaml.IncludeOmitted).Encode(gui.Config.UserConfig)
 
 		dashboardString := strings.Join(
 			[]string{
@@ -122,7 +122,7 @@ func (gui *Gui) renderCredits() error {
 				configBuf.String(),
 			}, "\n\n")
 
-		gui.renderString(gui.g, "main", dashboardString)
+		_ = gui.renderString(gui.g, "main", dashboardString)
 	})
 }
 
@@ -145,7 +145,7 @@ func (gui *Gui) renderAllLogs() error {
 		cmd.Stderr = mainView
 
 		gui.OSCommand.PrepareForChildren(cmd)
-		cmd.Start()
+		_ = cmd.Start()
 
 		go func() {
 			<-stop
@@ -154,7 +154,7 @@ func (gui *Gui) renderAllLogs() error {
 			}
 		}()
 
-		cmd.Wait()
+		_ = cmd.Wait()
 	})
 }
 
@@ -165,7 +165,7 @@ func (gui *Gui) renderDockerComposeConfig() error {
 		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
 		config := gui.DockerCommand.DockerComposeConfig()
-		gui.renderString(gui.g, "main", config)
+		_ = gui.renderString(gui.g, "main", config)
 	})
 }
 
@@ -198,7 +198,7 @@ func (gui *Gui) handleProjectNextContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Project.ContextIndex++
 	}
 
-	gui.handleProjectSelect(gui.g, v)
+	_ = gui.handleProjectSelect(gui.g, v)
 
 	return nil
 }
@@ -211,7 +211,7 @@ func (gui *Gui) handleProjectPrevContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Project.ContextIndex--
 	}
 
-	gui.handleProjectSelect(gui.g, v)
+	_ = gui.handleProjectSelect(gui.g, v)
 
 	return nil
 }

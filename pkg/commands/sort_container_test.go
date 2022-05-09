@@ -1,10 +1,11 @@
 package commands
 
 import (
+	"testing"
+
 	"github.com/docker/docker/api/types"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func sampleContainers(userConfig *config.AppConfig) []*Container {
@@ -119,6 +120,7 @@ func expectedLegacySortedContainers(appConfig *config.AppConfig) []*Container {
 }
 
 func assertEqualContainers(t *testing.T, left *Container, right *Container) {
+	t.Helper()
 	assert.Equal(t, left.Container.State, right.Container.State)
 	assert.Equal(t, left.Container.ID, right.Container.ID)
 	assert.Equal(t, left.Name, right.Name)

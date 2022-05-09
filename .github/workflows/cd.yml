@@ -1,0 +1,31 @@
+name: Continuous Delivery
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Unshallow repo
+        run: git fetch --prune --unshallow
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.18.x
+      - name: Run goreleaser
+        uses: goreleaser/goreleaser-action@v1
+        env:
+          GITHUB_TOKEN: ${{secrets.API_TOKEN}}
+  homebrew:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bump Homebrew formula
+        uses: dawidd6/action-homebrew-bump-formula@v3
+        with:
+          token: ${{secrets.API_TOKEN}}
+          formula: lazydocker

@@ -169,6 +169,8 @@ func TestOSCommandQuoteSingleQuote(t *testing.T) {
 	osCommand := NewDummyOSCommand()
 
 	osCommand.Platform.os = "linux"
+	osCommand.Platform.fallbackEscapedQuote = "\""
+	osCommand.Platform.escapedQuote = "'"
 
 	actual := osCommand.Quote("hello 'test'")
 
@@ -235,7 +237,7 @@ func TestOSCommandFileType(t *testing.T) {
 		{
 			"testDirectory",
 			func() {
-				if err := os.Mkdir("testDirectory", 0644); err != nil {
+				if err := os.Mkdir("testDirectory", 0o644); err != nil {
 					panic(err)
 				}
 			},

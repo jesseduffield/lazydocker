@@ -93,7 +93,7 @@ func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image) e
 		mainView.Autoscroll = false
 		mainView.Wrap = false // don't care what your config is this page is ugly without wrapping
 
-		gui.renderString(gui.g, "main", output)
+		_ = gui.renderString(gui.g, "main", output)
 	})
 }
 
@@ -174,7 +174,7 @@ func (gui *Gui) handleImagesNextContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Images.ContextIndex++
 	}
 
-	gui.handleImageSelect(gui.g, v)
+	_ = gui.handleImageSelect(gui.g, v)
 
 	return nil
 }
@@ -187,7 +187,7 @@ func (gui *Gui) handleImagesPrevContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Images.ContextIndex--
 	}
 
-	gui.handleImageSelect(gui.g, v)
+	_ = gui.handleImageSelect(gui.g, v)
 
 	return nil
 }

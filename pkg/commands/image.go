@@ -2,8 +2,9 @@ package commands
 
 import (
 	"context"
-	"github.com/docker/docker/api/types/image"
 	"strings"
+
+	"github.com/docker/docker/api/types/image"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -27,7 +28,6 @@ type Image struct {
 
 // GetDisplayStrings returns the display string of Image
 func (i *Image) GetDisplayStrings(isFocused bool) []string {
-
 	return []string{i.Name, i.Tag, utils.FormatDecimalBytes(int(i.Image.Size))}
 }
 
@@ -87,7 +87,6 @@ func (l *Layer) GetDisplayStrings(isFocused bool) []string {
 
 // RenderHistory renders the history of the image
 func (i *Image) RenderHistory() (string, error) {
-
 	history, err := i.Client.ImageHistory(context.Background(), i.ID)
 	if err != nil {
 		return "", err

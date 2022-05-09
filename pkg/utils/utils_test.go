@@ -68,7 +68,7 @@ func TestNormalizeLinefeeds(t *testing.T) {
 		byteArray []byte
 		expected  []byte
 	}
-	var scenarios = []scenario{
+	scenarios := []scenario{
 		{
 			// \r\n
 			[]byte{97, 115, 100, 102, 13, 10},

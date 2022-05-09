@@ -354,8 +354,8 @@ func (gui *Gui) popupPanelFocused() bool {
 func (gui *Gui) clearMainView() {
 	mainView := gui.getMainView()
 	mainView.Clear()
-	mainView.SetOrigin(0, 0)
-	mainView.SetCursor(0, 0)
+	_ = mainView.SetOrigin(0, 0)
+	_ = mainView.SetCursor(0, 0)
 }
 
 func (gui *Gui) handleClick(v *gocui.View, itemCount int, selectedLine *int, handleSelect func(*gocui.Gui, *gocui.View) error) error {

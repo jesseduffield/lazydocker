@@ -68,7 +68,7 @@ type CommandObject struct {
 // NewCommandObject takes a command object and returns a default command object with the passed command object merged in
 func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	defaultObj := CommandObject{DockerCompose: c.Config.UserConfig.CommandTemplates.DockerCompose}
-	mergo.Merge(&defaultObj, obj)
+	_ = mergo.Merge(&defaultObj, obj)
 	return defaultObj
 }
 
@@ -139,7 +139,7 @@ func (c *DockerCommand) MonitorCLIContainerStats() {
 		return
 	}
 
-	cmd.Start()
+	_ = cmd.Start()
 
 	scanner := bufio.NewScanner(r)
 	scanner.Split(bufio.ScanLines)
@@ -160,7 +160,7 @@ func (c *DockerCommand) MonitorCLIContainerStats() {
 		c.ContainerMutex.Unlock()
 	}
 
-	cmd.Wait()
+	_ = cmd.Wait()
 }
 
 // MonitorClientContainerStats is a function
@@ -192,7 +192,7 @@ func (c *DockerCommand) createClientStatMonitor(container *Container) {
 	for scanner.Scan() {
 		data := scanner.Bytes()
 		var stats ContainerStats
-		json.Unmarshal(data, &stats)
+		_ = json.Unmarshal(data, &stats)
 
 		recordedStats := RecordedStats{
 			ClientStats: stats,
