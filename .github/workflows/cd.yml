@@ -20,12 +20,12 @@ jobs:
       - name: Run goreleaser
         uses: goreleaser/goreleaser-action@v1
         env:
-          GITHUB_TOKEN: ${{secrets.HOMEBREW_TOKEN}}
+          GITHUB_TOKEN: ${{secrets.GORELEASER_TOKEN}}
   homebrew:
     runs-on: ubuntu-latest
     steps:
       - name: Bump Homebrew formula
         uses: dawidd6/action-homebrew-bump-formula@v3
         with:
-          token: ${{secrets.GORELEASER_TOKEN}}
+          token: ${{secrets.HOMEBREW_TOKEN}}
           formula: lazydocker
