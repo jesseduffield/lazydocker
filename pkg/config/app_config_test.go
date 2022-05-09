@@ -10,7 +10,6 @@ import (
 func TestDockerComposeCommandNoFiles(t *testing.T) {
 	composeFiles := []string{}
 	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
-
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -25,7 +24,6 @@ func TestDockerComposeCommandNoFiles(t *testing.T) {
 func TestDockerComposeCommandSingleFile(t *testing.T) {
 	composeFiles := []string{"one.yml"}
 	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
-
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -40,7 +38,6 @@ func TestDockerComposeCommandSingleFile(t *testing.T) {
 func TestDockerComposeCommandMultipleFiles(t *testing.T) {
 	composeFiles := []string{"one.yml", "two.yml", "three.yml"}
 	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
-
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -53,14 +50,15 @@ func TestDockerComposeCommandMultipleFiles(t *testing.T) {
 }
 
 func TestWritingToConfigFile(t *testing.T) {
-	//init the AppConfig
+	// init the AppConfig
 	emptyComposeFiles := []string{}
 	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, emptyComposeFiles, "projectDir")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
 
-	testFn := func(ac *AppConfig, newValue bool, t *testing.T) {
+	testFn := func(t *testing.T, ac *AppConfig, newValue bool) {
+		t.Helper()
 		updateFn := func(uc *UserConfig) error {
 			uc.ConfirmOnQuit = newValue
 			return nil
@@ -71,7 +69,7 @@ func TestWritingToConfigFile(t *testing.T) {
 			t.Fatalf("Unexpected error: %s", err)
 		}
 
-		file, err := os.OpenFile(ac.ConfigFilename(), os.O_RDONLY, 0660)
+		file, err := os.OpenFile(ac.ConfigFilename(), os.O_RDONLY, 0o660)
 		if err != nil {
 			t.Fatalf("Unexpected error: %s", err)
 		}
@@ -93,8 +91,8 @@ func TestWritingToConfigFile(t *testing.T) {
 	}
 
 	// insert value into an empty file
-	testFn(conf, true, t)
+	testFn(t, conf, true)
 
 	// modifying an existing file that already has 'ConfirmOnQuit'
-	testFn(conf, false, t)
+	testFn(t, conf, false)
 }

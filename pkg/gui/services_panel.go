@@ -118,10 +118,10 @@ func (gui *Gui) renderServiceTop(service *commands.Service) error {
 	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
 		contents, err := service.RenderTop()
 		if err != nil {
-			gui.reRenderString(gui.g, "main", err.Error())
+			_ = gui.reRenderString(gui.g, "main", err.Error())
 		}
 
-		gui.reRenderString(gui.g, "main", contents)
+		_ = gui.reRenderString(gui.g, "main", contents)
 	})
 }
 
@@ -170,7 +170,7 @@ func (gui *Gui) handleServicesNextContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Services.ContextIndex++
 	}
 
-	gui.handleServiceSelect(gui.g, v)
+	_ = gui.handleServiceSelect(gui.g, v)
 
 	return nil
 }
@@ -183,7 +183,7 @@ func (gui *Gui) handleServicesPrevContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Services.ContextIndex--
 	}
 
-	gui.handleServiceSelect(gui.g, v)
+	_ = gui.handleServiceSelect(gui.g, v)
 
 	return nil
 }

@@ -152,7 +152,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	}
 
 	_, _ = g.SetViewOnBottom("limit")
-	g.DeleteView("limit")
+	_ = g.DeleteView("limit")
 
 	v, err := g.SetView("main", leftSideWidth+1, 0, width-1, height-2, gocui.LEFT)
 	if err != nil {

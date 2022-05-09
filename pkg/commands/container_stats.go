@@ -56,10 +56,9 @@ type ContainerStats struct {
 		IoTimeRecursive        []interface{} `json:"io_time_recursive"`
 		SectorsRecursive       []interface{} `json:"sectors_recursive"`
 	} `json:"blkio_stats"`
-	NumProcs     int `json:"num_procs"`
-	StorageStats struct {
-	} `json:"storage_stats"`
-	CPUStats struct {
+	NumProcs     int      `json:"num_procs"`
+	StorageStats struct{} `json:"storage_stats"`
+	CPUStats     struct {
 		CPUUsage struct {
 			TotalUsage        int64   `json:"total_usage"`
 			PercpuUsage       []int64 `json:"percpu_usage"`
@@ -161,7 +160,6 @@ func (s *ContainerStats) CalculateContainerCPUPercentage() float64 {
 
 // CalculateContainerMemoryUsage calculates the memory usage of the container as a percent of total available memory
 func (s *ContainerStats) CalculateContainerMemoryUsage() float64 {
-
 	value := float64(s.MemoryStats.Usage*100) / float64(s.MemoryStats.Limit)
 	if math.IsNaN(value) {
 		return 0

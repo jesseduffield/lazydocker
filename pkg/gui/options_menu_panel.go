@@ -9,9 +9,7 @@ import (
 )
 
 func (gui *Gui) getBindings(v *gocui.View) []*Binding {
-	var (
-		bindingsGlobal, bindingsPanel []*Binding
-	)
+	var bindingsGlobal, bindingsPanel []*Binding
 
 	bindings := gui.GetInitialKeybindings()
 

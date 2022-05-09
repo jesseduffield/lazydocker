@@ -120,7 +120,7 @@ func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 		}
 	}
 	return gui.T.NewTask(func(stop chan struct{}) {
-		gui.renderString(gui.g, "main", renderedTable)
+		_ = gui.renderString(gui.g, "main", renderedTable)
 	})
 }
 
@@ -170,7 +170,7 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 	output += fmt.Sprintf("\nFull details:\n\n%s", string(data))
 
 	return gui.T.NewTask(func(stop chan struct{}) {
-		gui.renderString(gui.g, "main", output)
+		_ = gui.renderString(gui.g, "main", output)
 	})
 }
 
@@ -184,10 +184,10 @@ func (gui *Gui) renderContainerStats(container *commands.Container) error {
 
 		contents, err := container.RenderStats(width)
 		if err != nil {
-			gui.createErrorPanel(gui.g, err.Error())
+			_ = gui.createErrorPanel(gui.g, err.Error())
 		}
 
-		gui.reRenderString(gui.g, "main", contents)
+		_ = gui.reRenderString(gui.g, "main", contents)
 	})
 }
 
@@ -199,10 +199,10 @@ func (gui *Gui) renderContainerTop(container *commands.Container) error {
 	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
 		contents, err := container.RenderTop()
 		if err != nil {
-			gui.reRenderString(gui.g, "main", err.Error())
+			_ = gui.reRenderString(gui.g, "main", err.Error())
 		}
 
-		gui.reRenderString(gui.g, "main", contents)
+		_ = gui.reRenderString(gui.g, "main", contents)
 	})
 }
 
@@ -234,7 +234,7 @@ func (gui *Gui) renderContainerLogsAux(container *commands.Container, stop, noti
 	cmd.Stdout = mainView
 	cmd.Stderr = mainView
 
-	cmd.Start()
+	_ = cmd.Start()
 
 	go func() {
 		<-stop
@@ -245,7 +245,7 @@ func (gui *Gui) renderContainerLogsAux(container *commands.Container, stop, noti
 		return
 	}()
 
-	cmd.Wait()
+	_ = cmd.Wait()
 
 	// if we are here because the task has been stopped, we should return
 	// if we are here then the container must have exited, meaning we should wait until it's back again before
@@ -389,7 +389,7 @@ func (gui *Gui) handleContainersNextContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Containers.ContextIndex++
 	}
 
-	gui.handleContainerSelect(gui.g, v)
+	_ = gui.handleContainerSelect(gui.g, v)
 
 	return nil
 }
@@ -402,7 +402,7 @@ func (gui *Gui) handleContainersPrevContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Containers.ContextIndex--
 	}
 
-	gui.handleContainerSelect(gui.g, v)
+	_ = gui.handleContainerSelect(gui.g, v)
 
 	return nil
 }

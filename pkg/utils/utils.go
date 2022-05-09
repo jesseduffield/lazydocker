@@ -269,7 +269,7 @@ func FormatDecimalBytes(b int) string {
 
 func ApplyTemplate(str string, object interface{}) string {
 	var buf bytes.Buffer
-	template.Must(template.New("").Parse(str)).Execute(&buf, object)
+	_ = template.Must(template.New("").Parse(str)).Execute(&buf, object)
 	return buf.String()
 }
 

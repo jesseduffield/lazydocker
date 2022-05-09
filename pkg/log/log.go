@@ -43,7 +43,7 @@ func getLogLevel() logrus.Level {
 func newDevelopmentLogger(config *config.AppConfig) *logrus.Logger {
 	log := logrus.New()
 	log.SetLevel(getLogLevel())
-	file, err := os.OpenFile(filepath.Join(config.ConfigDir, "development.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	file, err := os.OpenFile(filepath.Join(config.ConfigDir, "development.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
 	if err != nil {
 		fmt.Println("unable to log to file")
 		os.Exit(1)

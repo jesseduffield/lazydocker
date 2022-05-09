@@ -99,7 +99,7 @@ func (gui *Gui) renderVolumeConfig(mainView *gocui.View, volume *commands.Volume
 			output += utils.WithPadding("Size: ", padding) + utils.FormatBinaryBytes(int(volume.Volume.UsageData.Size)) + "\n"
 		}
 
-		gui.renderString(gui.g, "main", output)
+		_ = gui.renderString(gui.g, "main", output)
 	})
 }
 
@@ -168,7 +168,7 @@ func (gui *Gui) handleVolumesNextContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Volumes.ContextIndex++
 	}
 
-	gui.handleVolumeSelect(gui.g, v)
+	_ = gui.handleVolumeSelect(gui.g, v)
 
 	return nil
 }
@@ -181,7 +181,7 @@ func (gui *Gui) handleVolumesPrevContext(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Panels.Volumes.ContextIndex--
 	}
 
-	gui.handleVolumeSelect(gui.g, v)
+	_ = gui.handleVolumeSelect(gui.g, v)
 
 	return nil
 }

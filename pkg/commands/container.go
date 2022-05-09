@@ -83,13 +83,11 @@ type Details struct {
 		Binds           []string `json:"Binds"`
 		ContainerIDFile string   `json:"ContainerIDFile"`
 		LogConfig       struct {
-			Type   string `json:"Type"`
-			Config struct {
-			} `json:"Config"`
+			Type   string   `json:"Type"`
+			Config struct{} `json:"Config"`
 		} `json:"LogConfig"`
-		NetworkMode  string `json:"NetworkMode"`
-		PortBindings struct {
-		} `json:"PortBindings"`
+		NetworkMode   string   `json:"NetworkMode"`
+		PortBindings  struct{} `json:"PortBindings"`
 		RestartPolicy struct {
 			Name              string `json:"Name"`
 			MaximumRetryCount int    `json:"MaximumRetryCount"`
@@ -185,10 +183,8 @@ type Details struct {
 		Cmd          []string `json:"Cmd"`
 		Image        string   `json:"Image"`
 		Volumes      struct {
-			APIBundle struct {
-			} `json:"/api-bundle"`
-			App struct {
-			} `json:"/app"`
+			APIBundle struct{} `json:"/api-bundle"`
+			App       struct{} `json:"/app"`
 		} `json:"Volumes"`
 		WorkingDir string            `json:"WorkingDir"`
 		Entrypoint interface{}       `json:"Entrypoint"`

@@ -190,7 +190,7 @@ func (c *OSCommand) Unquote(message string) string {
 
 // AppendLineToFile adds a new line in file
 func (c *OSCommand) AppendLineToFile(filename, line string) error {
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o600)
 	if err != nil {
 		return WrapError(err)
 	}
@@ -272,7 +272,6 @@ func (c *OSCommand) RunCustomCommand(command string) *exec.Cmd {
 
 // PipeCommands runs a heap of commands and pipes their inputs/outputs together like A | B | C
 func (c *OSCommand) PipeCommands(commandStrings ...string) error {
-
 	cmds := make([]*exec.Cmd, len(commandStrings))
 
 	for i, str := range commandStrings {
