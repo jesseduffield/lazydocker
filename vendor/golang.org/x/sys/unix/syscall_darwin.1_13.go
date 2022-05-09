@@ -2,17 +2,22 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build darwin && go1.13
 // +build darwin,go1.13
 
 package unix
 
-import "unsafe"
+import (
+	"unsafe"
+
+	"golang.org/x/sys/internal/unsafeheader"
+)
 
 //sys	closedir(dir uintptr) (err error)
 //sys	readdir_r(dir uintptr, entry *Dirent, result **Dirent) (res Errno)
 
 func fdopendir(fd int) (dir uintptr, err error) {
-	r0, _, e1 := syscall_syscallPtr(funcPC(libc_fdopendir_trampoline), uintptr(fd), 0, 0)
+	r0, _, e1 := syscall_syscallPtr(libc_fdopendir_trampoline_addr, uintptr(fd), 0, 0)
 	dir = uintptr(r0)
 	if e1 != 0 {
 		err = errnoErr(e1)
@@ -20,9 +25,8 @@ func fdopendir(fd int) (dir uintptr, err error) {
 	return
 }
 
-func libc_fdopendir_trampoline()
+var libc_fdopendir_trampoline_addr uintptr
 
-//go:linkname libc_fdopendir libc_fdopendir
 //go:cgo_import_dynamic libc_fdopendir fdopendir "/usr/lib/libSystem.B.dylib"
 
 func Getdirentries(fd int, buf []byte, basep *uintptr) (n int, err error) {
@@ -71,6 +75,7 @@ func Getdirentries(fd int, buf []byte, basep *uintptr) (n int, err error) {
 			cnt++
 			continue
 		}
+
 		reclen := int(entry.Reclen)
 		if reclen > len(buf) {
 			// Not enough room. Return for now.
@@ -79,13 +84,15 @@ func Getdirentries(fd int, buf []byte, basep *uintptr) (n int, err error) {
 			// restarting is O(n^2) in the length of the directory. Oh well.
 			break
 		}
+
 		// Copy entry into return buffer.
-		s := struct {
-			ptr unsafe.Pointer
-			siz int
-			cap int
-		}{ptr: unsafe.Pointer(&entry), siz: reclen, cap: reclen}
-		copy(buf, *(*[]byte)(unsafe.Pointer(&s)))
+		var s []byte
+		hdr := (*unsafeheader.Slice)(unsafe.Pointer(&s))
+		hdr.Data = unsafe.Pointer(&entry)
+		hdr.Cap = reclen
+		hdr.Len = reclen
+		copy(buf, s)
+
 		buf = buf[reclen:]
 		n += reclen
 		cnt++
