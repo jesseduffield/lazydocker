@@ -1,0 +1,99 @@
+name: Continuous Integration
+
+env:
+  GO_VERSION: 1.18
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  ci:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    name: ci - ${{matrix.os}}
+    runs-on: ${{matrix.os}}
+    env:
+      GOFLAGS: -mod=vendor
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.18.x
+      - name: Cache build
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/go-build
+          key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-test
+          restore-keys: |
+            ${{runner.os}}-go-
+      - name: Test code
+        run: |
+          bash ./test.sh
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GOFLAGS: -mod=vendor
+      GOARCH: amd64
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.18.x
+      - name: Cache build
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/go-build
+          key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-build
+          restore-keys: |
+            ${{runner.os}}-go-
+      - name: Build linux binary
+        run: |
+          GOOS=linux go build
+      - name: Build windows binary
+        run: |
+          GOOS=windows go build
+      - name: Build darwin binary
+        run: |
+          GOOS=darwin go build
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      GOFLAGS: -mod=vendor
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.18.x
+      - name: Cache build
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/go-build
+          key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-test
+          restore-keys: |
+            ${{runner.os}}-go-
+      - name: Lint
+        uses: golangci/golangci-lint-action@v3.1.0
+        with:
+          version: latest
+      - name: Format code
+        run: |
+          if [ $(find . ! -path "./vendor/*" -name "*.go" -exec gofmt -s -d {} \;|wc -l) -gt 0 ]; then
+           find . ! -path "./vendor/*" -name "*.go" -exec gofmt -s -d {} \;
+           exit 1
+          fi
+      - name: errors
+        run: golangci-lint run
+        if: ${{ failure() }}
