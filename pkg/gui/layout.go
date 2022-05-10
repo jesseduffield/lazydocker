@@ -256,10 +256,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			return err
 		}
 
-		// doing this here because it'll only happen once
-		if err := gui.loadNewDirectory(); err != nil {
-			return err
-		}
+		gui.waitForIntro.Done()
 	}
 
 	if gui.g.CurrentView() == nil {

@@ -240,7 +240,7 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 			return gui.createErrorPanel(gui.g, cerr.Error())
 		}
 
-		return gui.refreshImages()
+		return nil
 	}
 
 	return gui.createMenu("", options, len(options), handleMenuPress)

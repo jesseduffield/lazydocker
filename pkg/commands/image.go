@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"sort"
 	"strings"
 
 	"github.com/docker/docker/api/types/image"
@@ -110,8 +111,6 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 	ownImages := make([]*Image, len(images))
 
 	for i, image := range images {
-		// func (cli *Client) ImageHistory(ctx context.Context, imageID string) ([]image.HistoryResponseItem, error)
-
 		firstTag := ""
 		tags := image.RepoTags
 		if len(tags) > 0 {
@@ -137,6 +136,20 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 			DockerCommand: c,
 		}
 	}
+
+	noneLabel := "<none>"
+
+	sort.Slice(ownImages, func(i, j int) bool {
+		if ownImages[i].Name == noneLabel && ownImages[j].Name != noneLabel {
+			return false
+		}
+
+		if ownImages[i].Name != noneLabel && ownImages[j].Name == noneLabel {
+			return true
+		}
+
+		return ownImages[i].Name < ownImages[j].Name
+	})
 
 	return ownImages, nil
 }

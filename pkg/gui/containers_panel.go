@@ -461,16 +461,13 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 					return gui.createConfirmationPanel(gui.g, v, gui.Tr.Confirm, gui.Tr.MustForceToRemoveContainer, func(g *gocui.Gui, v *gocui.View) error {
 						return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 							configOptions.Force = true
-							if err := container.Remove(configOptions); err != nil {
-								return err
-							}
-							return gui.refreshContainersAndServices()
+							return container.Remove(configOptions)
 						})
 					}, nil)
 				}
 				return gui.createErrorPanel(gui.g, err.Error())
 			}
-			return gui.refreshContainersAndServices()
+			return nil
 		})
 	}
 
@@ -489,7 +486,7 @@ func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
 				return gui.createErrorPanel(gui.g, err.Error())
 			}
 
-			return gui.refreshContainersAndServices()
+			return nil
 		})
 	}, nil)
 }
@@ -505,7 +502,7 @@ func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
 			return gui.createErrorPanel(gui.g, err.Error())
 		}
 
-		return gui.refreshContainersAndServices()
+		return nil
 	})
 }
 
