@@ -10,15 +10,6 @@ import (
 	"github.com/spkg/bom"
 )
 
-func (gui *Gui) refreshSidePanels(g *gocui.Gui) error {
-	// not refreshing containers and services here given that we do it every few milliseconds anyway
-	if err := gui.refreshImages(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 	var focusedViewName string
 	if v == nil || v.Name() == gui.CyclableViews[len(gui.CyclableViews)-1] {

@@ -183,16 +183,6 @@ func max(a, b int) int {
 	return b
 }
 
-func (gui *Gui) loadNewDirectory() error {
-	gui.waitForIntro.Done()
-
-	if err := gui.refreshSidePanels(gui.g); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (gui *Gui) renderGlobalOptions() error {
 	return gui.renderOptionsMap(map[string]string{
 		"PgUp/PgDn": gui.Tr.Scroll,
@@ -293,13 +283,22 @@ func (gui *Gui) rerenderContainersAndServices() error {
 }
 
 func (gui *Gui) refresh() {
-	gui.refreshProject()
-	if err := gui.refreshContainersAndServices(); err != nil {
-		gui.Log.Error(err)
-	}
-	if err := gui.refreshVolumes(); err != nil {
-		gui.Log.Error(err)
-	}
+	go gui.refreshProject()
+	go func() {
+		if err := gui.refreshContainersAndServices(); err != nil {
+			gui.Log.Error(err)
+		}
+	}()
+	go func() {
+		if err := gui.refreshVolumes(); err != nil {
+			gui.Log.Error(err)
+		}
+	}()
+	go func() {
+		if err := gui.refreshImages(); err != nil {
+			gui.Log.Error(err)
+		}
+	}()
 }
 
 func (gui *Gui) listenForEvents(finish chan struct{}, refresh func()) {

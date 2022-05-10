@@ -231,7 +231,7 @@ func (gui *Gui) handleServiceStop(g *gocui.Gui, v *gocui.View) error {
 				return gui.createErrorPanel(gui.g, err.Error())
 			}
 
-			return gui.refreshContainersAndServices()
+			return nil
 		})
 	}, nil)
 }
@@ -247,7 +247,7 @@ func (gui *Gui) handleServiceRestart(g *gocui.Gui, v *gocui.View) error {
 			return gui.createErrorPanel(gui.g, err.Error())
 		}
 
-		return gui.refreshContainersAndServices()
+		return nil
 	})
 }
 
