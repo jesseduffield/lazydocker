@@ -54,8 +54,52 @@ github.com/docker/go-units
 # github.com/fatih/color v1.7.0
 ## explicit
 github.com/fatih/color
-# github.com/go-errors/errors v1.0.1
-## explicit
+# github.com/gdamore/encoding v1.0.0
+## explicit; go 1.9
+github.com/gdamore/encoding
+# github.com/gdamore/tcell/v2 v2.5.1
+## explicit; go 1.12
+github.com/gdamore/tcell/v2
+github.com/gdamore/tcell/v2/terminfo
+github.com/gdamore/tcell/v2/terminfo/a/aixterm
+github.com/gdamore/tcell/v2/terminfo/a/alacritty
+github.com/gdamore/tcell/v2/terminfo/a/ansi
+github.com/gdamore/tcell/v2/terminfo/b/beterm
+github.com/gdamore/tcell/v2/terminfo/base
+github.com/gdamore/tcell/v2/terminfo/c/cygwin
+github.com/gdamore/tcell/v2/terminfo/d/dtterm
+github.com/gdamore/tcell/v2/terminfo/dynamic
+github.com/gdamore/tcell/v2/terminfo/e/emacs
+github.com/gdamore/tcell/v2/terminfo/extended
+github.com/gdamore/tcell/v2/terminfo/f/foot
+github.com/gdamore/tcell/v2/terminfo/g/gnome
+github.com/gdamore/tcell/v2/terminfo/h/hpterm
+github.com/gdamore/tcell/v2/terminfo/k/konsole
+github.com/gdamore/tcell/v2/terminfo/k/kterm
+github.com/gdamore/tcell/v2/terminfo/l/linux
+github.com/gdamore/tcell/v2/terminfo/p/pcansi
+github.com/gdamore/tcell/v2/terminfo/r/rxvt
+github.com/gdamore/tcell/v2/terminfo/s/screen
+github.com/gdamore/tcell/v2/terminfo/s/simpleterm
+github.com/gdamore/tcell/v2/terminfo/s/sun
+github.com/gdamore/tcell/v2/terminfo/t/termite
+github.com/gdamore/tcell/v2/terminfo/t/tmux
+github.com/gdamore/tcell/v2/terminfo/v/vt100
+github.com/gdamore/tcell/v2/terminfo/v/vt102
+github.com/gdamore/tcell/v2/terminfo/v/vt220
+github.com/gdamore/tcell/v2/terminfo/v/vt320
+github.com/gdamore/tcell/v2/terminfo/v/vt400
+github.com/gdamore/tcell/v2/terminfo/v/vt420
+github.com/gdamore/tcell/v2/terminfo/v/vt52
+github.com/gdamore/tcell/v2/terminfo/w/wy50
+github.com/gdamore/tcell/v2/terminfo/w/wy60
+github.com/gdamore/tcell/v2/terminfo/w/wy99_ansi
+github.com/gdamore/tcell/v2/terminfo/x/xfce
+github.com/gdamore/tcell/v2/terminfo/x/xterm
+github.com/gdamore/tcell/v2/terminfo/x/xterm_kitty
+github.com/gdamore/tcell/v2/terminfo/x/xterm_termite
+# github.com/go-errors/errors v1.4.2
+## explicit; go 1.14
 github.com/go-errors/errors
 # github.com/gogo/protobuf v1.3.1
 ## explicit
@@ -65,6 +109,9 @@ github.com/gogo/protobuf/proto
 github.com/golang-collections/collections/stack
 # github.com/google/go-cmp v0.3.0
 ## explicit; go 1.8
+# github.com/gookit/color v1.5.0
+## explicit; go 1.13
+github.com/gookit/color
 # github.com/gorilla/mux v1.7.3
 ## explicit
 # github.com/imdario/mergo v0.3.8
@@ -76,25 +123,25 @@ github.com/integrii/flaggy
 # github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee
 ## explicit
 github.com/jesseduffield/asciigraph
-# github.com/jesseduffield/gocui v0.3.1-0.20200201013258-57fdcf23edc5
-## explicit
+# github.com/jesseduffield/gocui v0.3.1-0.20220417002912-bce22fd599f6
+## explicit; go 1.12
 github.com/jesseduffield/gocui
-# github.com/jesseduffield/termbox-go v0.0.0-20200130214842-1d31d1faa3c9
-## explicit
-github.com/jesseduffield/termbox-go
 # github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56
 ## explicit
 github.com/jesseduffield/yaml
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 ## explicit
 github.com/konsorten/go-windows-terminal-sequences
+# github.com/lucasb-eyer/go-colorful v1.2.0
+## explicit; go 1.12
+github.com/lucasb-eyer/go-colorful
 # github.com/mattn/go-colorable v0.1.4
 ## explicit
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.11
 ## explicit; go 1.12
 github.com/mattn/go-isatty
-# github.com/mattn/go-runewidth v0.0.8
+# github.com/mattn/go-runewidth v0.0.13
 ## explicit; go 1.9
 github.com/mattn/go-runewidth
 # github.com/mcuadros/go-lookup v0.0.0-20171110082742-5650f26be767
@@ -122,6 +169,9 @@ github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
 github.com/pmezard/go-difflib/difflib
+# github.com/rivo/uniseg v0.2.0
+## explicit; go 1.12
+github.com/rivo/uniseg
 # github.com/samber/lo v1.20.0
 ## explicit; go 1.18
 github.com/samber/lo
@@ -134,6 +184,9 @@ github.com/spkg/bom
 # github.com/stretchr/testify v1.7.0
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
+# github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778
+## explicit; go 1.15
+github.com/xo/terminfo
 # golang.org/x/exp v0.0.0-20220428152302-39d4317da171
 ## explicit; go 1.18
 golang.org/x/exp/constraints
@@ -144,10 +197,17 @@ golang.org/x/net/proxy
 # golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6
 ## explicit; go 1.17
 golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
+# golang.org/x/term v0.0.0-20220411215600-e5f449aeb171
+## explicit; go 1.17
+golang.org/x/term
 # golang.org/x/text v0.3.7
 ## explicit; go 1.17
+golang.org/x/text/encoding
+golang.org/x/text/encoding/internal/identifier
+golang.org/x/text/transform
 # golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 ## explicit
 # golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1

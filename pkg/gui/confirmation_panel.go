@@ -32,7 +32,7 @@ func (gui *Gui) closeConfirmationPrompt(g *gocui.Gui) error {
 	if err := gui.returnFocus(g, view); err != nil {
 		panic(err)
 	}
-	g.DeleteKeybindings("confirmation")
+	g.DeleteViewKeybindings("confirmation")
 	return g.DeleteView("confirmation")
 }
 

@@ -223,7 +223,7 @@ func (gui *Gui) Run() error {
 	// closing our task manager which in turn closes the current task if there is any, so we aren't leaving processes lying around after closing lazydocker
 	defer gui.T.Close()
 
-	g, err := gocui.NewGui(gocui.OutputNormal, OverlappingEdges)
+	g, err := gocui.NewGui(gocui.OutputTrue, OverlappingEdges, gocui.NORMAL, false, map[rune]string{})
 	if err != nil {
 		return err
 	}
