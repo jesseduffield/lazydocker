@@ -26,6 +26,7 @@ func turkishSet() TranslationSet {
 		Execute:            "çalıştır",
 		Close:              "kapat",
 		Menu:               "menü",
+		MenuTitle:          "Menü",
 		Scroll:             "kaydır",
 		OpenConfig:         "lazydocker ayarlarını aç",
 		EditConfig:         "lazzydocker ayarlarını düzenle",

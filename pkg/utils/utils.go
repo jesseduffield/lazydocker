@@ -379,3 +379,11 @@ func CloseMany(closers []io.Closer) error {
 	}
 	return nil
 }
+
+func SafeTruncate(str string, limit int) string {
+	if len(str) > limit {
+		return str[0:limit]
+	} else {
+		return str
+	}
+}

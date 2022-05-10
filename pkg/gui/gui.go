@@ -360,7 +360,7 @@ func (gui *Gui) handleDonate(g *gocui.Gui, v *gocui.View) error {
 	if cx > len(gui.Tr.Donate) {
 		return nil
 	}
-	return gui.OSCommand.OpenLink("https://donorbox.org/lazydocker")
+	return gui.OSCommand.OpenLink("https://github.com/sponsors/jesseduffield")
 }
 
 func (gui *Gui) editFile(filename string) error {

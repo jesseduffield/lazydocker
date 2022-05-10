@@ -26,6 +26,7 @@ func polishSet() TranslationSet {
 		Execute:            "wykonaj",
 		Close:              "zamknij",
 		Menu:               "menu",
+		MenuTitle:          "Menu",
 		Scroll:             "przewiń",
 		OpenConfig:         "otwórz konfigurację",
 		EditConfig:         "edytuj konfigurację",

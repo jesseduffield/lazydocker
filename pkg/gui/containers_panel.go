@@ -242,7 +242,6 @@ func (gui *Gui) renderContainerLogsAux(container *commands.Container, stop, noti
 			gui.Log.Warn(err)
 		}
 		gui.Log.Info("killed container logs process")
-		return
 	}()
 
 	_ = cmd.Wait()
@@ -411,7 +410,6 @@ type removeContainerOption struct {
 	description   string
 	command       string
 	configOptions types.ContainerRemoveOptions
-	runCommand    bool
 }
 
 // GetDisplayStrings is a function.

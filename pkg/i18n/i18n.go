@@ -12,9 +12,8 @@ import (
 
 // Localizer will translate a message into the user's language
 type Localizer struct {
-	language string
-	Log      *logrus.Entry
-	S        TranslationSet
+	Log *logrus.Entry
+	S   TranslationSet
 }
 
 func NewTranslationSetFromConfig(log *logrus.Entry, configLanguage string) (*TranslationSet, error) {

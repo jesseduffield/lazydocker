@@ -8,6 +8,7 @@ type TranslationSet struct {
 	GlobalTitle                                string
 	Navigate                                   string
 	Menu                                       string
+	MenuTitle                                  string
 	Execute                                    string
 	Scroll                                     string
 	Close                                      string
@@ -127,6 +128,7 @@ func englishSet() TranslationSet {
 		Execute:               "execute",
 		Close:                 "close",
 		Menu:                  "menu",
+		MenuTitle:             "Menu",
 		Scroll:                "scroll",
 		OpenConfig:            "open lazydocker config",
 		EditConfig:            "edit lazydocker config",

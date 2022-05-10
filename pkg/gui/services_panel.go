@@ -126,11 +126,6 @@ func (gui *Gui) renderServiceTop(service *commands.Service) error {
 }
 
 func (gui *Gui) renderServiceLogs(service *commands.Service) error {
-	service, err := gui.getSelectedService()
-	if err != nil {
-		return nil
-	}
-
 	if service.Container == nil {
 		return gui.T.NewTask(func(stop chan struct{}) {
 			gui.clearMainView()

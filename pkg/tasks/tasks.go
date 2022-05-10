@@ -10,14 +10,12 @@ import (
 )
 
 type TaskManager struct {
-	waitingTask       *Task
-	currentTask       *Task
-	waitingMutex      sync.Mutex
-	taskIDMutex       sync.Mutex
-	Log               *logrus.Entry
-	Tr                *i18n.TranslationSet
-	waitingTaskAlerts chan struct{}
-	newTaskId         int
+	currentTask  *Task
+	waitingMutex sync.Mutex
+	taskIDMutex  sync.Mutex
+	Log          *logrus.Entry
+	Tr           *i18n.TranslationSet
+	newTaskId    int
 }
 
 type Task struct {
@@ -104,7 +102,6 @@ func (t *Task) Stop() {
 	<-t.notifyStopped
 	t.Log.Info("received notifystopped message")
 	t.stopped = true
-	return
 }
 
 // NewTickerTask is a convenience function for making a new task that repeats some action once per e.g. second

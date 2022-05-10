@@ -199,7 +199,6 @@ func (gui *Gui) focusPoint(selectedX int, selectedY int, lineCount int, v *gocui
 	if originalCy != cy {
 		_ = v.SetCursor(cx, selectedY-oy)
 	}
-	return
 }
 
 func (gui *Gui) cleanString(s string) string {
