@@ -302,8 +302,38 @@ func (gui *Gui) refresh() {
 }
 
 func (gui *Gui) listenForEvents(finish chan struct{}, refresh func()) {
+	errorCount := 0
+
+	onError := func(err error) {
+		if err != nil {
+			gui.ErrorChan <- errors.Errorf("Docker event stream returned error: %s\nRetry count: %d", err.Error(), errorCount)
+		}
+		errorCount++
+		time.Sleep(time.Second * 2)
+	}
+
+outer:
 	for {
 		messageChan, errChan := gui.DockerCommand.Client.Events(context.Background(), types.EventsOptions{})
+
+		if errorCount > 0 {
+			select {
+			case err := <-errChan:
+				onError(err)
+				continue outer
+			default:
+				// If we're here then we lost connection to docker and we just got it back.
+				// The reason we do this refresh explicitly is because successfully
+				// reconnecting with docker does not mean it's going to send us a new
+				// event any time soon.
+
+				// Assuming the confirmation prompt currently holds the given error
+				_ = gui.closeConfirmationPrompt()
+				refresh()
+				errorCount = 0
+			}
+		}
+
 		for {
 			select {
 			case <-finish:
@@ -316,8 +346,8 @@ func (gui *Gui) listenForEvents(finish chan struct{}, refresh func()) {
 
 				gui.Log.Infof("received event of type: %s", message.Type)
 			case err := <-errChan:
-				gui.ErrorChan <- errors.Errorf("Docker event stream returned error: %s", err.Error())
-				break
+				onError(err)
+				continue outer
 			}
 		}
 	}

@@ -130,37 +130,44 @@ func (c *DockerCommand) MonitorContainerStats() {
 
 // MonitorCLIContainerStats monitors a stream of container stats and updates the containers as each new stats object is received
 func (c *DockerCommand) MonitorCLIContainerStats() {
-	command := `docker stats --all --no-trunc --format '{{json .}}'`
-	cmd := c.OSCommand.RunCustomCommand(command)
-
-	r, err := cmd.StdoutPipe()
-	if err != nil {
+	onError := func(err error) {
 		c.ErrorChan <- err
-		return
+		time.Sleep(2 * time.Second)
 	}
 
-	_ = cmd.Start()
+	for {
+		command := `docker stats --all --no-trunc --format '{{json .}}'`
+		cmd := c.OSCommand.RunCustomCommand(command)
 
-	scanner := bufio.NewScanner(r)
-	scanner.Split(bufio.ScanLines)
-	for scanner.Scan() {
-		var stats ContainerCliStat
-		// need to strip ANSI codes because uses escape sequences to clear the screen with each refresh
-		cleanString := stripansi.Strip(scanner.Text())
-		if err := json.Unmarshal([]byte(cleanString), &stats); err != nil {
-			c.ErrorChan <- err
-			return
+		r, err := cmd.StdoutPipe()
+		if err != nil {
+			onError(err)
+			continue
 		}
-		c.ContainerMutex.Lock()
-		for _, container := range c.Containers {
-			if container.ID == stats.ID {
-				container.CLIStats = stats
+
+		_ = cmd.Start()
+
+		scanner := bufio.NewScanner(r)
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+			var stats ContainerCliStat
+			// need to strip ANSI codes because uses escape sequences to clear the screen with each refresh
+			cleanString := stripansi.Strip(scanner.Text())
+			if err := json.Unmarshal([]byte(cleanString), &stats); err != nil {
+				onError(err)
+				continue
 			}
+			c.ContainerMutex.Lock()
+			for _, container := range c.Containers {
+				if container.ID == stats.ID {
+					container.CLIStats = stats
+				}
+			}
+			c.ContainerMutex.Unlock()
 		}
-		c.ContainerMutex.Unlock()
-	}
 
-	_ = cmd.Wait()
+		_ = cmd.Wait()
+	}
 }
 
 // MonitorClientContainerStats is a function
