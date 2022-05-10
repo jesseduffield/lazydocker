@@ -146,6 +146,8 @@ golang.org/x/net/proxy
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
+# golang.org/x/text v0.3.7
+## explicit; go 1.17
 # golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 ## explicit
 # golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1

@@ -26,6 +26,7 @@ func dutchSet() TranslationSet {
 		Execute:            "voer uit",
 		Close:              "sluit",
 		Menu:               "menu",
+		MenuTitle:          "Menu",
 		Scroll:             "scroll",
 		OpenConfig:         "open de lazydocker configuratie",
 		EditConfig:         "verander de lazydocker configuratie",

@@ -97,7 +97,7 @@ func main() {
 		stackTrace := newErr.ErrorStack()
 		app.Log.Error(stackTrace)
 
-		log.Fatal(fmt.Sprintf("%s\n\n%s", app.Tr.ErrorOccurred, stackTrace))
+		log.Fatalf("%s\n\n%s", app.Tr.ErrorOccurred, stackTrace)
 	}
 }
 
