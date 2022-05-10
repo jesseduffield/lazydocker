@@ -62,7 +62,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	g.Highlight = true
 	width, height := g.Size()
 
-	information := "lazydocker " + gui.Config.Version
+	information := gui.Config.Version
 	if gui.g.Mouse {
 		donate := color.New(color.FgMagenta, color.Underline).Sprint(gui.Tr.Donate)
 		information = donate + " " + information
