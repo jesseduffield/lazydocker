@@ -419,6 +419,11 @@ func (r *removeContainerOption) GetDisplayStrings(isFocused bool) []string {
 
 func (gui *Gui) handleHideStoppedContainers(g *gocui.Gui, v *gocui.View) error {
 	gui.DockerCommand.ShowExited = !gui.DockerCommand.ShowExited
+
+	if err := gui.refreshContainersAndServices(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
