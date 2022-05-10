@@ -134,7 +134,7 @@ func englishSet() TranslationSet {
 		EditConfig:            "edit lazydocker config",
 		Cancel:                "cancel",
 		Remove:                "remove",
-		HideStopped:           "Hide/Show stopped containers",
+		HideStopped:           "hide/show stopped containers",
 		ForceRemove:           "force remove",
 		RemoveWithVolumes:     "remove with volumes",
 		RemoveService:         "remove containers",
