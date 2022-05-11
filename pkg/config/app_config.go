@@ -339,16 +339,10 @@ func GetDefaultConfig() UserConfig {
 			ViewContainerLogs:        "docker logs --timestamps --follow --since=60m {{ .Container.ID }}",
 		},
 		CustomCommands: CustomCommands{
-			Containers: []CustomCommand{
-				{
-					Name:    "bash",
-					Command: "docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'",
-					Attach:  true,
-				},
-			},
-			Services: []CustomCommand{},
-			Images:   []CustomCommand{},
-			Volumes:  []CustomCommand{},
+			Containers: []CustomCommand{},
+			Services:   []CustomCommand{},
+			Images:     []CustomCommand{},
+			Volumes:    []CustomCommand{},
 		},
 		BulkCommands: CustomCommands{
 			Services: []CustomCommand{

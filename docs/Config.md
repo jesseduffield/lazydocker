@@ -46,12 +46,6 @@ commandTemplates:
   dockerComposeConfig: '{{ .DockerCompose }} config'
   checkDockerComposeConfig: '{{ .DockerCompose }} config --quiet'
   serviceTop: '{{ .DockerCompose }} top {{ .Service.Name }}'
-customCommands:
-  containers:
-    - name: bash
-      attach: true
-      command: "docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'"
-      serviceNames: []
 oS:
   openCommand: open {{filename}}
   openLinkCommand: open {{link}}
@@ -84,3 +78,16 @@ The available attributes are:
 - bold
 - reverse # useful for high-contrast
 - underline
+
+## Custom Commands
+
+You can add custom commands like so:
+
+```yaml
+customCommands:
+  containers:
+    - name: bash
+      attach: true
+      command: 'docker exec -it {{ .Container.ID }} bash'
+      serviceNames: []
+```
