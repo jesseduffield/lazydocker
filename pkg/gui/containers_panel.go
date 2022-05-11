@@ -1,12 +1,14 @@
 package gui
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
@@ -230,33 +232,33 @@ func (gui *Gui) renderContainerLogs(container *commands.Container) error {
 
 func (gui *Gui) renderContainerLogsAux(container *commands.Container, stop, notifyStopped chan struct{}) {
 	gui.clearMainView()
-
-	command := utils.ApplyTemplate(
-		gui.Config.UserConfig.CommandTemplates.ContainerLogs,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{Container: container}),
-	)
-	cmd := gui.OSCommand.RunCustomCommand(command)
-
-	// Ensure the child process is treated as a group, as the child process spawns
-	// its own children. Termination requires sending the signal to the group
-	// process ID.
-	gui.OSCommand.PrepareForChildren(cmd)
-
-	mainView := gui.getMainView()
-	cmd.Stdout = mainView
-	cmd.Stderr = mainView
-
-	_ = cmd.Start()
-
-	go func() {
-		<-stop
-		if err := gui.OSCommand.Kill(cmd); err != nil {
-			gui.Log.Warn(err)
-		}
-		gui.Log.Info("killed container logs process")
+	defer func() {
+		notifyStopped <- struct{}{}
 	}()
 
-	_ = cmd.Wait()
+	ctx, ctxCancel := context.WithCancel(context.Background())
+	go func() {
+		<-stop
+		ctxCancel()
+	}()
+
+	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, container.ID, types.ContainerLogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
+		Since:      gui.Config.UserConfig.Logs.Since,
+	})
+	if err != nil {
+		gui.Log.Error(err)
+		return
+	}
+
+	mainView := gui.getMainView()
+
+	_, err = stdcopy.StdCopy(mainView, mainView, readCloser)
+	if err != nil {
+		gui.Log.Error(err)
+	}
 
 	// if we are here because the task has been stopped, we should return
 	// if we are here then the container must have exited, meaning we should wait until it's back again before
@@ -271,7 +273,6 @@ func (gui *Gui) renderContainerLogsAux(container *commands.Container, stop, noti
 			if err != nil {
 				// if we get an error, then the container has probably been removed so we'll get out of here
 				gui.Log.Error(err)
-				notifyStopped <- struct{}{}
 				return
 			}
 			if result.State.Running {

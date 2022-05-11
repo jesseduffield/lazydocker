@@ -28,6 +28,9 @@ gui:
       - blue
   returnImmediately: false
   wrapMainPanel: false
+logs:
+  timestamps: true
+  since: '60m'
 commandTemplates:
   dockerCompose: docker-compose
   restartService: '{{ .DockerCompose }} restart {{ .Service.Name }}'
@@ -39,7 +42,6 @@ commandTemplates:
   viewContainerLogs:
     docker logs --timestamps --follow --since=60m {{ .Container.ID
     }}
-  containerLogs: docker logs --timestamps --follow --since=60m {{ .Container.ID }}
   allLogs: '{{ .DockerCompose }} logs --tail=300 --follow'
   viewAlLogs: '{{ .DockerCompose }} logs'
   dockerComposeConfig: '{{ .DockerCompose }} config'

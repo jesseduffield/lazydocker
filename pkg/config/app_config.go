@@ -33,6 +33,9 @@ type UserConfig struct {
 	// hit esc or q when no confirmation panels are open
 	ConfirmOnQuit bool `yaml:"confirmOnQuit,omitempty"`
 
+	// Logs determines how we render/filter a container's logs
+	Logs LogsConfig `yaml:"logs,omitempty"`
+
 	// CommandTemplates determines what commands actually get called when we run
 	// certain commands
 	CommandTemplates CommandTemplatesConfig `yaml:"commandTemplates,omitempty"`
@@ -154,11 +157,6 @@ type CommandTemplatesConfig struct {
 
 	// ViewContainerLogs is like ViewServiceLogs but for containers
 	ViewContainerLogs string `yaml:"viewContainerLogs,omitempty"`
-
-	// ContainerLogs shows the logs of a container. By default this restricts the
-	// output to (as of right now) the last hour. This is for the sake of
-	// performance, and you can feel free to change this
-	ContainerLogs string `yaml:"containerLogs,omitempty"`
 
 	// AllLogs is for showing what you get from doing `docker-compose logs`. It
 	// combines all the logs together
@@ -289,6 +287,11 @@ type CustomCommand struct {
 	InternalFunction func() error `yaml:"-"`
 }
 
+type LogsConfig struct {
+	Timestamps bool   `yaml:"timestamps,omitempty"`
+	Since      string `yaml:"since,omitempty"`
+}
+
 // GetDefaultConfig returns the application default configuration NOTE (to
 // contributors, not users): do not default a boolean to true, because false is
 // the boolean zero value and this will be ignored when parsing the user's
@@ -316,6 +319,10 @@ func GetDefaultConfig() UserConfig {
 			LegacySortContainers: false,
 		},
 		ConfirmOnQuit: false,
+		Logs: LogsConfig{
+			Timestamps: true,
+			Since:      "60m",
+		},
 		CommandTemplates: CommandTemplatesConfig{
 			DockerCompose:            "docker-compose",
 			RestartService:           "{{ .DockerCompose }} restart {{ .Service.Name }}",
@@ -328,9 +335,8 @@ func GetDefaultConfig() UserConfig {
 			ViewAllLogs:              "{{ .DockerCompose }} logs",
 			DockerComposeConfig:      "{{ .DockerCompose }} config",
 			CheckDockerComposeConfig: "{{ .DockerCompose }} config --quiet",
-			ContainerLogs:            "docker logs --timestamps --follow --since=60m {{ .Container.ID }}",
-			ViewContainerLogs:        "docker logs --timestamps --follow --since=60m {{ .Container.ID }}",
 			ServiceTop:               "{{ .DockerCompose }} top {{ .Service.Name }}",
+			ViewContainerLogs:        "docker logs --timestamps --follow --since=60m {{ .Container.ID }}",
 		},
 		CustomCommands: CustomCommands{
 			Containers: []CustomCommand{
