@@ -93,6 +93,12 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) renderContainerEnv(container *commands.Container) error {
+	if !container.DetailsLoaded() {
+		return gui.T.NewTask(func(stop chan struct{}) {
+			_ = gui.renderString(gui.g, "main", gui.Tr.WaitingForContainerInfo)
+		})
+	}
+
 	mainView := gui.getMainView()
 	mainView.Autoscroll = false
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
@@ -125,6 +131,12 @@ func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 }
 
 func (gui *Gui) renderContainerConfig(container *commands.Container) error {
+	if !container.DetailsLoaded() {
+		return gui.T.NewTask(func(stop chan struct{}) {
+			_ = gui.renderString(gui.g, "main", gui.Tr.WaitingForContainerInfo)
+		})
+	}
+
 	mainView := gui.getMainView()
 	mainView.Autoscroll = false
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
@@ -142,9 +154,9 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 		output += "\n"
 		for _, mount := range container.Details.Mounts {
 			if mount.Type == "volume" {
-				output += fmt.Sprintf("%s%s %s\n", strings.Repeat(" ", padding), utils.ColoredString(mount.Type+":", color.FgYellow), mount.Name)
+				output += fmt.Sprintf("%s%s %s\n", strings.Repeat(" ", padding), utils.ColoredString(string(mount.Type)+":", color.FgYellow), mount.Name)
 			} else {
-				output += fmt.Sprintf("%s%s %s:%s\n", strings.Repeat(" ", padding), utils.ColoredString(mount.Type+":", color.FgYellow), mount.Source, mount.Destination)
+				output += fmt.Sprintf("%s%s %s:%s\n", strings.Repeat(" ", padding), utils.ColoredString(string(mount.Type)+":", color.FgYellow), mount.Source, mount.Destination)
 			}
 		}
 	} else {

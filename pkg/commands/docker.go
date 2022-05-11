@@ -382,26 +382,13 @@ func (c *DockerCommand) UpdateContainerDetails() error {
 	c.ContainerMutex.Lock()
 	defer c.ContainerMutex.Unlock()
 
-	containers := c.Containers
-
-	ids := make([]string, len(containers))
-	for i, container := range containers {
-		ids[i] = container.ID
-	}
-
-	cmd := c.OSCommand.RunCustomCommand("docker inspect " + strings.Join(ids, " "))
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return err
-	}
-
-	var details []*Details
-	if err := json.Unmarshal(output, &details); err != nil {
-		return err
-	}
-
-	for i, container := range containers {
-		container.Details = *details[i]
+	for _, container := range c.Containers {
+		details, err := c.Client.ContainerInspect(context.Background(), container.ID)
+		if err != nil {
+			c.Log.Error(err)
+		} else {
+			container.Details = details
+		}
 	}
 
 	return nil

@@ -44,8 +44,9 @@ func (gui *Gui) getProjectName() string {
 	projectName := path.Base(gui.Config.ProjectDir)
 	if gui.DockerCommand.InDockerComposeProject {
 		for _, service := range gui.DockerCommand.Services {
-			if service.Container != nil {
-				return service.Container.Details.Config.Labels["com.docker.compose.project"]
+			container := service.Container
+			if container != nil && container.DetailsLoaded() {
+				return container.Details.Config.Labels["com.docker.compose.project"]
 			}
 		}
 	}
