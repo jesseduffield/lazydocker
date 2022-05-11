@@ -19,9 +19,13 @@ A simple terminal UI for both docker and docker-compose, written in Go with the 
 
 ## Sponsors
 
-This project would not be possible without the help of its very generous sponsors! If you want to support Lazydocker's development, please consider [sponsoring me](https://github.com/sponsors/jesseduffield)
+<p align="center">
+ Maintainence of this project is made possible by all the <a href="https://github.com/jesseduffield/lazydocker/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/jesseduffield">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/jesseduffield">click here</a>. 💙
+</p>
 
+<p align="center">
 <!-- sponsors --><!-- sponsors -->
+</p>
 
 ## Elevator Pitch
 
