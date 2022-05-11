@@ -336,7 +336,8 @@ func GetDefaultConfig() UserConfig {
 			DockerComposeConfig:      "{{ .DockerCompose }} config",
 			CheckDockerComposeConfig: "{{ .DockerCompose }} config --quiet",
 			ServiceTop:               "{{ .DockerCompose }} top {{ .Service.Name }}",
-			ViewContainerLogs:        "docker logs --timestamps --follow --since=60m {{ .Container.ID }}",
+			// TODO: use SDK
+			ViewContainerLogs: "docker logs --timestamps --follow --since=60m {{ .Container.ID }}",
 		},
 		CustomCommands: CustomCommands{
 			Containers: []CustomCommand{},
