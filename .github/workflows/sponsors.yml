@@ -16,3 +16,12 @@ jobs:
         with:
           token: ${{ secrets.SPONSORS_TOKEN }}
           file: 'README.md'
+
+      - name: Commit and push if changed
+        run: |-
+          git diff
+          git config --global user.email "actions@users.noreply.github.com"
+          git config --global user.name "README-bot"
+          git add README.md
+          git commit -m "Updated README.md" || exit 0
+          git push
