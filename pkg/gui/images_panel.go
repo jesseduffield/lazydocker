@@ -212,17 +212,30 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 
 	shortSha := Image.ID[7:17]
 
+	// TODO: have a way of toggling in a menu instead of showing each permutation as a separate menu item
 	options := []*removeImageOption{
 		{
 			description:   gui.Tr.Remove,
 			command:       "docker image rm " + shortSha,
-			configOptions: types.ImageRemoveOptions{PruneChildren: true},
+			configOptions: types.ImageRemoveOptions{PruneChildren: true, Force: false},
 			runCommand:    true,
 		},
 		{
 			description:   gui.Tr.RemoveWithoutPrune,
 			command:       "docker image rm --no-prune " + shortSha,
-			configOptions: types.ImageRemoveOptions{PruneChildren: false},
+			configOptions: types.ImageRemoveOptions{PruneChildren: false, Force: false},
+			runCommand:    true,
+		},
+		{
+			description:   gui.Tr.RemoveWithForce,
+			command:       "docker image rm --force " + shortSha,
+			configOptions: types.ImageRemoveOptions{PruneChildren: true, Force: true},
+			runCommand:    true,
+		},
+		{
+			description:   gui.Tr.RemoveWithoutPruneWithForce,
+			command:       "docker image rm --no-prune --force " + shortSha,
+			configOptions: types.ImageRemoveOptions{PruneChildren: false, Force: true},
 			runCommand:    true,
 		},
 		{

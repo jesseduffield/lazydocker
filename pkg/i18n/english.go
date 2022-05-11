@@ -26,65 +26,67 @@ type TranslationSet struct {
 	CannotAccessDockerSocketError              string
 	CannotKillChildError                       string
 
-	Donate                     string
-	Cancel                     string
-	CustomCommandTitle         string
-	BulkCommandTitle           string
-	Remove                     string
-	HideStopped                string
-	ForceRemove                string
-	RemoveWithVolumes          string
-	MustForceToRemoveContainer string
-	Confirm                    string
-	Return                     string
-	FocusMain                  string
-	StopContainer              string
-	RestartingStatus           string
-	StoppingStatus             string
-	RemovingStatus             string
-	RunningCustomCommandStatus string
-	RunningBulkCommandStatus   string
-	RemoveService              string
-	Stop                       string
-	Restart                    string
-	Rebuild                    string
-	Recreate                   string
-	PreviousContext            string
-	NextContext                string
-	Attach                     string
-	ViewLogs                   string
-	ServicesTitle              string
-	ContainersTitle            string
-	StandaloneContainersTitle  string
-	TopTitle                   string
-	ImagesTitle                string
-	VolumesTitle               string
-	NoContainers               string
-	NoContainer                string
-	NoImages                   string
-	NoVolumes                  string
-	RemoveImage                string
-	RemoveVolume               string
-	RemoveWithoutPrune         string
-	PruneImages                string
-	PruneContainers            string
-	PruneVolumes               string
-	ConfirmPruneContainers     string
-	ConfirmStopContainers      string
-	ConfirmRemoveContainers    string
-	ConfirmPruneImages         string
-	ConfirmPruneVolumes        string
-	PruningStatus              string
-	StopService                string
-	PressEnterToReturn         string
-	StopAllContainers          string
-	RemoveAllContainers        string
-	ViewRestartOptions         string
-	ExecShell                  string
-	RunCustomCommand           string
-	ViewBulkCommands           string
-	OpenInBrowser              string
-	SortContainersByState      string
+	Donate                      string
+	Cancel                      string
+	CustomCommandTitle          string
+	BulkCommandTitle            string
+	Remove                      string
+	HideStopped                 string
+	ForceRemove                 string
+	RemoveWithVolumes           string
+	MustForceToRemoveContainer  string
+	Confirm                     string
+	Return                      string
+	FocusMain                   string
+	StopContainer               string
+	RestartingStatus            string
+	StoppingStatus              string
+	RemovingStatus              string
+	RunningCustomCommandStatus  string
+	RunningBulkCommandStatus    string
+	RemoveService               string
+	Stop                        string
+	Restart                     string
+	Rebuild                     string
+	Recreate                    string
+	PreviousContext             string
+	NextContext                 string
+	Attach                      string
+	ViewLogs                    string
+	ServicesTitle               string
+	ContainersTitle             string
+	StandaloneContainersTitle   string
+	TopTitle                    string
+	ImagesTitle                 string
+	VolumesTitle                string
+	NoContainers                string
+	NoContainer                 string
+	NoImages                    string
+	NoVolumes                   string
+	RemoveImage                 string
+	RemoveVolume                string
+	RemoveWithoutPrune          string
+	RemoveWithoutPruneWithForce string
+	RemoveWithForce             string
+	PruneImages                 string
+	PruneContainers             string
+	PruneVolumes                string
+	ConfirmPruneContainers      string
+	ConfirmStopContainers       string
+	ConfirmRemoveContainers     string
+	ConfirmPruneImages          string
+	ConfirmPruneVolumes         string
+	PruningStatus               string
+	StopService                 string
+	PressEnterToReturn          string
+	StopAllContainers           string
+	RemoveAllContainers         string
+	ViewRestartOptions          string
+	ExecShell                   string
+	RunCustomCommand            string
+	ViewBulkCommands            string
+	OpenInBrowser               string
+	SortContainersByState       string
 
 	LogsTitle                 string
 	ConfigTitle               string
@@ -124,44 +126,46 @@ func englishSet() TranslationSet {
 		Donate:  "Donate",
 		Confirm: "Confirm",
 
-		Return:                "return",
-		FocusMain:             "focus main panel",
-		Navigate:              "navigate",
-		Execute:               "execute",
-		Close:                 "close",
-		Menu:                  "menu",
-		MenuTitle:             "Menu",
-		Scroll:                "scroll",
-		OpenConfig:            "open lazydocker config",
-		EditConfig:            "edit lazydocker config",
-		Cancel:                "cancel",
-		Remove:                "remove",
-		HideStopped:           "hide/show stopped containers",
-		ForceRemove:           "force remove",
-		RemoveWithVolumes:     "remove with volumes",
-		RemoveService:         "remove containers",
-		Stop:                  "stop",
-		Restart:               "restart",
-		Rebuild:               "rebuild",
-		Recreate:              "recreate",
-		PreviousContext:       "previous tab",
-		NextContext:           "next tab",
-		Attach:                "attach",
-		ViewLogs:              "view logs",
-		RemoveImage:           "remove image",
-		RemoveVolume:          "remove volume",
-		RemoveWithoutPrune:    "remove without deleting untagged parents",
-		PruneContainers:       "prune exited containers",
-		PruneVolumes:          "prune unused volumes",
-		PruneImages:           "prune unused images",
-		StopAllContainers:     "stop all containers",
-		RemoveAllContainers:   "remove all containers (forced)",
-		ViewRestartOptions:    "view restart options",
-		ExecShell:             "exec shell",
-		RunCustomCommand:      "run predefined custom command",
-		ViewBulkCommands:      "view bulk commands",
-		OpenInBrowser:         "open in browser (first port is http)",
-		SortContainersByState: "sort containers by state",
+		Return:                      "return",
+		FocusMain:                   "focus main panel",
+		Navigate:                    "navigate",
+		Execute:                     "execute",
+		Close:                       "close",
+		Menu:                        "menu",
+		MenuTitle:                   "Menu",
+		Scroll:                      "scroll",
+		OpenConfig:                  "open lazydocker config",
+		EditConfig:                  "edit lazydocker config",
+		Cancel:                      "cancel",
+		Remove:                      "remove",
+		HideStopped:                 "hide/show stopped containers",
+		ForceRemove:                 "force remove",
+		RemoveWithVolumes:           "remove with volumes",
+		RemoveService:               "remove containers",
+		Stop:                        "stop",
+		Restart:                     "restart",
+		Rebuild:                     "rebuild",
+		Recreate:                    "recreate",
+		PreviousContext:             "previous tab",
+		NextContext:                 "next tab",
+		Attach:                      "attach",
+		ViewLogs:                    "view logs",
+		RemoveImage:                 "remove image",
+		RemoveVolume:                "remove volume",
+		RemoveWithoutPrune:          "remove without deleting untagged parents",
+		RemoveWithoutPruneWithForce: "remove (forced) without deleting untagged parents",
+		RemoveWithForce:             "remove (forced)",
+		PruneContainers:             "prune exited containers",
+		PruneVolumes:                "prune unused volumes",
+		PruneImages:                 "prune unused images",
+		StopAllContainers:           "stop all containers",
+		RemoveAllContainers:         "remove all containers (forced)",
+		ViewRestartOptions:          "view restart options",
+		ExecShell:                   "exec shell",
+		RunCustomCommand:            "run predefined custom command",
+		ViewBulkCommands:            "view bulk commands",
+		OpenInBrowser:               "open in browser (first port is http)",
+		SortContainersByState:       "sort containers by state",
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Main",
