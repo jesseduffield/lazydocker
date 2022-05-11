@@ -40,6 +40,7 @@ type TranslationSet struct {
 	FocusMain                   string
 	StopContainer               string
 	RestartingStatus            string
+	StartingStatus              string
 	StoppingStatus              string
 	RemovingStatus              string
 	RunningCustomCommandStatus  string
@@ -47,6 +48,7 @@ type TranslationSet struct {
 	RemoveService               string
 	Stop                        string
 	Restart                     string
+	Start                       string
 	Rebuild                     string
 	Recreate                    string
 	PreviousContext             string
@@ -108,6 +110,7 @@ func englishSet() TranslationSet {
 		PruningStatus:              "pruning",
 		RemovingStatus:             "removing",
 		RestartingStatus:           "restarting",
+		StartingStatus:             "starting",
 		StoppingStatus:             "stopping",
 		RunningCustomCommandStatus: "running custom command",
 		RunningBulkCommandStatus:   "running bulk command",
@@ -144,6 +147,7 @@ func englishSet() TranslationSet {
 		RemoveService:               "remove containers",
 		Stop:                        "stop",
 		Restart:                     "restart",
+		Start:                       "start",
 		Rebuild:                     "rebuild",
 		Recreate:                    "recreate",
 		PreviousContext:             "previous tab",

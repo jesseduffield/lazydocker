@@ -56,6 +56,16 @@ func (s *Service) Restart() error {
 	return s.OSCommand.RunCommand(command)
 }
 
+// Restart starts the service
+func (s *Service) Start() error {
+	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.StartService
+	command := utils.ApplyTemplate(
+		templateString,
+		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
+	)
+	return s.OSCommand.RunCommand(command)
+}
+
 // Attach attaches to the service
 func (s *Service) Attach() (*exec.Cmd, error) {
 	return s.Container.Attach()

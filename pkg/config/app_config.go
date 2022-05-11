@@ -121,6 +121,9 @@ type CommandTemplatesConfig struct {
 	// .Service.Name }}
 	RestartService string `yaml:"restartService,omitempty"`
 
+	// StartService is just like the above but for starting
+	StartService string `yaml:"startService,omitempty"`
+
 	// DockerCompose is for your docker-compose command. You may want to combine a
 	// few different docker-compose.yml files together, in which case you can set
 	// this to "docker-compose -f foo/docker-compose.yml -f
@@ -326,6 +329,7 @@ func GetDefaultConfig() UserConfig {
 		CommandTemplates: CommandTemplatesConfig{
 			DockerCompose:            "docker-compose",
 			RestartService:           "{{ .DockerCompose }} restart {{ .Service.Name }}",
+			StartService:             "{{ .DockerCompose }} start {{ .Service.Name }}",
 			RebuildService:           "{{ .DockerCompose }} up -d --build {{ .Service.Name }}",
 			RecreateService:          "{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}",
 			StopService:              "{{ .DockerCompose }} stop {{ .Service.Name }}",
