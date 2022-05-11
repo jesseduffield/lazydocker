@@ -320,7 +320,7 @@ func GetDefaultConfig() UserConfig {
 		},
 		ConfirmOnQuit: false,
 		Logs: LogsConfig{
-			Timestamps: true,
+			Timestamps: false,
 			Since:      "60m",
 		},
 		CommandTemplates: CommandTemplatesConfig{
