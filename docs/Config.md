@@ -27,7 +27,7 @@ gui:
     optionsTextColor:
       - blue
   returnImmediately: false
-  wrapMainPanel: false
+  wrapMainPanel: true
 logs:
   timestamps: false
   since: '60m'

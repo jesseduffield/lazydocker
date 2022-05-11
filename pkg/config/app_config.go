@@ -318,7 +318,7 @@ func GetDefaultConfig() UserConfig {
 			},
 			ShowAllContainers:    false,
 			ReturnImmediately:    false,
-			WrapMainPanel:        false,
+			WrapMainPanel:        true,
 			LegacySortContainers: false,
 		},
 		ConfirmOnQuit: false,
