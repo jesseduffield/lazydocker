@@ -299,6 +299,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "services",
+			Key:         'p',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServicePause,
+			Description: gui.Tr.Pause,
+		},
+		{
+			ViewName:    "services",
 			Key:         'r',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceRestart,
