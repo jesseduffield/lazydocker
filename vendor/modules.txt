@@ -1,5 +1,3 @@
-# github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
-## explicit
 # github.com/Microsoft/go-winio v0.4.14
 ## explicit; go 1.12
 github.com/Microsoft/go-winio
@@ -7,8 +5,6 @@ github.com/Microsoft/go-winio/pkg/guid
 # github.com/OpenPeeDeeP/xdg v0.2.1-0.20190312153938-4ba9e1eb294c
 ## explicit
 github.com/OpenPeeDeeP/xdg
-# github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
-## explicit
 # github.com/boz/go-throttle v0.0.0-20160922054636-fdc4eab740c1
 ## explicit
 github.com/boz/go-throttle
@@ -22,7 +18,7 @@ github.com/davecgh/go-spew/spew
 ## explicit
 github.com/docker/distribution/digestset
 github.com/docker/distribution/reference
-# github.com/docker/docker v0.7.3-0.20190307005417-54dddadc7d5d
+# github.com/docker/docker v20.10.15+incompatible
 ## explicit
 github.com/docker/docker/api
 github.com/docker/docker/api/types
@@ -42,6 +38,7 @@ github.com/docker/docker/api/types/versions
 github.com/docker/docker/api/types/volume
 github.com/docker/docker/client
 github.com/docker/docker/errdefs
+github.com/docker/docker/pkg/stdcopy
 # github.com/docker/go-connections v0.4.0
 ## explicit
 github.com/docker/go-connections/nat
@@ -106,13 +103,9 @@ github.com/gogo/protobuf/proto
 # github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3
 ## explicit
 github.com/golang-collections/collections/stack
-# github.com/google/go-cmp v0.3.0
-## explicit; go 1.8
 # github.com/gookit/color v1.5.0
 ## explicit; go 1.13
 github.com/gookit/color
-# github.com/gorilla/mux v1.7.3
-## explicit
 # github.com/imdario/mergo v0.3.8
 ## explicit
 github.com/imdario/mergo
@@ -149,6 +142,8 @@ github.com/mcuadros/go-lookup
 # github.com/mgutz/str v1.2.0
 ## explicit
 github.com/mgutz/str
+# github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6
+## explicit; go 1.13
 # github.com/morikuni/aec v0.0.0-20170113033406-39771216ff4c
 ## explicit
 # github.com/onsi/ginkgo v1.8.0
@@ -162,7 +157,7 @@ github.com/opencontainers/go-digest
 ## explicit
 github.com/opencontainers/image-spec/specs-go
 github.com/opencontainers/image-spec/specs-go/v1
-# github.com/pkg/errors v0.8.1
+# github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
@@ -189,7 +184,7 @@ github.com/xo/terminfo
 # golang.org/x/exp v0.0.0-20220428152302-39d4317da171
 ## explicit; go 1.18
 golang.org/x/exp/constraints
-# golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
+# golang.org/x/net v0.0.0-20201021035429-f5854403a974
 ## explicit; go 1.11
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
@@ -213,12 +208,10 @@ golang.org/x/text/transform
 ## explicit; go 1.11
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
-# google.golang.org/grpc v1.22.0
-## explicit
 # gopkg.in/yaml.v2 v2.2.2
 ## explicit
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 ## explicit
 gopkg.in/yaml.v3
-# gotest.tools v2.2.0+incompatible
-## explicit
+# gotest.tools/v3 v3.2.0
+## explicit; go 1.13
