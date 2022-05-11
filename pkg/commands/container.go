@@ -197,6 +197,7 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 	}
 
 	c.Log.Warn(fmt.Sprintf("attaching to container %s", c.Name))
+	// TODO: use SDK
 	cmd := c.OSCommand.PrepareSubProcess("docker", "attach", "--sig-proxy=false", c.ID)
 	return cmd, nil
 }
