@@ -235,10 +235,11 @@ func (gui *Gui) Run() error {
 	throttledRefresh := throttle.ThrottleFunc(time.Millisecond*50, true, gui.refresh)
 	defer throttledRefresh.Stop()
 
-	finish := make(chan struct{})
-	defer func() { close(finish) }()
+	ctx, finish := context.WithCancel(context.Background())
+	defer finish()
 
-	go gui.listenForEvents(finish, throttledRefresh.Trigger)
+	go gui.listenForEvents(ctx, throttledRefresh.Trigger)
+	go gui.DockerCommand.MonitorContainerStats(ctx)
 
 	go func() {
 		gui.waitForIntro.Wait()
@@ -247,10 +248,8 @@ func (gui *Gui) Run() error {
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
 		gui.goEvery(time.Millisecond*1000, gui.DockerCommand.UpdateContainerDetails)
 		gui.goEvery(time.Millisecond*1000, gui.checkForContextChange)
-		gui.goEvery(time.Millisecond*2000, gui.rerenderContainersAndServices)
+		gui.goEvery(time.Millisecond*1000, gui.rerenderContainersAndServices)
 	}()
-
-	gui.DockerCommand.MonitorContainerStats()
 
 	go func() {
 		for err := range gui.ErrorChan {
@@ -301,7 +300,7 @@ func (gui *Gui) refresh() {
 	}()
 }
 
-func (gui *Gui) listenForEvents(finish chan struct{}, refresh func()) {
+func (gui *Gui) listenForEvents(ctx context.Context, refresh func()) {
 	errorCount := 0
 
 	onError := func(err error) {
@@ -336,7 +335,7 @@ outer:
 
 		for {
 			select {
-			case <-finish:
+			case <-ctx.Done():
 				return
 			case message := <-messageChan:
 				// We could be more granular about what events should trigger which refreshes.

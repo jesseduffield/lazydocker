@@ -6,8 +6,6 @@ github.com/Microsoft/go-winio v0.4.14 h1:+hMXMk01us9KgxGb7ftKQt2Xpf5hH/yky+TDA+q
 github.com/Microsoft/go-winio v0.4.14/go.mod h1:qXqCSQ3Xa7+6tgxaGTIe4Kpcdsi+P8jBhyzoq1bpyYA=
 github.com/OpenPeeDeeP/xdg v0.2.1-0.20190312153938-4ba9e1eb294c h1:YDsGA6tou+tAxVe0Dre29iSbQ8TrWdWfwOisKArJT5E=
 github.com/OpenPeeDeeP/xdg v0.2.1-0.20190312153938-4ba9e1eb294c/go.mod h1:tMoSueLQlMf0TCldjrJLNIjAc5qAOIcHt5REi88/Ygo=
-github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d h1:licZJFw2RwpHMqeKTCYkitsPqHNxTmd4SNR5r94FGM8=
-github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d/go.mod h1:asat636LX7Bqt5lYEZ27JNDcqxfjdBQuJ/MM4CN/Lzo=
 github.com/boz/go-throttle v0.0.0-20160922054636-fdc4eab740c1 h1:1fx+RA5lk1ZkzPAUP7DEgZnVHYxEcHO77vQO/V8z/2Q=
 github.com/boz/go-throttle v0.0.0-20160922054636-fdc4eab740c1/go.mod h1:z0nyIb42Zs97wyX1V+8MbEFhHeTw1OgFQfR6q57ZuHc=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=

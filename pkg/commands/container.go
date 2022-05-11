@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/docker/docker/api/types/container"
@@ -38,12 +39,13 @@ type Container struct {
 	OSCommand       *OSCommand
 	Config          *config.AppConfig
 	Log             *logrus.Entry
-	CLIStats        ContainerCliStat // for realtime we use the CLI, for long-term we use the client
-	StatHistory     []RecordedStats
+	StatHistory     []*RecordedStats
 	Details         Details
 	MonitoringStats bool
 	DockerCommand   LimitedDockerCommand
 	Tr              *i18n.TranslationSet
+
+	StatsMutex sync.Mutex
 }
 
 // Details is a struct containing what we get back from `docker inspect` on a container
@@ -230,19 +232,6 @@ type Details struct {
 	} `json:"NetworkSettings"`
 }
 
-// ContainerCliStat is a stat object returned by the CLI docker stat command
-type ContainerCliStat struct {
-	BlockIO   string `json:"BlockIO"`
-	CPUPerc   string `json:"CPUPerc"`
-	Container string `json:"Container"`
-	ID        string `json:"ID"`
-	MemPerc   string `json:"MemPerc"`
-	MemUsage  string `json:"MemUsage"`
-	Name      string `json:"Name"`
-	NetIO     string `json:"NetIO"`
-	PIDs      string `json:"PIDs"`
-}
-
 // GetDisplayStrings returns the dispaly string of Container
 func (c *Container) GetDisplayStrings(isFocused bool) []string {
 	image := strings.TrimPrefix(c.Container.Image, "sha256:")
@@ -285,17 +274,13 @@ func (c *Container) getHealthStatus() string {
 
 // GetDisplayCPUPerc colors the cpu percentage based on how extreme it is
 func (c *Container) GetDisplayCPUPerc() string {
-	stats := c.CLIStats
-
-	if stats.CPUPerc == "" {
+	stats, ok := c.getLastStats()
+	if !ok {
 		return ""
 	}
 
-	percentage, err := strconv.ParseFloat(strings.TrimSuffix(stats.CPUPerc, "%"), 32)
-	if err != nil {
-		// probably complaining about not being able to convert '--'
-		return ""
-	}
+	percentage := stats.DerivedStats.CPUPercentage
+	formattedPercentage := fmt.Sprintf("%.2f%%", stats.DerivedStats.CPUPercentage)
 
 	var clr color.Attribute
 	if percentage > 90 {
@@ -306,7 +291,7 @@ func (c *Container) GetDisplayCPUPerc() string {
 		clr = color.FgWhite
 	}
 
-	return utils.ColoredString(stats.CPUPerc, clr)
+	return utils.ColoredString(formattedPercentage, clr)
 }
 
 // ProducingLogs tells us whether we should bother checking a container's logs
@@ -398,20 +383,6 @@ func (c *Container) Top() (container.ContainerTopOKBody, error) {
 	}
 
 	return c.Client.ContainerTop(context.Background(), c.ID, []string{})
-}
-
-// EraseOldHistory removes any history before the user-specified max duration
-func (c *Container) EraseOldHistory() {
-	if c.Config.UserConfig.Stats.MaxDuration == 0 {
-		return
-	}
-
-	for i, stat := range c.StatHistory {
-		if time.Since(stat.RecordedAt) < c.Config.UserConfig.Stats.MaxDuration {
-			c.StatHistory = c.StatHistory[i:]
-			return
-		}
-	}
 }
 
 // ViewLogs attaches to a subprocess viewing the container's logs
