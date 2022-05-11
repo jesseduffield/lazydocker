@@ -13,7 +13,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/acarl005/stripansi"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/imdario/mergo"
@@ -121,58 +120,20 @@ func (c *DockerCommand) Close() error {
 	return utils.CloseMany(c.Closers)
 }
 
-// MonitorContainerStats is a function
-func (c *DockerCommand) MonitorContainerStats() {
-	// TODO: pass in a stop channel to these so we don't restart every time we come back from a subprocess
-	go c.MonitorCLIContainerStats()
-	go c.MonitorClientContainerStats()
-}
-
-// MonitorCLIContainerStats monitors a stream of container stats and updates the containers as each new stats object is received
-func (c *DockerCommand) MonitorCLIContainerStats() {
-	command := `docker stats --all --no-trunc --format '{{json .}}'`
-	cmd := c.OSCommand.RunCustomCommand(command)
-
-	r, err := cmd.StdoutPipe()
-	if err != nil {
-		c.ErrorChan <- err
-		return
-	}
-
-	_ = cmd.Start()
-
-	scanner := bufio.NewScanner(r)
-	scanner.Split(bufio.ScanLines)
-	for scanner.Scan() {
-		var stats ContainerCliStat
-		// need to strip ANSI codes because uses escape sequences to clear the screen with each refresh
-		cleanString := stripansi.Strip(scanner.Text())
-		if err := json.Unmarshal([]byte(cleanString), &stats); err != nil {
-			c.ErrorChan <- err
-			return
-		}
-		c.ContainerMutex.Lock()
-		for _, container := range c.Containers {
-			if container.ID == stats.ID {
-				container.CLIStats = stats
-			}
-		}
-		c.ContainerMutex.Unlock()
-	}
-
-	_ = cmd.Wait()
-}
-
-// MonitorClientContainerStats is a function
-func (c *DockerCommand) MonitorClientContainerStats() {
+func (c *DockerCommand) MonitorContainerStats(ctx context.Context) {
 	// periodically loop through running containers and see if we need to create a monitor goroutine for any
 	// every second we check if we need to spawn a new goroutine
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
-	for range ticker.C {
-		for _, container := range c.Containers {
-			if !container.MonitoringStats {
-				go c.createClientStatMonitor(container)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			for _, container := range c.Containers {
+				if !container.MonitoringStats {
+					go c.createClientStatMonitor(container)
+				}
 			}
 		}
 	}
@@ -182,7 +143,10 @@ func (c *DockerCommand) createClientStatMonitor(container *Container) {
 	container.MonitoringStats = true
 	stream, err := c.Client.ContainerStats(context.Background(), container.ID, true)
 	if err != nil {
-		c.ErrorChan <- err
+		// not creating error panel because if we've disconnected from docker we'll
+		// have already created an error panel
+		c.Log.Error(err)
+		container.MonitoringStats = false
 		return
 	}
 
@@ -194,7 +158,7 @@ func (c *DockerCommand) createClientStatMonitor(container *Container) {
 		var stats ContainerStats
 		_ = json.Unmarshal(data, &stats)
 
-		recordedStats := RecordedStats{
+		recordedStats := &RecordedStats{
 			ClientStats: stats,
 			DerivedStats: DerivedStats{
 				CPUPercentage:    stats.CalculateContainerCPUPercentage(),
@@ -203,10 +167,7 @@ func (c *DockerCommand) createClientStatMonitor(container *Container) {
 			RecordedAt: time.Now(),
 		}
 
-		c.ContainerMutex.Lock()
-		container.StatHistory = append(container.StatHistory, recordedStats)
-		container.EraseOldHistory()
-		c.ContainerMutex.Unlock()
+		container.appendStats(recordedStats)
 	}
 
 	container.MonitoringStats = false

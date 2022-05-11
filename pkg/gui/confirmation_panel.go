@@ -20,20 +20,20 @@ func (gui *Gui) wrappedConfirmationFunction(function func(*gocui.Gui, *gocui.Vie
 				return err
 			}
 		}
-		return gui.closeConfirmationPrompt(g)
+		return gui.closeConfirmationPrompt()
 	}
 }
 
-func (gui *Gui) closeConfirmationPrompt(g *gocui.Gui) error {
-	view, err := g.View("confirmation")
+func (gui *Gui) closeConfirmationPrompt() error {
+	view, err := gui.g.View("confirmation")
 	if err != nil {
 		return nil // if it's already been closed we can just return
 	}
-	if err := gui.returnFocus(g, view); err != nil {
-		panic(err)
+	if err := gui.returnFocus(gui.g, view); err != nil {
+		return err
 	}
-	g.DeleteViewKeybindings("confirmation")
-	return g.DeleteView("confirmation")
+	gui.g.DeleteViewKeybindings("confirmation")
+	return gui.g.DeleteView("confirmation")
 }
 
 func (gui *Gui) getMessageHeight(wrap bool, message string, width int) int {
@@ -110,7 +110,7 @@ func (gui *Gui) createPopupPanel(g *gocui.Gui, currentView *gocui.View, title, p
 	g.Update(func(g *gocui.Gui) error {
 		// delete the existing confirmation panel if it exists
 		if view, _ := g.View("confirmation"); view != nil {
-			if err := gui.closeConfirmationPrompt(g); err != nil {
+			if err := gui.closeConfirmationPrompt(); err != nil {
 				gui.Log.Error(err.Error())
 			}
 		}

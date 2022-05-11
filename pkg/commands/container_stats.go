@@ -149,9 +149,8 @@ type ContainerStats struct {
 func (s *ContainerStats) CalculateContainerCPUPercentage() float64 {
 	cpuUsageDelta := s.CPUStats.CPUUsage.TotalUsage - s.PrecpuStats.CPUUsage.TotalUsage
 	cpuTotalUsageDelta := s.CPUStats.SystemCPUUsage - s.PrecpuStats.SystemCPUUsage
-	numberOfCores := len(s.CPUStats.CPUUsage.PercpuUsage)
 
-	value := float64(cpuUsageDelta*100) * float64(numberOfCores) / float64(cpuTotalUsageDelta)
+	value := float64(cpuUsageDelta*100) / float64(cpuTotalUsageDelta)
 	if math.IsNaN(value) {
 		return 0
 	}
@@ -169,11 +168,10 @@ func (s *ContainerStats) CalculateContainerMemoryUsage() float64 {
 
 // RenderStats returns a string containing the rendered stats of the container
 func (c *Container) RenderStats(viewWidth int) (string, error) {
-	history := c.StatHistory
-	if len(history) == 0 {
+	stats, ok := c.getLastStats()
+	if !ok {
 		return "", nil
 	}
-	currentStats := history[len(history)-1]
 
 	graphSpecs := c.Config.UserConfig.Stats.Graphs
 	graphs := make([]string, len(graphSpecs))
@@ -185,11 +183,11 @@ func (c *Container) RenderStats(viewWidth int) (string, error) {
 		graphs[i] = utils.ColoredString(graph, utils.GetColorAttribute(spec.Color))
 	}
 
-	pidsCount := fmt.Sprintf("PIDs: %d", currentStats.ClientStats.PidsStats.Current)
-	dataReceived := fmt.Sprintf("Traffic received: %s", utils.FormatDecimalBytes(currentStats.ClientStats.Networks.Eth0.RxBytes))
-	dataSent := fmt.Sprintf("Traffic sent: %s", utils.FormatDecimalBytes(currentStats.ClientStats.Networks.Eth0.TxBytes))
+	pidsCount := fmt.Sprintf("PIDs: %d", stats.ClientStats.PidsStats.Current)
+	dataReceived := fmt.Sprintf("Traffic received: %s", utils.FormatDecimalBytes(stats.ClientStats.Networks.Eth0.RxBytes))
+	dataSent := fmt.Sprintf("Traffic sent: %s", utils.FormatDecimalBytes(stats.ClientStats.Networks.Eth0.TxBytes))
 
-	originalJSON, err := json.MarshalIndent(currentStats, "", "  ")
+	originalJSON, err := json.MarshalIndent(stats, "", "  ")
 	if err != nil {
 		return "", err
 	}
@@ -205,8 +203,43 @@ func (c *Container) RenderStats(viewWidth int) (string, error) {
 	return contents, nil
 }
 
+func (c *Container) appendStats(stats *RecordedStats) {
+	c.StatsMutex.Lock()
+	defer c.StatsMutex.Unlock()
+
+	c.StatHistory = append(c.StatHistory, stats)
+	c.eraseOldHistory()
+}
+
+// eraseOldHistory removes any history before the user-specified max duration
+func (c *Container) eraseOldHistory() {
+	if c.Config.UserConfig.Stats.MaxDuration == 0 {
+		return
+	}
+
+	for i, stat := range c.StatHistory {
+		if time.Since(stat.RecordedAt) < c.Config.UserConfig.Stats.MaxDuration {
+			c.StatHistory = c.StatHistory[i:]
+			return
+		}
+	}
+}
+
+func (c *Container) getLastStats() (*RecordedStats, bool) {
+	c.StatsMutex.Lock()
+	defer c.StatsMutex.Unlock()
+	history := c.StatHistory
+	if len(history) == 0 {
+		return nil, false
+	}
+	return history[len(history)-1], true
+}
+
 // PlotGraph returns the plotted graph based on the graph spec and the stat history
 func (c *Container) PlotGraph(spec config.GraphConfig, width int) (string, error) {
+	c.StatsMutex.Lock()
+	defer c.StatsMutex.Unlock()
+
 	data := make([]float64, len(c.StatHistory))
 
 	max := spec.Max

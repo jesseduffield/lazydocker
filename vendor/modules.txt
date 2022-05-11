@@ -9,7 +9,6 @@ github.com/Microsoft/go-winio/pkg/guid
 github.com/OpenPeeDeeP/xdg
 # github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 ## explicit
-github.com/acarl005/stripansi
 # github.com/boz/go-throttle v0.0.0-20160922054636-fdc4eab740c1
 ## explicit
 github.com/boz/go-throttle
