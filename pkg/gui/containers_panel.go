@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -247,6 +248,7 @@ func (gui *Gui) renderContainerLogsAux(container *commands.Container, stop, noti
 		ShowStderr: true,
 		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
 		Since:      gui.Config.UserConfig.Logs.Since,
+		Follow:     true,
 	})
 	if err != nil {
 		gui.Log.Error(err)
@@ -255,9 +257,16 @@ func (gui *Gui) renderContainerLogsAux(container *commands.Container, stop, noti
 
 	mainView := gui.getMainView()
 
-	_, err = stdcopy.StdCopy(mainView, mainView, readCloser)
-	if err != nil {
-		gui.Log.Error(err)
+	if container.DetailsLoaded() && container.Details.Config.Tty {
+		_, err = io.Copy(mainView, readCloser)
+		if err != nil {
+			gui.Log.Error(err)
+		}
+	} else {
+		_, err = stdcopy.StdCopy(mainView, mainView, readCloser)
+		if err != nil {
+			gui.Log.Error(err)
+		}
 	}
 
 	// if we are here because the task has been stopped, we should return
