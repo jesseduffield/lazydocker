@@ -317,6 +317,8 @@ outer:
 
 		if errorCount > 0 {
 			select {
+			case <-ctx.Done():
+				return
 			case err := <-errChan:
 				onError(err)
 				continue outer
