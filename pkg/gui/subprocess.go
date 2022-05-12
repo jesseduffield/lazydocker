@@ -47,12 +47,12 @@ func (gui *Gui) runCommand() error {
 	gui.SubProcess.Stderr = os.Stdout
 	gui.SubProcess.Stdin = os.Stdin
 
-	c := make(chan os.Signal, 1)
+	stop := make(chan os.Signal, 1)
+	defer signal.Stop(stop)
 
 	go func() {
-		signal.Notify(c, os.Interrupt)
-		<-c
-		signal.Stop(c)
+		signal.Notify(stop, os.Interrupt)
+		<-stop
 
 		if err := gui.OSCommand.Kill(gui.SubProcess); err != nil {
 			gui.Log.Error(err)
@@ -72,16 +72,7 @@ func (gui *Gui) runCommand() error {
 	gui.SubProcess.Stderr = ioutil.Discard
 	gui.SubProcess = nil
 
-	signal.Stop(c)
-
-	if !gui.Config.UserConfig.Gui.ReturnImmediately {
-		fmt.Fprintf(os.Stdout, "\n\n%s", utils.ColoredString(gui.Tr.PressEnterToReturn, color.FgGreen))
-
-		// wait for enter press
-		if _, err := fmt.Scanln(); err != nil {
-			gui.Log.Error(err)
-		}
-	}
+	gui.promptToReturn()
 
 	return nil
 }

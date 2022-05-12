@@ -158,16 +158,11 @@ type CommandTemplatesConfig struct {
 	// and ensure they're running before trying to run the service at hand
 	RecreateService string `yaml:"recreateService,omitempty"`
 
-	// ViewContainerLogs is like ViewServiceLogs but for containers
-	ViewContainerLogs string `yaml:"viewContainerLogs,omitempty"`
-
 	// AllLogs is for showing what you get from doing `docker-compose logs`. It
 	// combines all the logs together
 	AllLogs string `yaml:"allLogs,omitempty"`
 
-	// ViewAllLogs is to AllLogs what ViewContainerLogs is to ContainerLogs. It's
-	// just the command we use when you want to see all logs in a subprocess with
-	// no filtering
+	// ViewAllLogs is the command we use when you want to see all logs in a subprocess with no filtering
 	ViewAllLogs string `yaml:"viewAlLogs,omitempty"`
 
 	// DockerComposeConfig is the command for viewing the config of your docker
@@ -340,8 +335,6 @@ func GetDefaultConfig() UserConfig {
 			DockerComposeConfig:      "{{ .DockerCompose }} config",
 			CheckDockerComposeConfig: "{{ .DockerCompose }} config --quiet",
 			ServiceTop:               "{{ .DockerCompose }} top {{ .Service.Name }}",
-			// TODO: use SDK
-			ViewContainerLogs: "docker logs --timestamps --follow --since=60m {{ .Container.ID }}",
 		},
 		CustomCommands: CustomCommands{
 			Containers: []CustomCommand{},
