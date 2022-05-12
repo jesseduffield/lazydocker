@@ -132,7 +132,7 @@ func (gui *Gui) renderServiceLogs(service *commands.Service) error {
 		})
 	}
 
-	return gui.renderContainerLogs(service.Container)
+	return gui.renderContainerLogsToMain(service.Container)
 }
 
 func (gui *Gui) handleServicesNextLine(g *gocui.Gui, v *gocui.View) error {
@@ -285,7 +285,7 @@ func (gui *Gui) handleServiceAttach(g *gocui.Gui, v *gocui.View) error {
 	return gui.Errors.ErrSubProcess
 }
 
-func (gui *Gui) handleServiceViewLogs(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleServiceRenderLogsToMain(g *gocui.Gui, v *gocui.View) error {
 	service, err := gui.getSelectedService()
 	if err != nil {
 		return nil

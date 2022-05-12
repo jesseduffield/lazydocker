@@ -40,8 +40,6 @@ commandTemplates:
   viewServiceLogs: '{{ .DockerCompose }} logs --follow {{ .Service.Name }}'
   rebuildService: '{{ .DockerCompose }} up -d --build {{ .Service.Name }}'
   recreateService: '{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}'
-  viewContainerLogs: docker logs --follow --since=60m {{ .Container.ID
-    }}
   allLogs: '{{ .DockerCompose }} logs --tail=300 --follow'
   viewAlLogs: '{{ .DockerCompose }} logs'
   dockerComposeConfig: '{{ .DockerCompose }} config'

@@ -1,15 +1,12 @@
 package gui
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
@@ -69,7 +66,7 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 
 	switch gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex] {
 	case "logs":
-		if err := gui.renderContainerLogs(container); err != nil {
+		if err := gui.renderContainerLogsToMain(container); err != nil {
 			return err
 		}
 	case "config":
@@ -219,76 +216,6 @@ func (gui *Gui) renderContainerTop(container *commands.Container) error {
 
 		_ = gui.reRenderString(gui.g, "main", contents)
 	})
-}
-
-func (gui *Gui) renderContainerLogs(container *commands.Container) error {
-	mainView := gui.getMainView()
-	mainView.Autoscroll = true
-	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-
-	return gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
-		gui.renderContainerLogsAux(container, stop, notifyStopped)
-	})
-}
-
-func (gui *Gui) renderContainerLogsAux(container *commands.Container, stop, notifyStopped chan struct{}) {
-	gui.clearMainView()
-	defer func() {
-		notifyStopped <- struct{}{}
-	}()
-
-	ctx, ctxCancel := context.WithCancel(context.Background())
-	go func() {
-		<-stop
-		ctxCancel()
-	}()
-
-	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, container.ID, types.ContainerLogsOptions{
-		ShowStdout: true,
-		ShowStderr: true,
-		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
-		Since:      gui.Config.UserConfig.Logs.Since,
-		Follow:     true,
-	})
-	if err != nil {
-		gui.Log.Error(err)
-		return
-	}
-
-	mainView := gui.getMainView()
-
-	if container.DetailsLoaded() && container.Details.Config.Tty {
-		_, err = io.Copy(mainView, readCloser)
-		if err != nil {
-			gui.Log.Error(err)
-		}
-	} else {
-		_, err = stdcopy.StdCopy(mainView, mainView, readCloser)
-		if err != nil {
-			gui.Log.Error(err)
-		}
-	}
-
-	// if we are here because the task has been stopped, we should return
-	// if we are here then the container must have exited, meaning we should wait until it's back again before
-	ticker := time.NewTicker(time.Millisecond * 100)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-stop:
-			return
-		case <-ticker.C:
-			result, err := container.Inspect()
-			if err != nil {
-				// if we get an error, then the container has probably been removed so we'll get out of here
-				gui.Log.Error(err)
-				return
-			}
-			if result.State.Running {
-				return
-			}
-		}
-	}
 }
 
 func (gui *Gui) refreshContainersAndServices() error {
@@ -561,13 +488,9 @@ func (gui *Gui) handleContainerViewLogs(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	c, err := container.ViewLogs()
-	if err != nil {
-		return gui.createErrorPanel(gui.g, err.Error())
-	}
+	gui.renderLogsToStdout(container)
 
-	gui.SubProcess = c
-	return gui.Errors.ErrSubProcess
+	return nil
 }
 
 func (gui *Gui) handleContainersExecShell(g *gocui.Gui, v *gocui.View) error {

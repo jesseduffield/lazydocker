@@ -217,20 +217,6 @@ func (c *Container) Top() (container.ContainerTopOKBody, error) {
 	return c.Client.ContainerTop(context.Background(), c.ID, []string{})
 }
 
-// ViewLogs attaches to a subprocess viewing the container's logs
-func (c *Container) ViewLogs() (*exec.Cmd, error) {
-	templateString := c.OSCommand.Config.UserConfig.CommandTemplates.ViewContainerLogs
-	command := utils.ApplyTemplate(
-		templateString,
-		c.DockerCommand.NewCommandObject(CommandObject{Container: c}),
-	)
-
-	cmd := c.OSCommand.ExecutableFromString(command)
-	c.OSCommand.PrepareForChildren(cmd)
-
-	return cmd, nil
-}
-
 // PruneContainers prunes containers
 func (c *DockerCommand) PruneContainers() error {
 	_, err := c.Client.ContainersPrune(context.Background(), filters.Args{})

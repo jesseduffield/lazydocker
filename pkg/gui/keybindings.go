@@ -315,7 +315,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			ViewName:    "services",
 			Key:         'm',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServiceViewLogs,
+			Handler:     gui.handleServiceRenderLogsToMain,
 			Description: gui.Tr.ViewLogs,
 		},
 		{
