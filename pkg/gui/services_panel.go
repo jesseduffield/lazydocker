@@ -228,19 +228,7 @@ func (gui *Gui) handleServicePause(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	return gui.WithWaitingStatus(gui.Tr.PausingStatus, func() error {
-		if service.Container.Details.State.Paused {
-			err = service.Container.Unpause()
-		} else {
-			err = service.Container.Pause()
-		}
-
-		if err != nil {
-			return gui.createErrorPanel(gui.g, err.Error())
-		}
-
-		return gui.refreshContainersAndServices()
-	})
+	return gui.PauseContainer(service.Container)
 }
 
 func (gui *Gui) handleServiceStop(g *gocui.Gui, v *gocui.View) error {
