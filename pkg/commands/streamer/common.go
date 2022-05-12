@@ -7,9 +7,3 @@ type CommonStream struct {
 	IsTerminal bool
 	State      *term.State
 }
-
-func (s *CommonStream) RestoreTerminal() {
-	if s.State != nil {
-		term.RestoreTerminal(s.Fd, s.State)
-	}
-}
