@@ -523,16 +523,28 @@ func (gui *Gui) handleContainersExecShell(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		return nil
 	}
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
-		Container: container,
-	})
 
-	// TODO: use SDK
-	resolvedCommand := utils.ApplyTemplate("docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'", commandObject)
-	// attach and return the subprocess error
-	cmd := gui.OSCommand.ExecutableFromString(resolvedCommand)
-	gui.SubProcess = cmd
-	return gui.Errors.ErrSubProcess
+	if err := gui.g.Suspend(); err != nil {
+		gui.Log.Error(err)
+		return nil
+	}
+
+	defer func() {
+		if err := gui.g.Resume(); err != nil {
+			gui.Log.Error(err)
+		}
+	}()
+
+	err = gui.DockerCommand.AttachExecContainer(
+		container.ID,
+		[]string{"/bin/sh", "-c", "eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)"},
+	)
+
+	if err != nil {
+		gui.ErrorChan <- err
+	}
+
+	return nil
 }
 
 func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error {

@@ -18,6 +18,8 @@ require (
 	github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56
 	github.com/mcuadros/go-lookup v0.0.0-20171110082742-5650f26be767
 	github.com/mgutz/str v1.2.0
+	github.com/micmonay/keybd_event v1.1.1
+	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6
 	github.com/samber/lo v1.20.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spkg/bom v0.0.0-20160624110644-59b7046e48ad
@@ -26,6 +28,7 @@ require (
 )
 
 require (
+	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
@@ -34,12 +37,12 @@ require (
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/gdamore/tcell/v2 v2.5.1 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
+	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.11 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
-	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
 	github.com/morikuni/aec v0.0.0-20170113033406-39771216ff4c // indirect
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect

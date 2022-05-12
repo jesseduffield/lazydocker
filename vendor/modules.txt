@@ -1,3 +1,7 @@
+# github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1
+## explicit; go 1.16
+github.com/Azure/go-ansiterm
+github.com/Azure/go-ansiterm/winterm
 # github.com/Microsoft/go-winio v0.4.14
 ## explicit; go 1.12
 github.com/Microsoft/go-winio
@@ -39,6 +43,7 @@ github.com/docker/docker/api/types/volume
 github.com/docker/docker/client
 github.com/docker/docker/errdefs
 github.com/docker/docker/pkg/stdcopy
+github.com/docker/docker/pkg/term
 # github.com/docker/go-connections v0.4.0
 ## explicit
 github.com/docker/go-connections/nat
@@ -103,6 +108,8 @@ github.com/gogo/protobuf/proto
 # github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3
 ## explicit
 github.com/golang-collections/collections/stack
+# github.com/google/go-cmp v0.5.5
+## explicit; go 1.8
 # github.com/gookit/color v1.5.0
 ## explicit; go 1.13
 github.com/gookit/color
@@ -142,8 +149,13 @@ github.com/mcuadros/go-lookup
 # github.com/mgutz/str v1.2.0
 ## explicit
 github.com/mgutz/str
+# github.com/micmonay/keybd_event v1.1.1
+## explicit; go 1.16
+github.com/micmonay/keybd_event
 # github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6
 ## explicit; go 1.13
+github.com/moby/term
+github.com/moby/term/windows
 # github.com/morikuni/aec v0.0.0-20170113033406-39771216ff4c
 ## explicit
 # github.com/onsi/ginkgo v1.8.0
