@@ -219,6 +219,18 @@ func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	return gui.createServiceCommandMenu(options, gui.Tr.RemovingStatus)
 }
 
+func (gui *Gui) handleServicePause(g *gocui.Gui, v *gocui.View) error {
+	service, err := gui.getSelectedService()
+	if err != nil {
+		return nil
+	}
+	if service.Container == nil {
+		return nil
+	}
+
+	return gui.PauseContainer(service.Container)
+}
+
 func (gui *Gui) handleServiceStop(g *gocui.Gui, v *gocui.View) error {
 	service, err := gui.getSelectedService()
 	if err != nil {

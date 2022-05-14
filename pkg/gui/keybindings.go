@@ -222,6 +222,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "containers",
+			Key:         'p',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleContainerPause,
+			Description: gui.Tr.Pause,
+		},
+		{
+			ViewName:    "containers",
 			Key:         's',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainerStop,
@@ -289,6 +296,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceStop,
 			Description: gui.Tr.Stop,
+		},
+		{
+			ViewName:    "services",
+			Key:         'p',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServicePause,
+			Description: gui.Tr.Pause,
 		},
 		{
 			ViewName:    "services",

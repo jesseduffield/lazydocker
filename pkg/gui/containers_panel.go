@@ -423,6 +423,31 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	return gui.createMenu("", options, len(options), handleMenuPress)
 }
 
+func (gui *Gui) PauseContainer(container *commands.Container) error {
+	return gui.WithWaitingStatus(gui.Tr.PausingStatus, func() (err error) {
+		if container.Details.State.Paused {
+			err = container.Unpause()
+		} else {
+			err = container.Pause()
+		}
+
+		if err != nil {
+			return gui.createErrorPanel(gui.g, err.Error())
+		}
+
+		return gui.refreshContainersAndServices()
+	})
+}
+
+func (gui *Gui) handleContainerPause(g *gocui.Gui, v *gocui.View) error {
+	container, err := gui.getSelectedContainer()
+	if err != nil {
+		return nil
+	}
+
+	return gui.PauseContainer(container)
+}
+
 func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
 	container, err := gui.getSelectedContainer()
 	if err != nil {
