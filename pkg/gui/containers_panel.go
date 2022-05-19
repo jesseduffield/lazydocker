@@ -523,6 +523,11 @@ func (gui *Gui) handleContainersExecShell(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		return nil
 	}
+
+	return gui.containerExecShell(container)
+}
+
+func (gui *Gui) containerExecShell(container *commands.Container) error {
 	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
 		Container: container,
 	})
