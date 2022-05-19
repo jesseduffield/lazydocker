@@ -369,6 +369,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "services",
+			Key:         'E',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServicesExecShell,
+			Description: gui.Tr.ExecShell,
+		},
+		{
+			ViewName:    "services",
 			Key:         'w',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServicesOpenInBrowserCommand,

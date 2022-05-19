@@ -442,6 +442,20 @@ func (gui *Gui) handleServicesBulkCommand(g *gocui.Gui, v *gocui.View) error {
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }
 
+func (gui *Gui) handleServicesExecShell(g *gocui.Gui, v *gocui.View) error {
+	service, err := gui.getSelectedService()
+	if err != nil {
+		return nil
+	}
+
+	container := service.Container
+	if container == nil {
+		return gui.createErrorPanel(gui.g, gui.Tr.NoContainers)
+	}
+
+	return gui.containerExecShell(container)
+}
+
 func (gui *Gui) handleServicesOpenInBrowserCommand(g *gocui.Gui, v *gocui.View) error {
 	service, err := gui.getSelectedService()
 	if err != nil {
