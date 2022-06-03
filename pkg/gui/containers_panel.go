@@ -145,6 +145,7 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 	output := ""
 	output += utils.WithPadding("ID: ", padding) + container.ID + "\n"
 	output += utils.WithPadding("Name: ", padding) + container.Name + "\n"
+	output += utils.WithPadding("Image: ", padding) + container.Details.Config.Image + "\n"
 	output += utils.WithPadding("Command: ", padding) + strings.Join(append([]string{container.Details.Path}, container.Details.Args...), " ") + "\n"
 	output += utils.WithPadding("Labels: ", padding) + utils.FormatMap(padding, container.Details.Config.Labels)
 	output += "\n"
