@@ -52,6 +52,8 @@ github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee h1:7Zi/OQ
 github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee/go.mod h1:Z9UKHveKXXgyo8ME7R8yxh/BUTFOK+FgfWKlhy8oOAg=
 github.com/jesseduffield/gocui v0.3.1-0.20220417002912-bce22fd599f6 h1:Fmay0Lz21taUpXiIbFkjjIIcn0E5GKwp5UFRuXaOiGQ=
 github.com/jesseduffield/gocui v0.3.1-0.20220417002912-bce22fd599f6/go.mod h1:znJuCDnF2Ph40YZSlBwdX/4GEofnIoWLGdT4mK5zRAU=
+github.com/jesseduffield/kill v0.0.0-20220618033138-bfbe04675d10 h1:jmpr7KpX2+2GRiE91zTgfq49QvgiqB0nbmlwZ8UnOx0=
+github.com/jesseduffield/kill v0.0.0-20220618033138-bfbe04675d10/go.mod h1:aA97kHeNA+sj2Hbki0pvLslmE4CbDyhBeSSTUUnOuVo=
 github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56 h1:33wSxJWU/f2TAozHYtJ8zqBxEnEVYM+22moLoiAkxvg=
 github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56/go.mod h1:FZJBwOhE+RXz8EVZfY+xnbCw2cVOwxlK3/aIi581z/s=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
