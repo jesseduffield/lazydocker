@@ -270,6 +270,12 @@ By default we only show logs from the last hour, so that we're not putting too m
 
 If you are running lazydocker in Docker container, it is a know bug, that you can't see logs or CPU usage.
 
+### Why isn't my docker-compose environment being used?
+
+By default Compose V1 (`docker-compose` with the hyphen) is used as the docker-compose command. You will need to make sure you have the `docker-compose` command available for lazydocker to be able to use.
+
+If you use Compose V2 (`docker compose` without the hyphen), alternatively, you can change the docker-compose command used via the `commandTemplates.dockerCompose` config value.
+
 ## Alternatives
 
 - [docui](https://github.com/skanehira/docui) - Skanehira beat me to the punch on making a docker terminal UI, so definitely check out that repo as well! I think the two repos can live in harmony though: lazydocker is more about managing existing containers/services, and docui is more about creating and configuring them.
