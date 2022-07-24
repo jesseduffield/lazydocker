@@ -16,7 +16,7 @@ func (gui *Gui) scrollUpMain(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) scrollDownMain(g *gocui.Gui, v *gocui.View) error {
 	mainView := gui.getMainView()
-	mainView.Autoscroll = false
+	mainView.Autoscroll = true
 	ox, oy := mainView.Origin()
 
 	reservedLines := 0
