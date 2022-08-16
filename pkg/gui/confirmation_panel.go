@@ -147,9 +147,7 @@ func (gui *Gui) setKeyBindings(g *gocui.Gui, handleConfirm, handleClose func(*go
 }
 
 // createSpecificErrorPanel allows you to create an error popup, specifying the
-//
-//	view to be focused when the user closes the popup, and a boolean specifying
-//
+// view to be focused when the user closes the popup, and a boolean specifying
 // whether we will log the error. If the message may include a user password,
 // this function is to be used over the more generic createErrorPanel, with
 // willLog set to false
