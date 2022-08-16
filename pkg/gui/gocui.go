@@ -32,7 +32,7 @@ func GetGocuiAttribute(key string) gocui.Attribute {
 	if present {
 		return value
 	}
-	return gocui.ColorWhite
+	return gocui.ColorDefault
 }
 
 // GetGocuiStyle bitwise OR's a list of attributes obtained via the given keys
