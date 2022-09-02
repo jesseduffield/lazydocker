@@ -533,7 +533,7 @@ func (gui *Gui) containerExecShell(container *commands.Container) error {
 	})
 
 	// TODO: use SDK
-	resolvedCommand := utils.ApplyTemplate("docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'", commandObject)
+	resolvedCommand := utils.ApplyTemplate("docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $( (grep ^[^:]*:[^:]*:$(id -u): /etc/passwd || echo \"::::::/bin/sh\") | cut -d : -f 7-) || eval $(echo \"/bin/sh\")'", commandObject)
 	// attach and return the subprocess error
 	cmd := gui.OSCommand.ExecutableFromString(resolvedCommand)
 	return gui.runSubprocess(cmd)
