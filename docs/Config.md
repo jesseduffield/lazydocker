@@ -90,3 +90,14 @@ customCommands:
       command: 'docker exec -it {{ .Container.ID }} bash'
       serviceNames: []
 ```
+
+## Replacements
+
+You can add replacements like so:
+
+```yaml
+replacements:
+  imageNamePrefixes:
+    '123456789012.dkr.ecr.us-east-1.amazonaws.com': '<prod>'
+    '923456789999.dkr.ecr.us-east-1.amazonaws.com': '<dev>'
+```
