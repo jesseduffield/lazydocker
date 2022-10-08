@@ -293,7 +293,7 @@ func GetGocuiAttribute(key string) gocui.Attribute {
 	if present {
 		return value
 	}
-	return gocui.ColorWhite
+	return gocui.ColorDefault
 }
 
 // GetColorAttribute gets the color attribute from the string
