@@ -10,7 +10,7 @@ import (
 // list panel functions
 
 func (gui *Gui) handleMenuSelect(g *gocui.Gui, v *gocui.View) error {
-	gui.focusPoint(0, gui.State.Panels.Menu.SelectedLine, gui.State.MenuItemCount, v)
+	gui.focusY(gui.State.Panels.Menu.SelectedLine, gui.State.MenuItemCount, v)
 	return nil
 }
 

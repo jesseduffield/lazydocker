@@ -56,7 +56,7 @@ func (gui *Gui) handleServiceSelect(g *gocui.Gui, v *gocui.View) error {
 		containerID = service.Container.ID
 	}
 
-	gui.focusPoint(0, gui.State.Panels.Services.SelectedLine, len(gui.DockerCommand.Services), v)
+	gui.focusY(gui.State.Panels.Services.SelectedLine, len(gui.DockerCommand.Services), v)
 
 	key := "services-" + service.ID + "-" + containerID + "-" + gui.getServiceContexts()[gui.State.Panels.Services.ContextIndex]
 	if !gui.shouldRefresh(key) {
@@ -118,10 +118,10 @@ func (gui *Gui) renderServiceTop(service *commands.Service) error {
 	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
 		contents, err := service.RenderTop()
 		if err != nil {
-			_ = gui.reRenderString(gui.g, "main", err.Error())
+			gui.reRenderStringMain(err.Error())
 		}
 
-		_ = gui.reRenderString(gui.g, "main", contents)
+		gui.reRenderStringMain(contents)
 	})
 }
 

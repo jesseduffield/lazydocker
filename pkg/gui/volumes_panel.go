@@ -47,7 +47,7 @@ func (gui *Gui) handleVolumeSelect(g *gocui.Gui, v *gocui.View) error {
 		return gui.renderString(g, "main", gui.Tr.NoVolumes)
 	}
 
-	gui.focusPoint(0, gui.State.Panels.Volumes.SelectedLine, len(gui.DockerCommand.Volumes), v)
+	gui.focusY(gui.State.Panels.Volumes.SelectedLine, len(gui.DockerCommand.Volumes), v)
 
 	key := "volumes-" + volume.Name + "-" + gui.getVolumeContexts()[gui.State.Panels.Volumes.ContextIndex]
 	if !gui.shouldRefresh(key) {

@@ -50,7 +50,7 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 		return gui.renderString(g, "main", gui.Tr.NoImages)
 	}
 
-	gui.focusPoint(0, gui.State.Panels.Images.SelectedLine, len(gui.DockerCommand.Images), v)
+	gui.focusY(gui.State.Panels.Images.SelectedLine, len(gui.DockerCommand.Images), v)
 
 	key := "images-" + Image.ID + "-" + gui.getImageContexts()[gui.State.Panels.Images.ContextIndex]
 	if !gui.shouldRefresh(key) {
