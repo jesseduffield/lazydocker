@@ -156,6 +156,7 @@ func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View, returnin
 }
 
 // if the cursor down past the last item, move it to the last line
+// nolint:unparam
 func (gui *Gui) focusPoint(selectedX int, selectedY int, lineCount int, v *gocui.View) {
 	if selectedY < 0 || selectedY > lineCount {
 		return
@@ -192,12 +193,16 @@ func (gui *Gui) focusPoint(selectedX int, selectedY int, lineCount int, v *gocui
 	}
 }
 
+func (gui *Gui) focusY(selectedY int, lineCount int, v *gocui.View) {
+	gui.focusPoint(0, selectedY, lineCount, v)
+}
+
 func (gui *Gui) cleanString(s string) string {
 	output := string(bom.Clean([]byte(s)))
 	return utils.NormalizeLinefeeds(output)
 }
 
-func (gui *Gui) setViewContent(g *gocui.Gui, v *gocui.View, s string) error {
+func (gui *Gui) setViewContent(v *gocui.View, s string) error {
 	v.Clear()
 	fmt.Fprint(v, gui.cleanString(s))
 	return nil
@@ -216,21 +221,25 @@ func (gui *Gui) renderString(g *gocui.Gui, viewName, s string) error {
 		if err := v.SetCursor(0, 0); err != nil {
 			return err
 		}
-		return gui.setViewContent(gui.g, v, s)
+		return gui.setViewContent(v, s)
 	})
 	return nil
 }
 
+// reRenderString sets the main view's content, without changing its origin
+func (gui *Gui) reRenderStringMain(s string) {
+	gui.reRenderString("main", s)
+}
+
 // reRenderString sets the view's content, without changing its origin
-func (gui *Gui) reRenderString(g *gocui.Gui, viewName, s string) error {
-	g.Update(func(*gocui.Gui) error {
-		v, err := g.View(viewName)
+func (gui *Gui) reRenderString(viewName, s string) {
+	gui.g.Update(func(*gocui.Gui) error {
+		v, err := gui.g.View(viewName)
 		if err != nil {
 			return nil // return gracefully if view has been deleted
 		}
-		return gui.setViewContent(gui.g, v, s)
+		return gui.setViewContent(v, s)
 	})
-	return nil
 }
 
 func (gui *Gui) optionsMapToString(optionsMap map[string]string) string {

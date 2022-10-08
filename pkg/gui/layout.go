@@ -300,6 +300,6 @@ func (gui *Gui) focusPointInView(view *gocui.View) {
 	}
 
 	if state, ok := listViews[view.Name()]; ok {
-		gui.focusPoint(0, state.selectedLine, state.lineCount, view)
+		gui.focusY(state.selectedLine, state.lineCount, view)
 	}
 }

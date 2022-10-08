@@ -51,7 +51,7 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	gui.focusPoint(0, gui.State.Panels.Containers.SelectedLine, len(gui.DockerCommand.DisplayContainers), v)
+	gui.focusY(gui.State.Panels.Containers.SelectedLine, len(gui.DockerCommand.DisplayContainers), v)
 
 	key := "containers-" + container.ID + "-" + gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex]
 	if !gui.shouldRefresh(key) {
@@ -199,7 +199,7 @@ func (gui *Gui) renderContainerStats(container *commands.Container) error {
 			_ = gui.createErrorPanel(gui.g, err.Error())
 		}
 
-		_ = gui.reRenderString(gui.g, "main", contents)
+		gui.reRenderStringMain(contents)
 	})
 }
 
@@ -211,10 +211,10 @@ func (gui *Gui) renderContainerTop(container *commands.Container) error {
 	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
 		contents, err := container.RenderTop()
 		if err != nil {
-			_ = gui.reRenderString(gui.g, "main", err.Error())
+			gui.reRenderStringMain(err.Error())
 		}
 
-		_ = gui.reRenderString(gui.g, "main", contents)
+		gui.reRenderStringMain(contents)
 	})
 }
 
@@ -244,7 +244,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 					break
 				}
 				gui.State.Panels.Services.SelectedLine = i
-				gui.focusPoint(0, i, len(gui.DockerCommand.Services), gui.getServicesView())
+				gui.focusY(i, len(gui.DockerCommand.Services), gui.getServicesView())
 			}
 		}
 	}

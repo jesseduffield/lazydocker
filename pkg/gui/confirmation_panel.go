@@ -101,6 +101,8 @@ func (gui *Gui) onNewPopupPanel() {
 }
 
 // it is very important that within this function we never include the original prompt in any error messages, because it may contain e.g. a user password
+// unparam complains that handleClose is alwans nil but one day it won't be nil.
+// nolint:unparam
 func (gui *Gui) createConfirmationPanel(g *gocui.Gui, currentView *gocui.View, title, prompt string, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
 	return gui.createPopupPanel(g, currentView, title, prompt, false, handleConfirm, handleClose)
 }
@@ -146,19 +148,10 @@ func (gui *Gui) setKeyBindings(g *gocui.Gui, handleConfirm, handleClose func(*go
 	return nil
 }
 
-// createSpecificErrorPanel allows you to create an error popup, specifying the
-// view to be focused when the user closes the popup, and a boolean specifying
-// whether we will log the error. If the message may include a user password,
-// this function is to be used over the more generic createErrorPanel, with
-// willLog set to false
-func (gui *Gui) createSpecificErrorPanel(message string, nextView *gocui.View, willLog bool) error {
+func (gui *Gui) createErrorPanel(g *gocui.Gui, message string) error {
 	colorFunction := color.New(color.FgRed).SprintFunc()
 	coloredMessage := colorFunction(strings.TrimSpace(message))
-	return gui.createConfirmationPanel(gui.g, nextView, gui.Tr.ErrorTitle, coloredMessage, nil, nil)
-}
-
-func (gui *Gui) createErrorPanel(g *gocui.Gui, message string) error {
-	return gui.createSpecificErrorPanel(message, g.CurrentView(), true)
+	return gui.createConfirmationPanel(gui.g, g.CurrentView(), gui.Tr.ErrorTitle, coloredMessage, nil, nil)
 }
 
 func (gui *Gui) renderConfirmationOptions() error {
