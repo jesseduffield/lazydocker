@@ -58,7 +58,7 @@ type UserConfig struct {
 	// what stat info to graph
 	Stats StatsConfig `yaml:"stats,omitempty"`
 
-	// Replacements determines how we render a container's info
+	// Replacements determines how we render an item's info
 	Replacements Replacements `yaml:"replacements,omitempty"`
 }
 
