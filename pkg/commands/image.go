@@ -123,6 +123,13 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 		if len(nameParts) > 1 {
 			tag = nameParts[len(nameParts)-1]
 			name = strings.Join(nameParts[:len(nameParts)-1], ":")
+
+			for prefix, replacement := range c.Config.UserConfig.Replacements.ImageNamePrefixes {
+				if strings.HasPrefix(name, prefix) {
+					name = strings.Replace(name, prefix, replacement, 1)
+					break
+				}
+			}
 		}
 
 		ownImages[i] = &Image{

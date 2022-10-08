@@ -57,6 +57,9 @@ type UserConfig struct {
 	// Stats determines how long lazydocker will gather container stats for, and
 	// what stat info to graph
 	Stats StatsConfig `yaml:"stats,omitempty"`
+
+	// Replacements determines how we render an item's info
+	Replacements Replacements `yaml:"replacements,omitempty"`
 }
 
 // ThemeConfig is for setting the colors of panels and some text.
@@ -258,6 +261,12 @@ type CustomCommands struct {
 	Volumes []CustomCommand `yaml:"volumes,omitempty"`
 }
 
+// Replacements contains the stuff relating to rendering a container's info
+type Replacements struct {
+	// ImageNamePrefixes tells us how to replace a prefix in the Docker image name
+	ImageNamePrefixes map[string]string `yaml:"imageNamePrefixes,omitempty"`
+}
+
 // CustomCommand is a template for a command we want to run against a service or
 // container
 type CustomCommand struct {
@@ -403,6 +412,9 @@ func GetDefaultConfig() UserConfig {
 					Color:    "green",
 				},
 			},
+		},
+		Replacements: Replacements{
+			ImageNamePrefixes: map[string]string{},
 		},
 	}
 }
