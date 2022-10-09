@@ -222,10 +222,6 @@ func (gui *Gui) sidePanelChildren(width int, height int) []*boxlayout.Box {
 // 	return "files" // default
 // }
 
-func (gui *Gui) currentNonPopupWindowName() string {
-	return gui.peekPreviousView()
-}
-
 // TODO: do this better.
 func (gui *Gui) currentSideWindowName() string {
 	windowName := gui.currentWindow()
