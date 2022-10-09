@@ -7,6 +7,7 @@ import (
 
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/samber/lo"
 	"github.com/spkg/bom"
 )
 
@@ -32,7 +33,7 @@ func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 		panic(err)
 	}
 	gui.resetMainView()
-	gui.popPreviousView()
+	gui.popView()
 	return gui.switchFocus(g, v, focusedView, false)
 }
 
@@ -58,7 +59,7 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 		panic(err)
 	}
 	gui.resetMainView()
-	gui.popPreviousView()
+	gui.popView()
 	return gui.switchFocus(g, v, focusedView, false)
 }
 
@@ -95,28 +96,42 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 	}
 }
 
-func (gui *Gui) popPreviousView() string {
-	if gui.State.PreviousViews.Len() > 0 {
-		return gui.State.PreviousViews.Pop().(string)
+func (gui *Gui) popView() string {
+	if len(gui.State.ViewStack) > 0 {
+		value := gui.State.ViewStack[len(gui.State.ViewStack)-1]
+		gui.State.ViewStack = gui.State.ViewStack[:len(gui.State.ViewStack)-1]
+		return value
 	}
 
 	return ""
 }
 
 func (gui *Gui) peekPreviousView() string {
-	if gui.State.PreviousViews.Len() > 0 {
-		return gui.State.PreviousViews.Peek().(string)
+	if len(gui.State.ViewStack) > 0 {
+		return gui.State.ViewStack[len(gui.State.ViewStack)-1]
 	}
 
 	return ""
 }
 
-func (gui *Gui) pushPreviousView(name string) {
-	gui.State.PreviousViews.Push(name)
+func (gui *Gui) pushView(name string) {
+	// No matter what view we're pushing, we first remove all popup panels from the stack
+	gui.State.ViewStack = lo.Filter(gui.State.ViewStack, func(viewName string, _ int) bool {
+		return viewName != "confirmation" && viewName != "menu"
+	})
+
+	// If we're pushing a side panel, we remove all other panels
+	if lo.Contains(gui.sideViewNames(), name) {
+		gui.State.ViewStack = lo.Filter(gui.State.ViewStack, func(viewName string, _ int) bool {
+			return viewName != "main"
+		})
+	}
+
+	gui.State.ViewStack = append(gui.State.ViewStack, name)
 }
 
 func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
-	previousViewName := gui.popPreviousView()
+	previousViewName := gui.popView()
 	previousView, err := g.View(previousViewName)
 	if err != nil {
 		// always fall back to services view if there's no 'previous' view stored
@@ -134,7 +149,7 @@ func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View, returnin
 	// we assume we'll never want to return focus to a popup panel i.e.
 	// we should never stack popup panels
 	if oldView != nil && !gui.isPopupPanel(oldView.Name()) && !returning {
-		gui.pushPreviousView(oldView.Name())
+		gui.pushView(oldView.Name())
 	}
 
 	gui.Log.Info("setting highlight to true for view " + newView.Name())

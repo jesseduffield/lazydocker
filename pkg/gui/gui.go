@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
-	"github.com/golang-collections/collections/stack"
 
 	// "io"
 	// "io/ioutil"
@@ -123,8 +122,9 @@ type panelStates struct {
 }
 
 type guiState struct {
-	MenuItemCount    int // can't store the actual list because it's of interface{} type
-	PreviousViews    *stack.Stack
+	MenuItemCount int // can't store the actual list because it's of interface{} type
+	// the names of views in the current focus stack (last item is the current view)
+	ViewStack        []string
 	Platform         commands.Platform
 	Panels           *panelStates
 	SubProcessOutput string
@@ -165,8 +165,8 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 			},
 			Project: &projectState{ContextIndex: 0},
 		},
-		SessionIndex:  0,
-		PreviousViews: stack.New(),
+		SessionIndex: 0,
+		ViewStack:    []string{},
 	}
 
 	cyclableViews := []string{"project", "containers", "images", "volumes"}
