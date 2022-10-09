@@ -121,6 +121,10 @@ github.com/jesseduffield/gocui
 # github.com/jesseduffield/kill v0.0.0-20220618033138-bfbe04675d10
 ## explicit; go 1.18
 github.com/jesseduffield/kill
+# github.com/jesseduffield/lazycore v0.0.0-20221009164442-17c8b878c316
+## explicit; go 1.18
+github.com/jesseduffield/lazycore/pkg/boxlayout
+github.com/jesseduffield/lazycore/pkg/utils
 # github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56
 ## explicit
 github.com/jesseduffield/yaml
@@ -169,7 +173,7 @@ github.com/pmezard/go-difflib/difflib
 # github.com/rivo/uniseg v0.2.0
 ## explicit; go 1.12
 github.com/rivo/uniseg
-# github.com/samber/lo v1.20.0
+# github.com/samber/lo v1.31.0
 ## explicit; go 1.18
 github.com/samber/lo
 # github.com/sirupsen/logrus v1.4.2
@@ -178,7 +182,7 @@ github.com/sirupsen/logrus
 # github.com/spkg/bom v0.0.0-20160624110644-59b7046e48ad
 ## explicit
 github.com/spkg/bom
-# github.com/stretchr/testify v1.7.0
+# github.com/stretchr/testify v1.8.0
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
 # github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778
@@ -213,7 +217,7 @@ golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # gopkg.in/yaml.v2 v2.2.2
 ## explicit
-# gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+# gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
 # gotest.tools/v3 v3.2.0

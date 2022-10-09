@@ -73,6 +73,9 @@ type Gui struct {
 	T             *tasks.TaskManager
 	ErrorChan     chan error
 	CyclableViews []string
+	Views         Views
+
+	ViewsSetup bool
 }
 
 type servicePanelState struct {
@@ -131,7 +134,21 @@ type guiState struct {
 	// We increment it each time we switch to a new subprocess
 	// Every time we go to a subprocess we need to close a few goroutines so this index is used for that purpose
 	SessionIndex int
+
+	ScreenMode WindowMaximisation
 }
+
+// screen sizing determines how much space your selected window takes up (window
+// as in panel, not your terminal's window). Sometimes you want a bit more space
+// to see the contents of a panel, and this keeps track of how much maximisation
+// you've set
+type WindowMaximisation int
+
+const (
+	SCREEN_NORMAL WindowMaximisation = iota
+	SCREEN_HALF
+	SCREEN_FULL
+)
 
 // NewGui builds a new gui handler
 func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {

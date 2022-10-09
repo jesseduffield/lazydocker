@@ -291,6 +291,10 @@ func (gui *Gui) trimmedContent(v *gocui.View) string {
 
 func (gui *Gui) currentViewName() string {
 	currentView := gui.g.CurrentView()
+	// this can happen when the app is first starting up
+	if currentView == nil {
+		return gui.initiallyFocusedViewName()
+	}
 	return currentView.Name()
 }
 
@@ -382,4 +386,52 @@ func (gui *Gui) handleClick(v *gocui.View, itemCount int, selectedLine *int, han
 	*selectedLine = newSelectedLine
 
 	return handleSelect(gui.g, v)
+}
+
+func (gui *Gui) nextScreenMode() error {
+	if gui.currentViewName() == "main" {
+		gui.State.ScreenMode = prevIntInCycle([]WindowMaximisation{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
+
+		return nil
+	}
+
+	gui.State.ScreenMode = nextIntInCycle([]WindowMaximisation{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
+
+	return nil
+}
+
+func (gui *Gui) prevScreenMode() error {
+	if gui.currentViewName() == "main" {
+		gui.State.ScreenMode = nextIntInCycle([]WindowMaximisation{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
+
+		return nil
+	}
+
+	gui.State.ScreenMode = prevIntInCycle([]WindowMaximisation{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
+
+	return nil
+}
+
+func nextIntInCycle(sl []WindowMaximisation, current WindowMaximisation) WindowMaximisation {
+	for i, val := range sl {
+		if val == current {
+			if i == len(sl)-1 {
+				return sl[0]
+			}
+			return sl[i+1]
+		}
+	}
+	return sl[0]
+}
+
+func prevIntInCycle(sl []WindowMaximisation, current WindowMaximisation) WindowMaximisation {
+	for i, val := range sl {
+		if val == current {
+			if i > 0 {
+				return sl[i-1]
+			}
+			return sl[len(sl)-1]
+		}
+	}
+	return sl[len(sl)-1]
 }
