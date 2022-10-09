@@ -8,7 +8,6 @@ func polishSet() TranslationSet {
 		StoppingStatus:             "zatrzymywanie",
 		RunningCustomCommandStatus: "uruchamianie własnej komendty",
 
-		RunningSubprocess:                          "uruchamianie podprocesu",
 		NoViewMachingNewLineFocusedSwitchStatement: "Żaden widok nie odpowiada instrukcji przełączenia newLineFocused",
 
 		ErrorOccurred:                     "Wystąpił błąd! Proszę go zgłosić na https://github.com/jesseduffield/lazydocker/issues",

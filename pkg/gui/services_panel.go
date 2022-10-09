@@ -293,8 +293,7 @@ func (gui *Gui) handleServiceAttach(g *gocui.Gui, v *gocui.View) error {
 		return gui.createErrorPanel(gui.g, err.Error())
 	}
 
-	gui.SubProcess = c
-	return gui.Errors.ErrSubProcess
+	return gui.runSubprocess(c)
 }
 
 func (gui *Gui) handleServiceRenderLogsToMain(g *gocui.Gui, v *gocui.View) error {
@@ -308,8 +307,7 @@ func (gui *Gui) handleServiceRenderLogsToMain(g *gocui.Gui, v *gocui.View) error
 		return gui.createErrorPanel(gui.g, err.Error())
 	}
 
-	gui.SubProcess = c
-	return gui.Errors.ErrSubProcess
+	return gui.runSubprocess(c)
 }
 
 func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
@@ -366,8 +364,7 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 				gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
 			),
 			f: func() error {
-				gui.SubProcess = gui.OSCommand.RunCustomCommand(rebuildCommand)
-				return gui.Errors.ErrSubProcess
+				return gui.runSubprocess(gui.OSCommand.RunCustomCommand(rebuildCommand))
 			},
 		},
 		{

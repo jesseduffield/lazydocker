@@ -13,7 +13,6 @@ type TranslationSet struct {
 	Scroll                                     string
 	Close                                      string
 	ErrorTitle                                 string
-	RunningSubprocess                          string
 	NoViewMachingNewLineFocusedSwitchStatement string
 	OpenConfig                                 string
 	EditConfig                                 string
@@ -121,7 +120,6 @@ func englishSet() TranslationSet {
 		RunningCustomCommandStatus: "running custom command",
 		RunningBulkCommandStatus:   "running bulk command",
 
-		RunningSubprocess:                          "running subprocess",
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
 
 		ErrorOccurred:                     "An error occurred! Please create an issue at https://github.com/jesseduffield/lazydocker/issues",

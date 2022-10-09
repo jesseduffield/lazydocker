@@ -8,7 +8,6 @@ func dutchSet() TranslationSet {
 		StoppingStatus:             "stoppen",
 		RunningCustomCommandStatus: "Aangepast commando draaien",
 
-		RunningSubprocess:                          "subprocess draaien",
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
 
 		ErrorOccurred:                     "Er is iets fout gegaan! Zou je hier een issue aan willen maken: https://github.com/jesseduffield/lazydocker/issues",

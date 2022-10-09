@@ -492,8 +492,7 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 		return gui.createErrorPanel(gui.g, err.Error())
 	}
 
-	gui.SubProcess = c
-	return gui.Errors.ErrSubProcess
+	return gui.runSubprocess(c)
 }
 
 func (gui *Gui) handlePruneContainers() error {
@@ -537,8 +536,7 @@ func (gui *Gui) containerExecShell(container *commands.Container) error {
 	resolvedCommand := utils.ApplyTemplate("docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'", commandObject)
 	// attach and return the subprocess error
 	cmd := gui.OSCommand.ExecutableFromString(resolvedCommand)
-	gui.SubProcess = cmd
-	return gui.Errors.ErrSubProcess
+	return gui.runSubprocess(cmd)
 }
 
 func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error {
