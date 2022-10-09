@@ -224,6 +224,5 @@ func (gui *Gui) handleViewAllLogs(g *gocui.Gui, v *gocui.View) error {
 		return gui.createErrorPanel(gui.g, err.Error())
 	}
 
-	gui.SubProcess = c
-	return gui.Errors.ErrSubProcess
+	return gui.runSubprocess(c)
 }

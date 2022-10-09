@@ -8,7 +8,6 @@ func turkishSet() TranslationSet {
 		StoppingStatus:             "durduruluyor",
 		RunningCustomCommandStatus: "özel komut çalıştır",
 
-		RunningSubprocess:                          "İkincil işlem yürütülüyor",
 		NoViewMachingNewLineFocusedSwitchStatement: "NewLineFocused anahtar deyimi ile eşleşen görünüm yok",
 
 		ErrorOccurred:                     "Bir hata oluştu! Lütfen https://github.com/jesseduffield/lazydocker/issues adresinden bir hataya ilişkin konu oluşturun",
