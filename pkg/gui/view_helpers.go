@@ -142,9 +142,6 @@ func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View, returnin
 	if _, err := g.SetCurrentView(newView.Name()); err != nil {
 		return err
 	}
-	if _, err := g.SetViewOnTop(newView.Name()); err != nil {
-		return err
-	}
 
 	g.Cursor = newView.Editable
 

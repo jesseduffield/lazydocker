@@ -57,10 +57,7 @@ func (gui *Gui) handleMenuClose(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	err := g.DeleteView("menu")
-	if err != nil {
-		return err
-	}
+	gui.Views.Menu.Visible = false
 	return gui.returnFocus(g, v)
 }
 
@@ -73,7 +70,8 @@ func (gui *Gui) createMenu(title string, items interface{}, itemCount int, handl
 	}
 
 	x0, y0, x1, y1 := gui.getConfirmationPanelDimensions(gui.g, false, list)
-	menuView, _ := gui.g.SetView("menu", x0, y0, x1, y1, 0)
+	_, _ = gui.g.SetView("menu", x0, y0, x1, y1, 0)
+	menuView := gui.Views.Menu
 	menuView.Title = title
 	menuView.FgColor = gocui.ColorDefault
 	menuView.Clear()
@@ -85,11 +83,7 @@ func (gui *Gui) createMenu(title string, items interface{}, itemCount int, handl
 		if err := handlePress(selectedLine); err != nil {
 			return err
 		}
-		if _, err := gui.g.View("menu"); err == nil {
-			if _, err := gui.g.SetViewOnBottom("menu"); err != nil {
-				return err
-			}
-		}
+		menuView.Visible = false
 
 		return gui.returnFocus(gui.g, menuView)
 	}
@@ -105,11 +99,7 @@ func (gui *Gui) createMenu(title string, items interface{}, itemCount int, handl
 	}
 
 	gui.g.Update(func(g *gocui.Gui) error {
-		if _, err := gui.g.View("menu"); err == nil {
-			if _, err := g.SetViewOnTop("menu"); err != nil {
-				return err
-			}
-		}
+		menuView.Visible = true
 		currentView := gui.g.CurrentView()
 		return gui.switchFocus(gui.g, currentView, menuView, false)
 	})
