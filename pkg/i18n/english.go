@@ -105,6 +105,9 @@ type TranslationSet struct {
 
 	No  string
 	Yes string
+
+	LcNextScreenMode string
+	LcPrevScreenMode string
 }
 
 func englishSet() TranslationSet {
@@ -217,5 +220,8 @@ func englishSet() TranslationSet {
 
 		No:  "no",
 		Yes: "yes",
+
+		LcNextScreenMode: "next screen mode (normal/half/fullscreen)",
+		LcPrevScreenMode: "prev screen mode",
 	}
 }

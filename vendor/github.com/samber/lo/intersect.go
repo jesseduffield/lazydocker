@@ -175,3 +175,28 @@ func Union[T comparable](list1 []T, list2 []T) []T {
 
 	return result
 }
+
+// Without returns slice excluding all given values.
+func Without[T comparable](collection []T, exclude ...T) []T {
+	result := make([]T, 0, len(collection))
+	for _, e := range collection {
+		if !Contains(exclude, e) {
+			result = append(result, e)
+		}
+	}
+	return result
+}
+
+// WithoutEmpty returns slice excluding empty values.
+func WithoutEmpty[T comparable](collection []T) []T {
+	var empty T
+
+	result := make([]T, 0, len(collection))
+	for _, e := range collection {
+		if e != empty {
+			result = append(result, e)
+		}
+	}
+
+	return result
+}
