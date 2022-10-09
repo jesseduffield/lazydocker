@@ -106,6 +106,7 @@ func (gui *Gui) createAllViews() error {
 	}
 
 	gui.Views.Confirmation.Visible = false
+	gui.Views.Confirmation.Wrap = true
 	gui.Views.Menu.Visible = false
 
 	gui.Views.Limit.Visible = false

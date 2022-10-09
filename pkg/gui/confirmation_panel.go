@@ -15,25 +15,27 @@ import (
 
 func (gui *Gui) wrappedConfirmationFunction(function func(*gocui.Gui, *gocui.View) error) func(*gocui.Gui, *gocui.View) error {
 	return func(g *gocui.Gui, v *gocui.View) error {
+		if err := gui.closeConfirmationPrompt(); err != nil {
+			return err
+		}
+
 		if function != nil {
 			if err := function(g, v); err != nil {
 				return err
 			}
 		}
-		return gui.closeConfirmationPrompt()
+
+		return nil
 	}
 }
 
 func (gui *Gui) closeConfirmationPrompt() error {
-	view, err := gui.g.View("confirmation")
-	if err != nil {
-		return nil // if it's already been closed we can just return
-	}
-	if err := gui.returnFocus(gui.g, view); err != nil {
+	if err := gui.returnFocus(gui.g, gui.Views.Confirmation); err != nil {
 		return err
 	}
 	gui.g.DeleteViewKeybindings("confirmation")
-	return gui.g.DeleteView("confirmation")
+	gui.Views.Confirmation.Visible = false
+	return nil
 }
 
 func (gui *Gui) getMessageHeight(wrap bool, message string, width int) int {
@@ -62,42 +64,36 @@ func (gui *Gui) getConfirmationPanelDimensions(g *gocui.Gui, wrap bool, prompt s
 
 func (gui *Gui) createPromptPanel(g *gocui.Gui, currentView *gocui.View, title string, handleConfirm func(*gocui.Gui, *gocui.View) error) error {
 	gui.onNewPopupPanel()
-	confirmationView, err := gui.prepareConfirmationPanel(currentView, title, "", false)
+	err := gui.prepareConfirmationPanel(currentView, title, "", false)
 	if err != nil {
 		return err
 	}
-	confirmationView.Editable = true
+	gui.Views.Confirmation.Editable = true
 	return gui.setKeyBindings(g, handleConfirm, nil)
 }
 
-func (gui *Gui) prepareConfirmationPanel(currentView *gocui.View, title, prompt string, hasLoader bool) (*gocui.View, error) {
+func (gui *Gui) prepareConfirmationPanel(currentView *gocui.View, title, prompt string, hasLoader bool) error {
 	x0, y0, x1, y1 := gui.getConfirmationPanelDimensions(gui.g, true, prompt)
-	confirmationView, err := gui.g.SetView("confirmation", x0, y0, x1, y1, 0)
+	confirmationView := gui.Views.Confirmation
+	_, err := gui.g.SetView("confirmation", x0, y0, x1, y1, 0)
 	if err != nil {
-		if err.Error() != "unknown view" {
-			return nil, err
-		}
-		confirmationView.HasLoader = hasLoader
-		gui.g.StartTicking()
-		confirmationView.Title = title
-		confirmationView.Wrap = true
-		confirmationView.FgColor = gocui.ColorDefault
+		return err
 	}
+	confirmationView.HasLoader = hasLoader
+	if hasLoader {
+		gui.g.StartTicking()
+	}
+	confirmationView.Title = title
+	confirmationView.Visible = true
 	gui.g.Update(func(g *gocui.Gui) error {
 		return gui.switchFocus(gui.g, currentView, confirmationView, false)
 	})
-	return confirmationView, nil
+	return nil
 }
 
 func (gui *Gui) onNewPopupPanel() {
-	viewNames := []string{
-		"commitMessage",
-		"credentials",
-		"menu",
-	}
-	for _, viewName := range viewNames {
-		_, _ = gui.g.SetViewOnBottom(viewName)
-	}
+	gui.Views.Menu.Visible = false
+	gui.Views.Confirmation.Visible = false
 }
 
 // it is very important that within this function we never include the original prompt in any error messages, because it may contain e.g. a user password
@@ -110,17 +106,16 @@ func (gui *Gui) createConfirmationPanel(g *gocui.Gui, currentView *gocui.View, t
 func (gui *Gui) createPopupPanel(g *gocui.Gui, currentView *gocui.View, title, prompt string, hasLoader bool, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
 	gui.onNewPopupPanel()
 	g.Update(func(g *gocui.Gui) error {
-		// delete the existing confirmation panel if it exists
-		if view, _ := g.View("confirmation"); view != nil {
+		if gui.currentViewName() == "confirmation" {
 			if err := gui.closeConfirmationPrompt(); err != nil {
 				gui.Log.Error(err.Error())
 			}
 		}
-		confirmationView, err := gui.prepareConfirmationPanel(currentView, title, prompt, hasLoader)
+		err := gui.prepareConfirmationPanel(currentView, title, prompt, hasLoader)
 		if err != nil {
 			return err
 		}
-		confirmationView.Editable = false
+		gui.Views.Confirmation.Editable = false
 		if err := gui.renderString(g, "confirmation", prompt); err != nil {
 			return err
 		}
