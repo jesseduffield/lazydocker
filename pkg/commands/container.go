@@ -57,7 +57,14 @@ func (c *Container) GetDisplayStrings(isFocused bool) []string {
 
 func (c *Container) displayPorts() string {
 	portStrings := lo.Map(c.Container.Ports, func(port types.Port, _ int) string {
-		return fmt.Sprintf("%s:%d->%d/%s", port.IP, port.PublicPort, port.PrivatePort, port.Type)
+		// docker ps will show '0.0.0.0:80->80/tcp' but we'll show
+		// '80->80/tcp' instead to save space (unless the IP is something other than
+		// 0.0.0.0)
+		ipString := ""
+		if port.IP != "0.0.0.0" {
+			ipString = port.IP + ":"
+		}
+		return fmt.Sprintf("%s%d->%d/%s", ipString, port.PublicPort, port.PrivatePort, port.Type)
 	})
 
 	return strings.Join(portStrings, ", ")
