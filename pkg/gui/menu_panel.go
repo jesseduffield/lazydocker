@@ -100,8 +100,7 @@ func (gui *Gui) createMenu(title string, items interface{}, itemCount int, handl
 
 	gui.g.Update(func(g *gocui.Gui) error {
 		menuView.Visible = true
-		currentView := gui.g.CurrentView()
-		return gui.switchFocus(gui.g, currentView, menuView, false)
+		return gui.switchFocus(menuView)
 	})
 	return nil
 }

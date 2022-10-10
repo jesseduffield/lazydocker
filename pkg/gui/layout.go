@@ -117,16 +117,13 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	}
 
 	if gui.g.CurrentView() == nil {
-		v, err := gui.g.View(gui.peekPreviousView())
+		viewName := gui.initiallyFocusedViewName()
+		view, err := gui.g.View(viewName)
 		if err != nil {
-			viewName := gui.initiallyFocusedViewName()
-			v, err = gui.g.View(viewName)
-			if err != nil {
-				return err
-			}
+			return err
 		}
 
-		if err := gui.switchFocus(gui.g, nil, v, false); err != nil {
+		if err := gui.switchFocus(view); err != nil {
 			return err
 		}
 	}

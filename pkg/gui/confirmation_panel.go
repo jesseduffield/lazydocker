@@ -86,7 +86,7 @@ func (gui *Gui) prepareConfirmationPanel(currentView *gocui.View, title, prompt 
 	confirmationView.Title = title
 	confirmationView.Visible = true
 	gui.g.Update(func(g *gocui.Gui) error {
-		return gui.switchFocus(gui.g, currentView, confirmationView, false)
+		return gui.switchFocus(confirmationView)
 	})
 	return nil
 }
@@ -96,8 +96,8 @@ func (gui *Gui) onNewPopupPanel() {
 	gui.Views.Confirmation.Visible = false
 }
 
-// it is very important that within this function we never include the original prompt in any error messages, because it may contain e.g. a user password
-// unparam complains that handleClose is alwans nil but one day it won't be nil.
+// It is very important that within this function we never include the original prompt in any error messages, because it may contain e.g. a user password.
+// The golangcilint unparam linter complains that handleClose is alwans nil but one day it won't be nil.
 // nolint:unparam
 func (gui *Gui) createConfirmationPanel(g *gocui.Gui, currentView *gocui.View, title, prompt string, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
 	return gui.createPopupPanel(g, currentView, title, prompt, false, handleConfirm, handleClose)

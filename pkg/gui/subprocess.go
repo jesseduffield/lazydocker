@@ -22,7 +22,7 @@ func (gui *Gui) runSubprocess(cmd *exec.Cmd) error {
 
 	gui.PauseBackgroundThreads = true
 
-	cmdErr := gui.runSubprocess(cmd)
+	cmdErr := gui.runCommand(cmd)
 
 	if err := gui.g.Resume(); err != nil {
 		return gui.createErrorPanel(gui.g, err.Error())

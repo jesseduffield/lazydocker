@@ -204,30 +204,15 @@ func (gui *Gui) sidePanelChildren(width int, height int) []*boxlayout.Box {
 	}
 }
 
-// TODO: reintroduce
-// func (gui *Gui) currentSideWindowName() string {
-// 	// there is always one and only one cyclable context in the context stack. We'll look from top to bottom
-// 	gui.State.ContextManager.RLock()
-// 	defer gui.State.ContextManager.RUnlock()
-
-// 	for idx := range gui.State.ContextManager.ContextStack {
-// 		reversedIdx := len(gui.State.ContextManager.ContextStack) - 1 - idx
-// 		context := gui.State.ContextManager.ContextStack[reversedIdx]
-
-// 		if context.GetKind() == types.SIDE_CONTEXT {
-// 			return context.GetWindowName()
-// 		}
-// 	}
-
-// 	return "files" // default
-// }
-
-// TODO: do this better.
 func (gui *Gui) currentSideWindowName() string {
-	windowName := gui.currentWindow()
-	if !lo.Contains(gui.sideViewNames(), windowName) {
-		return gui.peekPreviousView()
+	// we expect that there is a side window somewhere in the view stack, so we will search from top to bottom
+	for idx := range gui.State.ViewStack {
+		reversedIdx := len(gui.State.ViewStack) - 1 - idx
+		viewName := gui.State.ViewStack[reversedIdx]
+		if lo.Contains(gui.sideViewNames(), viewName) {
+			return viewName
+		}
 	}
 
-	return windowName
+	return gui.initiallyFocusedViewName()
 }
