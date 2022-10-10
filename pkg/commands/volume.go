@@ -36,7 +36,16 @@ func (c *DockerCommand) RefreshVolumes() error {
 
 	ownVolumes := make([]*Volume, len(volumes))
 
+	// we're sorting these volumes based on whether they have labels defined,
+	// because those are the ones you typically care about.
+	// Within that, we also sort them alphabetically
 	sort.Slice(volumes, func(i, j int) bool {
+		if len(volumes[i].Labels) == 0 && len(volumes[j].Labels) > 0 {
+			return false
+		}
+		if len(volumes[i].Labels) > 0 && len(volumes[j].Labels) == 0 {
+			return true
+		}
 		return volumes[i].Name < volumes[j].Name
 	})
 
