@@ -19,6 +19,10 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 )
 
+const (
+	generateCheatsheetCmd = "go run scripts/generate_cheatsheet.go"
+)
+
 type bindingSection struct {
 	title    string
 	bindings []*gui.Binding
@@ -43,7 +47,7 @@ func main() {
 		content = fmt.Sprintf(
 			"_This file is auto-generated. To update, make the changes in the "+
 				"pkg/i18n directory and then run `%s` from the project root._\n\n%s",
-			commandToRun(),
+			generateCheatsheetCmd,
 			content,
 		)
 		writeString(file, content)
@@ -139,8 +143,4 @@ func formatSections(mApp *app.App, bindingSections []*bindingSection) string {
 	}
 
 	return content
-}
-
-func commandToRun() string {
-	return "go run scripts/generate_cheatsheet.go"
 }
