@@ -506,6 +506,18 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier: gocui.ModNone,
 			Handler:  gui.scrollRightMain,
 		},
+		{
+			ViewName:    "",
+			Key:         '+',
+			Handler:     wrappedHandler(gui.nextScreenMode),
+			Description: gui.Tr.LcNextScreenMode,
+		},
+		{
+			ViewName:    "",
+			Key:         '_',
+			Handler:     wrappedHandler(gui.prevScreenMode),
+			Description: gui.Tr.LcPrevScreenMode,
+		},
 	}
 
 	// TODO: add more views here
@@ -572,4 +584,10 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
 	}
 
 	return nil
+}
+
+func wrappedHandler(f func() error) func(*gocui.Gui, *gocui.View) error {
+	return func(g *gocui.Gui, v *gocui.View) error {
+		return f()
+	}
 }

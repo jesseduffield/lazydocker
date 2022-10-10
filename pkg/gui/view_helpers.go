@@ -7,6 +7,7 @@ import (
 
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/samber/lo"
 	"github.com/spkg/bom"
 )
 
@@ -32,8 +33,7 @@ func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 		panic(err)
 	}
 	gui.resetMainView()
-	gui.popPreviousView()
-	return gui.switchFocus(g, v, focusedView, false)
+	return gui.switchFocus(focusedView)
 }
 
 func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
@@ -58,8 +58,7 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 		panic(err)
 	}
 	gui.resetMainView()
-	gui.popPreviousView()
-	return gui.switchFocus(g, v, focusedView, false)
+	return gui.switchFocus(focusedView)
 }
 
 func (gui *Gui) resetMainView() {
@@ -95,64 +94,95 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 	}
 }
 
-func (gui *Gui) popPreviousView() string {
-	if gui.State.PreviousViews.Len() > 0 {
-		return gui.State.PreviousViews.Pop().(string)
-	}
-
-	return ""
-}
-
-func (gui *Gui) peekPreviousView() string {
-	if gui.State.PreviousViews.Len() > 0 {
-		return gui.State.PreviousViews.Peek().(string)
-	}
-
-	return ""
-}
-
-func (gui *Gui) pushPreviousView(name string) {
-	gui.State.PreviousViews.Push(name)
-}
-
-func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
-	previousViewName := gui.popPreviousView()
-	previousView, err := g.View(previousViewName)
-	if err != nil {
-		// always fall back to services view if there's no 'previous' view stored
-		previousView, err = g.View(gui.initiallyFocusedViewName())
-		if err != nil {
-			gui.Log.Error(err)
-		}
-	}
-	return gui.switchFocus(g, v, previousView, true)
-}
-
-// pass in oldView = nil if you don't want to be able to return to your old view
 // TODO: move some of this logic into our onFocusLost and onFocus hooks
-func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View, returning bool) error {
-	// we assume we'll never want to return focus to a popup panel i.e.
-	// we should never stack popup panels
-	if oldView != nil && !gui.isPopupPanel(oldView.Name()) && !returning {
-		gui.pushPreviousView(oldView.Name())
-	}
+func (gui *Gui) switchFocus(newView *gocui.View) error {
+	gui.Mutexes.ViewStackMutex.Lock()
+	defer gui.Mutexes.ViewStackMutex.Unlock()
 
+	return gui.switchFocusAux(newView)
+}
+
+func (gui *Gui) switchFocusAux(newView *gocui.View) error {
+	gui.pushView(newView.Name())
 	gui.Log.Info("setting highlight to true for view " + newView.Name())
 	gui.Log.Info("new focused view is " + newView.Name())
-	if _, err := g.SetCurrentView(newView.Name()); err != nil {
-		return err
-	}
-	if _, err := g.SetViewOnTop(newView.Name()); err != nil {
+	if _, err := gui.g.SetCurrentView(newView.Name()); err != nil {
 		return err
 	}
 
-	g.Cursor = newView.Editable
+	gui.g.Cursor = newView.Editable
 
 	if err := gui.renderPanelOptions(); err != nil {
 		return err
 	}
 
 	return gui.newLineFocused(newView)
+}
+
+func (gui *Gui) returnFocus() error {
+	gui.Mutexes.ViewStackMutex.Lock()
+	defer gui.Mutexes.ViewStackMutex.Unlock()
+
+	if len(gui.State.ViewStack) <= 1 {
+		return nil
+	}
+
+	previousViewName := gui.State.ViewStack[len(gui.State.ViewStack)-2]
+	previousView, err := gui.g.View(previousViewName)
+	if err != nil {
+		return err
+	}
+	return gui.switchFocusAux(previousView)
+}
+
+// Not to be called directly. Use `switchFocus` instead
+func (gui *Gui) pushView(name string) {
+	// No matter what view we're pushing, we first remove all popup panels from the stack
+	gui.State.ViewStack = lo.Filter(gui.State.ViewStack, func(viewName string, _ int) bool {
+		return viewName != "confirmation" && viewName != "menu"
+	})
+
+	// If we're pushing a side panel, we remove all other panels
+	if lo.Contains(gui.sideViewNames(), name) {
+		gui.State.ViewStack = []string{}
+	}
+
+	// If we're pushing a panel that's already in the stack, we remove it
+	gui.State.ViewStack = lo.Filter(gui.State.ViewStack, func(viewName string, _ int) bool {
+		return viewName != name
+	})
+
+	gui.State.ViewStack = append(gui.State.ViewStack, name)
+}
+
+// excludes popups
+func (gui *Gui) currentStaticViewName() string {
+	gui.Mutexes.ViewStackMutex.Lock()
+	defer gui.Mutexes.ViewStackMutex.Unlock()
+
+	for i := len(gui.State.ViewStack) - 1; i >= 0; i-- {
+		if !lo.Contains(gui.popupViewNames(), gui.State.ViewStack[i]) {
+			return gui.State.ViewStack[i]
+		}
+	}
+
+	return gui.initiallyFocusedViewName()
+}
+
+func (gui *Gui) currentSideViewName() string {
+	gui.Mutexes.ViewStackMutex.Lock()
+	defer gui.Mutexes.ViewStackMutex.Unlock()
+
+	// we expect that there is a side window somewhere in the view stack, so we will search from top to bottom
+	for idx := range gui.State.ViewStack {
+		reversedIdx := len(gui.State.ViewStack) - 1 - idx
+		viewName := gui.State.ViewStack[reversedIdx]
+		if lo.Contains(gui.sideViewNames(), viewName) {
+			return viewName
+		}
+	}
+
+	return gui.initiallyFocusedViewName()
 }
 
 // if the cursor down past the last item, move it to the last line
@@ -291,6 +321,10 @@ func (gui *Gui) trimmedContent(v *gocui.View) string {
 
 func (gui *Gui) currentViewName() string {
 	currentView := gui.g.CurrentView()
+	// this can happen when the app is first starting up
+	if currentView == nil {
+		return gui.initiallyFocusedViewName()
+	}
 	return currentView.Name()
 }
 
@@ -382,4 +416,52 @@ func (gui *Gui) handleClick(v *gocui.View, itemCount int, selectedLine *int, han
 	*selectedLine = newSelectedLine
 
 	return handleSelect(gui.g, v)
+}
+
+func (gui *Gui) nextScreenMode() error {
+	if gui.currentViewName() == "main" {
+		gui.State.ScreenMode = prevIntInCycle([]WindowMaximisation{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
+
+		return nil
+	}
+
+	gui.State.ScreenMode = nextIntInCycle([]WindowMaximisation{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
+
+	return nil
+}
+
+func (gui *Gui) prevScreenMode() error {
+	if gui.currentViewName() == "main" {
+		gui.State.ScreenMode = nextIntInCycle([]WindowMaximisation{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
+
+		return nil
+	}
+
+	gui.State.ScreenMode = prevIntInCycle([]WindowMaximisation{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
+
+	return nil
+}
+
+func nextIntInCycle(sl []WindowMaximisation, current WindowMaximisation) WindowMaximisation {
+	for i, val := range sl {
+		if val == current {
+			if i == len(sl)-1 {
+				return sl[0]
+			}
+			return sl[i+1]
+		}
+	}
+	return sl[0]
+}
+
+func prevIntInCycle(sl []WindowMaximisation, current WindowMaximisation) WindowMaximisation {
+	for i, val := range sl {
+		if val == current {
+			if i > 0 {
+				return sl[i-1]
+			}
+			return sl[len(sl)-1]
+		}
+	}
+	return sl[len(sl)-1]
 }

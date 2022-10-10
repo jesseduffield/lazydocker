@@ -64,10 +64,7 @@ func (gui *Gui) handleCreateOptionsMenu(g *gocui.Gui, v *gocui.View) error {
 		if index >= len(bindings) {
 			return errors.New("Index is greater than size of bindings")
 		}
-		err := gui.handleMenuClose(g, v)
-		if err != nil {
-			return err
-		}
+
 		return bindings[index].Handler(g, v)
 	}
 

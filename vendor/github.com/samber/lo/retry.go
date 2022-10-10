@@ -46,6 +46,7 @@ func (d *debounce) cancel() {
 }
 
 // NewDebounce creates a debounced instance that delays invoking functions given until after wait milliseconds have elapsed.
+// Play: https://go.dev/play/p/mz32VMK2nqe
 func NewDebounce(duration time.Duration, f ...func()) (func(), func()) {
 	d := &debounce{
 		after:     duration,
@@ -60,7 +61,8 @@ func NewDebounce(duration time.Duration, f ...func()) (func(), func()) {
 	}, d.cancel
 }
 
-// Attempt invokes a function N times until it returns valid output. Returning either the caught error or nil. When first argument is less than `1`, the function runs until a sucessfull response is returned.
+// Attempt invokes a function N times until it returns valid output. Returning either the caught error or nil. When first argument is less than `1`, the function runs until a successful response is returned.
+// Play: https://go.dev/play/p/3ggJZ2ZKcMj
 func Attempt(maxIteration int, f func(int) error) (int, error) {
 	var err error
 
@@ -76,9 +78,10 @@ func Attempt(maxIteration int, f func(int) error) (int, error) {
 }
 
 // AttemptWithDelay invokes a function N times until it returns valid output,
-// with a pause betwwen each call. Returning either the caught error or nil.
-// When first argument is less than `1`, the function runs until a sucessfull
+// with a pause between each call. Returning either the caught error or nil.
+// When first argument is less than `1`, the function runs until a successful
 // response is returned.
+// Play: https://go.dev/play/p/tVs6CygC7m1
 func AttemptWithDelay(maxIteration int, delay time.Duration, f func(int, time.Duration) error) (int, time.Duration, error) {
 	var err error
 

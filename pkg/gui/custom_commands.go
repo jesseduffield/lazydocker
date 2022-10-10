@@ -53,13 +53,12 @@ func (gui *Gui) createCommandMenu(customCommands []config.CustomCommand, command
 		// if we have a command for attaching, we attach and return the subprocess error
 		if option.customCommand.Attach {
 			cmd := gui.OSCommand.ExecutableFromString(option.command)
-			gui.SubProcess = cmd
-			return gui.Errors.ErrSubProcess
+			return gui.runSubprocess(cmd)
 		}
 
 		return gui.WithWaitingStatus(waitingStatus, func() error {
 			if err := gui.OSCommand.RunCommand(option.command); err != nil {
-				return gui.createErrorPanel(gui.g, err.Error())
+				return gui.createErrorPanel(err.Error())
 			}
 			return nil
 		})

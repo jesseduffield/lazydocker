@@ -2,20 +2,13 @@ package gui
 
 import (
 	"context"
-	"os/exec"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/docker/docker/api/types"
-	"github.com/golang-collections/collections/stack"
-
-	// "io"
-	// "io/ioutil"
 
 	"github.com/go-errors/errors"
-
-	// "strings"
 
 	throttle "github.com/boz/go-throttle"
 	"github.com/jesseduffield/gocui"
@@ -32,7 +25,6 @@ var OverlappingEdges = false
 // SentinelErrors are the errors that have special meaning and need to be checked
 // by calling functions. The less of these, the better
 type SentinelErrors struct {
-	ErrSubProcess   error
 	ErrNoContainers error
 	ErrNoImages     error
 	ErrNoVolumes    error
@@ -50,7 +42,6 @@ type SentinelErrors struct {
 // localising things in the code.
 func (gui *Gui) GenerateSentinelErrors() {
 	gui.Errors = SentinelErrors{
-		ErrSubProcess:   errors.New(gui.Tr.RunningSubprocess),
 		ErrNoContainers: errors.New(gui.Tr.NoContainers),
 		ErrNoImages:     errors.New(gui.Tr.NoImages),
 		ErrNoVolumes:    errors.New(gui.Tr.NoVolumes),
@@ -63,7 +54,6 @@ type Gui struct {
 	Log           *logrus.Entry
 	DockerCommand *commands.DockerCommand
 	OSCommand     *commands.OSCommand
-	SubProcess    *exec.Cmd
 	State         guiState
 	Config        *config.AppConfig
 	Tr            *i18n.TranslationSet
@@ -73,6 +63,22 @@ type Gui struct {
 	T             *tasks.TaskManager
 	ErrorChan     chan error
 	CyclableViews []string
+	Views         Views
+	// returns true if our views have been created and assigned to gui.Views.
+	// Views are setup only once, upon application start.
+	ViewsSetup bool
+
+	// if we've suspended the gui (e.g. because we've switched to a subprocess)
+	// we typically want to pause some things that are running like background
+	// file refreshes
+	PauseBackgroundThreads bool
+
+	Mutexes
+}
+
+type Mutexes struct {
+	SubprocessMutex sync.Mutex
+	ViewStackMutex  sync.Mutex
 }
 
 type servicePanelState struct {
@@ -120,18 +126,28 @@ type panelStates struct {
 }
 
 type guiState struct {
-	MenuItemCount    int // can't store the actual list because it's of interface{} type
-	PreviousViews    *stack.Stack
+	MenuItemCount int // can't store the actual list because it's of interface{} type
+	// the names of views in the current focus stack (last item is the current view)
+	ViewStack        []string
 	Platform         commands.Platform
 	Panels           *panelStates
 	SubProcessOutput string
 	Stats            map[string]commands.ContainerStats
 
-	// SessionIndex tells us how many times we've come back from a subprocess.
-	// We increment it each time we switch to a new subprocess
-	// Every time we go to a subprocess we need to close a few goroutines so this index is used for that purpose
-	SessionIndex int
+	ScreenMode WindowMaximisation
 }
+
+// screen sizing determines how much space your selected window takes up (window
+// as in panel, not your terminal's window). Sometimes you want a bit more space
+// to see the contents of a panel, and this keeps track of how much maximisation
+// you've set
+type WindowMaximisation int
+
+const (
+	SCREEN_NORMAL WindowMaximisation = iota
+	SCREEN_HALF
+	SCREEN_FULL
+)
 
 // NewGui builds a new gui handler
 func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
@@ -148,8 +164,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 			},
 			Project: &projectState{ContextIndex: 0},
 		},
-		SessionIndex:  0,
-		PreviousViews: stack.New(),
+		ViewStack: []string{},
 	}
 
 	cyclableViews := []string{"project", "containers", "images", "volumes"}
@@ -176,13 +191,6 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 	return gui, nil
 }
 
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 func (gui *Gui) renderGlobalOptions() error {
 	return gui.renderOptionsMap(map[string]string{
 		"PgUp/PgDn": gui.Tr.Scroll,
@@ -194,15 +202,15 @@ func (gui *Gui) renderGlobalOptions() error {
 }
 
 func (gui *Gui) goEvery(interval time.Duration, function func() error) {
-	currentSessionIndex := gui.State.SessionIndex
 	_ = function() // time.Tick doesn't run immediately so we'll do that here // TODO: maybe change
 	go func() {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 		for range ticker.C {
-			if gui.State.SessionIndex > currentSessionIndex {
+			if gui.PauseBackgroundThreads {
 				return
 			}
+
 			_ = function()
 		}
 	}()
@@ -261,7 +269,7 @@ func (gui *Gui) Run() error {
 				gui.Log.Warn(err)
 				continue
 			}
-			_ = gui.createErrorPanel(gui.g, err.Error())
+			_ = gui.createErrorPanel(err.Error())
 		}
 	}()
 
@@ -272,6 +280,9 @@ func (gui *Gui) Run() error {
 	}
 
 	err = g.MainLoop()
+	if err == gocui.ErrQuit {
+		return nil
+	}
 	return err
 }
 
@@ -374,7 +385,7 @@ func (gui *Gui) reRenderMain() error {
 
 func (gui *Gui) quit(g *gocui.Gui, v *gocui.View) error {
 	if gui.Config.UserConfig.ConfirmOnQuit {
-		return gui.createConfirmationPanel(g, v, "", gui.Tr.ConfirmQuit, func(g *gocui.Gui, v *gocui.View) error {
+		return gui.createConfirmationPanel("", gui.Tr.ConfirmQuit, func(g *gocui.Gui, v *gocui.View) error {
 			return gocui.ErrQuit
 		}, nil)
 	}
@@ -394,39 +405,25 @@ func (gui *Gui) handleDonate(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) editFile(filename string) error {
-	_, err := gui.runSyncOrAsyncCommand(gui.OSCommand.EditFile(filename))
-	return err
+	cmd, err := gui.OSCommand.EditFile(filename)
+	if err != nil {
+		return gui.createErrorPanel(err.Error())
+	}
+
+	return gui.runSubprocess(cmd)
 }
 
 func (gui *Gui) openFile(filename string) error {
 	if err := gui.OSCommand.OpenFile(filename); err != nil {
-		return gui.createErrorPanel(gui.g, err.Error())
+		return gui.createErrorPanel(err.Error())
 	}
 	return nil
 }
 
-// runSyncOrAsyncCommand takes the output of a command that may have returned
-// either no error, an error, or a subprocess to execute, and if a subprocess
-// needs to be set on the gui object, it does so, and then returns the error
-// the bool returned tells us whether the calling code should continue
-func (gui *Gui) runSyncOrAsyncCommand(sub *exec.Cmd, err error) (bool, error) {
-	if err != nil {
-		if err != gui.Errors.ErrSubProcess {
-			return false, gui.createErrorPanel(gui.g, err.Error())
-		}
-	}
-	if sub != nil {
-		gui.SubProcess = sub
-		return false, gui.Errors.ErrSubProcess
-	}
-	return true, nil
-}
-
 func (gui *Gui) handleCustomCommand(g *gocui.Gui, v *gocui.View) error {
-	return gui.createPromptPanel(g, v, gui.Tr.CustomCommandTitle, func(g *gocui.Gui, v *gocui.View) error {
+	return gui.createPromptPanel(gui.Tr.CustomCommandTitle, func(g *gocui.Gui, v *gocui.View) error {
 		command := gui.trimmedContent(v)
-		gui.SubProcess = gui.OSCommand.RunCustomCommand(command)
-		return gui.Errors.ErrSubProcess
+		return gui.runSubprocess(gui.OSCommand.RunCustomCommand(command))
 	})
 }
 

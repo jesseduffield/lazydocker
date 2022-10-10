@@ -5,8 +5,8 @@ import (
 )
 
 // GetOptionsPanelTextColor gets the color of the options panel text
-func (gui *Gui) GetOptionsPanelTextColor() (gocui.Attribute, error) {
-	return GetGocuiStyle(gui.Config.UserConfig.Gui.Theme.OptionsTextColor), nil
+func (gui *Gui) GetOptionsPanelTextColor() gocui.Attribute {
+	return GetGocuiStyle(gui.Config.UserConfig.Gui.Theme.OptionsTextColor)
 }
 
 // SetColorScheme sets the color scheme for the app based on the user config

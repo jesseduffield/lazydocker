@@ -114,6 +114,17 @@ type GuiConfig struct {
 	// By default, containers are now sorted by status. This setting allows users to
 	// use legacy behaviour instead.
 	LegacySortContainers bool `yaml:"legacySortContainers,omitempty"`
+
+	// If 0.333, then the side panels will be 1/3 of the screen's width
+	SidePanelWidth float64 `yaml:"sidePanelWidth"`
+
+	// Determines whether we show the bottom line (the one containing keybinding
+	// info and the status of the app).
+	ShowBottomLine bool `yaml:"showBottomLine"`
+
+	// When true, increases vertical space used by focused side panel,
+	// creating an accordion effect
+	ExpandFocusedSidePanel bool `yaml:"expandFocusedSidePanel"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
@@ -320,10 +331,13 @@ func GetDefaultConfig() UserConfig {
 				InactiveBorderColor: []string{"default"},
 				OptionsTextColor:    []string{"blue"},
 			},
-			ShowAllContainers:    false,
-			ReturnImmediately:    false,
-			WrapMainPanel:        true,
-			LegacySortContainers: false,
+			ShowAllContainers:      false,
+			ReturnImmediately:      false,
+			WrapMainPanel:          true,
+			LegacySortContainers:   false,
+			SidePanelWidth:         0.3333,
+			ShowBottomLine:         true,
+			ExpandFocusedSidePanel: false,
 		},
 		ConfirmOnQuit: false,
 		Logs: LogsConfig{

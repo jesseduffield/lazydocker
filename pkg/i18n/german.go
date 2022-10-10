@@ -8,7 +8,6 @@ func germanSet() TranslationSet {
 		StoppingStatus:             "anhalten",
 		RunningCustomCommandStatus: "führt benutzerdefinierten Befehl aus",
 
-		RunningSubprocess:                          "Unterprozess ausführen",
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
 
 		ErrorOccurred:                     "Es ist ein Fehler aufgetreten! Bitte erstelle ein Issue hier: https://github.com/jesseduffield/lazydocker/issues",
