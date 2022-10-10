@@ -5,3 +5,8 @@ func (gui *Gui) currentWindow() string {
 	// are using the view name as the window name
 	return gui.currentViewName()
 }
+
+// excludes popups
+func (gui *Gui) currentStaticWindowName() string {
+	return gui.currentStaticViewName()
+}

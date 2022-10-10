@@ -116,7 +116,7 @@ func (gui *Gui) refreshImages() error {
 
 	gui.g.Update(func(g *gocui.Gui) error {
 		ImagesView.Clear()
-		isFocused := gui.g.CurrentView().Name() == "Images"
+		isFocused := gui.g.CurrentView() == gui.Views.Images
 		list, err := utils.RenderList(gui.DockerCommand.Images, utils.IsFocused(isFocused))
 		if err != nil {
 			return err
@@ -260,7 +260,7 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handlePruneImages() error {
-	return gui.createConfirmationPanel(gui.g, gui.getImagesView(), gui.Tr.Confirm, gui.Tr.ConfirmPruneImages, func(g *gocui.Gui, v *gocui.View) error {
+	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneImages, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
 			err := gui.DockerCommand.PruneImages()
 			if err != nil {

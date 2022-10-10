@@ -75,7 +75,7 @@ func MergeMaps[K comparable, V any](maps ...map[K]V) map[K]V {
 }
 
 func (gui *Gui) getMidSectionWeights() (int, int) {
-	currentWindow := gui.currentWindow()
+	currentWindow := gui.currentStaticWindowName()
 
 	// we originally specified this as a ratio i.e. .20 would correspond to a weight of 1 against 4
 	sidePanelWidthRatio := gui.Config.UserConfig.Gui.SidePanelWidth

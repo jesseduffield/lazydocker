@@ -127,3 +127,7 @@ func (gui *Gui) getInformationContent() string {
 	donate := color.New(color.FgMagenta, color.Underline).Sprint(gui.Tr.Donate)
 	return donate + " " + informationStr
 }
+
+func (gui *Gui) popupViewNames() []string {
+	return []string{"confirmation", "menu"}
+}

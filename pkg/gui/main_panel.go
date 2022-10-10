@@ -106,7 +106,7 @@ func (gui *Gui) handleEnterMain(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) handleExitMain(g *gocui.Gui, v *gocui.View) error {
 	v.ParentView = nil
-	return gui.returnFocus(gui.g, v)
+	return gui.returnFocus()
 }
 
 func (gui *Gui) handleMainClick(g *gocui.Gui, v *gocui.View) error {
