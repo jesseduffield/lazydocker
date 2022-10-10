@@ -250,7 +250,7 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		}
 		configOptions := options[index].configOptions
 		if cerr := Image.Remove(configOptions); cerr != nil {
-			return gui.createErrorPanel(gui.g, cerr.Error())
+			return gui.createErrorPanel(cerr.Error())
 		}
 
 		return nil
@@ -264,7 +264,7 @@ func (gui *Gui) handlePruneImages() error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
 			err := gui.DockerCommand.PruneImages()
 			if err != nil {
-				return gui.createErrorPanel(gui.g, err.Error())
+				return gui.createErrorPanel(err.Error())
 			}
 			return gui.refreshImages()
 		})

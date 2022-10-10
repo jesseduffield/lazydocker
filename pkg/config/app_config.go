@@ -122,7 +122,8 @@ type GuiConfig struct {
 	// info and the status of the app).
 	ShowBottomLine bool `yaml:"showBottomLine"`
 
-	// When true, ensures that the focused side panel always takes up the full vertical space
+	// When true, increases vertical space used by focused side panel,
+	// creating an accordion effect
 	ExpandFocusedSidePanel bool `yaml:"expandFocusedSidePanel"`
 }
 

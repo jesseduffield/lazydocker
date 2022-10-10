@@ -269,7 +269,7 @@ func (gui *Gui) Run() error {
 				gui.Log.Warn(err)
 				continue
 			}
-			_ = gui.createErrorPanel(gui.g, err.Error())
+			_ = gui.createErrorPanel(err.Error())
 		}
 	}()
 
@@ -407,7 +407,7 @@ func (gui *Gui) handleDonate(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) editFile(filename string) error {
 	cmd, err := gui.OSCommand.EditFile(filename)
 	if err != nil {
-		return gui.createErrorPanel(gui.g, err.Error())
+		return gui.createErrorPanel(err.Error())
 	}
 
 	return gui.runSubprocess(cmd)
@@ -415,13 +415,13 @@ func (gui *Gui) editFile(filename string) error {
 
 func (gui *Gui) openFile(filename string) error {
 	if err := gui.OSCommand.OpenFile(filename); err != nil {
-		return gui.createErrorPanel(gui.g, err.Error())
+		return gui.createErrorPanel(err.Error())
 	}
 	return nil
 }
 
 func (gui *Gui) handleCustomCommand(g *gocui.Gui, v *gocui.View) error {
-	return gui.createPromptPanel(g, v, gui.Tr.CustomCommandTitle, func(g *gocui.Gui, v *gocui.View) error {
+	return gui.createPromptPanel(gui.Tr.CustomCommandTitle, func(g *gocui.Gui, v *gocui.View) error {
 		command := gui.trimmedContent(v)
 		return gui.runSubprocess(gui.OSCommand.RunCustomCommand(command))
 	})

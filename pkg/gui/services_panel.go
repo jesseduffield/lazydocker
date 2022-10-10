@@ -240,7 +240,7 @@ func (gui *Gui) handleServiceStop(g *gocui.Gui, v *gocui.View) error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.StopService, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
 			if err := service.Stop(); err != nil {
-				return gui.createErrorPanel(gui.g, err.Error())
+				return gui.createErrorPanel(err.Error())
 			}
 
 			return nil
@@ -256,7 +256,7 @@ func (gui *Gui) handleServiceRestart(g *gocui.Gui, v *gocui.View) error {
 
 	return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
 		if err := service.Restart(); err != nil {
-			return gui.createErrorPanel(gui.g, err.Error())
+			return gui.createErrorPanel(err.Error())
 		}
 
 		return nil
@@ -271,7 +271,7 @@ func (gui *Gui) handleServiceStart(g *gocui.Gui, v *gocui.View) error {
 
 	return gui.WithWaitingStatus(gui.Tr.StartingStatus, func() error {
 		if err := service.Start(); err != nil {
-			return gui.createErrorPanel(gui.g, err.Error())
+			return gui.createErrorPanel(err.Error())
 		}
 
 		return nil
@@ -285,12 +285,12 @@ func (gui *Gui) handleServiceAttach(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	if service.Container == nil {
-		return gui.createErrorPanel(gui.g, gui.Tr.NoContainers)
+		return gui.createErrorPanel(gui.Tr.NoContainers)
 	}
 
 	c, err := service.Attach()
 	if err != nil {
-		return gui.createErrorPanel(gui.g, err.Error())
+		return gui.createErrorPanel(err.Error())
 	}
 
 	return gui.runSubprocess(c)
@@ -304,7 +304,7 @@ func (gui *Gui) handleServiceRenderLogsToMain(g *gocui.Gui, v *gocui.View) error
 
 	c, err := service.ViewLogs()
 	if err != nil {
-		return gui.createErrorPanel(gui.g, err.Error())
+		return gui.createErrorPanel(err.Error())
 	}
 
 	return gui.runSubprocess(c)
@@ -336,7 +336,7 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 			f: func() error {
 				return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
 					if err := service.Restart(); err != nil {
-						return gui.createErrorPanel(gui.g, err.Error())
+						return gui.createErrorPanel(err.Error())
 					}
 					return nil
 				})
@@ -351,7 +351,7 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 			f: func() error {
 				return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
 					if err := gui.OSCommand.RunCommand(recreateCommand); err != nil {
-						return gui.createErrorPanel(gui.g, err.Error())
+						return gui.createErrorPanel(err.Error())
 					}
 					return nil
 				})
@@ -385,7 +385,7 @@ func (gui *Gui) createServiceCommandMenu(options []*commandOption, status string
 		}
 		return gui.WithWaitingStatus(status, func() error {
 			if err := gui.OSCommand.RunCommand(options[index].command); err != nil {
-				return gui.createErrorPanel(gui.g, err.Error())
+				return gui.createErrorPanel(err.Error())
 			}
 
 			return nil
@@ -447,7 +447,7 @@ func (gui *Gui) handleServicesExecShell(g *gocui.Gui, v *gocui.View) error {
 
 	container := service.Container
 	if container == nil {
-		return gui.createErrorPanel(gui.g, gui.Tr.NoContainers)
+		return gui.createErrorPanel(gui.Tr.NoContainers)
 	}
 
 	return gui.containerExecShell(container)
@@ -461,7 +461,7 @@ func (gui *Gui) handleServicesOpenInBrowserCommand(g *gocui.Gui, v *gocui.View) 
 
 	container := service.Container
 	if container == nil {
-		return gui.createErrorPanel(gui.g, gui.Tr.NoContainers)
+		return gui.createErrorPanel(gui.Tr.NoContainers)
 	}
 
 	return gui.openContainerInBrowser(container)

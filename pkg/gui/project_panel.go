@@ -221,7 +221,7 @@ func (gui *Gui) handleProjectPrevContext(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) handleViewAllLogs(g *gocui.Gui, v *gocui.View) error {
 	c, err := gui.DockerCommand.ViewAllLogs()
 	if err != nil {
-		return gui.createErrorPanel(gui.g, err.Error())
+		return gui.createErrorPanel(err.Error())
 	}
 
 	return gui.runSubprocess(c)

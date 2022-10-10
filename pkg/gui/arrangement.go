@@ -63,17 +63,6 @@ func (gui *Gui) getWindowDimensions(informationStr string, appStatus string) map
 	return boxlayout.ArrangeWindows(root, 0, 0, width, height)
 }
 
-func MergeMaps[K comparable, V any](maps ...map[K]V) map[K]V {
-	result := map[K]V{}
-	for _, currMap := range maps {
-		for key, value := range currMap {
-			result[key] = value
-		}
-	}
-
-	return result
-}
-
 func (gui *Gui) getMidSectionWeights() (int, int) {
 	currentWindow := gui.currentStaticWindowName()
 
@@ -202,17 +191,4 @@ func (gui *Gui) sidePanelChildren(width int, height int) []*boxlayout.Box {
 			return squashedSidePanelBox(window)
 		})
 	}
-}
-
-func (gui *Gui) currentSideWindowName() string {
-	// we expect that there is a side window somewhere in the view stack, so we will search from top to bottom
-	for idx := range gui.State.ViewStack {
-		reversedIdx := len(gui.State.ViewStack) - 1 - idx
-		viewName := gui.State.ViewStack[reversedIdx]
-		if lo.Contains(gui.sideViewNames(), viewName) {
-			return viewName
-		}
-	}
-
-	return gui.initiallyFocusedViewName()
 }

@@ -58,7 +58,7 @@ func (gui *Gui) createCommandMenu(customCommands []config.CustomCommand, command
 
 		return gui.WithWaitingStatus(waitingStatus, func() error {
 			if err := gui.OSCommand.RunCommand(option.command); err != nil {
-				return gui.createErrorPanel(gui.g, err.Error())
+				return gui.createErrorPanel(err.Error())
 			}
 			return nil
 		})

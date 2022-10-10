@@ -153,7 +153,6 @@ func (gui *Gui) pushView(name string) {
 	})
 
 	gui.State.ViewStack = append(gui.State.ViewStack, name)
-	gui.Log.Warnf("Just pushed %s. View stack is now "+strings.Join(gui.State.ViewStack, ", "), name)
 }
 
 // excludes popups
@@ -164,6 +163,22 @@ func (gui *Gui) currentStaticViewName() string {
 	for i := len(gui.State.ViewStack) - 1; i >= 0; i-- {
 		if !lo.Contains(gui.popupViewNames(), gui.State.ViewStack[i]) {
 			return gui.State.ViewStack[i]
+		}
+	}
+
+	return gui.initiallyFocusedViewName()
+}
+
+func (gui *Gui) currentSideViewName() string {
+	gui.Mutexes.ViewStackMutex.Lock()
+	defer gui.Mutexes.ViewStackMutex.Unlock()
+
+	// we expect that there is a side window somewhere in the view stack, so we will search from top to bottom
+	for idx := range gui.State.ViewStack {
+		reversedIdx := len(gui.State.ViewStack) - 1 - idx
+		viewName := gui.State.ViewStack[reversedIdx]
+		if lo.Contains(gui.sideViewNames(), viewName) {
+			return viewName
 		}
 	}
 
