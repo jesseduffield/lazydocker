@@ -40,6 +40,12 @@ func main() {
 
 		bindingSections := getBindingSections(mApp)
 		content := formatSections(mApp, bindingSections)
+		content = fmt.Sprintf(
+			"_This file is auto-generated. To update, make the changes in the "+
+				"pkg/i18n directory and then run `%s` from the project root._\n\n%s",
+			commandToRun(),
+			content,
+		)
 		writeString(file, content)
 	}
 }
@@ -133,4 +139,8 @@ func formatSections(mApp *app.App, bindingSections []*bindingSection) string {
 	}
 
 	return content
+}
+
+func commandToRun() string {
+	return "go run scripts/generate_cheatsheet.go"
 }

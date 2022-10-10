@@ -1,3 +1,5 @@
+_This file is auto-generated. To update, make the changes in the pkg/i18n directory and then run `go run scripts/generate_cheatsheet.go` from the project root._
+
 # Lazydocker menu
 
 ## Projekt
@@ -17,7 +19,8 @@
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka
   <kbd>d</kbd>: usuń
-  <kbd>e</kbd>: Hide/Show stopped containers
+  <kbd>e</kbd>: hide/show stopped containers
+  <kbd>p</kbd>: pause
   <kbd>s</kbd>: zatrzymaj
   <kbd>r</kbd>: restartuj
   <kbd>a</kbd>: przyczep
@@ -34,7 +37,9 @@
 <pre>
   <kbd>d</kbd>: usuń kontenery
   <kbd>s</kbd>: zatrzymaj
+  <kbd>p</kbd>: pause
   <kbd>r</kbd>: restartuj
+  <kbd>S</kbd>: start
   <kbd>a</kbd>: przyczep
   <kbd>m</kbd>: pokaż logi
   <kbd>[</kbd>: poprzednia zakładka
@@ -42,6 +47,7 @@
   <kbd>R</kbd>: pokaż opcje restartu
   <kbd>c</kbd>: wykonaj predefiniowaną własną komende
   <kbd>b</kbd>: view bulk commands
+  <kbd>E</kbd>: exec shell
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: skup na głównym panelu
 </pre>
@@ -72,4 +78,11 @@
 
 <pre>
   <kbd>esc</kbd>: powrót
+</pre>
+
+## Globalne
+
+<pre>
+  <kbd>+</kbd>: next screen mode (normal/half/fullscreen)
+  <kbd>_</kbd>: prev screen mode
 </pre>
