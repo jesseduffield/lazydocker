@@ -33,8 +33,6 @@ github.com/go-errors/errors v1.4.2 h1:J6MZopCL4uSllY1OfXM374weqZFFItUbrImctkmUxI
 github.com/go-errors/errors v1.4.2/go.mod h1:sIVyrIiJhuEF+Pj9Ebtd6P/rEYROXFi3BopGUQ5a5Og=
 github.com/gogo/protobuf v1.3.1 h1:DqDEcV5aeaTmdFBePNpYsp3FlcVH/2ISVVM9Qf8PSls=
 github.com/gogo/protobuf v1.3.1/go.mod h1:SlYgWuQ5SjCEi6WLHjHCa1yvBfUnHcTbrrZtXPKa29o=
-github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3 h1:zN2lZNZRflqFyxVaTIU61KNKQ9C0055u9CAfpmqUvo4=
-github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3/go.mod h1:nPpo7qLxd6XL3hWJG/O60sR8ZKfMCiIoNap5GvD12KU=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
@@ -54,8 +52,8 @@ github.com/jesseduffield/gocui v0.3.1-0.20220417002912-bce22fd599f6 h1:Fmay0Lz21
 github.com/jesseduffield/gocui v0.3.1-0.20220417002912-bce22fd599f6/go.mod h1:znJuCDnF2Ph40YZSlBwdX/4GEofnIoWLGdT4mK5zRAU=
 github.com/jesseduffield/kill v0.0.0-20220618033138-bfbe04675d10 h1:jmpr7KpX2+2GRiE91zTgfq49QvgiqB0nbmlwZ8UnOx0=
 github.com/jesseduffield/kill v0.0.0-20220618033138-bfbe04675d10/go.mod h1:aA97kHeNA+sj2Hbki0pvLslmE4CbDyhBeSSTUUnOuVo=
-github.com/jesseduffield/lazycore v0.0.0-20221009164442-17c8b878c316 h1:UzTg0utG+cLS94Qjb/ZFDzfMeZDFXErSbNgJOyj70EA=
-github.com/jesseduffield/lazycore v0.0.0-20221009164442-17c8b878c316/go.mod h1:qxN4mHOAyeIDLP7IK7defgPClM/z1Kze8VVQiaEjzsQ=
+github.com/jesseduffield/lazycore v0.0.0-20221010211550-2c30efd18b93 h1:zY7ymCjXC7fZeJVXDpiicYx6c2YFgvsdZSOdch2f7gU=
+github.com/jesseduffield/lazycore v0.0.0-20221010211550-2c30efd18b93/go.mod h1:qxN4mHOAyeIDLP7IK7defgPClM/z1Kze8VVQiaEjzsQ=
 github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56 h1:33wSxJWU/f2TAozHYtJ8zqBxEnEVYM+22moLoiAkxvg=
 github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56/go.mod h1:FZJBwOhE+RXz8EVZfY+xnbCw2cVOwxlK3/aIi581z/s=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=

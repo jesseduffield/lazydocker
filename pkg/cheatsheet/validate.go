@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/jesseduffield/lazycore/pkg/utils"
 	"github.com/pmezard/go-difflib/difflib"
 )
 
@@ -60,7 +60,7 @@ func Check() {
 }
 
 func GetKeybindingsDir() string {
-	return utils.GetLazydockerRootDirectory() + "/docs/keybindings"
+	return utils.GetLazyRootDirectory() + "/docs/keybindings"
 }
 
 func obtainContent(dir string) string {
