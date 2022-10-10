@@ -63,6 +63,8 @@ func (gui *Gui) createAllViews() error {
 		(*mapping.viewPtr).FgColor = gocui.ColorDefault
 	}
 
+	selectedLineBgColor := gocui.ColorBlue
+
 	gui.Views.Main.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 	// when you run a docker container with the -it flags (interactive mode) it adds carriage returns for some reason. This is not docker's fault, it's an os-level default.
 	gui.Views.Main.IgnoreCarriageReturns = true
@@ -71,8 +73,10 @@ func (gui *Gui) createAllViews() error {
 
 	gui.Views.Services.Highlight = true
 	gui.Views.Services.Title = gui.Tr.ServicesTitle
+	gui.Views.Services.SelBgColor = selectedLineBgColor
 
 	gui.Views.Containers.Highlight = true
+	gui.Views.Containers.SelBgColor = selectedLineBgColor
 	if gui.Config.UserConfig.Gui.ShowAllContainers || !gui.DockerCommand.InDockerComposeProject {
 		gui.Views.Containers.Title = gui.Tr.ContainersTitle
 	} else {
@@ -81,9 +85,11 @@ func (gui *Gui) createAllViews() error {
 
 	gui.Views.Images.Highlight = true
 	gui.Views.Images.Title = gui.Tr.ImagesTitle
+	gui.Views.Images.SelBgColor = selectedLineBgColor
 
 	gui.Views.Volumes.Highlight = true
 	gui.Views.Volumes.Title = gui.Tr.VolumesTitle
+	gui.Views.Volumes.SelBgColor = selectedLineBgColor
 
 	gui.Views.Options.Frame = false
 	gui.Views.Options.FgColor = gui.GetOptionsPanelTextColor()
@@ -101,6 +107,7 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Confirmation.Visible = false
 	gui.Views.Confirmation.Wrap = true
 	gui.Views.Menu.Visible = false
+	gui.Views.Menu.SelBgColor = selectedLineBgColor
 
 	gui.Views.Limit.Visible = false
 	gui.Views.Limit.Title = gui.Tr.NotEnoughSpace
