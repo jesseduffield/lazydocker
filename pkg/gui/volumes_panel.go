@@ -239,7 +239,7 @@ func (gui *Gui) handleVolumesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handlePruneVolumes() error {
-	return gui.createConfirmationPanel(gui.g, gui.getVolumesView(), gui.Tr.Confirm, gui.Tr.ConfirmPruneVolumes, func(g *gocui.Gui, v *gocui.View) error {
+	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneVolumes, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
 			err := gui.DockerCommand.PruneVolumes()
 			if err != nil {

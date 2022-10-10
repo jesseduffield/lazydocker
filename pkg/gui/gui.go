@@ -385,7 +385,7 @@ func (gui *Gui) reRenderMain() error {
 
 func (gui *Gui) quit(g *gocui.Gui, v *gocui.View) error {
 	if gui.Config.UserConfig.ConfirmOnQuit {
-		return gui.createConfirmationPanel(g, v, "", gui.Tr.ConfirmQuit, func(g *gocui.Gui, v *gocui.View) error {
+		return gui.createConfirmationPanel("", gui.Tr.ConfirmQuit, func(g *gocui.Gui, v *gocui.View) error {
 			return gocui.ErrQuit
 		}, nil)
 	}

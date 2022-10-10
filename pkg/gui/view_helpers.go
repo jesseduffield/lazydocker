@@ -119,7 +119,7 @@ func (gui *Gui) switchFocusAux(newView *gocui.View) error {
 	return gui.newLineFocused(newView)
 }
 
-func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) returnFocus() error {
 	gui.Mutexes.ViewStackMutex.Lock()
 	defer gui.Mutexes.ViewStackMutex.Unlock()
 
@@ -128,7 +128,7 @@ func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	previousViewName := gui.State.ViewStack[len(gui.State.ViewStack)-2]
-	previousView, err := g.View(previousViewName)
+	previousView, err := gui.g.View(previousViewName)
 	if err != nil {
 		return err
 	}
@@ -153,6 +153,21 @@ func (gui *Gui) pushView(name string) {
 	})
 
 	gui.State.ViewStack = append(gui.State.ViewStack, name)
+	gui.Log.Warnf("Just pushed %s. View stack is now "+strings.Join(gui.State.ViewStack, ", "), name)
+}
+
+// excludes popups
+func (gui *Gui) currentStaticViewName() string {
+	gui.Mutexes.ViewStackMutex.Lock()
+	defer gui.Mutexes.ViewStackMutex.Unlock()
+
+	for i := len(gui.State.ViewStack) - 1; i >= 0; i-- {
+		if !lo.Contains(gui.popupViewNames(), gui.State.ViewStack[i]) {
+			return gui.State.ViewStack[i]
+		}
+	}
+
+	return gui.initiallyFocusedViewName()
 }
 
 // if the cursor down past the last item, move it to the last line

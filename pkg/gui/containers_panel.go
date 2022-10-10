@@ -408,7 +408,7 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 			if err := container.Remove(configOptions); err != nil {
 				if commands.HasErrorCode(err, commands.MustStopContainer) {
-					return gui.createConfirmationPanel(gui.g, v, gui.Tr.Confirm, gui.Tr.MustForceToRemoveContainer, func(g *gocui.Gui, v *gocui.View) error {
+					return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.MustForceToRemoveContainer, func(g *gocui.Gui, v *gocui.View) error {
 						return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 							configOptions.Force = true
 							return container.Remove(configOptions)
@@ -455,7 +455,7 @@ func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	return gui.createConfirmationPanel(gui.g, v, gui.Tr.Confirm, gui.Tr.StopContainer, func(g *gocui.Gui, v *gocui.View) error {
+	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.StopContainer, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
 			if err := container.Stop(); err != nil {
 				return gui.createErrorPanel(gui.g, err.Error())
@@ -496,7 +496,7 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handlePruneContainers() error {
-	return gui.createConfirmationPanel(gui.g, gui.getContainersView(), gui.Tr.Confirm, gui.Tr.ConfirmPruneContainers, func(g *gocui.Gui, v *gocui.View) error {
+	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
 			err := gui.DockerCommand.PruneContainers()
 			if err != nil {
@@ -555,7 +555,7 @@ func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error
 }
 
 func (gui *Gui) handleStopContainers() error {
-	return gui.createConfirmationPanel(gui.g, gui.getContainersView(), gui.Tr.Confirm, gui.Tr.ConfirmStopContainers, func(g *gocui.Gui, v *gocui.View) error {
+	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmStopContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
 			for _, container := range gui.DockerCommand.Containers {
 				_ = container.Stop()
@@ -567,7 +567,7 @@ func (gui *Gui) handleStopContainers() error {
 }
 
 func (gui *Gui) handleRemoveContainers() error {
-	return gui.createConfirmationPanel(gui.g, gui.getContainersView(), gui.Tr.Confirm, gui.Tr.ConfirmRemoveContainers, func(g *gocui.Gui, v *gocui.View) error {
+	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmRemoveContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 			for _, container := range gui.DockerCommand.Containers {
 				_ = container.Remove(types.ContainerRemoveOptions{Force: true})

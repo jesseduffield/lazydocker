@@ -58,7 +58,7 @@ func (gui *Gui) handleMenuClose(g *gocui.Gui, v *gocui.View) error {
 		}
 	}
 	gui.Views.Menu.Visible = false
-	return gui.returnFocus(g, v)
+	return gui.returnFocus()
 }
 
 func (gui *Gui) createMenu(title string, items interface{}, itemCount int, handlePress func(int) error) error {
@@ -80,12 +80,18 @@ func (gui *Gui) createMenu(title string, items interface{}, itemCount int, handl
 
 	wrappedHandlePress := func(g *gocui.Gui, v *gocui.View) error {
 		selectedLine := gui.State.Panels.Menu.SelectedLine
+
+		menuView.Visible = false
+		err := gui.returnFocus()
+		if err != nil {
+			return err
+		}
+
 		if err := handlePress(selectedLine); err != nil {
 			return err
 		}
-		menuView.Visible = false
 
-		return gui.returnFocus(gui.g, menuView)
+		return nil
 	}
 
 	gui.State.Panels.Menu.OnPress = wrappedHandlePress

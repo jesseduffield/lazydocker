@@ -30,7 +30,7 @@ func (gui *Gui) wrappedConfirmationFunction(function func(*gocui.Gui, *gocui.Vie
 }
 
 func (gui *Gui) closeConfirmationPrompt() error {
-	if err := gui.returnFocus(gui.g, gui.Views.Confirmation); err != nil {
+	if err := gui.returnFocus(); err != nil {
 		return err
 	}
 	gui.g.DeleteViewKeybindings("confirmation")
@@ -64,7 +64,7 @@ func (gui *Gui) getConfirmationPanelDimensions(g *gocui.Gui, wrap bool, prompt s
 
 func (gui *Gui) createPromptPanel(g *gocui.Gui, currentView *gocui.View, title string, handleConfirm func(*gocui.Gui, *gocui.View) error) error {
 	gui.onNewPopupPanel()
-	err := gui.prepareConfirmationPanel(currentView, title, "", false)
+	err := gui.prepareConfirmationPanel(title, "", false)
 	if err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func (gui *Gui) createPromptPanel(g *gocui.Gui, currentView *gocui.View, title s
 	return gui.setKeyBindings(g, handleConfirm, nil)
 }
 
-func (gui *Gui) prepareConfirmationPanel(currentView *gocui.View, title, prompt string, hasLoader bool) error {
+func (gui *Gui) prepareConfirmationPanel(title, prompt string, hasLoader bool) error {
 	x0, y0, x1, y1 := gui.getConfirmationPanelDimensions(gui.g, true, prompt)
 	confirmationView := gui.Views.Confirmation
 	_, err := gui.g.SetView("confirmation", x0, y0, x1, y1, 0)
@@ -99,19 +99,19 @@ func (gui *Gui) onNewPopupPanel() {
 // It is very important that within this function we never include the original prompt in any error messages, because it may contain e.g. a user password.
 // The golangcilint unparam linter complains that handleClose is alwans nil but one day it won't be nil.
 // nolint:unparam
-func (gui *Gui) createConfirmationPanel(g *gocui.Gui, currentView *gocui.View, title, prompt string, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
-	return gui.createPopupPanel(g, currentView, title, prompt, false, handleConfirm, handleClose)
+func (gui *Gui) createConfirmationPanel(title, prompt string, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
+	return gui.createPopupPanel(title, prompt, false, handleConfirm, handleClose)
 }
 
-func (gui *Gui) createPopupPanel(g *gocui.Gui, currentView *gocui.View, title, prompt string, hasLoader bool, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
+func (gui *Gui) createPopupPanel(title, prompt string, hasLoader bool, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
 	gui.onNewPopupPanel()
-	g.Update(func(g *gocui.Gui) error {
+	gui.g.Update(func(g *gocui.Gui) error {
 		if gui.currentViewName() == "confirmation" {
 			if err := gui.closeConfirmationPrompt(); err != nil {
 				gui.Log.Error(err.Error())
 			}
 		}
-		err := gui.prepareConfirmationPanel(currentView, title, prompt, hasLoader)
+		err := gui.prepareConfirmationPanel(title, prompt, hasLoader)
 		if err != nil {
 			return err
 		}
@@ -146,7 +146,7 @@ func (gui *Gui) setKeyBindings(g *gocui.Gui, handleConfirm, handleClose func(*go
 func (gui *Gui) createErrorPanel(g *gocui.Gui, message string) error {
 	colorFunction := color.New(color.FgRed).SprintFunc()
 	coloredMessage := colorFunction(strings.TrimSpace(message))
-	return gui.createConfirmationPanel(gui.g, g.CurrentView(), gui.Tr.ErrorTitle, coloredMessage, nil, nil)
+	return gui.createConfirmationPanel(gui.Tr.ErrorTitle, coloredMessage, nil, nil)
 }
 
 func (gui *Gui) renderConfirmationOptions() error {
