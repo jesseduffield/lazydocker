@@ -4,7 +4,7 @@
 // The content of this generated file is a keybindings cheatsheet.
 //
 // To generate cheatsheet in english run:
-//   LANG=en go run scripts/generate_cheatsheet.go
+//   LANG=en go run scripts/cheatsheet/main.go generate
 
 package cheatsheet
 
