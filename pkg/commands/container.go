@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/docker/docker/api/types/container"
+	"github.com/samber/lo"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -51,7 +52,15 @@ type Container struct {
 func (c *Container) GetDisplayStrings(isFocused bool) []string {
 	image := strings.TrimPrefix(c.Container.Image, "sha256:")
 
-	return []string{c.GetDisplayStatus(), c.GetDisplaySubstatus(), c.Name, c.GetDisplayCPUPerc(), utils.ColoredString(image, color.FgMagenta)}
+	return []string{c.GetDisplayStatus(), c.GetDisplaySubstatus(), c.Name, c.GetDisplayCPUPerc(), utils.ColoredString(image, color.FgMagenta), c.displayPorts()}
+}
+
+func (c *Container) displayPorts() string {
+	portStrings := lo.Map(c.Container.Ports, func(port types.Port, _ int) string {
+		return fmt.Sprintf("%s:%d->%d/%s", port.IP, port.PublicPort, port.PrivatePort, port.Type)
+	})
+
+	return strings.Join(portStrings, ", ")
 }
 
 // GetDisplayStatus returns the colored status of the container
