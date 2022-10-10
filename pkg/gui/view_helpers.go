@@ -33,8 +33,7 @@ func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 		panic(err)
 	}
 	gui.resetMainView()
-	gui.popView()
-	return gui.switchFocus(g, v, focusedView, false)
+	return gui.switchFocus(focusedView)
 }
 
 func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
@@ -59,8 +58,7 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 		panic(err)
 	}
 	gui.resetMainView()
-	gui.popView()
-	return gui.switchFocus(g, v, focusedView, false)
+	return gui.switchFocus(focusedView)
 }
 
 func (gui *Gui) resetMainView() {
@@ -96,24 +94,48 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 	}
 }
 
-func (gui *Gui) popView() string {
-	if len(gui.State.ViewStack) > 0 {
-		value := gui.State.ViewStack[len(gui.State.ViewStack)-1]
-		gui.State.ViewStack = gui.State.ViewStack[:len(gui.State.ViewStack)-1]
-		return value
-	}
+// TODO: move some of this logic into our onFocusLost and onFocus hooks
+func (gui *Gui) switchFocus(newView *gocui.View) error {
+	gui.Mutexes.ViewStackMutex.Lock()
+	defer gui.Mutexes.ViewStackMutex.Unlock()
 
-	return ""
+	return gui.switchFocusAux(newView)
 }
 
-func (gui *Gui) peekPreviousView() string {
-	if len(gui.State.ViewStack) > 0 {
-		return gui.State.ViewStack[len(gui.State.ViewStack)-1]
+func (gui *Gui) switchFocusAux(newView *gocui.View) error {
+	gui.pushView(newView.Name())
+	gui.Log.Info("setting highlight to true for view " + newView.Name())
+	gui.Log.Info("new focused view is " + newView.Name())
+	if _, err := gui.g.SetCurrentView(newView.Name()); err != nil {
+		return err
 	}
 
-	return ""
+	gui.g.Cursor = newView.Editable
+
+	if err := gui.renderPanelOptions(); err != nil {
+		return err
+	}
+
+	return gui.newLineFocused(newView)
 }
 
+func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
+	gui.Mutexes.ViewStackMutex.Lock()
+	defer gui.Mutexes.ViewStackMutex.Unlock()
+
+	if len(gui.State.ViewStack) <= 1 {
+		return nil
+	}
+
+	previousViewName := gui.State.ViewStack[len(gui.State.ViewStack)-2]
+	previousView, err := g.View(previousViewName)
+	if err != nil {
+		return err
+	}
+	return gui.switchFocusAux(previousView)
+}
+
+// Not to be called directly. Use `switchFocus` instead
 func (gui *Gui) pushView(name string) {
 	// No matter what view we're pushing, we first remove all popup panels from the stack
 	gui.State.ViewStack = lo.Filter(gui.State.ViewStack, func(viewName string, _ int) bool {
@@ -122,49 +144,15 @@ func (gui *Gui) pushView(name string) {
 
 	// If we're pushing a side panel, we remove all other panels
 	if lo.Contains(gui.sideViewNames(), name) {
-		gui.State.ViewStack = lo.Filter(gui.State.ViewStack, func(viewName string, _ int) bool {
-			return viewName != "main"
-		})
+		gui.State.ViewStack = []string{}
 	}
+
+	// If we're pushing a panel that's already in the stack, we remove it
+	gui.State.ViewStack = lo.Filter(gui.State.ViewStack, func(viewName string, _ int) bool {
+		return viewName != name
+	})
 
 	gui.State.ViewStack = append(gui.State.ViewStack, name)
-}
-
-func (gui *Gui) returnFocus(g *gocui.Gui, v *gocui.View) error {
-	previousViewName := gui.popView()
-	previousView, err := g.View(previousViewName)
-	if err != nil {
-		// always fall back to services view if there's no 'previous' view stored
-		previousView, err = g.View(gui.initiallyFocusedViewName())
-		if err != nil {
-			gui.Log.Error(err)
-		}
-	}
-	return gui.switchFocus(g, v, previousView, true)
-}
-
-// pass in oldView = nil if you don't want to be able to return to your old view
-// TODO: move some of this logic into our onFocusLost and onFocus hooks
-func (gui *Gui) switchFocus(g *gocui.Gui, oldView, newView *gocui.View, returning bool) error {
-	// we assume we'll never want to return focus to a popup panel i.e.
-	// we should never stack popup panels
-	if oldView != nil && !gui.isPopupPanel(oldView.Name()) && !returning {
-		gui.pushView(oldView.Name())
-	}
-
-	gui.Log.Info("setting highlight to true for view " + newView.Name())
-	gui.Log.Info("new focused view is " + newView.Name())
-	if _, err := g.SetCurrentView(newView.Name()); err != nil {
-		return err
-	}
-
-	g.Cursor = newView.Editable
-
-	if err := gui.renderPanelOptions(); err != nil {
-		return err
-	}
-
-	return gui.newLineFocused(newView)
 }
 
 // if the cursor down past the last item, move it to the last line

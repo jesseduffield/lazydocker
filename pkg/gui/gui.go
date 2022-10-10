@@ -78,6 +78,7 @@ type Gui struct {
 
 type Mutexes struct {
 	SubprocessMutex sync.Mutex
+	ViewStackMutex  sync.Mutex
 }
 
 type servicePanelState struct {
