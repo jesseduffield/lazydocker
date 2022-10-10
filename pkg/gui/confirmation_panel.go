@@ -62,14 +62,14 @@ func (gui *Gui) getConfirmationPanelDimensions(g *gocui.Gui, wrap bool, prompt s
 		height/2 + panelHeight/2
 }
 
-func (gui *Gui) createPromptPanel(g *gocui.Gui, currentView *gocui.View, title string, handleConfirm func(*gocui.Gui, *gocui.View) error) error {
+func (gui *Gui) createPromptPanel(title string, handleConfirm func(*gocui.Gui, *gocui.View) error) error {
 	gui.onNewPopupPanel()
 	err := gui.prepareConfirmationPanel(title, "", false)
 	if err != nil {
 		return err
 	}
 	gui.Views.Confirmation.Editable = true
-	return gui.setKeyBindings(g, handleConfirm, nil)
+	return gui.setKeyBindings(gui.g, handleConfirm, nil)
 }
 
 func (gui *Gui) prepareConfirmationPanel(title, prompt string, hasLoader bool) error {
@@ -143,7 +143,7 @@ func (gui *Gui) setKeyBindings(g *gocui.Gui, handleConfirm, handleClose func(*go
 	return nil
 }
 
-func (gui *Gui) createErrorPanel(g *gocui.Gui, message string) error {
+func (gui *Gui) createErrorPanel(message string) error {
 	colorFunction := color.New(color.FgRed).SprintFunc()
 	coloredMessage := colorFunction(strings.TrimSpace(message))
 	return gui.createConfirmationPanel(gui.Tr.ErrorTitle, coloredMessage, nil, nil)

@@ -17,27 +17,23 @@ func (gui *Gui) runSubprocess(cmd *exec.Cmd) error {
 	defer gui.Mutexes.SubprocessMutex.Unlock()
 
 	if err := gui.g.Suspend(); err != nil {
-		return gui.createErrorPanel(gui.g, err.Error())
+		return gui.createErrorPanel(err.Error())
 	}
 
 	gui.PauseBackgroundThreads = true
 
-	cmdErr := gui.runCommand(cmd)
+	gui.runCommand(cmd)
 
 	if err := gui.g.Resume(); err != nil {
-		return gui.createErrorPanel(gui.g, err.Error())
+		return gui.createErrorPanel(err.Error())
 	}
 
 	gui.PauseBackgroundThreads = false
 
-	if cmdErr != nil {
-		return gui.createErrorPanel(gui.g, cmdErr.Error())
-	}
-
 	return nil
 }
 
-func (gui *Gui) runCommand(cmd *exec.Cmd) error {
+func (gui *Gui) runCommand(cmd *exec.Cmd) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stdout
 	cmd.Stdin = os.Stdin
@@ -67,6 +63,4 @@ func (gui *Gui) runCommand(cmd *exec.Cmd) error {
 	cmd.Stderr = ioutil.Discard
 
 	gui.promptToReturn()
-
-	return nil
 }

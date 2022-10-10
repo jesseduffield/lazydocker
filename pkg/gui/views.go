@@ -3,7 +3,6 @@ package gui
 import (
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
-	"github.com/samber/lo"
 )
 
 type Views struct {
@@ -26,12 +25,6 @@ type Views struct {
 type viewNameMapping struct {
 	viewPtr **gocui.View
 	name    string
-}
-
-func (gui *Gui) orderedViews() []*gocui.View {
-	return lo.Map(gui.orderedViewNameMappings(), func(v viewNameMapping, _ int) *gocui.View {
-		return *v.viewPtr
-	})
 }
 
 func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
@@ -130,4 +123,9 @@ func (gui *Gui) getInformationContent() string {
 
 func (gui *Gui) popupViewNames() []string {
 	return []string{"confirmation", "menu"}
+}
+
+// these views have their position and size determined by arrangement.go
+func (gui *Gui) controlledBoundsViewNames() []string {
+	return []string{"project", "services", "containers", "images", "volumes", "options", "information", "appStatus", "main", "limit"}
 }

@@ -197,7 +197,7 @@ func (gui *Gui) renderContainerStats(container *commands.Container) error {
 
 		contents, err := container.RenderStats(width)
 		if err != nil {
-			_ = gui.createErrorPanel(gui.g, err.Error())
+			_ = gui.createErrorPanel(err.Error())
 		}
 
 		gui.reRenderStringMain(contents)
@@ -415,7 +415,7 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 						})
 					}, nil)
 				}
-				return gui.createErrorPanel(gui.g, err.Error())
+				return gui.createErrorPanel(err.Error())
 			}
 			return nil
 		})
@@ -433,7 +433,7 @@ func (gui *Gui) PauseContainer(container *commands.Container) error {
 		}
 
 		if err != nil {
-			return gui.createErrorPanel(gui.g, err.Error())
+			return gui.createErrorPanel(err.Error())
 		}
 
 		return gui.refreshContainersAndServices()
@@ -458,7 +458,7 @@ func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.StopContainer, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
 			if err := container.Stop(); err != nil {
-				return gui.createErrorPanel(gui.g, err.Error())
+				return gui.createErrorPanel(err.Error())
 			}
 
 			return nil
@@ -474,7 +474,7 @@ func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
 
 	return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
 		if err := container.Restart(); err != nil {
-			return gui.createErrorPanel(gui.g, err.Error())
+			return gui.createErrorPanel(err.Error())
 		}
 
 		return nil
@@ -489,7 +489,7 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 
 	c, err := container.Attach()
 	if err != nil {
-		return gui.createErrorPanel(gui.g, err.Error())
+		return gui.createErrorPanel(err.Error())
 	}
 
 	return gui.runSubprocess(c)
@@ -500,7 +500,7 @@ func (gui *Gui) handlePruneContainers() error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
 			err := gui.DockerCommand.PruneContainers()
 			if err != nil {
-				return gui.createErrorPanel(gui.g, err.Error())
+				return gui.createErrorPanel(err.Error())
 			}
 			return nil
 		})

@@ -109,7 +109,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		return view, err
 	}
 
-	for _, viewName := range []string{"project", "services", "containers", "images", "volumes", "options", "information", "appStatus", "main", "limit"} {
+	for _, viewName := range gui.controlledBoundsViewNames() {
 		_, err := setViewFromDimensions(viewName, viewName)
 		if err != nil && err.Error() != UNKNOWN_VIEW_ERROR_MSG {
 			return err
