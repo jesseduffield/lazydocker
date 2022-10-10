@@ -9,18 +9,18 @@ require (
 	github.com/docker/docker v20.10.15+incompatible
 	github.com/fatih/color v1.7.0
 	github.com/go-errors/errors v1.4.2
-	github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3
 	github.com/gookit/color v1.5.0
 	github.com/imdario/mergo v0.3.8
 	github.com/integrii/flaggy v1.4.0
 	github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee
 	github.com/jesseduffield/gocui v0.3.1-0.20220417002912-bce22fd599f6
 	github.com/jesseduffield/kill v0.0.0-20220618033138-bfbe04675d10
-	github.com/jesseduffield/lazycore v0.0.0-20221009164442-17c8b878c316
+	github.com/jesseduffield/lazycore v0.0.0-20221010211550-2c30efd18b93
 	github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56
 	github.com/mattn/go-runewidth v0.0.13
 	github.com/mcuadros/go-lookup v0.0.0-20171110082742-5650f26be767
 	github.com/mgutz/str v1.2.0
+	github.com/pmezard/go-difflib v1.0.0
 	github.com/samber/lo v1.31.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spkg/bom v0.0.0-20160624110644-59b7046e48ad
@@ -48,7 +48,6 @@ require (
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
 	golang.org/x/exp v0.0.0-20220428152302-39d4317da171 // indirect
