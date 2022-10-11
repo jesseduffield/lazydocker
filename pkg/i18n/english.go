@@ -17,6 +17,7 @@ type TranslationSet struct {
 	OpenConfig                                 string
 	EditConfig                                 string
 	ConfirmQuit                                string
+	ConfirmUpProject                           string
 	ErrorOccurred                              string
 	ConnectionFailed                           string
 	UnattachableContainerError                 string
@@ -41,9 +42,11 @@ type TranslationSet struct {
 	RestartingStatus            string
 	StartingStatus              string
 	StoppingStatus              string
-	UppingStatus                string
+	UppingProjectStatus         string
+	UppingServiceStatus         string
 	PausingStatus               string
 	RemovingStatus              string
+	DowningStatus               string
 	RunningCustomCommandStatus  string
 	RunningBulkCommandStatus    string
 	RemoveService               string
@@ -51,6 +54,8 @@ type TranslationSet struct {
 	Stop                        string
 	Pause                       string
 	Restart                     string
+	Down                        string
+	DownWithVolumes             string
 	Start                       string
 	Rebuild                     string
 	Recreate                    string
@@ -58,6 +63,8 @@ type TranslationSet struct {
 	NextContext                 string
 	Attach                      string
 	ViewLogs                    string
+	UpProject                   string
+	DownProject                 string
 	ServicesTitle               string
 	ContainersTitle             string
 	StandaloneContainersTitle   string
@@ -118,7 +125,9 @@ func englishSet() TranslationSet {
 		RestartingStatus:           "restarting",
 		StartingStatus:             "starting",
 		StoppingStatus:             "stopping",
-		UppingStatus:               "upping",
+		UppingServiceStatus:        "upping service",
+		UppingProjectStatus:        "upping project",
+		DowningStatus:              "downing",
 		PausingStatus:              "pausing",
 		RunningCustomCommandStatus: "running custom command",
 		RunningBulkCommandStatus:   "running bulk command",
@@ -156,6 +165,8 @@ func englishSet() TranslationSet {
 		Stop:                        "stop",
 		Pause:                       "pause",
 		Restart:                     "restart",
+		Down:                        "down project",
+		DownWithVolumes:             "down project with volumes",
 		Start:                       "start",
 		Rebuild:                     "rebuild",
 		Recreate:                    "recreate",
@@ -163,6 +174,8 @@ func englishSet() TranslationSet {
 		NextContext:                 "next tab",
 		Attach:                      "attach",
 		ViewLogs:                    "view logs",
+		UpProject:                   "up project",
+		DownProject:                 "down project",
 		RemoveImage:                 "remove image",
 		RemoveVolume:                "remove volume",
 		RemoveWithoutPrune:          "remove without deleting untagged parents",
@@ -209,6 +222,7 @@ func englishSet() TranslationSet {
 		NoVolumes:    "No volumes",
 
 		ConfirmQuit:                "Are you sure you want to quit?",
+		ConfirmUpProject:           "Are you sure you want to 'up' your docker compose project?",
 		MustForceToRemoveContainer: "You cannot remove a running container unless you force it. Do you want to force it?",
 		NotEnoughSpace:             "Not enough space to render panels",
 		ConfirmPruneImages:         "Are you sure you want to prune all unused images?",

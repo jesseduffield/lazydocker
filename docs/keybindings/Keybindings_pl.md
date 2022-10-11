@@ -43,6 +43,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>S</kbd>: start
   <kbd>a</kbd>: przyczep
   <kbd>m</kbd>: pokaż logi
+  <kbd>U</kbd>: up project
+  <kbd>D</kbd>: down project
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka
   <kbd>R</kbd>: pokaż opcje restartu

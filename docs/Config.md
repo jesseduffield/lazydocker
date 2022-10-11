@@ -42,8 +42,11 @@ logs:
 commandTemplates:
   dockerCompose: docker-compose
   restartService: '{{ .DockerCompose }} restart {{ .Service.Name }}'
-  startService: '{{ .DockerCompose }} start {{ .Service.Name }}'
+  up:  '{{ .DockerCompose }} up -d'
+  down: '{{ .DockerCompose }} down'
+  downWithVolumes: '{{ .DockerCompose }} down --volumes'
   upService:  '{{ .DockerCompose }} up -d {{ .Service.Name }}'
+  startService: '{{ .DockerCompose }} start {{ .Service.Name }}'
   stopService: '{{ .DockerCompose }} stop {{ .Service.Name }}'
   serviceLogs: '{{ .DockerCompose }} logs --since=60m --follow {{ .Service.Name }}'
   viewServiceLogs: '{{ .DockerCompose }} logs --follow {{ .Service.Name }}'

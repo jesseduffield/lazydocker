@@ -141,6 +141,14 @@ type CommandTemplatesConfig struct {
 	// UpService ups the service (creates and starts)
 	UpService string `yaml:"upService,omitempty"`
 
+	// Runs "docker-compose up -d"
+	Up string `yaml:"up,omitempty"`
+
+	// downs everything
+	Down string `yaml:"down,omitempty"`
+	// downs and removes volumes
+	DownWithVolumes string `yaml:"downWithVolumes,omitempty"`
+
 	// DockerCompose is for your docker-compose command. You may want to combine a
 	// few different docker-compose.yml files together, in which case you can set
 	// this to "docker-compose -f foo/docker-compose.yml -f
@@ -351,6 +359,9 @@ func GetDefaultConfig() UserConfig {
 			DockerCompose:            "docker-compose",
 			RestartService:           "{{ .DockerCompose }} restart {{ .Service.Name }}",
 			StartService:             "{{ .DockerCompose }} start {{ .Service.Name }}",
+			Up:                       "{{ .DockerCompose }} up -d",
+			Down:                     "{{ .DockerCompose }} down",
+			DownWithVolumes:          "{{ .DockerCompose }} down --volumes",
 			UpService:                "{{ .DockerCompose }} up -d {{ .Service.Name }}",
 			RebuildService:           "{{ .DockerCompose }} up -d --build {{ .Service.Name }}",
 			RecreateService:          "{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}",

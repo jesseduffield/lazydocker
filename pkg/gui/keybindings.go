@@ -111,6 +111,12 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName: "",
+			Key:      gocui.KeyHome,
+			Modifier: gocui.ModNone,
+			Handler:  gui.jumpToTopMain,
+		},
+		{
+			ViewName: "",
 			Key:      'x',
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleCreateOptionsMenu,
@@ -338,6 +344,20 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceRenderLogsToMain,
 			Description: gui.Tr.ViewLogs,
+		},
+		{
+			ViewName:    "services",
+			Key:         'U',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleProjectUp,
+			Description: gui.Tr.UpProject,
+		},
+		{
+			ViewName:    "services",
+			Key:         'D',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleProjectDown,
+			Description: gui.Tr.DownProject,
 		},
 		{
 			ViewName:    "services",
