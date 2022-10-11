@@ -43,6 +43,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>S</kbd>: start
   <kbd>a</kbd>: bağlan/iliştir
   <kbd>m</kbd>: kayıt defterini görüntüle
+  <kbd>U</kbd>: up project
+  <kbd>D</kbd>: down project
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
   <kbd>R</kbd>: yeniden başlatma seçeneklerini görüntüle
