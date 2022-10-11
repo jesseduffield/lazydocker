@@ -118,7 +118,7 @@ func (gui *Gui) renderCredits() error {
 				"Keybindings: https://github.com/jesseduffield/lazydocker/blob/master/docs/keybindings",
 				"Config Options: https://github.com/jesseduffield/lazydocker/blob/master/docs/Config.md",
 				"Raise an Issue: https://github.com/jesseduffield/lazydocker/issues",
-				utils.ColoredString("Buy Jesse a coffee: https://donorbox.org/lazydocker", color.FgMagenta), // caffeine ain't free
+				utils.ColoredString("Buy Jesse a coffee: https://github.com/sponsors/jesseduffield", color.FgMagenta), // caffeine ain't free
 				"Here's your lazydocker config when merged in with the defaults (you can open your config by pressing 'o'):",
 				configBuf.String(),
 			}, "\n\n")
