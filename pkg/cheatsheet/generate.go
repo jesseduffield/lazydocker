@@ -4,9 +4,9 @@
 // The content of this generated file is a keybindings cheatsheet.
 //
 // To generate cheatsheet in english run:
-//   LANG=en go run scripts/generate_cheatsheet.go
+//   LANG=en go run scripts/cheatsheet/main.go generate
 
-package main
+package cheatsheet
 
 import (
 	"fmt"
@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	generateCheatsheetCmd = "go run scripts/generate_cheatsheet.go"
+	generateCheatsheetCmd = "go run scripts/cheatsheet/main.go generate"
 )
 
 type bindingSection struct {
@@ -28,7 +28,11 @@ type bindingSection struct {
 	bindings []*gui.Binding
 }
 
-func main() {
+func Generate() {
+	generateAtDir(GetKeybindingsDir())
+}
+
+func generateAtDir(dir string) {
 	mConfig, err := config.NewAppConfig("lazydocker", "", "", "", "", true, nil, "")
 	if err != nil {
 		panic(err)
@@ -37,7 +41,8 @@ func main() {
 	for lang := range i18n.GetTranslationSets() {
 		os.Setenv("LC_ALL", lang)
 		mApp, _ := app.NewApp(mConfig)
-		file, err := os.Create("./docs/keybindings/Keybindings_" + lang + ".md")
+
+		file, err := os.Create(dir + "/Keybindings_" + lang + ".md")
 		if err != nil {
 			panic(err)
 		}
