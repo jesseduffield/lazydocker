@@ -5,10 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"log"
 	"math"
-	"os"
-	"path/filepath"
 	"reflect"
 	"regexp"
 	"sort"
@@ -410,32 +407,4 @@ func IsValidHexValue(v string) bool {
 	}
 
 	return true
-}
-
-// GetLazydockerRootDirectory finds lazydocker root directory.
-//
-// It's used for our cheatsheet script and integration tests. Not to be confused with finding the
-// root directory of _any_ random repo.
-func GetLazydockerRootDirectory() string {
-	path, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
-	for {
-		_, err := os.Stat(filepath.Join(path, ".git"))
-		if err == nil {
-			return path
-		}
-
-		if !os.IsNotExist(err) {
-			panic(err)
-		}
-
-		path = filepath.Dir(path)
-
-		if path == "/" {
-			log.Fatal("must run in lazydocker folder or child folder")
-		}
-	}
 }
