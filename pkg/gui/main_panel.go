@@ -66,6 +66,13 @@ func (gui *Gui) autoScrollMain(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+func (gui *Gui) jumpToTopMain(g *gocui.Gui, v *gocui.View) error {
+	gui.getMainView().Autoscroll = false
+	_ = gui.getMainView().SetOrigin(0, 0)
+	_ = gui.getMainView().SetCursor(0, 0)
+	return nil
+}
+
 func (gui *Gui) onMainTabClick(tabIndex int) error {
 	gui.Log.Warn(tabIndex)
 
