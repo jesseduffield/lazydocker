@@ -43,6 +43,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>S</kbd>: start
   <kbd>a</kbd>: anbinden
   <kbd>m</kbd>: zeige Protokolle
+  <kbd>U</kbd>: up project
+  <kbd>D</kbd>: down project
   <kbd>[</kbd>: vorheriges Tab
   <kbd>]</kbd>: nächstes Tab
   <kbd>R</kbd>: zeige Neustartoptionen
