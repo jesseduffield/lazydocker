@@ -46,6 +46,7 @@ type TranslationSet struct {
 	RunningCustomCommandStatus  string
 	RunningBulkCommandStatus    string
 	RemoveService               string
+	UpService                   string
 	Stop                        string
 	Pause                       string
 	Restart                     string
@@ -149,6 +150,7 @@ func englishSet() TranslationSet {
 		ForceRemove:                 "force remove",
 		RemoveWithVolumes:           "remove with volumes",
 		RemoveService:               "remove containers",
+		UpService:                   "up service",
 		Stop:                        "stop",
 		Pause:                       "pause",
 		Restart:                     "restart",

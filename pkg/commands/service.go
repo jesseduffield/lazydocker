@@ -38,29 +38,27 @@ func (s *Service) Remove(options types.ContainerRemoveOptions) error {
 
 // Stop stops the service's containers
 func (s *Service) Stop() error {
-	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.StopService
-	command := utils.ApplyTemplate(
-		templateString,
-		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
-	)
-	return s.OSCommand.RunCommand(command)
+	return s.runCommand(s.OSCommand.Config.UserConfig.CommandTemplates.StopService)
+}
+
+// Up up's the service
+func (s *Service) Up() error {
+	return s.runCommand(s.OSCommand.Config.UserConfig.CommandTemplates.UpService)
 }
 
 // Restart restarts the service
 func (s *Service) Restart() error {
-	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.RestartService
-	command := utils.ApplyTemplate(
-		templateString,
-		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
-	)
-	return s.OSCommand.RunCommand(command)
+	return s.runCommand(s.OSCommand.Config.UserConfig.CommandTemplates.RestartService)
 }
 
 // Restart starts the service
 func (s *Service) Start() error {
-	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.StartService
+	return s.runCommand(s.OSCommand.Config.UserConfig.CommandTemplates.StartService)
+}
+
+func (s *Service) runCommand(templateCmdStr string) error {
 	command := utils.ApplyTemplate(
-		templateString,
+		templateCmdStr,
 		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
 	)
 	return s.OSCommand.RunCommand(command)

@@ -35,6 +35,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 ## Servisler
 
 <pre>
+  <kbd>u</kbd>: up service
   <kbd>d</kbd>: konteynerleri kaldır
   <kbd>s</kbd>: durdur
   <kbd>p</kbd>: pause

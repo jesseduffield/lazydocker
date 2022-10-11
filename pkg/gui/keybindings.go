@@ -285,6 +285,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "services",
+			Key:         'u',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServiceUp,
+			Description: gui.Tr.UpService,
+		},
+		{
+			ViewName:    "services",
 			Key:         'd',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceRemoveMenu,
