@@ -326,17 +326,19 @@ func (gui *Gui) handleServiceRenderLogsToMain(g *gocui.Gui, v *gocui.View) error
 }
 
 func (gui *Gui) handleProjectUp(g *gocui.Gui, v *gocui.View) error {
-	cmdStr := utils.ApplyTemplate(
-		gui.Config.UserConfig.CommandTemplates.Up,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
-	)
+	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmUpProject, func(g *gocui.Gui, v *gocui.View) error {
+		cmdStr := utils.ApplyTemplate(
+			gui.Config.UserConfig.CommandTemplates.Up,
+			gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+		)
 
-	return gui.WithWaitingStatus(gui.Tr.UppingAllStatus, func() error {
-		if err := gui.OSCommand.RunCommand(cmdStr); err != nil {
-			return gui.createErrorPanel(err.Error())
-		}
-		return nil
-	})
+		return gui.WithWaitingStatus(gui.Tr.UppingProjectStatus, func() error {
+			if err := gui.OSCommand.RunCommand(cmdStr); err != nil {
+				return gui.createErrorPanel(err.Error())
+			}
+			return nil
+		})
+	}, nil)
 }
 
 func (gui *Gui) handleProjectDown(g *gocui.Gui, v *gocui.View) error {

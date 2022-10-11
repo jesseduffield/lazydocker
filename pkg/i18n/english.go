@@ -17,6 +17,7 @@ type TranslationSet struct {
 	OpenConfig                                 string
 	EditConfig                                 string
 	ConfirmQuit                                string
+	ConfirmUpProject                           string
 	ErrorOccurred                              string
 	ConnectionFailed                           string
 	UnattachableContainerError                 string
@@ -41,7 +42,7 @@ type TranslationSet struct {
 	RestartingStatus            string
 	StartingStatus              string
 	StoppingStatus              string
-	UppingAllStatus             string
+	UppingProjectStatus         string
 	UppingServiceStatus         string
 	PausingStatus               string
 	RemovingStatus              string
@@ -125,7 +126,7 @@ func englishSet() TranslationSet {
 		StartingStatus:             "starting",
 		StoppingStatus:             "stopping",
 		UppingServiceStatus:        "upping service",
-		UppingAllStatus:            "upping all",
+		UppingProjectStatus:        "upping project",
 		DowningStatus:              "downing",
 		PausingStatus:              "pausing",
 		RunningCustomCommandStatus: "running custom command",
@@ -221,6 +222,7 @@ func englishSet() TranslationSet {
 		NoVolumes:    "No volumes",
 
 		ConfirmQuit:                "Are you sure you want to quit?",
+		ConfirmUpProject:           "Are you sure you want to 'up' your docker compose project?",
 		MustForceToRemoveContainer: "You cannot remove a running container unless you force it. Do you want to force it?",
 		NotEnoughSpace:             "Not enough space to render panels",
 		ConfirmPruneImages:         "Are you sure you want to prune all unused images?",
