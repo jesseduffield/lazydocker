@@ -41,6 +41,7 @@ type TranslationSet struct {
 	RestartingStatus            string
 	StartingStatus              string
 	StoppingStatus              string
+	UppingStatus                string
 	PausingStatus               string
 	RemovingStatus              string
 	RunningCustomCommandStatus  string
@@ -117,6 +118,7 @@ func englishSet() TranslationSet {
 		RestartingStatus:           "restarting",
 		StartingStatus:             "starting",
 		StoppingStatus:             "stopping",
+		UppingStatus:               "upping",
 		PausingStatus:              "pausing",
 		RunningCustomCommandStatus: "running custom command",
 		RunningBulkCommandStatus:   "running bulk command",
