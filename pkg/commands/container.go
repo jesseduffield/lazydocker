@@ -57,6 +57,10 @@ func (c *Container) GetDisplayStrings(isFocused bool) []string {
 
 func (c *Container) displayPorts() string {
 	portStrings := lo.Map(c.Container.Ports, func(port types.Port, _ int) string {
+		if port.PublicPort == 0 {
+			return fmt.Sprintf("%d\\%s", port.PrivatePort, port.Type)
+		}
+
 		// docker ps will show '0.0.0.0:80->80/tcp' but we'll show
 		// '80->80/tcp' instead to save space (unless the IP is something other than
 		// 0.0.0.0)
