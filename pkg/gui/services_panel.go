@@ -248,6 +248,19 @@ func (gui *Gui) handleServiceStop(g *gocui.Gui, v *gocui.View) error {
 	}, nil)
 }
 
+func (gui *Gui) handleServiceUp(g *gocui.Gui, v *gocui.View) error {
+	service, err := gui.getSelectedService()
+	if err != nil {
+		return nil
+	}
+
+	if err := service.Up(); err != nil {
+		return gui.createErrorPanel(err.Error())
+	}
+
+	return nil
+}
+
 func (gui *Gui) handleServiceRestart(g *gocui.Gui, v *gocui.View) error {
 	service, err := gui.getSelectedService()
 	if err != nil {

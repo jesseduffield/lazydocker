@@ -35,6 +35,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 ## Serwisy
 
 <pre>
+  <kbd>u</kbd>: up service
   <kbd>d</kbd>: usuń kontenery
   <kbd>s</kbd>: zatrzymaj
   <kbd>p</kbd>: pause
