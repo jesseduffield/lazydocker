@@ -41,9 +41,11 @@ type TranslationSet struct {
 	RestartingStatus            string
 	StartingStatus              string
 	StoppingStatus              string
-	UppingStatus                string
+	UppingAllStatus             string
+	UppingServiceStatus         string
 	PausingStatus               string
 	RemovingStatus              string
+	DowningStatus               string
 	RunningCustomCommandStatus  string
 	RunningBulkCommandStatus    string
 	RemoveService               string
@@ -51,6 +53,8 @@ type TranslationSet struct {
 	Stop                        string
 	Pause                       string
 	Restart                     string
+	Down                        string
+	DownWithVolumes             string
 	Start                       string
 	Rebuild                     string
 	Recreate                    string
@@ -58,6 +62,8 @@ type TranslationSet struct {
 	NextContext                 string
 	Attach                      string
 	ViewLogs                    string
+	UpProject                   string
+	DownProject                 string
 	ServicesTitle               string
 	ContainersTitle             string
 	StandaloneContainersTitle   string
@@ -118,7 +124,9 @@ func englishSet() TranslationSet {
 		RestartingStatus:           "restarting",
 		StartingStatus:             "starting",
 		StoppingStatus:             "stopping",
-		UppingStatus:               "upping",
+		UppingServiceStatus:        "upping service",
+		UppingAllStatus:            "upping all",
+		DowningStatus:              "downing",
 		PausingStatus:              "pausing",
 		RunningCustomCommandStatus: "running custom command",
 		RunningBulkCommandStatus:   "running bulk command",
@@ -156,6 +164,8 @@ func englishSet() TranslationSet {
 		Stop:                        "stop",
 		Pause:                       "pause",
 		Restart:                     "restart",
+		Down:                        "down project",
+		DownWithVolumes:             "down project with volumes",
 		Start:                       "start",
 		Rebuild:                     "rebuild",
 		Recreate:                    "recreate",
@@ -163,6 +173,8 @@ func englishSet() TranslationSet {
 		NextContext:                 "next tab",
 		Attach:                      "attach",
 		ViewLogs:                    "view logs",
+		UpProject:                   "up project",
+		DownProject:                 "down project",
 		RemoveImage:                 "remove image",
 		RemoveVolume:                "remove volume",
 		RemoveWithoutPrune:          "remove without deleting untagged parents",

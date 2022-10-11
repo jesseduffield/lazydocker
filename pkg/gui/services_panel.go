@@ -254,7 +254,7 @@ func (gui *Gui) handleServiceUp(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	return gui.WithWaitingStatus(gui.Tr.UppingStatus, func() error {
+	return gui.WithWaitingStatus(gui.Tr.UppingServiceStatus, func() error {
 		if err := service.Up(); err != nil {
 			return gui.createErrorPanel(err.Error())
 		}
@@ -323,6 +323,67 @@ func (gui *Gui) handleServiceRenderLogsToMain(g *gocui.Gui, v *gocui.View) error
 	}
 
 	return gui.runSubprocess(c)
+}
+
+func (gui *Gui) handleProjectUp(g *gocui.Gui, v *gocui.View) error {
+	cmdStr := utils.ApplyTemplate(
+		gui.Config.UserConfig.CommandTemplates.Up,
+		gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+	)
+
+	return gui.WithWaitingStatus(gui.Tr.UppingAllStatus, func() error {
+		if err := gui.OSCommand.RunCommand(cmdStr); err != nil {
+			return gui.createErrorPanel(err.Error())
+		}
+		return nil
+	})
+}
+
+func (gui *Gui) handleProjectDown(g *gocui.Gui, v *gocui.View) error {
+	downCommand := utils.ApplyTemplate(
+		gui.Config.UserConfig.CommandTemplates.Down,
+		gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+	)
+
+	downWithVolumesCommand := utils.ApplyTemplate(
+		gui.Config.UserConfig.CommandTemplates.DownWithVolumes,
+		gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+	)
+
+	options := []*commandOption{
+		{
+			description: gui.Tr.Down,
+			command:     downCommand,
+			f: func() error {
+				return gui.WithWaitingStatus(gui.Tr.DowningStatus, func() error {
+					if err := gui.OSCommand.RunCommand(downCommand); err != nil {
+						return gui.createErrorPanel(err.Error())
+					}
+					return nil
+				})
+			},
+		},
+		{
+			description: gui.Tr.DownWithVolumes,
+			command:     downWithVolumesCommand,
+			f: func() error {
+				return gui.WithWaitingStatus(gui.Tr.DowningStatus, func() error {
+					if err := gui.OSCommand.RunCommand(downWithVolumesCommand); err != nil {
+						return gui.createErrorPanel(err.Error())
+					}
+					return nil
+				})
+			},
+		},
+		{
+			description: gui.Tr.Cancel,
+			f:           func() error { return nil },
+		},
+	}
+
+	handleMenuPress := func(index int) error { return options[index].f() }
+
+	return gui.createMenu("", options, len(options), handleMenuPress)
 }
 
 func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {

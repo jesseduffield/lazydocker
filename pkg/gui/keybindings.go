@@ -341,6 +341,20 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "services",
+			Key:         'U',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleProjectUp,
+			Description: gui.Tr.UpProject,
+		},
+		{
+			ViewName:    "services",
+			Key:         'D',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleProjectDown,
+			Description: gui.Tr.DownProject,
+		},
+		{
+			ViewName:    "services",
 			Key:         '[',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServicesPrevContext,
