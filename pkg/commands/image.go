@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types/image"
+	"github.com/samber/lo"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -143,6 +144,12 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 			DockerCommand: c,
 		}
 	}
+
+	ownImages = lo.Filter(ownImages, func(image *Image, _ int) bool {
+		return !lo.SomeBy(c.Config.UserConfig.Ignore, func(ignore string) bool {
+			return strings.Contains(image.Name, ignore)
+		})
+	})
 
 	noneLabel := "<none>"
 

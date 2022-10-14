@@ -60,6 +60,11 @@ type UserConfig struct {
 
 	// Replacements determines how we render an item's info
 	Replacements Replacements `yaml:"replacements,omitempty"`
+
+	// For demo purposes: any list item with one of these strings as a substring
+	// will be filtered out and not displayed.
+	// Not documented because it's subject to change
+	Ignore []string `yaml:"ignore,omitempty"`
 }
 
 // ThemeConfig is for setting the colors of panels and some text.

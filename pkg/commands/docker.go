@@ -20,6 +20,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )
 
@@ -218,7 +219,9 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 
 	c.Containers = containers
 	c.Services = services
+	c.Services = c.filterOutIgnoredServices(c.Services)
 	c.DisplayContainers = c.filterOutExited(displayContainers)
+	c.DisplayContainers = c.filterOutIgnoredContainers(c.DisplayContainers)
 	c.DisplayContainers = c.sortedContainers(c.DisplayContainers)
 
 	return nil
@@ -249,6 +252,22 @@ func (c *DockerCommand) filterOutExited(containers []*Container) []*Container {
 		}
 	}
 	return toReturn
+}
+
+func (c *DockerCommand) filterOutIgnoredContainers(containers []*Container) []*Container {
+	return lo.Filter(containers, func(container *Container, _ int) bool {
+		return !lo.SomeBy(c.Config.UserConfig.Ignore, func(ignore string) bool {
+			return strings.Contains(container.Name, ignore)
+		})
+	})
+}
+
+func (c *DockerCommand) filterOutIgnoredServices(services []*Service) []*Service {
+	return lo.Filter(services, func(service *Service, _ int) bool {
+		return !lo.SomeBy(c.Config.UserConfig.Ignore, func(ignore string) bool {
+			return strings.Contains(service.Name, ignore)
+		})
+	})
 }
 
 // sortedContainers returns containers sorted by state if c.SortContainersByState is true (follows 1- running, 2- exited, 3- created)

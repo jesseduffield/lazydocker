@@ -3,10 +3,12 @@ package commands
 import (
 	"context"
 	"sort"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )
 
@@ -59,6 +61,12 @@ func (c *DockerCommand) RefreshVolumes() error {
 			DockerCommand: c,
 		}
 	}
+
+	ownVolumes = lo.Filter(ownVolumes, func(volume *Volume, _ int) bool {
+		return !lo.SomeBy(c.Config.UserConfig.Ignore, func(ignore string) bool {
+			return strings.Contains(volume.Name, ignore)
+		})
+	})
 
 	c.Volumes = ownVolumes
 
