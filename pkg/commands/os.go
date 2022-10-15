@@ -22,13 +22,11 @@ import (
 
 // Platform stores the os state
 type Platform struct {
-	os                   string
-	shell                string
-	shellArg             string
-	escapedQuote         string
-	openCommand          string
-	openLinkCommand      string
-	fallbackEscapedQuote string
+	os              string
+	shell           string
+	shellArg        string
+	openCommand     string
+	openLinkCommand string
 }
 
 // OSCommand holds all the os commands
@@ -98,6 +96,25 @@ func (c *OSCommand) ExecutableFromStringContext(ctx context.Context, commandStr 
 	return exec.CommandContext(ctx, splitCmd[0], splitCmd[1:]...)
 }
 
+func (c *OSCommand) NewCommandStringWithShell(commandStr string) string {
+	quotedCommand := ""
+	// Windows does not seem to like quotes around the command
+	if c.Platform.os == "windows" {
+		quotedCommand = strings.NewReplacer(
+			"^", "^^",
+			"&", "^&",
+			"|", "^|",
+			"<", "^<",
+			">", "^>",
+			"%", "^%",
+		).Replace(commandStr)
+	} else {
+		quotedCommand = c.Quote(commandStr)
+	}
+
+	return fmt.Sprintf("%s %s %s", c.Platform.shell, c.Platform.shellArg, quotedCommand)
+}
+
 // RunCommand runs a command and just returns the error
 func (c *OSCommand) RunCommand(command string) error {
 	_, err := c.RunCommandWithOutput(command)
@@ -114,16 +131,6 @@ func (c *OSCommand) FileType(path string) string {
 		return "directory"
 	}
 	return "file"
-}
-
-// RunDirectCommand wrapper around direct commands
-func (c *OSCommand) RunDirectCommand(command string) (string, error) {
-	c.Log.WithField("command", command).Info("RunDirectCommand")
-
-	return sanitisedCommandOutput(
-		c.command(c.Platform.shell, c.Platform.shellArg, command).
-			CombinedOutput(),
-	)
 }
 
 func sanitisedCommandOutput(output []byte, err error) (string, error) {
@@ -190,12 +197,23 @@ func (c *OSCommand) PrepareSubProcess(cmdName string, commandArgs ...string) *ex
 
 // Quote wraps a message in platform-specific quotation marks
 func (c *OSCommand) Quote(message string) string {
-	message = strings.Replace(message, "`", "\\`", -1)
-	escapedQuote := c.Platform.escapedQuote
-	if strings.Contains(message, c.Platform.escapedQuote) {
-		escapedQuote = c.Platform.fallbackEscapedQuote
+	var quote string
+	if c.Platform.os == "windows" {
+		quote = `\"`
+		message = strings.NewReplacer(
+			`"`, `"'"'"`,
+			`\"`, `\\"`,
+		).Replace(message)
+	} else {
+		quote = `"`
+		message = strings.NewReplacer(
+			`\`, `\\`,
+			`"`, `\"`,
+			`$`, `\$`,
+			"`", "\\`",
+		).Replace(message)
 	}
-	return escapedQuote + message + escapedQuote
+	return quote + message + quote
 }
 
 // Unquote removes wrapping quotations marks if they are present

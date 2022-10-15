@@ -306,6 +306,10 @@ type CustomCommand struct {
 	// option where the output plays in the main panel.
 	Attach bool `yaml:"attach"`
 
+	// Shell indicates whether to invoke the Command on a shell or not.
+	// Example of a bash invoked command: `/bin/bash -c "{Command}".
+	Shell bool `yaml:"shell"`
+
 	// Command is the command we want to run. We can use the go templates here as
 	// well. One example might be `{{ .DockerCompose }} exec {{ .Service.Name }}
 	// /bin/sh`
