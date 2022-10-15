@@ -89,6 +89,8 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 	case "main":
 		v.Highlight = false
 		return nil
+	case "search":
+		return nil
 	default:
 		panic(gui.Tr.NoViewMachingNewLineFocusedSwitchStatement)
 	}

@@ -135,6 +135,14 @@ type guiState struct {
 	Stats            map[string]commands.ContainerStats
 
 	ScreenMode WindowMaximisation
+
+	Searching searchingState
+}
+
+type searchingState struct {
+	view         *gocui.View
+	isSearching  bool
+	searchString string
 }
 
 // screen sizing determines how much space your selected window takes up (window

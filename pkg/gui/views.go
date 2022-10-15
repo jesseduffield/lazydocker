@@ -5,21 +5,34 @@ import (
 	"github.com/jesseduffield/gocui"
 )
 
+const SEARCH_PREFIX = "filter: "
+
 type Views struct {
+	// side panels
 	Project    *gocui.View
 	Services   *gocui.View
 	Containers *gocui.View
 	Images     *gocui.View
 	Volumes    *gocui.View
 
+	// main panel
 	Main *gocui.View
 
-	Options      *gocui.View
+	// bottom line
+	Options     *gocui.View
+	Information *gocui.View
+	AppStatus   *gocui.View
+	// text that prompts you to enter text in the Search view
+	SearchPrefix *gocui.View
+	// appears next to the SearchPrefix view, it's where you type in the search string
+	Search *gocui.View
+
+	// popups
 	Confirmation *gocui.View
 	Menu         *gocui.View
-	Information  *gocui.View
-	AppStatus    *gocui.View
-	Limit        *gocui.View
+
+	// will cover everything when it appears
+	Limit *gocui.View
 }
 
 type viewNameMapping struct {
@@ -43,6 +56,8 @@ func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
 		{viewPtr: &gui.Views.Options, name: "options"},
 		{viewPtr: &gui.Views.AppStatus, name: "appStatus"},
 		{viewPtr: &gui.Views.Information, name: "information"},
+		{viewPtr: &gui.Views.Search, name: "search"},
+		{viewPtr: &gui.Views.SearchPrefix, name: "searchPrefix"},
 
 		// popups.
 		{viewPtr: &gui.Views.Menu, name: "menu"},
@@ -113,6 +128,17 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Limit.Title = gui.Tr.NotEnoughSpace
 	gui.Views.Limit.Wrap = true
 
+	gui.Views.SearchPrefix.BgColor = gocui.ColorDefault
+	gui.Views.SearchPrefix.FgColor = gocui.ColorGreen
+	gui.Views.SearchPrefix.Frame = false
+	_ = gui.setViewContent(gui.Views.SearchPrefix, SEARCH_PREFIX)
+
+	gui.Views.Search.BgColor = gocui.ColorDefault
+	gui.Views.Search.FgColor = gocui.ColorGreen
+	gui.Views.Search.Editable = true
+	gui.Views.Search.Frame = false
+	// gui.Views.Search.Editor = gocui.EditorFunc(gui.wrapEditor(gocui.SimpleEditor))
+
 	gui.waitForIntro.Done()
 
 	return nil
@@ -134,5 +160,18 @@ func (gui *Gui) popupViewNames() []string {
 
 // these views have their position and size determined by arrangement.go
 func (gui *Gui) controlledBoundsViewNames() []string {
-	return []string{"project", "services", "containers", "images", "volumes", "options", "information", "appStatus", "main", "limit"}
+	return []string{
+		"project",
+		"services",
+		"containers",
+		"images",
+		"volumes",
+		"options",
+		"information",
+		"appStatus",
+		"main",
+		"limit",
+		"searchPrefix",
+		"search",
+	}
 }

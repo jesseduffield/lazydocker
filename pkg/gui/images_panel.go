@@ -134,7 +134,7 @@ func (gui *Gui) refreshImages() error {
 
 // TODO: leave this to DockerCommand
 func (gui *Gui) refreshStateImages() error {
-	Images, err := gui.DockerCommand.RefreshImages()
+	Images, err := gui.DockerCommand.RefreshImages(gui.filterString(gui.Views.Images))
 	if err != nil {
 		return err
 	}
@@ -142,6 +142,14 @@ func (gui *Gui) refreshStateImages() error {
 	gui.DockerCommand.Images = Images
 
 	return nil
+}
+
+func (gui *Gui) filterString(view *gocui.View) string {
+	if gui.State.Searching.view != view {
+		return ""
+	}
+
+	return gui.State.Searching.searchString
 }
 
 func (gui *Gui) handleImagesNextLine(g *gocui.Gui, v *gocui.View) error {

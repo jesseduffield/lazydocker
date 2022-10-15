@@ -444,6 +444,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
+			ViewName:    "images",
+			Key:         '/',
+			Modifier:    gocui.ModNone,
+			Handler:     wrappedHandler(gui.handleOpenImageSearch),
+			Description: gui.Tr.FilterList,
+		},
+		{
 			ViewName:    "volumes",
 			Key:         '[',
 			Modifier:    gocui.ModNone,

@@ -103,7 +103,7 @@ func (i *Image) RenderHistory() (string, error) {
 }
 
 // RefreshImages returns a slice of docker images
-func (c *DockerCommand) RefreshImages() ([]*Image, error) {
+func (c *DockerCommand) RefreshImages(filterString string) ([]*Image, error) {
 	images, err := c.Client.ImageList(context.Background(), types.ImageListOptions{})
 	if err != nil {
 		return nil, err
@@ -150,6 +150,12 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 			return strings.Contains(image.Name, ignore)
 		})
 	})
+
+	if filterString != "" {
+		ownImages = lo.Filter(ownImages, func(image *Image, _ int) bool {
+			return strings.Contains(image.Name, filterString)
+		})
+	}
 
 	noneLabel := "<none>"
 
