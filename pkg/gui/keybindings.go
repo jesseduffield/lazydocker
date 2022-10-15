@@ -608,7 +608,7 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
 	bindings := gui.GetInitialKeybindings()
 
 	for _, binding := range bindings {
-		if err := g.SetKeybinding(binding.ViewName, nil, binding.Key, binding.Modifier, binding.Handler); err != nil {
+		if err := g.SetKeybinding(binding.ViewName, binding.Key, binding.Modifier, binding.Handler); err != nil {
 			return err
 		}
 	}

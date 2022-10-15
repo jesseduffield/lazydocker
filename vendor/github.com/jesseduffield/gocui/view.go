@@ -146,8 +146,6 @@ type View struct {
 	// ParentView is the view which catches events bubbled up from the given view if there's no matching handler
 	ParentView *View
 
-	Context string // this is for assigning keybindings to a view only in certain contexts
-
 	searcher *searcher
 
 	// KeybindOnEdit should be set to true when you want to execute keybindings even when the view is editable
@@ -467,6 +465,14 @@ func (v *View) Cursor() (x, y int) {
 	return v.cx, v.cy
 }
 
+func (v *View) CursorX() int {
+	return v.cx
+}
+
+func (v *View) CursorY() int {
+	return v.cy
+}
+
 // SetOrigin sets the origin position of the view's internal buffer,
 // so the buffer starts to be printed from this point, which means that
 // it is linked with the origin point of view. It can be used to
@@ -595,6 +601,14 @@ func (v *View) writeCells(x, y int, cells []cell) {
 	v.lines[y] = line[:newLen]
 }
 
+// readCell gets cell at specified location (x, y)
+func (v *View) readCell(x, y int) (cell, bool) {
+	if y < 0 || y >= len(v.lines) || x < 0 || x >= len(v.lines[y]) {
+		return cell{}, false
+	}
+	return v.lines[y][x], true
+}
+
 // Write appends a byte slice into the view's internal buffer. Because
 // View implements the io.Writer interface, it can be passed as parameter
 // of functions like fmt.Fprintf, fmt.Fprintln, io.Copy, etc. Clear must
@@ -625,17 +639,29 @@ func (v *View) writeRunes(p []rune) {
 	for _, r := range p {
 		switch r {
 		case '\n':
+			if c, ok := v.readCell(v.wx+1, v.wy); !ok || c.chr == 0 {
+				v.writeCells(v.wx, v.wy, []cell{{
+					chr:     0,
+					fgColor: 0,
+					bgColor: 0,
+				}})
+			}
+			v.wx = 0
 			v.wy++
 			if v.wy >= len(v.lines) {
 				v.lines = append(v.lines, nil)
 			}
-
-			fallthrough
-			// not valid in every OS, but making runtime OS checks in cycle is bad.
 		case '\r':
+			if c, ok := v.readCell(v.wx, v.wy); !ok || c.chr == 0 {
+				v.writeCells(v.wx, v.wy, []cell{{
+					chr:     0,
+					fgColor: 0,
+					bgColor: 0,
+				}})
+			}
 			v.wx = 0
 		default:
-			moveCursor, cells := v.parseInput(r)
+			moveCursor, cells := v.parseInput(r, v.wx, v.wy)
 			if cells == nil {
 				continue
 			}
@@ -660,7 +686,7 @@ func (v *View) writeString(s string) {
 // parseInput parses char by char the input written to the View. It returns nil
 // while processing ESC sequences. Otherwise, it returns a cell slice that
 // contains the processed data.
-func (v *View) parseInput(ch rune) (bool, []cell) {
+func (v *View) parseInput(ch rune, x int, y int) (bool, []cell) {
 	cells := []cell{}
 	moveCursor := true
 
@@ -692,8 +718,9 @@ func (v *View) parseInput(ch rune) (bool, []cell) {
 			return moveCursor, nil
 		} else if ch == '\t' {
 			// fill tab-sized space
+			const tabStop = 4
 			ch = ' '
-			repeatCount = 4
+			repeatCount = tabStop - (x % tabStop)
 		}
 		c := cell{
 			fgColor: v.ei.curFgColor,
@@ -923,30 +950,44 @@ func (v *View) draw() error {
 		start = len(v.viewLines) - 1
 	}
 
-	y := 0
 	emptyCell := cell{chr: ' ', fgColor: ColorDefault, bgColor: ColorDefault}
 	var prevFgColor Attribute
-	for _, vline := range v.viewLines[start:] {
+
+	for y, vline := range v.viewLines[start:] {
 		if y >= maxY {
 			break
 		}
-		x := 0
-		j := 0
+
+		// x tracks the current x position in the view, and cellIdx tracks the
+		// index of the cell. If we print a double-sized rune, we increment cellIdx
+		// by one but x by two.
+		x := -v.ox
+		cellIdx := 0
+
 		var c cell
 		for {
-			if j < v.ox {
-				j++
-				continue
-			}
 			if x >= maxX {
 				break
 			}
 
-			if j > len(vline.line)-1 {
+			if x < 0 {
+				if cellIdx < len(vline.line) {
+					x += runewidth.RuneWidth(vline.line[cellIdx].chr)
+					cellIdx++
+					continue
+				} else {
+					// no more characters to write so we're only going to be printing empty cells
+					// past this point
+					x = 0
+				}
+			}
+
+			// if we're out of cells to write, we'll just print empty cells.
+			if cellIdx > len(vline.line)-1 {
 				c = emptyCell
 				c.fgColor = prevFgColor
 			} else {
-				c = vline.line[j]
+				c = vline.line[cellIdx]
 				// capturing previous foreground colour so that if we're using the reverse
 				// attribute we honour the final character's colour and don't awkwardly switch
 				// to a new background colour for the remainder of the line
@@ -976,9 +1017,8 @@ func (v *View) draw() error {
 			// Not sure why the previous code was here but it caused problems
 			// when typing wide characters in an editor
 			x += runewidth.RuneWidth(c.chr)
-			j++
+			cellIdx++
 		}
-		y++
 	}
 	return nil
 }
@@ -1050,7 +1090,7 @@ func (v *View) BufferLines() []string {
 	lines := make([]string, len(v.lines))
 	for i, l := range v.lines {
 		str := lineType(l).String()
-		str = strings.Replace(str, "\x00", " ", -1)
+		str = strings.Replace(str, "\x00", "", -1)
 		lines[i] = str
 	}
 	return lines
@@ -1068,7 +1108,7 @@ func (v *View) ViewBufferLines() []string {
 	lines := make([]string, len(v.viewLines))
 	for i, l := range v.viewLines {
 		str := lineType(l.line).String()
-		str = strings.Replace(str, "\x00", " ", -1)
+		str = strings.Replace(str, "\x00", "", -1)
 		lines[i] = str
 	}
 	return lines
@@ -1214,20 +1254,37 @@ func (v *View) GetClickedTabIndex(x int) int {
 		return 0
 	}
 
-	charIndex := 0
+	charX := 1
+	if x <= charX {
+		return -1
+	}
 	for i, tab := range v.Tabs {
-		charIndex += len(tab + " - ")
-		if x < charIndex {
+		charX += runewidth.StringWidth(tab)
+		if x <= charX {
 			return i
+		}
+		charX += runewidth.StringWidth(" - ")
+		if x <= charX {
+			return -1
 		}
 	}
 
-	return 0
+	return -1
 }
 
 func (v *View) SelectedLineIdx() int {
 	_, seletedLineIdx := v.SelectedPoint()
 	return seletedLineIdx
+}
+
+// expected to only be used in tests
+func (v *View) SelectedLine() string {
+	if len(v.lines) == 0 {
+		return ""
+	}
+	line := v.lines[v.SelectedLineIdx()]
+	str := lineType(line).String()
+	return strings.Replace(str, "\x00", "", -1)
 }
 
 func (v *View) SelectedPoint() (int, int) {
