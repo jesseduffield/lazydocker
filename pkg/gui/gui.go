@@ -137,6 +137,16 @@ type guiState struct {
 	ScreenMode WindowMaximisation
 
 	Searching searchingState
+
+	Lists Lists
+}
+
+// these are the items we display, after filtering is applied.
+type Lists struct {
+	Containers *FilteredList[*commands.Container]
+	Services   *FilteredList[*commands.Service]
+	Images     *FilteredList[*commands.Image]
+	Volumes    *FilteredList[*commands.Volume]
 }
 
 type searchingState struct {
@@ -173,6 +183,12 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 			Project: &projectState{ContextIndex: 0},
 		},
 		ViewStack: []string{},
+		Lists: Lists{
+			Containers: NewFilteredList[*commands.Container](),
+			Services:   NewFilteredList[*commands.Service](),
+			Images:     NewFilteredList[*commands.Image](),
+			Volumes:    NewFilteredList[*commands.Volume](),
+		},
 	}
 
 	cyclableViews := []string{"project", "containers", "images", "volumes"}
@@ -313,7 +329,7 @@ func (gui *Gui) refresh() {
 		}
 	}()
 	go func() {
-		if err := gui.refreshImages(); err != nil {
+		if err := gui.reloadImages(); err != nil {
 			gui.Log.Error(err)
 		}
 	}()

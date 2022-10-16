@@ -137,7 +137,7 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Search.FgColor = gocui.ColorGreen
 	gui.Views.Search.Editable = true
 	gui.Views.Search.Frame = false
-	// gui.Views.Search.Editor = gocui.EditorFunc(gui.wrapEditor(gocui.SimpleEditor))
+	gui.Views.Search.Editor = gocui.EditorFunc(gui.wrapEditor(gocui.SimpleEditor))
 
 	gui.waitForIntro.Done()
 

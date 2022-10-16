@@ -2,11 +2,9 @@ package commands
 
 import (
 	"context"
-	"sort"
 	"strings"
 
 	"github.com/docker/docker/api/types/image"
-	"github.com/samber/lo"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -103,7 +101,7 @@ func (i *Image) RenderHistory() (string, error) {
 }
 
 // RefreshImages returns a slice of docker images
-func (c *DockerCommand) RefreshImages(filterString string) ([]*Image, error) {
+func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 	images, err := c.Client.ImageList(context.Background(), types.ImageListOptions{})
 	if err != nil {
 		return nil, err
@@ -144,32 +142,6 @@ func (c *DockerCommand) RefreshImages(filterString string) ([]*Image, error) {
 			DockerCommand: c,
 		}
 	}
-
-	ownImages = lo.Filter(ownImages, func(image *Image, _ int) bool {
-		return !lo.SomeBy(c.Config.UserConfig.Ignore, func(ignore string) bool {
-			return strings.Contains(image.Name, ignore)
-		})
-	})
-
-	if filterString != "" {
-		ownImages = lo.Filter(ownImages, func(image *Image, _ int) bool {
-			return strings.Contains(image.Name, filterString)
-		})
-	}
-
-	noneLabel := "<none>"
-
-	sort.Slice(ownImages, func(i, j int) bool {
-		if ownImages[i].Name == noneLabel && ownImages[j].Name != noneLabel {
-			return false
-		}
-
-		if ownImages[i].Name != noneLabel && ownImages[j].Name == noneLabel {
-			return true
-		}
-
-		return ownImages[i].Name < ownImages[j].Name
-	})
 
 	return ownImages, nil
 }

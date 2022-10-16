@@ -517,6 +517,18 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:  gui.scrollRightMain,
 		},
 		{
+			ViewName: "search",
+			Key:      gocui.KeyEnter,
+			Modifier: gocui.ModNone,
+			Handler:  wrappedHandler(gui.commitSearch),
+		},
+		{
+			ViewName: "search",
+			Key:      gocui.KeyEsc,
+			Modifier: gocui.ModNone,
+			Handler:  wrappedHandler(gui.escapeSearchPrompt),
+		},
+		{
 			ViewName: "",
 			Key:      'J',
 			Modifier: gocui.ModNone,

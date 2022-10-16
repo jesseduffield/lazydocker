@@ -12,6 +12,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/samber/lo"
 )
 
 // list panel functions
@@ -30,11 +31,11 @@ func (gui *Gui) getSelectedImage() (*commands.Image, error) {
 		return &commands.Image{}, gui.Errors.ErrNoImages
 	}
 
-	return gui.DockerCommand.Images[selectedLine], nil
+	return gui.State.Lists.Images.Get(selectedLine), nil
 }
 
 func (gui *Gui) handleImagesClick(g *gocui.Gui, v *gocui.View) error {
-	itemCount := len(gui.DockerCommand.Images)
+	itemCount := gui.State.Lists.Images.Len()
 	handleSelect := gui.handleImageSelect
 	selectedLine := &gui.State.Panels.Images.SelectedLine
 
@@ -50,7 +51,7 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 		return gui.renderString(g, "main", gui.Tr.NoImages)
 	}
 
-	gui.focusY(gui.State.Panels.Images.SelectedLine, len(gui.DockerCommand.Images), v)
+	gui.focusY(gui.State.Panels.Images.SelectedLine, gui.State.Lists.Images.Len(), v)
 
 	key := "images-" + Image.ID + "-" + gui.getImageContexts()[gui.State.Panels.Images.ContextIndex]
 	if !gui.shouldRefresh(key) {
@@ -97,34 +98,63 @@ func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image) e
 	})
 }
 
-func (gui *Gui) refreshImages() error {
-	ImagesView := gui.getImagesView()
-	if ImagesView == nil {
-		// if the ImagesView hasn't been instantiated yet we just return
-		return nil
-	}
+func (gui *Gui) reloadImages() error {
 	if err := gui.refreshStateImages(); err != nil {
 		return err
 	}
 
-	if len(gui.DockerCommand.Images) > 0 && gui.State.Panels.Images.SelectedLine == -1 {
+	return gui.rerenderImages()
+}
+
+func (gui *Gui) rerenderImages() error {
+	filterString := gui.filterString(gui.Views.Images)
+
+	gui.State.Lists.Images.Filter(func(image *commands.Image, index int) bool {
+		if lo.SomeBy(gui.Config.UserConfig.Ignore, func(ignore string) bool {
+			return strings.Contains(image.Name, ignore)
+		}) {
+			return false
+		}
+
+		if filterString != "" {
+			return strings.Contains(image.Name, filterString)
+		}
+
+		return true
+	})
+
+	noneLabel := "<none>"
+
+	gui.State.Lists.Images.Sort(func(a *commands.Image, b *commands.Image) bool {
+		if a.Name == noneLabel && b.Name != noneLabel {
+			return false
+		}
+
+		if a.Name != noneLabel && b.Name == noneLabel {
+			return true
+		}
+
+		return a.Name < b.Name
+	})
+
+	if gui.State.Lists.Images.Len() > 0 && gui.State.Panels.Images.SelectedLine == -1 {
 		gui.State.Panels.Images.SelectedLine = 0
 	}
-	if len(gui.DockerCommand.Images)-1 < gui.State.Panels.Images.SelectedLine {
-		gui.State.Panels.Images.SelectedLine = len(gui.DockerCommand.Images) - 1
+	if gui.State.Lists.Images.Len()-1 < gui.State.Panels.Images.SelectedLine {
+		gui.State.Panels.Images.SelectedLine = gui.State.Lists.Images.Len() - 1
 	}
 
 	gui.g.Update(func(g *gocui.Gui) error {
-		ImagesView.Clear()
+		gui.Views.Images.Clear()
 		isFocused := gui.g.CurrentView() == gui.Views.Images
-		list, err := utils.RenderList(gui.DockerCommand.Images, utils.IsFocused(isFocused))
+		list, err := utils.RenderList(gui.State.Lists.Images.GetItems(), utils.IsFocused(isFocused))
 		if err != nil {
 			return err
 		}
-		fmt.Fprint(ImagesView, list)
+		fmt.Fprint(gui.Views.Images, list)
 
-		if ImagesView == g.CurrentView() {
-			return gui.handleImageSelect(g, ImagesView)
+		if gui.Views.Images == g.CurrentView() {
+			return gui.handleImageSelect(g, gui.Views.Images)
 		}
 		return nil
 	})
@@ -132,14 +162,14 @@ func (gui *Gui) refreshImages() error {
 	return nil
 }
 
-// TODO: leave this to DockerCommand
 func (gui *Gui) refreshStateImages() error {
-	Images, err := gui.DockerCommand.RefreshImages(gui.filterString(gui.Views.Images))
+	images, err := gui.DockerCommand.RefreshImages()
 	if err != nil {
 		return err
 	}
 
-	gui.DockerCommand.Images = Images
+	// TODO: think about also re-filtering/sorting
+	gui.State.Lists.Images.SetItems(images)
 
 	return nil
 }
@@ -158,7 +188,7 @@ func (gui *Gui) handleImagesNextLine(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	panelState := gui.State.Panels.Images
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.Images), false)
+	gui.changeSelectedLine(&panelState.SelectedLine, gui.State.Lists.Images.Len(), false)
 
 	return gui.handleImageSelect(gui.g, v)
 }
@@ -169,7 +199,7 @@ func (gui *Gui) handleImagesPrevLine(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	panelState := gui.State.Panels.Images
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.Images), true)
+	gui.changeSelectedLine(&panelState.SelectedLine, gui.State.Lists.Images.Len(), true)
 
 	return gui.handleImageSelect(gui.g, v)
 }
@@ -274,7 +304,7 @@ func (gui *Gui) handlePruneImages() error {
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
-			return gui.refreshImages()
+			return gui.reloadImages()
 		})
 	}, nil)
 }

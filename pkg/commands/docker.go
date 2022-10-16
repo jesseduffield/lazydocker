@@ -40,11 +40,11 @@ type DockerCommand struct {
 	ErrorChan              chan error
 	ContainerMutex         sync.Mutex
 	ServiceMutex           sync.Mutex
-	Services               []*Service
-	Containers             []*Container
+
+	Services   []*Service
+	Containers []*Container
 	// DisplayContainers is the array of containers we will display in the containers panel. If Gui.ShowAllContainers is false, this will only be those containers which aren't based on a service. This reduces clutter and duplication in the UI
 	DisplayContainers []*Container
-	Images            []*Image
 	Volumes           []*Volume
 	Closers           []io.Closer
 }
