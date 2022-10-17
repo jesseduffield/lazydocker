@@ -13,6 +13,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/samber/lo"
 )
 
 // list panel functions
@@ -95,39 +96,44 @@ func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 	if !container.DetailsLoaded() {
 		return gui.T.NewTask(func(stop chan struct{}) {
-			_ = gui.renderString(gui.g, "main", gui.Tr.WaitingForContainerInfo)
+			_ = gui.renderStringMain(gui.Tr.WaitingForContainerInfo)
 		})
 	}
 
 	mainView := gui.getMainView()
 	mainView.Autoscroll = false
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-	envVariablesList := [][]string{}
-	renderedTable := gui.Tr.NothingToDisplay
-	if len(container.Details.Config.Env) > 0 {
-		var err error
-		for _, env := range container.Details.Config.Env {
-			splitEnv := strings.SplitN(env, "=", 2)
-			key := splitEnv[0]
-			value := ""
-			if len(splitEnv) > 1 {
-				value = splitEnv[1]
-			}
-			envVariablesList = append(envVariablesList,
-				[]string{
-					utils.ColoredString(key+":", color.FgGreen),
-					utils.ColoredString(value, color.FgYellow),
-				})
-		}
-		renderedTable, err = utils.RenderTable(envVariablesList)
-		if err != nil {
-			gui.Log.Error(err)
-			renderedTable = gui.Tr.CannotDisplayEnvVariables
-		}
-	}
+
 	return gui.T.NewTask(func(stop chan struct{}) {
-		_ = gui.renderString(gui.g, "main", renderedTable)
+		_ = gui.renderString(gui.g, "main", gui.containerEnv(container))
 	})
+}
+
+func (gui *Gui) containerEnv(container *commands.Container) string {
+	if len(container.Details.Config.Env) == 0 {
+		return gui.Tr.NothingToDisplay
+	}
+
+	envVarsList := lo.Map(container.Details.Config.Env, func(envVar string, _ int) []string {
+		splitEnv := strings.SplitN(envVar, "=", 2)
+		key := splitEnv[0]
+		value := ""
+		if len(splitEnv) > 1 {
+			value = splitEnv[1]
+		}
+		return []string{
+			utils.ColoredString(key+":", color.FgGreen),
+			utils.ColoredString(value, color.FgYellow),
+		}
+	})
+
+	output, err := utils.RenderTable(envVarsList)
+	if err != nil {
+		gui.Log.Error(err)
+		return gui.Tr.CannotDisplayEnvVariables
+	}
+
+	return output
 }
 
 func (gui *Gui) renderContainerConfig(container *commands.Container) error {

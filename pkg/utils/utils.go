@@ -408,3 +408,12 @@ func IsValidHexValue(v string) bool {
 
 	return true
 }
+
+func Clamp(x int, min int, max int) int {
+	if x < min {
+		return min
+	} else if x > max {
+		return max
+	}
+	return x
+}
