@@ -44,7 +44,7 @@ func (gui *Gui) handleVolumeSelect(g *gocui.Gui, v *gocui.View) error {
 		if err != gui.Errors.ErrNoVolumes {
 			return err
 		}
-		return gui.renderString(g, "main", gui.Tr.NoVolumes)
+		return gui.renderStringMain(gui.Tr.NoVolumes)
 	}
 
 	gui.focusY(gui.State.Panels.Volumes.SelectedLine, len(gui.DockerCommand.Volumes), v)
@@ -99,7 +99,7 @@ func (gui *Gui) renderVolumeConfig(mainView *gocui.View, volume *commands.Volume
 			output += utils.WithPadding("Size: ", padding) + utils.FormatBinaryBytes(int(volume.Volume.UsageData.Size)) + "\n"
 		}
 
-		_ = gui.renderString(gui.g, "main", output)
+		_ = gui.renderStringMain(output)
 	})
 }
 

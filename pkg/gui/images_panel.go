@@ -43,17 +43,17 @@ func (gui *Gui) handleImagesClick(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
-	Image, err := gui.getSelectedImage()
+	image, err := gui.getSelectedImage()
 	if err != nil {
 		if err != gui.Errors.ErrNoImages {
 			return err
 		}
-		return gui.renderString(g, "main", gui.Tr.NoImages)
+		return gui.renderStringMain(gui.Tr.NoImages)
 	}
 
 	gui.focusY(gui.State.Panels.Images.SelectedLine, gui.State.Lists.Images.Len(), v)
 
-	key := "images-" + Image.ID + "-" + gui.getImageContexts()[gui.State.Panels.Images.ContextIndex]
+	key := "images-" + image.ID + "-" + gui.getImageContexts()[gui.State.Panels.Images.ContextIndex]
 	if !gui.shouldRefresh(key) {
 		return nil
 	}
@@ -64,7 +64,7 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 
 	switch gui.getImageContexts()[gui.State.Panels.Images.ContextIndex] {
 	case "config":
-		if err := gui.renderImageConfig(mainView, Image); err != nil {
+		if err := gui.renderImageConfig(image); err != nil {
 			return err
 		}
 	default:
@@ -74,7 +74,7 @@ func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image) error {
+func (gui *Gui) renderImageConfig(image *commands.Image) error {
 	return gui.T.NewTask(func(stop chan struct{}) {
 		padding := 10
 		output := ""
@@ -91,10 +91,11 @@ func (gui *Gui) renderImageConfig(mainView *gocui.View, image *commands.Image) e
 
 		output += "\n\n" + history
 
+		mainView := gui.Views.Main
 		mainView.Autoscroll = false
 		mainView.Wrap = false // don't care what your config is this page is ugly without wrapping
 
-		_ = gui.renderString(gui.g, "main", output)
+		_ = gui.renderStringMain(output)
 	})
 }
 
@@ -180,6 +181,11 @@ func (gui *Gui) filterString(view *gocui.View) string {
 	}
 
 	return gui.State.Searching.searchString
+}
+
+// TODO: merge into the above
+func (gui *Gui) FilterString(view *gocui.View) string {
+	return gui.filterString(view)
 }
 
 func (gui *Gui) handleImagesNextLine(g *gocui.Gui, v *gocui.View) error {

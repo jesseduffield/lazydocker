@@ -229,6 +229,11 @@ func (gui *Gui) focusY(selectedY int, lineCount int, v *gocui.View) {
 	gui.focusPoint(0, selectedY, lineCount, v)
 }
 
+// TODO: combine with above
+func (gui *Gui) FocusY(selectedY int, lineCount int, v *gocui.View) {
+	gui.focusY(selectedY, lineCount, v)
+}
+
 func (gui *Gui) cleanString(s string) string {
 	output := string(bom.Clean([]byte(s)))
 	return utils.NormalizeLinefeeds(output)
@@ -260,6 +265,11 @@ func (gui *Gui) renderString(g *gocui.Gui, viewName, s string) error {
 
 func (gui *Gui) renderStringMain(s string) error {
 	return gui.renderString(gui.g, "main", s)
+}
+
+// TODO: merge with above
+func (gui *Gui) RenderStringMain(s string) error {
+	return gui.renderStringMain(s)
 }
 
 // reRenderString sets the main view's content, without changing its origin
@@ -317,8 +327,11 @@ func (gui *Gui) getVolumesView() *gocui.View {
 }
 
 func (gui *Gui) getMainView() *gocui.View {
-	v, _ := gui.g.View("main")
-	return v
+	return gui.Views.Main
+}
+
+func (gui *Gui) GetMainView() *gocui.View {
+	return gui.getMainView()
 }
 
 func (gui *Gui) trimmedContent(v *gocui.View) string {
@@ -390,6 +403,11 @@ func (gui *Gui) popupPanelFocused() bool {
 	return gui.isPopupPanel(gui.currentViewName())
 }
 
+// TODO: merge into above
+func (gui *Gui) PopupPanelFocused() bool {
+	return gui.popupPanelFocused()
+}
+
 func (gui *Gui) clearMainView() {
 	mainView := gui.getMainView()
 	mainView.Clear()
@@ -422,6 +440,14 @@ func (gui *Gui) handleClick(v *gocui.View, itemCount int, selectedLine *int, han
 	*selectedLine = newSelectedLine
 
 	return handleSelect(gui.g, v)
+}
+
+// TODO: combine with above
+func (gui *Gui) HandleClick(v *gocui.View, itemCount int, selectedLine *int, handleSelect func() error) error {
+	wrappedHandleSelect := func(g *gocui.Gui, v *gocui.View) error {
+		return handleSelect()
+	}
+	return gui.handleClick(v, itemCount, selectedLine, wrappedHandleSelect)
 }
 
 func (gui *Gui) nextScreenMode() error {
@@ -470,4 +496,8 @@ func prevIntInCycle(sl []WindowMaximisation, current WindowMaximisation) WindowM
 		}
 	}
 	return sl[len(sl)-1]
+}
+
+func (gui *Gui) CurrentView() *gocui.View {
+	return gui.g.CurrentView()
 }

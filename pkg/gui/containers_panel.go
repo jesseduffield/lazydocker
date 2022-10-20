@@ -105,7 +105,7 @@ func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
 	return gui.T.NewTask(func(stop chan struct{}) {
-		_ = gui.renderString(gui.g, "main", gui.containerEnv(container))
+		_ = gui.renderStringMain(gui.containerEnv(container))
 	})
 }
 
@@ -139,7 +139,7 @@ func (gui *Gui) containerEnv(container *commands.Container) string {
 func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 	if !container.DetailsLoaded() {
 		return gui.T.NewTask(func(stop chan struct{}) {
-			_ = gui.renderString(gui.g, "main", gui.Tr.WaitingForContainerInfo)
+			_ = gui.renderStringMain(gui.Tr.WaitingForContainerInfo)
 		})
 	}
 
@@ -189,7 +189,7 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 	output += fmt.Sprintf("\nFull details:\n\n%s", string(data))
 
 	return gui.T.NewTask(func(stop chan struct{}) {
-		_ = gui.renderString(gui.g, "main", output)
+		_ = gui.renderStringMain(output)
 	})
 }
 

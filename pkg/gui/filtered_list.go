@@ -56,6 +56,18 @@ func (self *FilteredList[T]) Get(index int) T {
 	return self.allItems[self.indices[index]]
 }
 
+func (self *FilteredList[T]) TryGet(index int) (T, bool) {
+	self.mutex.RLock()
+	defer self.mutex.RUnlock()
+
+	if index < 0 || index >= len(self.indices) {
+		var zero T
+		return zero, false
+	}
+
+	return self.allItems[self.indices[index]], true
+}
+
 // returns the length of the filtered list
 func (self *FilteredList[T]) Len() int {
 	self.mutex.RLock()

@@ -74,6 +74,12 @@ type Gui struct {
 	PauseBackgroundThreads bool
 
 	Mutexes
+
+	Panels Panels
+}
+
+type Panels struct {
+	Images *SideListPanel[*commands.Image]
 }
 
 type Mutexes struct {
@@ -208,6 +214,11 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		T:             tasks.NewTaskManager(log, tr),
 		ErrorChan:     errorChan,
 		CyclableViews: cyclableViews,
+	}
+
+	// TODO: see if we can avoid the circular dependency
+	gui.Panels = Panels{
+		Images: gui.getImagePanel(),
 	}
 
 	gui.GenerateSentinelErrors()
@@ -460,9 +471,21 @@ func (gui *Gui) shouldRefresh(key string) bool {
 	return true
 }
 
+func (gui *Gui) ShouldRefresh(key string) bool {
+	return gui.shouldRefresh(key)
+}
+
 func (gui *Gui) initiallyFocusedViewName() string {
 	if gui.DockerCommand.InDockerComposeProject {
 		return "services"
 	}
 	return "containers"
+}
+
+func (gui *Gui) IgnoreStrings() []string {
+	return gui.Config.UserConfig.Ignore
+}
+
+func (gui *Gui) Update(f func() error) {
+	gui.g.Update(func(*gocui.Gui) error { return f() })
 }
