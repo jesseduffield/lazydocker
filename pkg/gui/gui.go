@@ -26,7 +26,6 @@ var OverlappingEdges = false
 // by calling functions. The less of these, the better
 type SentinelErrors struct {
 	ErrNoContainers error
-	ErrNoImages     error
 	ErrNoVolumes    error
 }
 
@@ -43,7 +42,6 @@ type SentinelErrors struct {
 func (gui *Gui) GenerateSentinelErrors() {
 	gui.Errors = SentinelErrors{
 		ErrNoContainers: errors.New(gui.Tr.NoContainers),
-		ErrNoImages:     errors.New(gui.Tr.NoImages),
 		ErrNoVolumes:    errors.New(gui.Tr.NoVolumes),
 	}
 }
@@ -77,6 +75,7 @@ type Gui struct {
 type Panels struct {
 	Images   *SideListPanel[*commands.Image]
 	Services *SideListPanel[*commands.Service]
+	Volumes  *SideListPanel[*commands.Volume]
 }
 
 type Mutexes struct {
@@ -103,16 +102,10 @@ type mainPanelState struct {
 	ObjectKey string
 }
 
-type volumePanelState struct {
-	SelectedLine int
-	ContextIndex int
-}
-
 type panelStates struct {
 	Containers *containerPanelState
 	Menu       *menuPanelState
 	Main       *mainPanelState
-	Volumes    *volumePanelState
 	Project    *projectState
 }
 
@@ -164,7 +157,6 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		Platform: *oSCommand.Platform,
 		Panels: &panelStates{
 			Containers: &containerPanelState{SelectedLine: -1, ContextIndex: 0},
-			Volumes:    &volumePanelState{SelectedLine: -1, ContextIndex: 0},
 			Menu:       &menuPanelState{SelectedLine: 0},
 			Main: &mainPanelState{
 				ObjectKey: "",
@@ -284,6 +276,7 @@ func (gui *Gui) Run() error {
 	gui.Panels = Panels{
 		Images:   gui.getImagesPanel(),
 		Services: gui.getServicesPanel(),
+		Volumes:  gui.getVolumesPanel(),
 	}
 
 	if err = gui.keybindings(g); err != nil {
@@ -332,7 +325,7 @@ func (gui *Gui) refresh() {
 		}
 	}()
 	go func() {
-		if err := gui.refreshVolumes(); err != nil {
+		if err := gui.reloadVolumes(); err != nil {
 			gui.Log.Error(err)
 		}
 	}()

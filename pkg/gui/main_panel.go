@@ -97,8 +97,8 @@ func (gui *Gui) onMainTabClick(tabIndex int) error {
 		gui.Panels.Images.SetContextIndex(tabIndex)
 		return gui.Panels.Images.HandleSelect()
 	case "volumes":
-		gui.State.Panels.Volumes.ContextIndex = tabIndex
-		return gui.handleVolumeSelect(gui.g, gui.getVolumesView())
+		gui.Panels.Volumes.SetContextIndex(tabIndex)
+		return gui.Panels.Volumes.HandleSelect()
 	}
 
 	return nil

@@ -83,7 +83,7 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 	case "images":
 		return gui.Panels.Images.HandleSelect()
 	case "volumes":
-		return gui.handleVolumeSelect(gui.g, v)
+		return gui.Panels.Volumes.HandleSelect()
 	case "confirmation":
 		return nil
 	case "main":

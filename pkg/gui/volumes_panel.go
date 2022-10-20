@@ -4,74 +4,54 @@ import (
 	"fmt"
 
 	"github.com/fatih/color"
-	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
-// list panel functions
-
-func (gui *Gui) getVolumeContexts() []string {
-	return []string{"config"}
-}
-
-func (gui *Gui) getVolumeContextTitles() []string {
-	return []string{gui.Tr.ConfigTitle}
-}
-
-func (gui *Gui) getSelectedVolume() (*commands.Volume, error) {
-	selectedLine := gui.State.Panels.Volumes.SelectedLine
-	if selectedLine == -1 {
-		return nil, gui.Errors.ErrNoVolumes
+func (gui *Gui) getVolumesPanel() *SideListPanel[*commands.Volume] {
+	return &SideListPanel[*commands.Volume]{
+		contextKeyPrefix: "volumes",
+		ListPanel: ListPanel[*commands.Volume]{
+			list: NewFilteredList[*commands.Volume](),
+			view: gui.Views.Volumes,
+		},
+		contextIdx:    0,
+		noItemsMessge: gui.Tr.NoVolumes,
+		gui:           gui.intoInterface(),
+		contexts: []ContextConfig[*commands.Volume]{
+			{
+				key:    "config",
+				title:  gui.Tr.ConfigTitle,
+				render: gui.renderVolumeConfig,
+			},
+		},
+		getSearchStrings: func(volume *commands.Volume) []string {
+			// TODO: think about more things to search on
+			return []string{volume.Name}
+		},
+		getContextCacheKey: func(volume *commands.Volume) string {
+			return volume.Name
+		},
+		// we're sorting these volumes based on whether they have labels defined,
+		// because those are the ones you typically care about.
+		// Within that, we also sort them alphabetically
+		sort: func(a *commands.Volume, b *commands.Volume) bool {
+			if len(a.Volume.Labels) == 0 && len(b.Volume.Labels) > 0 {
+				return false
+			}
+			if len(a.Volume.Labels) > 0 && len(b.Volume.Labels) == 0 {
+				return true
+			}
+			return a.Name < b.Name
+		},
 	}
-
-	return gui.DockerCommand.Volumes[selectedLine], nil
 }
 
-func (gui *Gui) handleVolumesClick(g *gocui.Gui, v *gocui.View) error {
-	itemCount := len(gui.DockerCommand.Volumes)
-	handleSelect := gui.handleVolumeSelect
-	selectedLine := &gui.State.Panels.Volumes.SelectedLine
-
-	return gui.handleClick(v, itemCount, selectedLine, handleSelect)
-}
-
-func (gui *Gui) handleVolumeSelect(g *gocui.Gui, v *gocui.View) error {
-	volume, err := gui.getSelectedVolume()
-	if err != nil {
-		if err != gui.Errors.ErrNoVolumes {
-			return err
-		}
-		return gui.renderStringMain(gui.Tr.NoVolumes)
-	}
-
-	gui.focusY(gui.State.Panels.Volumes.SelectedLine, len(gui.DockerCommand.Volumes), v)
-
-	key := "volumes-" + volume.Name + "-" + gui.getVolumeContexts()[gui.State.Panels.Volumes.ContextIndex]
-	if !gui.shouldRefresh(key) {
-		return nil
-	}
-
-	mainView := gui.getMainView()
-	mainView.Tabs = gui.getVolumeContextTitles()
-	mainView.TabIndex = gui.State.Panels.Volumes.ContextIndex
-
-	switch gui.getVolumeContexts()[gui.State.Panels.Volumes.ContextIndex] {
-	case "config":
-		if err := gui.renderVolumeConfig(mainView, volume); err != nil {
-			return err
-		}
-	default:
-		return errors.New("Unknown context for Volumes panel")
-	}
-
-	return nil
-}
-
-func (gui *Gui) renderVolumeConfig(mainView *gocui.View, volume *commands.Volume) error {
+func (gui *Gui) renderVolumeConfig(volume *commands.Volume) error {
 	return gui.T.NewTask(func(stop chan struct{}) {
+		mainView := gui.Views.Main
 		mainView.Autoscroll = false
 		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
@@ -103,85 +83,21 @@ func (gui *Gui) renderVolumeConfig(mainView *gocui.View, volume *commands.Volume
 	})
 }
 
-func (gui *Gui) refreshVolumes() error {
-	volumesView := gui.getVolumesView()
-	if volumesView == nil {
-		// if the volumesView hasn't been instantiated yet we just return
-		return nil
-	}
-	if err := gui.DockerCommand.RefreshVolumes(); err != nil {
+func (gui *Gui) reloadVolumes() error {
+	if err := gui.refreshStateVolumes(); err != nil {
 		return err
 	}
 
-	if len(gui.DockerCommand.Volumes) > 0 && gui.State.Panels.Volumes.SelectedLine == -1 {
-		gui.State.Panels.Volumes.SelectedLine = 0
-	}
-	if len(gui.DockerCommand.Volumes)-1 < gui.State.Panels.Volumes.SelectedLine {
-		gui.State.Panels.Volumes.SelectedLine = len(gui.DockerCommand.Volumes) - 1
-	}
-
-	gui.g.Update(func(g *gocui.Gui) error {
-		volumesView.Clear()
-		isFocused := gui.g.CurrentView().Name() == "volumes"
-		list, err := utils.RenderList(gui.DockerCommand.Volumes, utils.IsFocused(isFocused))
-		if err != nil {
-			return err
-		}
-		fmt.Fprint(volumesView, list)
-
-		if volumesView == g.CurrentView() {
-			return gui.handleVolumeSelect(g, volumesView)
-		}
-		return nil
-	})
-
-	return nil
+	return gui.Panels.Volumes.RerenderList()
 }
 
-func (gui *Gui) handleVolumesNextLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
-		return nil
+func (gui *Gui) refreshStateVolumes() error {
+	volumes, err := gui.DockerCommand.RefreshVolumes()
+	if err != nil {
+		return err
 	}
 
-	panelState := gui.State.Panels.Volumes
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.Volumes), false)
-
-	return gui.handleVolumeSelect(gui.g, v)
-}
-
-func (gui *Gui) handleVolumesPrevLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
-		return nil
-	}
-
-	panelState := gui.State.Panels.Volumes
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.Volumes), true)
-
-	return gui.handleVolumeSelect(gui.g, v)
-}
-
-func (gui *Gui) handleVolumesNextContext(g *gocui.Gui, v *gocui.View) error {
-	contexts := gui.getVolumeContexts()
-	if gui.State.Panels.Volumes.ContextIndex >= len(contexts)-1 {
-		gui.State.Panels.Volumes.ContextIndex = 0
-	} else {
-		gui.State.Panels.Volumes.ContextIndex++
-	}
-
-	_ = gui.handleVolumeSelect(gui.g, v)
-
-	return nil
-}
-
-func (gui *Gui) handleVolumesPrevContext(g *gocui.Gui, v *gocui.View) error {
-	contexts := gui.getVolumeContexts()
-	if gui.State.Panels.Volumes.ContextIndex <= 0 {
-		gui.State.Panels.Volumes.ContextIndex = len(contexts) - 1
-	} else {
-		gui.State.Panels.Volumes.ContextIndex--
-	}
-
-	_ = gui.handleVolumeSelect(gui.g, v)
+	gui.Panels.Volumes.SetItems(volumes)
 
 	return nil
 }
@@ -199,7 +115,7 @@ func (r *removeVolumeOption) GetDisplayStrings(isFocused bool) []string {
 }
 
 func (gui *Gui) handleVolumesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
-	volume, err := gui.getSelectedVolume()
+	volume, err := gui.Panels.Volumes.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
@@ -251,7 +167,7 @@ func (gui *Gui) handlePruneVolumes() error {
 }
 
 func (gui *Gui) handleVolumesCustomCommand(g *gocui.Gui, v *gocui.View) error {
-	volume, err := gui.getSelectedVolume()
+	volume, err := gui.Panels.Volumes.GetSelectedItem()
 	if err != nil {
 		return nil
 	}

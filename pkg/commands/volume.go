@@ -2,13 +2,10 @@ package commands
 
 import (
 	"context"
-	"sort"
-	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,28 +25,15 @@ func (v *Volume) GetDisplayStrings(isFocused bool) []string {
 }
 
 // RefreshVolumes gets the volumes and stores them
-func (c *DockerCommand) RefreshVolumes() error {
+func (c *DockerCommand) RefreshVolumes() ([]*Volume, error) {
 	result, err := c.Client.VolumeList(context.Background(), filters.Args{})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	volumes := result.Volumes
 
 	ownVolumes := make([]*Volume, len(volumes))
-
-	// we're sorting these volumes based on whether they have labels defined,
-	// because those are the ones you typically care about.
-	// Within that, we also sort them alphabetically
-	sort.Slice(volumes, func(i, j int) bool {
-		if len(volumes[i].Labels) == 0 && len(volumes[j].Labels) > 0 {
-			return false
-		}
-		if len(volumes[i].Labels) > 0 && len(volumes[j].Labels) == 0 {
-			return true
-		}
-		return volumes[i].Name < volumes[j].Name
-	})
 
 	for i, volume := range volumes {
 		ownVolumes[i] = &Volume{
@@ -62,15 +46,7 @@ func (c *DockerCommand) RefreshVolumes() error {
 		}
 	}
 
-	ownVolumes = lo.Filter(ownVolumes, func(volume *Volume, _ int) bool {
-		return !lo.SomeBy(c.Config.UserConfig.Ignore, func(ignore string) bool {
-			return strings.Contains(volume.Name, ignore)
-		})
-	})
-
-	c.Volumes = ownVolumes
-
-	return nil
+	return ownVolumes, nil
 }
 
 // PruneVolumes prunes volumes

@@ -93,7 +93,6 @@ func (gui *Gui) refreshStateImages() error {
 		return err
 	}
 
-	// TODO: think about also re-filtering/sorting
 	gui.Panels.Images.SetItems(images)
 
 	return nil
