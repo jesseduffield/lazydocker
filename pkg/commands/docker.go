@@ -41,7 +41,6 @@ type DockerCommand struct {
 	ContainerMutex         sync.Mutex
 	ServiceMutex           sync.Mutex
 
-	Services   []*Service
 	Containers []*Container
 	// DisplayContainers is the array of containers we will display in the containers panel. If Gui.ShowAllContainers is false, this will only be those containers which aren't based on a service. This reduces clutter and duplication in the UI
 	DisplayContainers []*Container
@@ -174,16 +173,13 @@ func (c *DockerCommand) createClientStatMonitor(container *Container) {
 	container.MonitoringStats = false
 }
 
-// RefreshContainersAndServices returns a slice of docker containers
-func (c *DockerCommand) RefreshContainersAndServices() error {
+func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service) ([]*Container, []*Service, error) {
 	c.ServiceMutex.Lock()
 	defer c.ServiceMutex.Unlock()
 
-	currentServices := c.Services
-
 	containers, err := c.GetContainers()
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	var services []*Service
@@ -193,7 +189,7 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 	} else {
 		services, err = c.GetServices()
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
 	}
 
@@ -204,27 +200,12 @@ func (c *DockerCommand) RefreshContainersAndServices() error {
 		displayContainers = c.obtainStandaloneContainers(containers, services)
 	}
 
-	// sort services first by whether they have a linked container, and second by alphabetical order
-	sort.Slice(services, func(i, j int) bool {
-		if services[i].Container != nil && services[j].Container == nil {
-			return true
-		}
-
-		if services[i].Container == nil && services[j].Container != nil {
-			return false
-		}
-
-		return services[i].Name < services[j].Name
-	})
-
 	c.Containers = containers
-	c.Services = services
-	c.Services = c.filterOutIgnoredServices(c.Services)
 	c.DisplayContainers = c.filterOutExited(displayContainers)
 	c.DisplayContainers = c.filterOutIgnoredContainers(c.DisplayContainers)
 	c.DisplayContainers = c.sortedContainers(c.DisplayContainers)
 
-	return nil
+	return c.DisplayContainers, services, nil
 }
 
 func (c *DockerCommand) assignContainersToServices(containers []*Container, services []*Service) {
@@ -258,14 +239,6 @@ func (c *DockerCommand) filterOutIgnoredContainers(containers []*Container) []*C
 	return lo.Filter(containers, func(container *Container, _ int) bool {
 		return !lo.SomeBy(c.Config.UserConfig.Ignore, func(ignore string) bool {
 			return strings.Contains(container.Name, ignore)
-		})
-	})
-}
-
-func (c *DockerCommand) filterOutIgnoredServices(services []*Service) []*Service {
-	return lo.Filter(services, func(service *Service, _ int) bool {
-		return !lo.SomeBy(c.Config.UserConfig.Ignore, func(ignore string) bool {
-			return strings.Contains(service.Name, ignore)
 		})
 	})
 }

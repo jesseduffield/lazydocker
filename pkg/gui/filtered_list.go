@@ -98,3 +98,10 @@ func (self *FilteredList[T]) GetItems() []T {
 	}
 	return result
 }
+
+func (self *FilteredList[T]) GetAllItems() []T {
+	self.mutex.RLock()
+	defer self.mutex.RUnlock()
+
+	return self.allItems
+}

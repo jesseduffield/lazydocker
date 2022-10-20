@@ -6,14 +6,11 @@ import (
 
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
 
 type ListPanel[T comparable] struct {
-	toColumns func(T) []string
-
 	selectedIdx int
 	list        *FilteredList[T]
 	view        *gocui.View
@@ -26,6 +23,14 @@ func (self *ListPanel[T]) setSelectedLineIdx(value int) {
 	}
 
 	self.selectedIdx = clampedValue
+}
+
+func (self *ListPanel[T]) clampSelectedLineIdx() {
+	clamped := utils.Clamp(self.selectedIdx, 0, self.list.Len()-1)
+
+	if clamped != self.selectedIdx {
+		self.selectedIdx = clamped
+	}
 }
 
 // moves the cursor up or down by the given amount (up for negative values)
@@ -57,7 +62,8 @@ type SideListPanel[T comparable] struct {
 
 	// returns strings that can be filtered on
 	getSearchStrings func(item T) []string
-	getId            func(item T) string
+	// this tells us whether we need to re-render to the main panel
+	getContextCacheKey func(item T) string
 
 	sort func(a, b T) bool
 }
@@ -86,54 +92,6 @@ func (gui *Gui) intoInterface() IGui {
 	return gui
 }
 
-func (gui *Gui) getImagePanel() *SideListPanel[*commands.Image] {
-	noneLabel := "<none>"
-
-	return &SideListPanel[*commands.Image]{
-		contextKeyPrefix: "images",
-		ListPanel: ListPanel[*commands.Image]{
-			toColumns: func(image *commands.Image) []string {
-				return []string{
-					image.Name,
-					image.Tag,
-					utils.FormatDecimalBytes(int(image.Image.Size)),
-				}
-			},
-			list: NewFilteredList[*commands.Image](),
-			view: gui.Views.Images,
-		},
-		contextIdx:    0,
-		noItemsMessge: gui.Tr.NoImages,
-		gui:           gui.intoInterface(),
-		contexts: []ContextConfig[*commands.Image]{
-			{
-				key:   "config",
-				title: gui.Tr.ConfigTitle,
-				render: func(image *commands.Image) error {
-					return gui.renderImageConfig(image)
-				},
-			},
-		},
-		getSearchStrings: func(image *commands.Image) []string {
-			return []string{image.Name, image.Tag}
-		},
-		getId: func(image *commands.Image) string {
-			return image.ID
-		},
-		sort: func(a *commands.Image, b *commands.Image) bool {
-			if a.Name == noneLabel && b.Name != noneLabel {
-				return false
-			}
-
-			if a.Name != noneLabel && b.Name == noneLabel {
-				return true
-			}
-
-			return a.Name < b.Name
-		},
-	}
-}
-
 func (self *SideListPanel[T]) OnClick() error {
 	itemCount := self.list.Len()
 	handleSelect := self.HandleSelect
@@ -154,7 +112,7 @@ func (self *SideListPanel[T]) HandleSelect() error {
 
 	self.Refocus()
 
-	key := self.contextKeyPrefix + "-" + self.getId(item) + "-" + self.contexts[self.contextIdx].key
+	key := self.contextKeyPrefix + "-" + self.getContextCacheKey(item) + "-" + self.contexts[self.contextIdx].key
 	if !self.gui.ShouldRefresh(key) {
 		return nil
 	}
@@ -225,7 +183,12 @@ func (self *SideListPanel[T]) Refocus() {
 	self.gui.FocusY(self.selectedIdx, self.list.Len(), self.view)
 }
 
-func (self *SideListPanel[T]) RerenderList() error {
+func (self *SideListPanel[T]) SetItems(items []T) {
+	self.list.SetItems(items)
+	self.FilterAndSort()
+}
+
+func (self *SideListPanel[T]) FilterAndSort() {
 	filterString := self.gui.FilterString(self.view)
 
 	self.list.Filter(func(item T, index int) bool {
@@ -248,10 +211,11 @@ func (self *SideListPanel[T]) RerenderList() error {
 
 	self.list.Sort(self.sort)
 
-	// TODO: use clamp?
-	if self.list.Len()-1 < self.selectedIdx {
-		self.selectedIdx = self.list.Len() - 1
-	}
+	self.clampSelectedLineIdx()
+}
+
+func (self *SideListPanel[T]) RerenderList() error {
+	self.FilterAndSort()
 
 	self.gui.Update(func() error {
 		self.view.Clear()

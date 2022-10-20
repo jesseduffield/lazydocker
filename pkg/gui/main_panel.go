@@ -88,8 +88,8 @@ func (gui *Gui) onMainTabClick(tabIndex int) error {
 		gui.State.Panels.Project.ContextIndex = tabIndex
 		return gui.handleProjectSelect(gui.g, gui.getProjectView())
 	case "services":
-		gui.State.Panels.Services.ContextIndex = tabIndex
-		return gui.handleServiceSelect(gui.g, gui.getServicesView())
+		gui.Panels.Services.SetContextIndex(tabIndex)
+		return gui.Panels.Services.HandleSelect()
 	case "containers":
 		gui.State.Panels.Containers.ContextIndex = tabIndex
 		return gui.handleContainerSelect(gui.g, gui.getContainersView())

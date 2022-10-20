@@ -233,25 +233,27 @@ func (gui *Gui) refreshContainersAndServices() error {
 	}
 
 	// keep track of current service selected so that we can reposition our cursor if it moves position in the list
-	sl := gui.State.Panels.Services.SelectedLine
-	var selectedService *commands.Service
-	if len(gui.DockerCommand.Services) > 0 {
-		selectedService = gui.DockerCommand.Services[sl]
-	}
+	originalSelectedLineIdx := gui.Panels.Services.selectedIdx
+	selectedService, isServiceSelected := gui.Panels.Services.list.TryGet(originalSelectedLineIdx)
 
-	if err := gui.DockerCommand.RefreshContainersAndServices(); err != nil {
+	_, services, err := gui.DockerCommand.RefreshContainersAndServices(
+		gui.Panels.Services.list.GetAllItems(),
+	)
+	if err != nil {
 		return err
 	}
 
+	gui.Panels.Services.SetItems(services)
+
 	// see if our selected service has moved
-	if selectedService != nil {
-		for i, service := range gui.DockerCommand.Services {
+	if isServiceSelected {
+		for i, service := range gui.Panels.Services.list.GetItems() {
 			if service.ID == selectedService.ID {
-				if i == sl {
+				if i == originalSelectedLineIdx {
 					break
 				}
-				gui.State.Panels.Services.SelectedLine = i
-				gui.focusY(i, len(gui.DockerCommand.Services), gui.getServicesView())
+				gui.Panels.Services.setSelectedLineIdx(i)
+				gui.Panels.Services.Refocus()
 			}
 		}
 	}
@@ -263,20 +265,18 @@ func (gui *Gui) refreshContainersAndServices() error {
 		gui.State.Panels.Containers.SelectedLine = len(gui.DockerCommand.DisplayContainers) - 1
 	}
 
-	// doing the exact same thing for services
-	if len(gui.DockerCommand.Services) > 0 && gui.State.Panels.Services.SelectedLine == -1 {
-		gui.State.Panels.Services.SelectedLine = 0
-	}
-	if len(gui.DockerCommand.Services)-1 < gui.State.Panels.Services.SelectedLine {
-		gui.State.Panels.Services.SelectedLine = len(gui.DockerCommand.Services) - 1
-	}
-
 	gui.renderContainersAndServices()
 
 	return nil
 }
 
 func (gui *Gui) renderContainersAndServices() {
+	if gui.DockerCommand.InDockerComposeProject {
+		if err := gui.Panels.Services.RerenderList(); err != nil {
+			gui.ErrorChan <- err
+		}
+	}
+
 	gui.g.Update(func(g *gocui.Gui) error {
 		containersView := gui.getContainersView()
 		containersView.Clear()
@@ -294,22 +294,6 @@ func (gui *Gui) renderContainersAndServices() {
 			}
 		}
 
-		// doing the exact same thing for services
-		if !gui.DockerCommand.InDockerComposeProject {
-			return nil
-		}
-		servicesView := gui.getServicesView()
-		servicesView.Clear()
-		isFocused = gui.g.CurrentView().Name() == "services"
-		list, err = utils.RenderList(gui.DockerCommand.Services, utils.IsFocused(isFocused))
-		if err != nil {
-			return err
-		}
-		fmt.Fprint(servicesView, list)
-
-		if servicesView == g.CurrentView() {
-			return gui.handleServiceSelect(g, servicesView)
-		}
 		return nil
 	})
 }

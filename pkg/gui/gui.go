@@ -75,17 +75,13 @@ type Gui struct {
 }
 
 type Panels struct {
-	Images *SideListPanel[*commands.Image]
+	Images   *SideListPanel[*commands.Image]
+	Services *SideListPanel[*commands.Service]
 }
 
 type Mutexes struct {
 	SubprocessMutex sync.Mutex
 	ViewStackMutex  sync.Mutex
-}
-
-type servicePanelState struct {
-	SelectedLine int
-	ContextIndex int // for specifying if you are looking at logs/stats/config/etc
 }
 
 type containerPanelState struct {
@@ -113,7 +109,6 @@ type volumePanelState struct {
 }
 
 type panelStates struct {
-	Services   *servicePanelState
 	Containers *containerPanelState
 	Menu       *menuPanelState
 	Main       *mainPanelState
@@ -168,7 +163,6 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 	initialState := guiState{
 		Platform: *oSCommand.Platform,
 		Panels: &panelStates{
-			Services:   &servicePanelState{SelectedLine: -1, ContextIndex: 0},
 			Containers: &containerPanelState{SelectedLine: -1, ContextIndex: 0},
 			Volumes:    &volumePanelState{SelectedLine: -1, ContextIndex: 0},
 			Menu:       &menuPanelState{SelectedLine: 0},
@@ -267,15 +261,6 @@ func (gui *Gui) Run() error {
 	go gui.DockerCommand.MonitorContainerStats(ctx)
 
 	go func() {
-		throttledRefresh.Trigger()
-
-		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
-		gui.goEvery(time.Millisecond*1000, gui.DockerCommand.UpdateContainerDetails)
-		gui.goEvery(time.Millisecond*1000, gui.checkForContextChange)
-		gui.goEvery(time.Millisecond*1000, gui.rerenderContainersAndServices)
-	}()
-
-	go func() {
 		for err := range gui.ErrorChan {
 			if err == nil {
 				continue
@@ -297,7 +282,8 @@ func (gui *Gui) Run() error {
 
 	// TODO: see if we can avoid the circular dependency
 	gui.Panels = Panels{
-		Images: gui.getImagePanel(),
+		Images:   gui.getImagesPanel(),
+		Services: gui.getServicesPanel(),
 	}
 
 	if err = gui.keybindings(g); err != nil {
@@ -315,6 +301,15 @@ func (gui *Gui) Run() error {
 			return err
 		}
 	}
+
+	go func() {
+		throttledRefresh.Trigger()
+
+		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
+		gui.goEvery(time.Millisecond*1000, gui.DockerCommand.UpdateContainerDetails)
+		gui.goEvery(time.Millisecond*1000, gui.checkForContextChange)
+		gui.goEvery(time.Millisecond*1000, gui.rerenderContainersAndServices)
+	}()
 
 	err = g.MainLoop()
 	if err == gocui.ErrQuit {

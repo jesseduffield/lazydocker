@@ -13,6 +13,47 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
+func (gui *Gui) getImagesPanel() *SideListPanel[*commands.Image] {
+	noneLabel := "<none>"
+
+	return &SideListPanel[*commands.Image]{
+		contextKeyPrefix: "images",
+		ListPanel: ListPanel[*commands.Image]{
+			list: NewFilteredList[*commands.Image](),
+			view: gui.Views.Images,
+		},
+		contextIdx:    0,
+		noItemsMessge: gui.Tr.NoImages,
+		gui:           gui.intoInterface(),
+		contexts: []ContextConfig[*commands.Image]{
+			{
+				key:   "config",
+				title: gui.Tr.ConfigTitle,
+				render: func(image *commands.Image) error {
+					return gui.renderImageConfig(image)
+				},
+			},
+		},
+		getSearchStrings: func(image *commands.Image) []string {
+			return []string{image.Name, image.Tag}
+		},
+		getContextCacheKey: func(image *commands.Image) string {
+			return image.ID
+		},
+		sort: func(a *commands.Image, b *commands.Image) bool {
+			if a.Name == noneLabel && b.Name != noneLabel {
+				return false
+			}
+
+			if a.Name != noneLabel && b.Name == noneLabel {
+				return true
+			}
+
+			return a.Name < b.Name
+		},
+	}
+}
+
 func (gui *Gui) renderImageConfig(image *commands.Image) error {
 	return gui.T.NewTask(func(stop chan struct{}) {
 		padding := 10
@@ -53,7 +94,7 @@ func (gui *Gui) refreshStateImages() error {
 	}
 
 	// TODO: think about also re-filtering/sorting
-	gui.Panels.Images.list.SetItems(images)
+	gui.Panels.Images.SetItems(images)
 
 	return nil
 }

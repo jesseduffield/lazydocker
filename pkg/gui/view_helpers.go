@@ -77,7 +77,7 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 	case "project":
 		return gui.handleProjectSelect(gui.g, v)
 	case "services":
-		return gui.handleServiceSelect(gui.g, v)
+		return gui.Panels.Services.HandleSelect()
 	case "containers":
 		return gui.handleContainerSelect(gui.g, v)
 	case "images":

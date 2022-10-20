@@ -363,14 +363,14 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			ViewName:    "services",
 			Key:         '[',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServicesPrevContext,
+			Handler:     wrappedHandler(gui.Panels.Services.OnPrevContext),
 			Description: gui.Tr.PreviousContext,
 		},
 		{
 			ViewName:    "services",
 			Key:         ']',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServicesNextContext,
+			Handler:     wrappedHandler(gui.Panels.Services.OnNextContext),
 			Description: gui.Tr.NextContext,
 		},
 		{
@@ -584,7 +584,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		onClick        func(*gocui.Gui, *gocui.View) error
 	}{
 		"menu":       {onKeyUpPress: gui.handleMenuPrevLine, onKeyDownPress: gui.handleMenuNextLine, onClick: gui.handleMenuClick},
-		"services":   {onKeyUpPress: gui.handleServicesPrevLine, onKeyDownPress: gui.handleServicesNextLine, onClick: gui.handleServicesClick},
+		"services":   {onKeyUpPress: wrappedHandler(gui.Panels.Services.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Services.OnNextLine), onClick: wrappedHandler(gui.Panels.Services.OnClick)},
 		"containers": {onKeyUpPress: gui.handleContainersPrevLine, onKeyDownPress: gui.handleContainersNextLine, onClick: gui.handleContainersClick},
 		"images":     {onKeyUpPress: wrappedHandler(gui.Panels.Images.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Images.OnNextLine), onClick: wrappedHandler(gui.Panels.Images.OnClick)},
 		"volumes":    {onKeyUpPress: gui.handleVolumesPrevLine, onKeyDownPress: gui.handleVolumesNextLine, onClick: gui.handleVolumesClick},
