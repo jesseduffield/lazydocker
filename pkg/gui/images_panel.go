@@ -7,72 +7,11 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/fatih/color"
-	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
-	"github.com/samber/lo"
 )
-
-// list panel functions
-
-func (gui *Gui) getImageContexts() []string {
-	return []string{"config"}
-}
-
-func (gui *Gui) getImageContextTitles() []string {
-	return []string{gui.Tr.ConfigTitle}
-}
-
-func (gui *Gui) getSelectedImage() (*commands.Image, error) {
-	selectedLine := gui.State.Panels.Images.SelectedLine
-	if selectedLine == -1 {
-		return &commands.Image{}, gui.Errors.ErrNoImages
-	}
-
-	return gui.State.Lists.Images.Get(selectedLine), nil
-}
-
-func (gui *Gui) handleImagesClick(g *gocui.Gui, v *gocui.View) error {
-	itemCount := gui.State.Lists.Images.Len()
-	handleSelect := gui.handleImageSelect
-	selectedLine := &gui.State.Panels.Images.SelectedLine
-
-	return gui.handleClick(v, itemCount, selectedLine, handleSelect)
-}
-
-func (gui *Gui) handleImageSelect(g *gocui.Gui, v *gocui.View) error {
-	image, err := gui.getSelectedImage()
-	if err != nil {
-		if err != gui.Errors.ErrNoImages {
-			return err
-		}
-		return gui.renderStringMain(gui.Tr.NoImages)
-	}
-
-	gui.focusY(gui.State.Panels.Images.SelectedLine, gui.State.Lists.Images.Len(), v)
-
-	key := "images-" + image.ID + "-" + gui.getImageContexts()[gui.State.Panels.Images.ContextIndex]
-	if !gui.shouldRefresh(key) {
-		return nil
-	}
-
-	mainView := gui.getMainView()
-	mainView.Tabs = gui.getImageContextTitles()
-	mainView.TabIndex = gui.State.Panels.Images.ContextIndex
-
-	switch gui.getImageContexts()[gui.State.Panels.Images.ContextIndex] {
-	case "config":
-		if err := gui.renderImageConfig(image); err != nil {
-			return err
-		}
-	default:
-		return errors.New("Unknown context for Images panel")
-	}
-
-	return nil
-}
 
 func (gui *Gui) renderImageConfig(image *commands.Image) error {
 	return gui.T.NewTask(func(stop chan struct{}) {
@@ -104,63 +43,7 @@ func (gui *Gui) reloadImages() error {
 		return err
 	}
 
-	return gui.rerenderImages()
-}
-
-func (gui *Gui) rerenderImages() error {
-	filterString := gui.filterString(gui.Views.Images)
-
-	gui.State.Lists.Images.Filter(func(image *commands.Image, index int) bool {
-		if lo.SomeBy(gui.Config.UserConfig.Ignore, func(ignore string) bool {
-			return strings.Contains(image.Name, ignore)
-		}) {
-			return false
-		}
-
-		if filterString != "" {
-			return strings.Contains(image.Name, filterString)
-		}
-
-		return true
-	})
-
-	noneLabel := "<none>"
-
-	gui.State.Lists.Images.Sort(func(a *commands.Image, b *commands.Image) bool {
-		if a.Name == noneLabel && b.Name != noneLabel {
-			return false
-		}
-
-		if a.Name != noneLabel && b.Name == noneLabel {
-			return true
-		}
-
-		return a.Name < b.Name
-	})
-
-	if gui.State.Lists.Images.Len() > 0 && gui.State.Panels.Images.SelectedLine == -1 {
-		gui.State.Panels.Images.SelectedLine = 0
-	}
-	if gui.State.Lists.Images.Len()-1 < gui.State.Panels.Images.SelectedLine {
-		gui.State.Panels.Images.SelectedLine = gui.State.Lists.Images.Len() - 1
-	}
-
-	gui.g.Update(func(g *gocui.Gui) error {
-		gui.Views.Images.Clear()
-		isFocused := gui.g.CurrentView() == gui.Views.Images
-		list, err := utils.RenderList(gui.State.Lists.Images.GetItems(), utils.IsFocused(isFocused))
-		if err != nil {
-			return err
-		}
-		fmt.Fprint(gui.Views.Images, list)
-
-		if gui.Views.Images == g.CurrentView() {
-			return gui.handleImageSelect(g, gui.Views.Images)
-		}
-		return nil
-	})
-
-	return nil
+	return gui.Panels.Images.RerenderList()
 }
 
 func (gui *Gui) refreshStateImages() error {
@@ -170,7 +53,7 @@ func (gui *Gui) refreshStateImages() error {
 	}
 
 	// TODO: think about also re-filtering/sorting
-	gui.State.Lists.Images.SetItems(images)
+	gui.Panels.Images.list.SetItems(images)
 
 	return nil
 }
@@ -188,54 +71,6 @@ func (gui *Gui) FilterString(view *gocui.View) string {
 	return gui.filterString(view)
 }
 
-func (gui *Gui) handleImagesNextLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
-		return nil
-	}
-
-	panelState := gui.State.Panels.Images
-	gui.changeSelectedLine(&panelState.SelectedLine, gui.State.Lists.Images.Len(), false)
-
-	return gui.handleImageSelect(gui.g, v)
-}
-
-func (gui *Gui) handleImagesPrevLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
-		return nil
-	}
-
-	panelState := gui.State.Panels.Images
-	gui.changeSelectedLine(&panelState.SelectedLine, gui.State.Lists.Images.Len(), true)
-
-	return gui.handleImageSelect(gui.g, v)
-}
-
-func (gui *Gui) handleImagesNextContext(g *gocui.Gui, v *gocui.View) error {
-	contexts := gui.getImageContexts()
-	if gui.State.Panels.Images.ContextIndex >= len(contexts)-1 {
-		gui.State.Panels.Images.ContextIndex = 0
-	} else {
-		gui.State.Panels.Images.ContextIndex++
-	}
-
-	_ = gui.handleImageSelect(gui.g, v)
-
-	return nil
-}
-
-func (gui *Gui) handleImagesPrevContext(g *gocui.Gui, v *gocui.View) error {
-	contexts := gui.getImageContexts()
-	if gui.State.Panels.Images.ContextIndex <= 0 {
-		gui.State.Panels.Images.ContextIndex = len(contexts) - 1
-	} else {
-		gui.State.Panels.Images.ContextIndex--
-	}
-
-	_ = gui.handleImageSelect(gui.g, v)
-
-	return nil
-}
-
 type removeImageOption struct {
 	description   string
 	command       string
@@ -249,12 +84,12 @@ func (r *removeImageOption) GetDisplayStrings(isFocused bool) []string {
 }
 
 func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
-	Image, err := gui.getSelectedImage()
+	image, err := gui.Panels.Images.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
-	shortSha := Image.ID[7:17]
+	shortSha := image.ID[7:17]
 
 	// TODO: have a way of toggling in a menu instead of showing each permutation as a separate menu item
 	options := []*removeImageOption{
@@ -293,7 +128,7 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 			return nil
 		}
 		configOptions := options[index].configOptions
-		if cerr := Image.Remove(configOptions); cerr != nil {
+		if cerr := image.Remove(configOptions); cerr != nil {
 			return gui.createErrorPanel(cerr.Error())
 		}
 
@@ -316,7 +151,7 @@ func (gui *Gui) handlePruneImages() error {
 }
 
 func (gui *Gui) handleImagesCustomCommand(g *gocui.Gui, v *gocui.View) error {
-	image, err := gui.getSelectedImage()
+	image, err := gui.Panels.Images.GetSelectedItem()
 	if err != nil {
 		return nil
 	}

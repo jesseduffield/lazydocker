@@ -18,7 +18,7 @@ func (gui *Gui) handleOpenSearch(view *gocui.View) error {
 func (gui *Gui) onNewSearchString(value string) error {
 	// need to refresh the right list panel.
 	gui.State.Searching.searchString = value
-	return gui.rerenderImages()
+	return gui.Panels.Images.RerenderList()
 }
 
 func (gui *Gui) wrapEditor(f func(v *gocui.View, key gocui.Key, ch rune, mod gocui.Modifier) bool) func(v *gocui.View, key gocui.Key, ch rune, mod gocui.Modifier) bool {
@@ -46,7 +46,7 @@ func (gui *Gui) clearSearch() error {
 	gui.State.Searching.view = nil
 	gui.Views.Search.ClearTextArea()
 
-	return gui.rerenderImages()
+	return gui.Panels.Images.RerenderList()
 }
 
 // returns to the list view with the filter still applied

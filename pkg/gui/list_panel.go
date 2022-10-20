@@ -20,7 +20,7 @@ type ListPanel[T comparable] struct {
 }
 
 func (self *ListPanel[T]) setSelectedLineIdx(value int) {
-	clampedValue := -1
+	clampedValue := 0
 	if self.list.Len() > 0 {
 		clampedValue = utils.Clamp(value, 0, self.list.Len()-1)
 	}
@@ -57,6 +57,7 @@ type SideListPanel[T comparable] struct {
 
 	// returns strings that can be filtered on
 	getSearchStrings func(item T) []string
+	getId            func(item T) string
 
 	sort func(a, b T) bool
 }
@@ -101,7 +102,7 @@ func (gui *Gui) getImagePanel() *SideListPanel[*commands.Image] {
 			list: NewFilteredList[*commands.Image](),
 			view: gui.Views.Images,
 		},
-		contextIdx:    -1, // TODO: see if this should be 0
+		contextIdx:    0,
 		noItemsMessge: gui.Tr.NoImages,
 		gui:           gui.intoInterface(),
 		contexts: []ContextConfig[*commands.Image]{
@@ -115,6 +116,9 @@ func (gui *Gui) getImagePanel() *SideListPanel[*commands.Image] {
 		},
 		getSearchStrings: func(image *commands.Image) []string {
 			return []string{image.Name, image.Tag}
+		},
+		getId: func(image *commands.Image) string {
+			return image.ID
 		},
 		sort: func(a *commands.Image, b *commands.Image) bool {
 			if a.Name == noneLabel && b.Name != noneLabel {
@@ -148,9 +152,9 @@ func (self *SideListPanel[T]) HandleSelect() error {
 		return self.gui.RenderStringMain(self.noItemsMessge)
 	}
 
-	self.gui.FocusY(self.selectedIdx, self.list.Len(), self.view)
+	self.Refocus()
 
-	key := self.contextKeyPrefix + "-" + self.contexts[self.contextIdx].key
+	key := self.contextKeyPrefix + "-" + self.getId(item) + "-" + self.contexts[self.contextIdx].key
 	if !self.gui.ShouldRefresh(key) {
 		return nil
 	}
@@ -171,10 +175,6 @@ func (self *SideListPanel[T]) GetContextTitles() []string {
 
 func (self *SideListPanel[T]) GetSelectedItem() (T, error) {
 	var zero T
-
-	if self.selectedIdx == -1 {
-		return zero, errors.New(self.noItemsMessge)
-	}
 
 	item, ok := self.list.TryGet(self.selectedIdx)
 	if !ok {
@@ -221,6 +221,10 @@ func (self *SideListPanel[T]) OnPrevContext() error {
 	return self.HandleSelect()
 }
 
+func (self *SideListPanel[T]) Refocus() {
+	self.gui.FocusY(self.selectedIdx, self.list.Len(), self.view)
+}
+
 func (self *SideListPanel[T]) RerenderList() error {
 	filterString := self.gui.FilterString(self.view)
 
@@ -245,9 +249,6 @@ func (self *SideListPanel[T]) RerenderList() error {
 	self.list.Sort(self.sort)
 
 	// TODO: use clamp?
-	if self.list.Len() > 0 && self.selectedIdx == -1 {
-		self.selectedIdx = 0
-	}
 	if self.list.Len()-1 < self.selectedIdx {
 		self.selectedIdx = self.list.Len() - 1
 	}
@@ -268,4 +269,8 @@ func (self *SideListPanel[T]) RerenderList() error {
 	})
 
 	return nil
+}
+
+func (self *SideListPanel[T]) SetContextIndex(index int) {
+	self.contextIdx = index
 }

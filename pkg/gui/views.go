@@ -139,8 +139,6 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Search.Frame = false
 	gui.Views.Search.Editor = gocui.EditorFunc(gui.wrapEditor(gocui.SimpleEditor))
 
-	gui.waitForIntro.Done()
-
 	return nil
 }
 

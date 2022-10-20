@@ -412,14 +412,14 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			ViewName:    "images",
 			Key:         '[',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handleImagesPrevContext,
+			Handler:     wrappedHandler(gui.Panels.Images.OnPrevContext),
 			Description: gui.Tr.PreviousContext,
 		},
 		{
 			ViewName:    "images",
 			Key:         ']',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handleImagesNextContext,
+			Handler:     wrappedHandler(gui.Panels.Images.OnNextContext),
 			Description: gui.Tr.NextContext,
 		},
 		{

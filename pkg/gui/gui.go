@@ -59,14 +59,10 @@ type Gui struct {
 	Tr            *i18n.TranslationSet
 	Errors        SentinelErrors
 	statusManager *statusManager
-	waitForIntro  sync.WaitGroup
 	T             *tasks.TaskManager
 	ErrorChan     chan error
 	CyclableViews []string
 	Views         Views
-	// returns true if our views have been created and assigned to gui.Views.
-	// Views are setup only once, upon application start.
-	ViewsSetup bool
 
 	// if we've suspended the gui (e.g. because we've switched to a subprocess)
 	// we typically want to pause some things that are running like background
@@ -111,11 +107,6 @@ type mainPanelState struct {
 	ObjectKey string
 }
 
-type imagePanelState struct {
-	SelectedLine int
-	ContextIndex int // for specifying if you are looking at logs/stats/config/etc
-}
-
 type volumePanelState struct {
 	SelectedLine int
 	ContextIndex int
@@ -126,7 +117,6 @@ type panelStates struct {
 	Containers *containerPanelState
 	Menu       *menuPanelState
 	Main       *mainPanelState
-	Images     *imagePanelState
 	Volumes    *volumePanelState
 	Project    *projectState
 }
@@ -180,7 +170,6 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		Panels: &panelStates{
 			Services:   &servicePanelState{SelectedLine: -1, ContextIndex: 0},
 			Containers: &containerPanelState{SelectedLine: -1, ContextIndex: 0},
-			Images:     &imagePanelState{SelectedLine: -1, ContextIndex: 0},
 			Volumes:    &volumePanelState{SelectedLine: -1, ContextIndex: 0},
 			Menu:       &menuPanelState{SelectedLine: 0},
 			Main: &mainPanelState{
@@ -214,11 +203,6 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		T:             tasks.NewTaskManager(log, tr),
 		ErrorChan:     errorChan,
 		CyclableViews: cyclableViews,
-	}
-
-	// TODO: see if we can avoid the circular dependency
-	gui.Panels = Panels{
-		Images: gui.getImagePanel(),
 	}
 
 	gui.GenerateSentinelErrors()
@@ -273,8 +257,6 @@ func (gui *Gui) Run() error {
 		return err
 	}
 
-	gui.waitForIntro.Add(1)
-
 	throttledRefresh := throttle.ThrottleFunc(time.Millisecond*50, true, gui.refresh)
 	defer throttledRefresh.Stop()
 
@@ -285,7 +267,6 @@ func (gui *Gui) Run() error {
 	go gui.DockerCommand.MonitorContainerStats(ctx)
 
 	go func() {
-		gui.waitForIntro.Wait()
 		throttledRefresh.Trigger()
 
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
@@ -310,8 +291,29 @@ func (gui *Gui) Run() error {
 
 	g.SetManager(gocui.ManagerFunc(gui.layout), gocui.ManagerFunc(gui.getFocusLayout()))
 
+	if err := gui.createAllViews(); err != nil {
+		return err
+	}
+
+	// TODO: see if we can avoid the circular dependency
+	gui.Panels = Panels{
+		Images: gui.getImagePanel(),
+	}
+
 	if err = gui.keybindings(g); err != nil {
 		return err
+	}
+
+	if gui.g.CurrentView() == nil {
+		viewName := gui.initiallyFocusedViewName()
+		view, err := gui.g.View(viewName)
+		if err != nil {
+			return err
+		}
+
+		if err := gui.switchFocus(view); err != nil {
+			return err
+		}
 	}
 
 	err = g.MainLoop()

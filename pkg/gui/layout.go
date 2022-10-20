@@ -59,14 +59,6 @@ func (gui *Gui) onFocus(v *gocui.View) {
 
 // layout is called for every screen re-render e.g. when the screen is resized
 func (gui *Gui) layout(g *gocui.Gui) error {
-	if !gui.ViewsSetup {
-		if err := gui.createAllViews(); err != nil {
-			return err
-		}
-
-		gui.ViewsSetup = true
-	}
-
 	g.Highlight = true
 	width, height := g.Size()
 
@@ -116,18 +108,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 	}
 
-	if gui.g.CurrentView() == nil {
-		viewName := gui.initiallyFocusedViewName()
-		view, err := gui.g.View(viewName)
-		if err != nil {
-			return err
-		}
-
-		if err := gui.switchFocus(view); err != nil {
-			return err
-		}
-	}
-
 	// here is a good place log some stuff
 	// if you download humanlog and do tail -f development.log | humanlog
 	// this will let you see these branches as prettified json
@@ -147,7 +127,6 @@ func (gui *Gui) focusPointInView(view *gocui.View) {
 
 	listViews := map[string]listViewState{
 		"containers": {selectedLine: gui.State.Panels.Containers.SelectedLine, lineCount: len(gui.DockerCommand.DisplayContainers)},
-		"images":     {selectedLine: gui.State.Panels.Images.SelectedLine, lineCount: gui.State.Lists.Images.Len()},
 		"volumes":    {selectedLine: gui.State.Panels.Volumes.SelectedLine, lineCount: len(gui.DockerCommand.Volumes)},
 		"services":   {selectedLine: gui.State.Panels.Services.SelectedLine, lineCount: len(gui.DockerCommand.Services)},
 		"menu":       {selectedLine: gui.State.Panels.Menu.SelectedLine, lineCount: gui.State.MenuItemCount},
@@ -155,6 +134,11 @@ func (gui *Gui) focusPointInView(view *gocui.View) {
 
 	if state, ok := listViews[view.Name()]; ok {
 		gui.focusY(state.selectedLine, state.lineCount, view)
+	}
+
+	switch view.Name() {
+	case "images":
+		gui.Panels.Images.Refocus()
 	}
 }
 

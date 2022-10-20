@@ -94,8 +94,8 @@ func (gui *Gui) onMainTabClick(tabIndex int) error {
 		gui.State.Panels.Containers.ContextIndex = tabIndex
 		return gui.handleContainerSelect(gui.g, gui.getContainersView())
 	case "images":
-		gui.State.Panels.Images.ContextIndex = tabIndex
-		return gui.handleImageSelect(gui.g, gui.getImagesView())
+		gui.Panels.Images.SetContextIndex(tabIndex)
+		return gui.Panels.Images.HandleSelect()
 	case "volumes":
 		gui.State.Panels.Volumes.ContextIndex = tabIndex
 		return gui.handleVolumeSelect(gui.g, gui.getVolumesView())
