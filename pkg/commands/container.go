@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -58,7 +59,7 @@ func (c *Container) GetDisplayStrings(isFocused bool) []string {
 func (c *Container) displayPorts() string {
 	portStrings := lo.Map(c.Container.Ports, func(port types.Port, _ int) string {
 		if port.PublicPort == 0 {
-			return fmt.Sprintf("%d\\%s", port.PrivatePort, port.Type)
+			return fmt.Sprintf("%d/%s", port.PrivatePort, port.Type)
 		}
 
 		// docker ps will show '0.0.0.0:80->80/tcp' but we'll show
@@ -70,6 +71,10 @@ func (c *Container) displayPorts() string {
 		}
 		return fmt.Sprintf("%s%d->%d/%s", ipString, port.PublicPort, port.PrivatePort, port.Type)
 	})
+
+	// sorting because the order of the ports is not deterministic
+	// and we don't want to have them constantly swapping
+	sort.Strings(portStrings)
 
 	return strings.Join(portStrings, ", ")
 }
