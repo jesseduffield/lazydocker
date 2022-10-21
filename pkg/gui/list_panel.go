@@ -66,6 +66,9 @@ type SideListPanel[T comparable] struct {
 	getContextCacheKey func(item T) string
 
 	sort func(a, b T) bool
+
+	// this filter is applied on top of additional default filters
+	filter func(T) bool
 }
 
 type ContextConfig[T any] struct {
@@ -192,6 +195,10 @@ func (self *SideListPanel[T]) FilterAndSort() {
 	filterString := self.gui.FilterString(self.view)
 
 	self.list.Filter(func(item T, index int) bool {
+		if self.filter != nil && !self.filter(item) {
+			return false
+		}
+
 		if lo.SomeBy(self.gui.IgnoreStrings(), func(ignore string) bool {
 			return lo.SomeBy(self.getSearchStrings(item), func(searchString string) bool {
 				return strings.Contains(searchString, ignore)

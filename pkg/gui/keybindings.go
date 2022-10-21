@@ -202,14 +202,14 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			ViewName:    "containers",
 			Key:         '[',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handleContainersPrevContext,
+			Handler:     wrappedHandler(gui.Panels.Containers.OnPrevContext),
 			Description: gui.Tr.PreviousContext,
 		},
 		{
 			ViewName:    "containers",
 			Key:         ']',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handleContainersNextContext,
+			Handler:     wrappedHandler(gui.Panels.Containers.OnNextContext),
 			Description: gui.Tr.NextContext,
 		},
 		{
@@ -585,7 +585,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	}{
 		"menu":       {onKeyUpPress: gui.handleMenuPrevLine, onKeyDownPress: gui.handleMenuNextLine, onClick: gui.handleMenuClick},
 		"services":   {onKeyUpPress: wrappedHandler(gui.Panels.Services.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Services.OnNextLine), onClick: wrappedHandler(gui.Panels.Services.OnClick)},
-		"containers": {onKeyUpPress: gui.handleContainersPrevLine, onKeyDownPress: gui.handleContainersNextLine, onClick: gui.handleContainersClick},
+		"containers": {onKeyUpPress: wrappedHandler(gui.Panels.Containers.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Containers.OnNextLine), onClick: wrappedHandler(gui.Panels.Containers.OnClick)},
 		"images":     {onKeyUpPress: wrappedHandler(gui.Panels.Images.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Images.OnNextLine), onClick: wrappedHandler(gui.Panels.Images.OnClick)},
 		"volumes":    {onKeyUpPress: wrappedHandler(gui.Panels.Volumes.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Volumes.OnNextLine), onClick: wrappedHandler(gui.Panels.Volumes.OnClick)},
 		"main":       {onKeyUpPress: gui.scrollUpMain, onKeyDownPress: gui.scrollDownMain, onClick: gui.handleMainClick},

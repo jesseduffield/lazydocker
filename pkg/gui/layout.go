@@ -126,8 +126,7 @@ func (gui *Gui) focusPointInView(view *gocui.View) {
 	}
 
 	listViews := map[string]listViewState{
-		"containers": {selectedLine: gui.State.Panels.Containers.SelectedLine, lineCount: len(gui.DockerCommand.DisplayContainers)},
-		"menu":       {selectedLine: gui.State.Panels.Menu.SelectedLine, lineCount: gui.State.MenuItemCount},
+		"menu": {selectedLine: gui.State.Panels.Menu.SelectedLine, lineCount: gui.State.MenuItemCount},
 	}
 
 	if state, ok := listViews[view.Name()]; ok {
@@ -141,6 +140,8 @@ func (gui *Gui) focusPointInView(view *gocui.View) {
 		gui.Panels.Services.Refocus()
 	case "volumes":
 		gui.Panels.Volumes.Refocus()
+	case "containers":
+		gui.Panels.Containers.Refocus()
 	}
 }
 

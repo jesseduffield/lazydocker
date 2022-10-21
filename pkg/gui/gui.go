@@ -22,30 +22,6 @@ import (
 // OverlappingEdges determines if panel edges overlap
 var OverlappingEdges = false
 
-// SentinelErrors are the errors that have special meaning and need to be checked
-// by calling functions. The less of these, the better
-type SentinelErrors struct {
-	ErrNoContainers error
-	ErrNoVolumes    error
-}
-
-// GenerateSentinelErrors makes the sentinel errors for the gui. We're defining it here
-// because we can't do package-scoped errors with localization, and also because
-// it seems like package-scoped variables are bad in general
-// https://dave.cheney.net/2017/06/11/go-without-package-scoped-variables
-// In the future it would be good to implement some of the recommendations of
-// that article. For now, if we don't need an error to be a sentinel, we will just
-// define it inline. This has implications for error messages that pop up everywhere
-// in that we'll be duplicating the default values. We may need to look at
-// having a default localisation bundle defined, and just using keys-only when
-// localising things in the code.
-func (gui *Gui) GenerateSentinelErrors() {
-	gui.Errors = SentinelErrors{
-		ErrNoContainers: errors.New(gui.Tr.NoContainers),
-		ErrNoVolumes:    errors.New(gui.Tr.NoVolumes),
-	}
-}
-
 // Gui wraps the gocui Gui object which handles rendering and events
 type Gui struct {
 	g             *gocui.Gui
@@ -55,7 +31,6 @@ type Gui struct {
 	State         guiState
 	Config        *config.AppConfig
 	Tr            *i18n.TranslationSet
-	Errors        SentinelErrors
 	statusManager *statusManager
 	T             *tasks.TaskManager
 	ErrorChan     chan error
@@ -73,19 +48,15 @@ type Gui struct {
 }
 
 type Panels struct {
-	Images   *SideListPanel[*commands.Image]
-	Services *SideListPanel[*commands.Service]
-	Volumes  *SideListPanel[*commands.Volume]
+	Services   *SideListPanel[*commands.Service]
+	Containers *SideListPanel[*commands.Container]
+	Images     *SideListPanel[*commands.Image]
+	Volumes    *SideListPanel[*commands.Volume]
 }
 
 type Mutexes struct {
 	SubprocessMutex sync.Mutex
 	ViewStackMutex  sync.Mutex
-}
-
-type containerPanelState struct {
-	SelectedLine int
-	ContextIndex int // for specifying if you are looking at logs/stats/config/etc
 }
 
 type projectState struct {
@@ -103,10 +74,9 @@ type mainPanelState struct {
 }
 
 type panelStates struct {
-	Containers *containerPanelState
-	Menu       *menuPanelState
-	Main       *mainPanelState
-	Project    *projectState
+	Menu    *menuPanelState
+	Main    *mainPanelState
+	Project *projectState
 }
 
 type guiState struct {
@@ -117,6 +87,9 @@ type guiState struct {
 	Panels           *panelStates
 	SubProcessOutput string
 	Stats            map[string]commands.ContainerStats
+
+	// if true, we show containers with an 'exited' status in the contaniners panel
+	ShowExitedContainers bool
 
 	ScreenMode WindowMaximisation
 
@@ -156,8 +129,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 	initialState := guiState{
 		Platform: *oSCommand.Platform,
 		Panels: &panelStates{
-			Containers: &containerPanelState{SelectedLine: -1, ContextIndex: 0},
-			Menu:       &menuPanelState{SelectedLine: 0},
+			Menu: &menuPanelState{SelectedLine: 0},
 			Main: &mainPanelState{
 				ObjectKey: "",
 			},
@@ -170,6 +142,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 			Images:     NewFilteredList[*commands.Image](),
 			Volumes:    NewFilteredList[*commands.Volume](),
 		},
+		ShowExitedContainers: true,
 	}
 
 	cyclableViews := []string{"project", "containers", "images", "volumes"}
@@ -190,8 +163,6 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		ErrorChan:     errorChan,
 		CyclableViews: cyclableViews,
 	}
-
-	gui.GenerateSentinelErrors()
 
 	return gui, nil
 }
@@ -246,12 +217,6 @@ func (gui *Gui) Run() error {
 	throttledRefresh := throttle.ThrottleFunc(time.Millisecond*50, true, gui.refresh)
 	defer throttledRefresh.Stop()
 
-	ctx, finish := context.WithCancel(context.Background())
-	defer finish()
-
-	go gui.listenForEvents(ctx, throttledRefresh.Trigger)
-	go gui.DockerCommand.MonitorContainerStats(ctx)
-
 	go func() {
 		for err := range gui.ErrorChan {
 			if err == nil {
@@ -274,9 +239,10 @@ func (gui *Gui) Run() error {
 
 	// TODO: see if we can avoid the circular dependency
 	gui.Panels = Panels{
-		Images:   gui.getImagesPanel(),
-		Services: gui.getServicesPanel(),
-		Volumes:  gui.getVolumesPanel(),
+		Services:   gui.getServicesPanel(),
+		Containers: gui.getContainersPanel(),
+		Images:     gui.getImagesPanel(),
+		Volumes:    gui.getVolumesPanel(),
 	}
 
 	if err = gui.keybindings(g); err != nil {
@@ -295,11 +261,17 @@ func (gui *Gui) Run() error {
 		}
 	}
 
+	ctx, finish := context.WithCancel(context.Background())
+	defer finish()
+
+	go gui.listenForEvents(ctx, throttledRefresh.Trigger)
+	go gui.monitorContainerStats(ctx)
+
 	go func() {
 		throttledRefresh.Trigger()
 
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
-		gui.goEvery(time.Millisecond*1000, gui.DockerCommand.UpdateContainerDetails)
+		gui.goEvery(time.Millisecond*1000, gui.updateContainerDetails)
 		gui.goEvery(time.Millisecond*1000, gui.checkForContextChange)
 		gui.goEvery(time.Millisecond*1000, gui.rerenderContainersAndServices)
 	}()
@@ -309,6 +281,10 @@ func (gui *Gui) Run() error {
 		return nil
 	}
 	return err
+}
+
+func (gui *Gui) updateContainerDetails() error {
+	return gui.DockerCommand.UpdateContainerDetails(gui.Panels.Containers.list.GetAllItems())
 }
 
 func (gui *Gui) rerenderContainersAndServices() error {
@@ -478,4 +454,23 @@ func (gui *Gui) IgnoreStrings() []string {
 
 func (gui *Gui) Update(f func() error) {
 	gui.g.Update(func(*gocui.Gui) error { return f() })
+}
+
+func (gui *Gui) monitorContainerStats(ctx context.Context) {
+	// periodically loop through running containers and see if we need to create a monitor goroutine for any
+	// every second we check if we need to spawn a new goroutine
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			for _, container := range gui.Panels.Containers.list.GetAllItems() {
+				if !container.MonitoringStats {
+					go gui.DockerCommand.CreateClientStatMonitor(container)
+				}
+			}
+		}
+	}
 }

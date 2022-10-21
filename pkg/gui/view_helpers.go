@@ -79,7 +79,7 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 	case "services":
 		return gui.Panels.Services.HandleSelect()
 	case "containers":
-		return gui.handleContainerSelect(gui.g, v)
+		return gui.Panels.Containers.HandleSelect()
 	case "images":
 		return gui.Panels.Images.HandleSelect()
 	case "volumes":

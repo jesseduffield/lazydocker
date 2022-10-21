@@ -8,7 +8,6 @@ import (
 	"io"
 	ogLog "log"
 	"os/exec"
-	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -20,7 +19,6 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
-	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )
 
@@ -36,15 +34,11 @@ type DockerCommand struct {
 	Config                 *config.AppConfig
 	Client                 *client.Client
 	InDockerComposeProject bool
-	ShowExited             bool
 	ErrorChan              chan error
 	ContainerMutex         sync.Mutex
 	ServiceMutex           sync.Mutex
 
-	Containers []*Container
-	// DisplayContainers is the array of containers we will display in the containers panel. If Gui.ShowAllContainers is false, this will only be those containers which aren't based on a service. This reduces clutter and duplication in the UI
-	DisplayContainers []*Container
-	Closers           []io.Closer
+	Closers []io.Closer
 }
 
 var _ io.Closer = &DockerCommand{}
@@ -89,7 +83,6 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		Config:                 config,
 		Client:                 cli,
 		ErrorChan:              errorChan,
-		ShowExited:             true,
 		InDockerComposeProject: true,
 		Closers:                []io.Closer{tunnelCloser},
 	}
@@ -119,26 +112,7 @@ func (c *DockerCommand) Close() error {
 	return utils.CloseMany(c.Closers)
 }
 
-func (c *DockerCommand) MonitorContainerStats(ctx context.Context) {
-	// periodically loop through running containers and see if we need to create a monitor goroutine for any
-	// every second we check if we need to spawn a new goroutine
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			for _, container := range c.Containers {
-				if !container.MonitoringStats {
-					go c.createClientStatMonitor(container)
-				}
-			}
-		}
-	}
-}
-
-func (c *DockerCommand) createClientStatMonitor(container *Container) {
+func (c *DockerCommand) CreateClientStatMonitor(container *Container) {
 	container.MonitoringStats = true
 	stream, err := c.Client.ContainerStats(context.Background(), container.ID, true)
 	if err != nil {
@@ -172,11 +146,11 @@ func (c *DockerCommand) createClientStatMonitor(container *Container) {
 	container.MonitoringStats = false
 }
 
-func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service) ([]*Container, []*Service, error) {
+func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service, currentContainers []*Container) ([]*Container, []*Service, error) {
 	c.ServiceMutex.Lock()
 	defer c.ServiceMutex.Unlock()
 
-	containers, err := c.GetContainers()
+	containers, err := c.GetContainers(currentContainers)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -194,17 +168,7 @@ func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service)
 
 	c.assignContainersToServices(containers, services)
 
-	displayContainers := containers
-	if !c.Config.UserConfig.Gui.ShowAllContainers {
-		displayContainers = c.obtainStandaloneContainers(containers, services)
-	}
-
-	c.Containers = containers
-	c.DisplayContainers = c.filterOutExited(displayContainers)
-	c.DisplayContainers = c.filterOutIgnoredContainers(c.DisplayContainers)
-	c.DisplayContainers = c.sortedContainers(c.DisplayContainers)
-
-	return c.DisplayContainers, services, nil
+	return containers, services, nil
 }
 
 func (c *DockerCommand) assignContainersToServices(containers []*Container, services []*Service) {
@@ -220,71 +184,10 @@ L:
 	}
 }
 
-// filterOutExited filters out the exited containers if c.ShowExited is false
-func (c *DockerCommand) filterOutExited(containers []*Container) []*Container {
-	if c.ShowExited {
-		return containers
-	}
-	toReturn := []*Container{}
-	for _, container := range containers {
-		if container.Container.State != "exited" {
-			toReturn = append(toReturn, container)
-		}
-	}
-	return toReturn
-}
-
-func (c *DockerCommand) filterOutIgnoredContainers(containers []*Container) []*Container {
-	return lo.Filter(containers, func(container *Container, _ int) bool {
-		return !lo.SomeBy(c.Config.UserConfig.Ignore, func(ignore string) bool {
-			return strings.Contains(container.Name, ignore)
-		})
-	})
-}
-
-// sortedContainers returns containers sorted by state if c.SortContainersByState is true (follows 1- running, 2- exited, 3- created)
-// and sorted by name if c.SortContainersByState is false
-func (c *DockerCommand) sortedContainers(containers []*Container) []*Container {
-	if !c.Config.UserConfig.Gui.LegacySortContainers {
-		states := map[string]int{
-			"running": 1,
-			"exited":  2,
-			"created": 3,
-		}
-		sort.Slice(containers, func(i, j int) bool {
-			stateLeft := states[containers[i].Container.State]
-			stateRight := states[containers[j].Container.State]
-			if stateLeft == stateRight {
-				return containers[i].Name < containers[j].Name
-			}
-			return states[containers[i].Container.State] < states[containers[j].Container.State]
-		})
-	}
-	return containers
-}
-
-// obtainStandaloneContainers returns standalone containers. Standalone containers are containers which are either one-off containers, or whose service is not part of this docker-compose context
-func (c *DockerCommand) obtainStandaloneContainers(containers []*Container, services []*Service) []*Container {
-	standaloneContainers := []*Container{}
-L:
-	for _, container := range containers {
-		for _, service := range services {
-			if !container.OneOff && container.ServiceName != "" && container.ServiceName == service.Name {
-				continue L
-			}
-		}
-		standaloneContainers = append(standaloneContainers, container)
-	}
-
-	return standaloneContainers
-}
-
 // GetContainers gets the docker containers
-func (c *DockerCommand) GetContainers() ([]*Container, error) {
+func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Container, error) {
 	c.ContainerMutex.Lock()
 	defer c.ContainerMutex.Unlock()
-
-	existingContainers := c.Containers
 
 	containers, err := c.Client.ContainerList(context.Background(), types.ContainerListOptions{All: true})
 	if err != nil {
@@ -369,11 +272,11 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 
 // UpdateContainerDetails attaches the details returned from docker inspect to each of the containers
 // this contains a bit more info than what you get from the go-docker client
-func (c *DockerCommand) UpdateContainerDetails() error {
+func (c *DockerCommand) UpdateContainerDetails(containers []*Container) error {
 	c.ContainerMutex.Lock()
 	defer c.ContainerMutex.Unlock()
 
-	for _, container := range c.Containers {
+	for _, container := range containers {
 		details, err := c.Client.ContainerInspect(context.Background(), container.ID)
 		if err != nil {
 			c.Log.Error(err)
