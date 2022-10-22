@@ -25,14 +25,16 @@ func (gui *Gui) getImagesPanel() *SideListPanel[*commands.Image] {
 		contextIdx:    0,
 		noItemsMessge: gui.Tr.NoImages,
 		gui:           gui.intoInterface(),
-		contexts: []ContextConfig[*commands.Image]{
-			{
-				key:   "config",
-				title: gui.Tr.ConfigTitle,
-				render: func(image *commands.Image) error {
-					return gui.renderImageConfig(image)
+		getContexts: func() []ContextConfig[*commands.Image] {
+			return []ContextConfig[*commands.Image]{
+				{
+					key:   "config",
+					title: gui.Tr.ConfigTitle,
+					render: func(image *commands.Image) error {
+						return gui.renderImageConfig(image)
+					},
 				},
-			},
+			}
 		},
 		getSearchStrings: func(image *commands.Image) []string {
 			return []string{image.Name, image.Tag}

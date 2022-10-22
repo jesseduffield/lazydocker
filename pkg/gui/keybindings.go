@@ -151,21 +151,15 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			ViewName:    "project",
 			Key:         '[',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handleProjectPrevContext,
+			Handler:     wrappedHandler(gui.Panels.Projects.OnPrevContext),
 			Description: gui.Tr.PreviousContext,
 		},
 		{
 			ViewName:    "project",
 			Key:         ']',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handleProjectNextContext,
+			Handler:     wrappedHandler(gui.Panels.Projects.OnNextContext),
 			Description: gui.Tr.NextContext,
-		},
-		{
-			ViewName: "project",
-			Key:      gocui.MouseLeft,
-			Modifier: gocui.ModNone,
-			Handler:  gui.handleProjectClick,
 		},
 		{
 			ViewName:    "project",
@@ -178,7 +172,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			ViewName: "project",
 			Key:      gocui.MouseLeft,
 			Modifier: gocui.ModNone,
-			Handler:  gui.handleProjectSelect,
+			Handler:  wrappedHandler(gui.Panels.Projects.OnClick),
 		},
 		{
 			ViewName: "menu",
@@ -603,9 +597,9 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		}...)
 	}
 
-	for _, viewName := range []string{"project", "services", "containers", "images", "volumes"} {
+	for _, sidePanel := range gui.allSidepanels() {
 		bindings = append(bindings, &Binding{
-			ViewName:    viewName,
+			ViewName:    sidePanel.View().Name(),
 			Key:         gocui.KeyEnter,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleEnterMain,

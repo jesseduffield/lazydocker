@@ -20,12 +20,14 @@ func (gui *Gui) getVolumesPanel() *SideListPanel[*commands.Volume] {
 		contextIdx:    0,
 		noItemsMessge: gui.Tr.NoVolumes,
 		gui:           gui.intoInterface(),
-		contexts: []ContextConfig[*commands.Volume]{
-			{
-				key:    "config",
-				title:  gui.Tr.ConfigTitle,
-				render: gui.renderVolumeConfig,
-			},
+		getContexts: func() []ContextConfig[*commands.Volume] {
+			return []ContextConfig[*commands.Volume]{
+				{
+					key:    "config",
+					title:  gui.Tr.ConfigTitle,
+					render: gui.renderVolumeConfig,
+				},
+			}
 		},
 		getSearchStrings: func(volume *commands.Volume) []string {
 			// TODO: think about more things to search on

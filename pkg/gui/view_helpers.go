@@ -71,19 +71,14 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 		return nil
 	}
 
+	currentSidePanel, ok := gui.currentSidePanel()
+	if ok {
+		return currentSidePanel.HandleSelect()
+	}
+
 	switch v.Name() {
 	case "menu":
 		return gui.handleMenuSelect(gui.g, v)
-	case "project":
-		return gui.handleProjectSelect(gui.g, v)
-	case "services":
-		return gui.Panels.Services.HandleSelect()
-	case "containers":
-		return gui.Panels.Containers.HandleSelect()
-	case "images":
-		return gui.Panels.Images.HandleSelect()
-	case "volumes":
-		return gui.Panels.Volumes.HandleSelect()
 	case "confirmation":
 		return nil
 	case "main":
@@ -500,4 +495,26 @@ func prevIntInCycle(sl []WindowMaximisation, current WindowMaximisation) WindowM
 
 func (gui *Gui) CurrentView() *gocui.View {
 	return gui.g.CurrentView()
+}
+
+func (gui *Gui) currentSidePanel() (ISideListPanel, bool) {
+	viewName := gui.currentViewName()
+
+	for _, sidePanel := range gui.allSidepanels() {
+		if sidePanel.View().Name() == viewName {
+			return sidePanel, true
+		}
+	}
+
+	return nil, false
+}
+
+func (gui *Gui) allSidepanels() []ISideListPanel {
+	return []ISideListPanel{
+		gui.Panels.Projects,
+		gui.Panels.Services,
+		gui.Panels.Containers,
+		gui.Panels.Images,
+		gui.Panels.Volumes,
+	}
 }

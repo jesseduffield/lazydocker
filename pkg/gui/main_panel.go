@@ -83,25 +83,14 @@ func (gui *Gui) onMainTabClick(tabIndex int) error {
 		viewName = mainView.ParentView.Name()
 	}
 
-	switch viewName {
-	case "project":
-		gui.State.Panels.Project.ContextIndex = tabIndex
-		return gui.handleProjectSelect(gui.g, gui.getProjectView())
-	case "services":
-		gui.Panels.Services.SetContextIndex(tabIndex)
-		return gui.Panels.Services.HandleSelect()
-	case "containers":
-		gui.Panels.Containers.SetContextIndex(tabIndex)
-		return gui.Panels.Containers.HandleSelect()
-	case "images":
-		gui.Panels.Images.SetContextIndex(tabIndex)
-		return gui.Panels.Images.HandleSelect()
-	case "volumes":
-		gui.Panels.Volumes.SetContextIndex(tabIndex)
-		return gui.Panels.Volumes.HandleSelect()
+	currentSidePanel, ok := gui.currentSidePanel()
+
+	if !ok {
+		return nil
 	}
 
-	return nil
+	currentSidePanel.SetContextIndex(tabIndex)
+	return currentSidePanel.HandleSelect()
 }
 
 func (gui *Gui) handleEnterMain(g *gocui.Gui, v *gocui.View) error {

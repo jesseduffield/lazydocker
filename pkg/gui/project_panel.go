@@ -2,42 +2,73 @@ package gui
 
 import (
 	"bytes"
-	"fmt"
 	"path"
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/jesseduffield/yaml"
 )
 
-func (gui *Gui) getProjectContexts() []string {
-	if gui.DockerCommand.InDockerComposeProject {
-		return []string{"logs", "config", "credits"}
+// Although at the moment we'll only have one project, in future we could have
+// a list of projects in the project panel.
+
+func (gui *Gui) getProjectPanel() *SideListPanel[*commands.Project] {
+	return &SideListPanel[*commands.Project]{
+		contextKeyPrefix: "project",
+		ListPanel: ListPanel[*commands.Project]{
+			list: NewFilteredList[*commands.Project](),
+			view: gui.Views.Project,
+		},
+		contextIdx:    0,
+		noItemsMessge: "no projects", // we don't expect to ever actually see this
+		gui:           gui.intoInterface(),
+		getContexts: func() []ContextConfig[*commands.Project] {
+			if gui.DockerCommand.InDockerComposeProject {
+				return []ContextConfig[*commands.Project]{
+					{
+						key:    "logs",
+						title:  gui.Tr.LogsTitle,
+						render: gui.renderAllLogs,
+					},
+					{
+						key:    "config",
+						title:  gui.Tr.DockerComposeConfigTitle,
+						render: gui.renderDockerComposeConfig,
+					},
+					{
+						key:    "credits",
+						title:  gui.Tr.CreditsTitle,
+						render: gui.renderCredits,
+					},
+				}
+			}
+
+			return []ContextConfig[*commands.Project]{
+				{
+					key:    "credits",
+					title:  gui.Tr.CreditsTitle,
+					render: gui.renderCredits,
+				},
+			}
+		},
+		getSearchStrings: func(project *commands.Project) []string {
+			return []string{project.Name}
+		},
+		getContextCacheKey: func(project *commands.Project) string {
+			return project.Name
+		},
+		sort: func(a *commands.Project, b *commands.Project) bool {
+			return false
+		},
 	}
-	return []string{"credits"}
 }
 
-func (gui *Gui) getProjectContextTitles() []string {
-	if gui.DockerCommand.InDockerComposeProject {
-		return []string{gui.Tr.LogsTitle, gui.Tr.DockerComposeConfigTitle, gui.Tr.CreditsTitle}
-	}
-	return []string{gui.Tr.CreditsTitle}
-}
-
-func (gui *Gui) refreshProject() {
-	v := gui.getProjectView()
-
-	projectName := gui.getProjectName()
-
-	gui.g.Update(func(*gocui.Gui) error {
-		v.Clear()
-		fmt.Fprint(v, projectName)
-		return nil
-	})
+func (gui *Gui) refreshProject() error {
+	gui.Panels.Projects.SetItems([]*commands.Project{{Name: gui.getProjectName()}})
+	return gui.Panels.Projects.RerenderList()
 }
 
 func (gui *Gui) getProjectName() string {
@@ -54,55 +85,7 @@ func (gui *Gui) getProjectName() string {
 	return projectName
 }
 
-func (gui *Gui) handleProjectClick(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
-		return nil
-	}
-
-	if _, err := gui.g.SetCurrentView(v.Name()); err != nil {
-		return err
-	}
-
-	return gui.handleProjectSelect(g, v)
-}
-
-func (gui *Gui) handleProjectSelect(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() {
-		return nil
-	}
-
-	key := gui.getProjectContexts()[gui.State.Panels.Project.ContextIndex]
-	if !gui.shouldRefresh(key) {
-		return nil
-	}
-
-	gui.clearMainView()
-
-	mainView := gui.getMainView()
-	mainView.Tabs = gui.getProjectContextTitles()
-	mainView.TabIndex = gui.State.Panels.Project.ContextIndex
-
-	switch gui.getProjectContexts()[gui.State.Panels.Project.ContextIndex] {
-	case "credits":
-		if err := gui.renderCredits(); err != nil {
-			return err
-		}
-	case "logs":
-		if err := gui.renderAllLogs(); err != nil {
-			return err
-		}
-	case "config":
-		if err := gui.renderDockerComposeConfig(); err != nil {
-			return err
-		}
-	default:
-		return errors.New("Unknown context for status panel")
-	}
-
-	return nil
-}
-
-func (gui *Gui) renderCredits() error {
+func (gui *Gui) renderCredits(_project *commands.Project) error {
 	return gui.T.NewTask(func(stop chan struct{}) {
 		mainView := gui.getMainView()
 		mainView.Autoscroll = false
@@ -127,7 +110,7 @@ func (gui *Gui) renderCredits() error {
 	})
 }
 
-func (gui *Gui) renderAllLogs() error {
+func (gui *Gui) renderAllLogs(_project *commands.Project) error {
 	return gui.T.NewTask(func(stop chan struct{}) {
 		mainView := gui.getMainView()
 		mainView.Autoscroll = true
@@ -159,7 +142,7 @@ func (gui *Gui) renderAllLogs() error {
 	})
 }
 
-func (gui *Gui) renderDockerComposeConfig() error {
+func (gui *Gui) renderDockerComposeConfig(_project *commands.Project) error {
 	return gui.T.NewTask(func(stop chan struct{}) {
 		mainView := gui.getMainView()
 		mainView.Autoscroll = false
@@ -189,32 +172,6 @@ func lazydockerTitle() string {
                 __/ |
                |___/
 `
-}
-
-func (gui *Gui) handleProjectNextContext(g *gocui.Gui, v *gocui.View) error {
-	contexts := gui.getProjectContexts()
-	if gui.State.Panels.Project.ContextIndex >= len(contexts)-1 {
-		gui.State.Panels.Project.ContextIndex = 0
-	} else {
-		gui.State.Panels.Project.ContextIndex++
-	}
-
-	_ = gui.handleProjectSelect(gui.g, v)
-
-	return nil
-}
-
-func (gui *Gui) handleProjectPrevContext(g *gocui.Gui, v *gocui.View) error {
-	contexts := gui.getProjectContexts()
-	if gui.State.Panels.Project.ContextIndex <= 0 {
-		gui.State.Panels.Project.ContextIndex = len(contexts) - 1
-	} else {
-		gui.State.Panels.Project.ContextIndex--
-	}
-
-	_ = gui.handleProjectSelect(gui.g, v)
-
-	return nil
 }
 
 // handleViewAllLogs switches to a subprocess viewing all the logs from docker-compose

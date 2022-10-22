@@ -49,27 +49,33 @@ func (self *ListPanel[T]) SelectPrevLine() {
 // list panel at the side of the screen that renders content to the main panel
 type SideListPanel[T comparable] struct {
 	contextKeyPrefix string
+	contextIdx       int
+	// contexts    []ContextConfig[T]
+	getContexts func() []ContextConfig[T]
+	// this tells us whether we need to re-render to the main panel
+	getContextCacheKey func(item T) string
 
 	ListPanel[T]
-
-	contextIdx int
 
 	noItemsMessge string
 
 	gui IGui
 
-	contexts []ContextConfig[T]
-
 	// returns strings that can be filtered on
 	getSearchStrings func(item T) []string
-	// this tells us whether we need to re-render to the main panel
-	getContextCacheKey func(item T) string
-
-	sort func(a, b T) bool
 
 	// this filter is applied on top of additional default filters
 	filter func(T) bool
+	sort   func(a, b T) bool
 }
+
+type ISideListPanel interface {
+	SetContextIndex(int)
+	HandleSelect() error
+	View() *gocui.View
+}
+
+var _ ISideListPanel = &SideListPanel[int]{}
 
 type ContextConfig[T any] struct {
 	key    string
@@ -103,6 +109,10 @@ func (self *SideListPanel[T]) OnClick() error {
 	return self.gui.HandleClick(self.view, itemCount, selectedLine, handleSelect)
 }
 
+func (self *SideListPanel[T]) View() *gocui.View {
+	return self.view
+}
+
 func (self *SideListPanel[T]) HandleSelect() error {
 	item, err := self.GetSelectedItem()
 	if err != nil {
@@ -115,7 +125,9 @@ func (self *SideListPanel[T]) HandleSelect() error {
 
 	self.Refocus()
 
-	key := self.contextKeyPrefix + "-" + self.getContextCacheKey(item) + "-" + self.contexts[self.contextIdx].key
+	contexts := self.getContexts()
+
+	key := self.contextKeyPrefix + "-" + self.getContextCacheKey(item) + "-" + contexts[self.contextIdx].key
 	if !self.gui.ShouldRefresh(key) {
 		return nil
 	}
@@ -125,11 +137,11 @@ func (self *SideListPanel[T]) HandleSelect() error {
 	mainView.TabIndex = self.contextIdx
 
 	// now I have an item. What do I do with it?
-	return self.contexts[self.contextIdx].render(item)
+	return contexts[self.contextIdx].render(item)
 }
 
 func (self *SideListPanel[T]) GetContextTitles() []string {
-	return lo.Map(self.contexts, func(context ContextConfig[T], _ int) string {
+	return lo.Map(self.getContexts(), func(context ContextConfig[T], _ int) string {
 		return context.title
 	})
 }
@@ -171,13 +183,25 @@ func (self *SideListPanel[T]) ignoreKeypress() bool {
 }
 
 func (self *SideListPanel[T]) OnNextContext() error {
-	self.contextIdx = (self.contextIdx + 1) % len(self.contexts)
+	contexts := self.getContexts()
+
+	if len(contexts) == 0 {
+		return nil
+	}
+
+	self.contextIdx = (self.contextIdx + 1) % len(contexts)
 
 	return self.HandleSelect()
 }
 
 func (self *SideListPanel[T]) OnPrevContext() error {
-	self.contextIdx = (self.contextIdx - 1 + len(self.contexts)) % len(self.contexts)
+	contexts := self.getContexts()
+
+	if len(contexts) == 0 {
+		return nil
+	}
+
+	self.contextIdx = (self.contextIdx - 1 + len(contexts)) % len(contexts)
 
 	return self.HandleSelect()
 }

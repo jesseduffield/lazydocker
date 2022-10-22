@@ -22,32 +22,34 @@ func (gui *Gui) getServicesPanel() *SideListPanel[*commands.Service] {
 		// TODO: i18n
 		noItemsMessge: "no service selected",
 		gui:           gui.intoInterface(),
-		contexts: []ContextConfig[*commands.Service]{
-			{
-				key:    "logs",
-				title:  gui.Tr.LogsTitle,
-				render: gui.renderServiceLogs,
-			},
-			{
-				key:    "stats",
-				title:  gui.Tr.StatsTitle,
-				render: gui.renderServiceStats,
-			},
-			{
-				key:    "container-env",
-				title:  gui.Tr.ContainerEnvTitle,
-				render: gui.renderServiceContainerEnv,
-			},
-			{
-				key:    "container-config",
-				title:  gui.Tr.ContainerConfigTitle,
-				render: gui.renderServiceContainerConfig,
-			},
-			{
-				key:    "top",
-				title:  gui.Tr.TopTitle,
-				render: gui.renderServiceTop,
-			},
+		getContexts: func() []ContextConfig[*commands.Service] {
+			return []ContextConfig[*commands.Service]{
+				{
+					key:    "logs",
+					title:  gui.Tr.LogsTitle,
+					render: gui.renderServiceLogs,
+				},
+				{
+					key:    "stats",
+					title:  gui.Tr.StatsTitle,
+					render: gui.renderServiceStats,
+				},
+				{
+					key:    "container-env",
+					title:  gui.Tr.ContainerEnvTitle,
+					render: gui.renderServiceContainerEnv,
+				},
+				{
+					key:    "container-config",
+					title:  gui.Tr.ContainerConfigTitle,
+					render: gui.renderServiceContainerConfig,
+				},
+				{
+					key:    "top",
+					title:  gui.Tr.TopTitle,
+					render: gui.renderServiceTop,
+				},
+			}
 		},
 		getSearchStrings: func(service *commands.Service) []string {
 			// TODO: think about more things to search on

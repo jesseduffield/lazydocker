@@ -42,32 +42,34 @@ func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
 		contextIdx:    0,
 		noItemsMessge: gui.Tr.NoContainers,
 		gui:           gui.intoInterface(),
-		contexts: []ContextConfig[*commands.Container]{
-			{
-				key:    "logs",
-				title:  gui.Tr.LogsTitle,
-				render: gui.renderContainerLogsToMain,
-			},
-			{
-				key:    "stats",
-				title:  gui.Tr.StatsTitle,
-				render: gui.renderContainerStats,
-			},
-			{
-				key:    "env",
-				title:  gui.Tr.EnvTitle,
-				render: gui.renderContainerEnv,
-			},
-			{
-				key:    "config",
-				title:  gui.Tr.ConfigTitle,
-				render: gui.renderContainerConfig,
-			},
-			{
-				key:    "top",
-				title:  gui.Tr.TopTitle,
-				render: gui.renderContainerTop,
-			},
+		getContexts: func() []ContextConfig[*commands.Container] {
+			return []ContextConfig[*commands.Container]{
+				{
+					key:    "logs",
+					title:  gui.Tr.LogsTitle,
+					render: gui.renderContainerLogsToMain,
+				},
+				{
+					key:    "stats",
+					title:  gui.Tr.StatsTitle,
+					render: gui.renderContainerStats,
+				},
+				{
+					key:    "env",
+					title:  gui.Tr.EnvTitle,
+					render: gui.renderContainerEnv,
+				},
+				{
+					key:    "config",
+					title:  gui.Tr.ConfigTitle,
+					render: gui.renderContainerConfig,
+				},
+				{
+					key:    "top",
+					title:  gui.Tr.TopTitle,
+					render: gui.renderContainerTop,
+				},
+			}
 		},
 		getSearchStrings: func(container *commands.Container) []string {
 			// TODO: think about more things to search on

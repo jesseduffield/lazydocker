@@ -48,6 +48,7 @@ type Gui struct {
 }
 
 type Panels struct {
+	Projects   *SideListPanel[*commands.Project]
 	Services   *SideListPanel[*commands.Service]
 	Containers *SideListPanel[*commands.Container]
 	Images     *SideListPanel[*commands.Image]
@@ -239,6 +240,7 @@ func (gui *Gui) Run() error {
 
 	// TODO: see if we can avoid the circular dependency
 	gui.Panels = Panels{
+		Projects:   gui.getProjectPanel(),
 		Services:   gui.getServicesPanel(),
 		Containers: gui.getContainersPanel(),
 		Images:     gui.getImagesPanel(),
@@ -294,7 +296,11 @@ func (gui *Gui) rerenderContainersAndServices() error {
 }
 
 func (gui *Gui) refresh() {
-	go gui.refreshProject()
+	go func() {
+		if err := gui.refreshProject(); err != nil {
+			gui.Log.Error(err)
+		}
+	}()
 	go func() {
 		if err := gui.refreshContainersAndServices(); err != nil {
 			gui.Log.Error(err)
