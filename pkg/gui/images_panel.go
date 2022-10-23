@@ -37,9 +37,6 @@ func (gui *Gui) getImagesPanel() *SideListPanel[*commands.Image] {
 				},
 			}
 		},
-		getSearchStrings: func(image *commands.Image) []string {
-			return []string{image.Name, image.Tag}
-		},
 		getContextCacheKey: func(image *commands.Image) string {
 			return image.ID
 		},
@@ -113,7 +110,7 @@ func (gui *Gui) refreshStateImages() error {
 }
 
 func (gui *Gui) filterString(view *gocui.View) string {
-	if gui.State.Searching.view != view {
+	if gui.State.Searching.panel != nil && gui.State.Searching.panel.View() != view {
 		return ""
 	}
 

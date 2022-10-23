@@ -11,7 +11,6 @@ func (gui *Gui) handleOpenSearch() error {
 	}
 
 	gui.State.Searching.isSearching = true
-	gui.State.Searching.view = panel.View()
 	gui.State.Searching.panel = panel
 
 	return gui.switchFocus(gui.Views.Search)
@@ -20,6 +19,7 @@ func (gui *Gui) handleOpenSearch() error {
 func (gui *Gui) onNewSearchString(value string) error {
 	// need to refresh the right list panel.
 	gui.State.Searching.searchString = value
+	gui.ResetOrigin(gui.State.Searching.panel.View())
 	return gui.State.Searching.panel.RerenderList()
 }
 
@@ -45,10 +45,11 @@ func (gui *Gui) escapeSearchPrompt() error {
 func (gui *Gui) clearSearch() error {
 	gui.State.Searching.searchString = ""
 	gui.State.Searching.isSearching = false
-	gui.State.Searching.view = nil
 	panel := gui.State.Searching.panel
 	gui.State.Searching.panel = nil
 	gui.Views.Search.ClearTextArea()
+
+	gui.ResetOrigin(panel.View())
 
 	return panel.RerenderList()
 }

@@ -31,11 +31,8 @@ func (gui *Gui) getMenuPanel() *SideListPanel[*MenuItem] {
 		},
 		noItemsMessage: "",
 		gui:            gui.intoInterface(),
-		getSearchStrings: func(menuItem *MenuItem) []string {
-			return menuItem.LabelColumns
-		},
-		onClick: gui.onMenuPress,
-		sort:    nil,
+		onClick:        gui.onMenuPress,
+		sort:           nil,
 		getDisplayStrings: func(menuItem *MenuItem) []string {
 			return menuItem.LabelColumns
 		},

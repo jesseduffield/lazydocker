@@ -30,10 +30,6 @@ func (gui *Gui) getVolumesPanel() *SideListPanel[*commands.Volume] {
 				},
 			}
 		},
-		getSearchStrings: func(volume *commands.Volume) []string {
-			// TODO: think about more things to search on
-			return []string{volume.Name}
-		},
 		getContextCacheKey: func(volume *commands.Volume) string {
 			return volume.Name
 		},

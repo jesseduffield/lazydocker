@@ -54,9 +54,6 @@ func (gui *Gui) getProjectPanel() *SideListPanel[*commands.Project] {
 				},
 			}
 		},
-		getSearchStrings: func(project *commands.Project) []string {
-			return []string{project.Name}
-		},
 		getContextCacheKey: func(project *commands.Project) string {
 			return project.Name
 		},

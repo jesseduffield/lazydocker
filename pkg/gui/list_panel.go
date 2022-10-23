@@ -63,9 +63,6 @@ type SideListPanel[T comparable] struct {
 
 	gui IGui
 
-	// returns strings that can be filtered on
-	getSearchStrings func(item T) []string
-
 	// this filter is applied on top of additional default filters
 	filter func(T) bool
 	sort   func(a, b T) bool
@@ -244,7 +241,7 @@ func (self *SideListPanel[T]) FilterAndSort() {
 		}
 
 		if lo.SomeBy(self.gui.IgnoreStrings(), func(ignore string) bool {
-			return lo.SomeBy(self.getSearchStrings(item), func(searchString string) bool {
+			return lo.SomeBy(self.getDisplayStrings(item), func(searchString string) bool {
 				return strings.Contains(searchString, ignore)
 			})
 		}) {
@@ -252,7 +249,7 @@ func (self *SideListPanel[T]) FilterAndSort() {
 		}
 
 		if filterString != "" {
-			return lo.SomeBy(self.getSearchStrings(item), func(searchString string) bool {
+			return lo.SomeBy(self.getDisplayStrings(item), func(searchString string) bool {
 				return strings.Contains(searchString, filterString)
 			})
 		}

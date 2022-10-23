@@ -230,6 +230,11 @@ func (gui *Gui) FocusY(selectedY int, lineCount int, v *gocui.View) {
 	gui.focusY(selectedY, lineCount, v)
 }
 
+func (gui *Gui) ResetOrigin(v *gocui.View) {
+	_ = v.SetOrigin(0, 0)
+	_ = v.SetCursor(0, 0)
+}
+
 func (gui *Gui) cleanString(s string) string {
 	output := string(bom.Clean([]byte(s)))
 	return utils.NormalizeLinefeeds(output)

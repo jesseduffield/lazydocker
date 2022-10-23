@@ -52,10 +52,6 @@ func (gui *Gui) getServicesPanel() *SideListPanel[*commands.Service] {
 				},
 			}
 		},
-		getSearchStrings: func(service *commands.Service) []string {
-			// TODO: think about more things to search on
-			return []string{service.Name}
-		},
 		getContextCacheKey: func(service *commands.Service) string {
 			if service.Container == nil {
 				return service.ID

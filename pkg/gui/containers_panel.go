@@ -71,10 +71,6 @@ func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
 				},
 			}
 		},
-		getSearchStrings: func(container *commands.Container) []string {
-			// TODO: think about more things to search on
-			return []string{container.Name}
-		},
 		getContextCacheKey: func(container *commands.Container) string {
 			return container.ID + "-" + container.Container.State
 		},
