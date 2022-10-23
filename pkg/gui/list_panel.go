@@ -96,7 +96,6 @@ type IGui interface {
 	FocusY(selectedLine int, itemCount int, view *gocui.View)
 	ShouldRefresh(key string) bool
 	GetMainView() *gocui.View
-	PopupPanelFocused() bool
 	// TODO: replace with IsCurrentView() bool
 	CurrentView() *gocui.View
 	FilterString(view *gocui.View) string

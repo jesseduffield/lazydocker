@@ -35,7 +35,6 @@ type Container struct {
 	ProjectName     string
 	ID              string
 	Container       types.Container
-	DisplayString   string
 	Client          *client.Client
 	OSCommand       *OSCommand
 	Config          *config.AppConfig
@@ -138,11 +137,6 @@ func (c *Container) GetDisplayCPUPerc() string {
 	}
 
 	return utils.ColoredString(formattedPercentage, clr)
-}
-
-// ProducingLogs tells us whether we should bother checking a container's logs
-func (c *Container) ProducingLogs() bool {
-	return c.Container.State == "running" && c.DetailsLoaded() && c.Details.HostConfig.LogConfig.Type != "none"
 }
 
 // GetColor Container color

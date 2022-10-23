@@ -52,7 +52,15 @@ func (gui *Gui) getImagesPanel() *SideListPanel[*commands.Image] {
 				return true
 			}
 
-			return a.Name < b.Name
+			if a.Name != b.Name {
+				return a.Name < b.Name
+			}
+
+			if a.Tag != b.Tag {
+				return a.Tag < b.Tag
+			}
+
+			return a.ID < b.ID
 		},
 		getDisplayStrings: func(image *commands.Image) []string {
 			return []string{image.Name, image.Tag, utils.FormatDecimalBytes(int(image.Image.Size))}
