@@ -109,17 +109,12 @@ func (gui *Gui) refreshStateImages() error {
 	return nil
 }
 
-func (gui *Gui) filterString(view *gocui.View) string {
+func (gui *Gui) FilterString(view *gocui.View) string {
 	if gui.State.Filter.panel != nil && gui.State.Filter.panel.View() != view {
 		return ""
 	}
 
 	return gui.State.Filter.needle
-}
-
-// TODO: merge into the above
-func (gui *Gui) FilterString(view *gocui.View) string {
-	return gui.filterString(view)
 }
 
 func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {

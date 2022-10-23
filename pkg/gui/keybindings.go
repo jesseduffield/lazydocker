@@ -78,25 +78,25 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			ViewName: "",
 			Key:      gocui.KeyPgup,
 			Modifier: gocui.ModNone,
-			Handler:  gui.scrollUpMain,
+			Handler:  wrappedHandler(gui.scrollUpMain),
 		},
 		{
 			ViewName: "",
 			Key:      gocui.KeyPgdn,
 			Modifier: gocui.ModNone,
-			Handler:  gui.scrollDownMain,
+			Handler:  wrappedHandler(gui.scrollDownMain),
 		},
 		{
 			ViewName: "",
 			Key:      gocui.KeyCtrlU,
 			Modifier: gocui.ModNone,
-			Handler:  gui.scrollUpMain,
+			Handler:  wrappedHandler(gui.scrollUpMain),
 		},
 		{
 			ViewName: "",
 			Key:      gocui.KeyCtrlD,
 			Modifier: gocui.ModNone,
-			Handler:  gui.scrollDownMain,
+			Handler:  wrappedHandler(gui.scrollDownMain),
 		},
 		{
 			ViewName: "",
@@ -144,30 +144,10 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "project",
-			Key:         '[',
-			Modifier:    gocui.ModNone,
-			Handler:     wrappedHandler(gui.Panels.Projects.OnPrevContext),
-			Description: gui.Tr.PreviousContext,
-		},
-		{
-			ViewName:    "project",
-			Key:         ']',
-			Modifier:    gocui.ModNone,
-			Handler:     wrappedHandler(gui.Panels.Projects.OnNextContext),
-			Description: gui.Tr.NextContext,
-		},
-		{
-			ViewName:    "project",
 			Key:         'm',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleViewAllLogs,
 			Description: gui.Tr.ViewLogs,
-		},
-		{
-			ViewName: "project",
-			Key:      gocui.MouseLeft,
-			Modifier: gocui.ModNone,
-			Handler:  wrappedHandler(gui.Panels.Projects.OnClick),
 		},
 		{
 			ViewName: "menu",
@@ -204,20 +184,6 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Key:      gocui.MouseLeft,
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleDonate,
-		},
-		{
-			ViewName:    "containers",
-			Key:         '[',
-			Modifier:    gocui.ModNone,
-			Handler:     wrappedHandler(gui.Panels.Containers.OnPrevContext),
-			Description: gui.Tr.PreviousContext,
-		},
-		{
-			ViewName:    "containers",
-			Key:         ']',
-			Modifier:    gocui.ModNone,
-			Handler:     wrappedHandler(gui.Panels.Containers.OnNextContext),
-			Description: gui.Tr.NextContext,
 		},
 		{
 			ViewName:    "containers",
@@ -368,20 +334,6 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "services",
-			Key:         '[',
-			Modifier:    gocui.ModNone,
-			Handler:     wrappedHandler(gui.Panels.Services.OnPrevContext),
-			Description: gui.Tr.PreviousContext,
-		},
-		{
-			ViewName:    "services",
-			Key:         ']',
-			Modifier:    gocui.ModNone,
-			Handler:     wrappedHandler(gui.Panels.Services.OnNextContext),
-			Description: gui.Tr.NextContext,
-		},
-		{
-			ViewName:    "services",
 			Key:         'R',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceRestartMenu,
@@ -417,20 +369,6 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "images",
-			Key:         '[',
-			Modifier:    gocui.ModNone,
-			Handler:     wrappedHandler(gui.Panels.Images.OnPrevContext),
-			Description: gui.Tr.PreviousContext,
-		},
-		{
-			ViewName:    "images",
-			Key:         ']',
-			Modifier:    gocui.ModNone,
-			Handler:     wrappedHandler(gui.Panels.Images.OnNextContext),
-			Description: gui.Tr.NextContext,
-		},
-		{
-			ViewName:    "images",
 			Key:         'c',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleImagesCustomCommand,
@@ -449,20 +387,6 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleImagesBulkCommand,
 			Description: gui.Tr.ViewBulkCommands,
-		},
-		{
-			ViewName:    "volumes",
-			Key:         '[',
-			Modifier:    gocui.ModNone,
-			Handler:     wrappedHandler(gui.Panels.Volumes.OnPrevContext),
-			Description: gui.Tr.PreviousContext,
-		},
-		{
-			ViewName:    "volumes",
-			Key:         ']',
-			Modifier:    gocui.ModNone,
-			Handler:     wrappedHandler(gui.Panels.Volumes.OnNextContext),
-			Description: gui.Tr.NextContext,
 		},
 		{
 			ViewName:    "volumes",
@@ -532,13 +456,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			ViewName: "",
 			Key:      'J',
 			Modifier: gocui.ModNone,
-			Handler:  gui.scrollDownMain,
+			Handler:  wrappedHandler(gui.scrollDownMain),
 		},
 		{
 			ViewName: "",
 			Key:      'K',
 			Modifier: gocui.ModNone,
-			Handler:  gui.scrollUpMain,
+			Handler:  wrappedHandler(gui.scrollUpMain),
 		},
 		{
 			ViewName: "",
@@ -566,62 +490,69 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 	}
 
-	// TODO: add more views here
-	for _, viewName := range []string{"project", "services", "containers", "images", "volumes"} {
+	for _, panel := range gui.allSidePanels() {
 		bindings = append(bindings, []*Binding{
-			{ViewName: viewName, Key: gocui.KeyArrowLeft, Modifier: gocui.ModNone, Handler: gui.previousView},
-			{ViewName: viewName, Key: gocui.KeyArrowRight, Modifier: gocui.ModNone, Handler: gui.nextView},
-			{ViewName: viewName, Key: 'h', Modifier: gocui.ModNone, Handler: gui.previousView},
-			{ViewName: viewName, Key: 'l', Modifier: gocui.ModNone, Handler: gui.nextView},
-			{ViewName: viewName, Key: gocui.KeyTab, Modifier: gocui.ModNone, Handler: gui.nextView},
-			{ViewName: viewName, Key: gocui.KeyBacktab, Modifier: gocui.ModNone, Handler: gui.previousView},
+			{ViewName: panel.View().Name(), Key: gocui.KeyArrowLeft, Modifier: gocui.ModNone, Handler: gui.previousView},
+			{ViewName: panel.View().Name(), Key: gocui.KeyArrowRight, Modifier: gocui.ModNone, Handler: gui.nextView},
+			{ViewName: panel.View().Name(), Key: 'h', Modifier: gocui.ModNone, Handler: gui.previousView},
+			{ViewName: panel.View().Name(), Key: 'l', Modifier: gocui.ModNone, Handler: gui.nextView},
+			{ViewName: panel.View().Name(), Key: gocui.KeyTab, Modifier: gocui.ModNone, Handler: gui.nextView},
+			{ViewName: panel.View().Name(), Key: gocui.KeyBacktab, Modifier: gocui.ModNone, Handler: gui.previousView},
 		}...)
 	}
 
-	panelMap := map[string]struct {
-		onKeyUpPress   func(*gocui.Gui, *gocui.View) error
-		onKeyDownPress func(*gocui.Gui, *gocui.View) error
-		onClick        func(*gocui.Gui, *gocui.View) error
-	}{
-		"menu":       {onKeyUpPress: wrappedHandler(gui.Panels.Menu.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Menu.OnNextLine), onClick: wrappedHandler(gui.Panels.Menu.OnClick)},
-		"services":   {onKeyUpPress: wrappedHandler(gui.Panels.Services.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Services.OnNextLine), onClick: wrappedHandler(gui.Panels.Services.OnClick)},
-		"containers": {onKeyUpPress: wrappedHandler(gui.Panels.Containers.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Containers.OnNextLine), onClick: wrappedHandler(gui.Panels.Containers.OnClick)},
-		"images":     {onKeyUpPress: wrappedHandler(gui.Panels.Images.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Images.OnNextLine), onClick: wrappedHandler(gui.Panels.Images.OnClick)},
-		"volumes":    {onKeyUpPress: wrappedHandler(gui.Panels.Volumes.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Volumes.OnNextLine), onClick: wrappedHandler(gui.Panels.Volumes.OnClick)},
-		"main":       {onKeyUpPress: gui.scrollUpMain, onKeyDownPress: gui.scrollDownMain, onClick: gui.handleMainClick},
-	}
-
-	for viewName, functions := range panelMap {
+	setUpDownClickBindings := func(viewName string, onUp func() error, onDown func() error, onClick func() error) {
 		bindings = append(bindings, []*Binding{
-			{ViewName: viewName, Key: 'k', Modifier: gocui.ModNone, Handler: functions.onKeyUpPress},
-			{ViewName: viewName, Key: gocui.KeyArrowUp, Modifier: gocui.ModNone, Handler: functions.onKeyUpPress},
-			{ViewName: viewName, Key: gocui.MouseWheelUp, Modifier: gocui.ModNone, Handler: functions.onKeyUpPress},
-			{ViewName: viewName, Key: 'j', Modifier: gocui.ModNone, Handler: functions.onKeyDownPress},
-			{ViewName: viewName, Key: gocui.KeyArrowDown, Modifier: gocui.ModNone, Handler: functions.onKeyDownPress},
-			{ViewName: viewName, Key: gocui.MouseWheelDown, Modifier: gocui.ModNone, Handler: functions.onKeyDownPress},
-			{ViewName: viewName, Key: gocui.MouseLeft, Modifier: gocui.ModNone, Handler: functions.onClick},
+			{ViewName: viewName, Key: 'k', Modifier: gocui.ModNone, Handler: wrappedHandler(onUp)},
+			{ViewName: viewName, Key: gocui.KeyArrowUp, Modifier: gocui.ModNone, Handler: wrappedHandler(onUp)},
+			{ViewName: viewName, Key: gocui.MouseWheelUp, Modifier: gocui.ModNone, Handler: wrappedHandler(onUp)},
+			{ViewName: viewName, Key: 'j', Modifier: gocui.ModNone, Handler: wrappedHandler(onDown)},
+			{ViewName: viewName, Key: gocui.KeyArrowDown, Modifier: gocui.ModNone, Handler: wrappedHandler(onDown)},
+			{ViewName: viewName, Key: gocui.MouseWheelDown, Modifier: gocui.ModNone, Handler: wrappedHandler(onDown)},
+			{ViewName: viewName, Key: gocui.MouseLeft, Modifier: gocui.ModNone, Handler: wrappedHandler(onClick)},
 		}...)
-	}
-
-	for _, sidePanel := range gui.allSidePanels() {
-		bindings = append(bindings, &Binding{
-			ViewName:    sidePanel.View().Name(),
-			Key:         gocui.KeyEnter,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleEnterMain,
-			Description: gui.Tr.FocusMain,
-		})
 	}
 
 	for _, panel := range gui.allListPanels() {
+		setUpDownClickBindings(panel.View().Name(), panel.OnPrevLine, panel.OnNextLine, panel.OnClick)
+	}
+
+	setUpDownClickBindings("main", gui.scrollUpMain, gui.scrollDownMain, gui.handleMainClick)
+
+	for _, panel := range gui.allSidePanels() {
 		bindings = append(bindings,
 			&Binding{
 				ViewName:    panel.View().Name(),
-				Key:         '/',
+				Key:         gocui.KeyEnter,
 				Modifier:    gocui.ModNone,
-				Handler:     wrappedHandler(gui.handleOpenFilter),
-				Description: gui.Tr.LcFilter,
-			})
+				Handler:     gui.handleEnterMain,
+				Description: gui.Tr.FocusMain,
+			},
+			&Binding{
+				ViewName:    panel.View().Name(),
+				Key:         '[',
+				Modifier:    gocui.ModNone,
+				Handler:     wrappedHandler(panel.OnPrevContext),
+				Description: gui.Tr.PreviousContext,
+			},
+			&Binding{
+				ViewName:    panel.View().Name(),
+				Key:         ']',
+				Modifier:    gocui.ModNone,
+				Handler:     wrappedHandler(panel.OnNextContext),
+				Description: gui.Tr.NextContext,
+			},
+		)
+	}
+
+	for _, panel := range gui.allListPanels() {
+		bindings = append(bindings, &Binding{
+			ViewName:    panel.View().Name(),
+			Key:         '/',
+			Modifier:    gocui.ModNone,
+			Handler:     wrappedHandler(gui.handleOpenFilter),
+			Description: gui.Tr.LcFilter,
+		})
 	}
 
 	return bindings

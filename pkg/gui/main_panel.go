@@ -6,7 +6,7 @@ import (
 	"github.com/jesseduffield/gocui"
 )
 
-func (gui *Gui) scrollUpMain(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) scrollUpMain() error {
 	mainView := gui.Views.Main
 	mainView.Autoscroll = false
 	ox, oy := mainView.Origin()
@@ -14,7 +14,7 @@ func (gui *Gui) scrollUpMain(g *gocui.Gui, v *gocui.View) error {
 	return mainView.SetOrigin(ox, newOy)
 }
 
-func (gui *Gui) scrollDownMain(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) scrollDownMain() error {
 	mainView := gui.Views.Main
 	mainView.Autoscroll = false
 	ox, oy := mainView.Origin()
@@ -105,18 +105,16 @@ func (gui *Gui) handleExitMain(g *gocui.Gui, v *gocui.View) error {
 	return gui.returnFocus()
 }
 
-func (gui *Gui) handleMainClick(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleMainClick() error {
 	if gui.popupPanelFocused() {
 		return nil
 	}
 
 	currentView := gui.g.CurrentView()
 
-	if currentView != nil && currentView.Name() == "main" {
-		currentView = nil
-	} else {
-		v.ParentView = currentView
+	if currentView.Name() != "main" {
+		gui.Views.Main.ParentView = currentView
 	}
 
-	return gui.switchFocus(v)
+	return gui.switchFocus(gui.Views.Main)
 }

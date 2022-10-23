@@ -85,6 +85,11 @@ type ISideListPanel interface {
 	Refocus()
 	RerenderList() error
 	IsFilterDisabled() bool
+	OnNextLine() error
+	OnPrevLine() error
+	OnClick() error
+	OnPrevContext() error
+	OnNextContext() error
 }
 
 var _ ISideListPanel = &SideListPanel[int]{}

@@ -130,7 +130,6 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		Log:           log,
 		DockerCommand: dockerCommand,
 		OSCommand:     oSCommand,
-		// TODO: look into this warning
 		State:         initialState,
 		Config:        config,
 		Tr:            tr,
