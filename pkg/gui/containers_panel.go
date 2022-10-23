@@ -16,12 +16,6 @@ import (
 )
 
 func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
-	states := map[string]int{
-		"running": 1,
-		"exited":  2,
-		"created": 3,
-	}
-
 	// Standalone containers are containers which are either one-off containers, or whose service is not part of this docker-compose context.
 	isStandaloneContainer := func(container *commands.Container) bool {
 		if container.OneOff || container.ServiceName == "" {
@@ -77,17 +71,7 @@ func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
 		// sortedContainers returns containers sorted by state if c.SortContainersByState is true (follows 1- running, 2- exited, 3- created)
 		// and sorted by name if c.SortContainersByState is false
 		sort: func(a *commands.Container, b *commands.Container) bool {
-			if gui.Config.UserConfig.Gui.LegacySortContainers {
-				return a.Name < b.Name
-			}
-
-			stateLeft := states[a.Container.State]
-			stateRight := states[b.Container.State]
-			if stateLeft == stateRight {
-				return a.Name < b.Name
-			}
-
-			return states[a.Container.State] < states[b.Container.State]
+			return sortContainers(a, b, gui.Config.UserConfig.Gui.LegacySortContainers)
 		},
 		filter: func(container *commands.Container) bool {
 			// Note that this is O(N*M) time complexity where N is the number of services
@@ -116,6 +100,26 @@ func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
 			}
 		},
 	}
+}
+
+var containerStates = map[string]int{
+	"running": 1,
+	"exited":  2,
+	"created": 3,
+}
+
+func sortContainers(a *commands.Container, b *commands.Container, legacySort bool) bool {
+	if legacySort {
+		return a.Name < b.Name
+	}
+
+	stateLeft := containerStates[a.Container.State]
+	stateRight := containerStates[b.Container.State]
+	if stateLeft == stateRight {
+		return a.Name < b.Name
+	}
+
+	return containerStates[a.Container.State] < containerStates[b.Container.State]
 }
 
 func (gui *Gui) renderContainerEnv(container *commands.Container) error {
