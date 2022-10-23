@@ -22,6 +22,7 @@ require (
 	github.com/mgutz/str v1.2.0
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/samber/lo v1.31.0
+	github.com/sasha-s/go-deadlock v0.3.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spkg/bom v0.0.0-20160624110644-59b7046e48ad
 	github.com/stretchr/testify v1.8.0
@@ -47,6 +48,7 @@ require (
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
+	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.4.2 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect

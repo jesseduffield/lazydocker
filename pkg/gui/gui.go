@@ -2,8 +2,8 @@ package gui
 
 import (
 	"context"
+	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -16,6 +16,8 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
+	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 )
 
@@ -57,8 +59,8 @@ type Panels struct {
 }
 
 type Mutexes struct {
-	SubprocessMutex sync.Mutex
-	ViewStackMutex  sync.Mutex
+	SubprocessMutex deadlock.Mutex
+	ViewStackMutex  deadlock.Mutex
 }
 
 type mainPanelState struct {
@@ -139,6 +141,9 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 
 	gui.CyclableViews = gui.sideViewNames()
 
+	deadlock.Opts.Disable = !gui.Config.Debug
+	deadlock.Opts.DeadlockTimeout = 5 * time.Second
+
 	return gui, nil
 }
 
@@ -184,6 +189,12 @@ func (gui *Gui) Run() error {
 	}
 
 	gui.g = g // TODO: always use gui.g rather than passing g around everywhere
+
+	// if the deadlock package wants to report a deadlock, we first need to
+	// close the gui so that we can actually read what it prints.
+	deadlock.Opts.LogBuf = utils.NewOnceWriter(os.Stderr, func() {
+		gui.g.Close()
+	})
 
 	if err := gui.SetColorScheme(); err != nil {
 		return err

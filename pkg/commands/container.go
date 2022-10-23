@@ -7,10 +7,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/samber/lo"
+	"github.com/sasha-s/go-deadlock"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -45,7 +45,7 @@ type Container struct {
 	DockerCommand   LimitedDockerCommand
 	Tr              *i18n.TranslationSet
 
-	StatsMutex sync.Mutex
+	StatsMutex deadlock.Mutex
 }
 
 // TODO: move this stuff into a presentation layer

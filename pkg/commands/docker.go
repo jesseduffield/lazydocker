@@ -9,7 +9,6 @@ import (
 	ogLog "log"
 	"os/exec"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -19,6 +18,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,8 +35,8 @@ type DockerCommand struct {
 	Client                 *client.Client
 	InDockerComposeProject bool
 	ErrorChan              chan error
-	ContainerMutex         sync.Mutex
-	ServiceMutex           sync.Mutex
+	ContainerMutex         deadlock.Mutex
+	ServiceMutex           deadlock.Mutex
 
 	Closers []io.Closer
 }

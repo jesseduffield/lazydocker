@@ -2,17 +2,17 @@ package tasks
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
+	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 )
 
 type TaskManager struct {
 	currentTask  *Task
-	waitingMutex sync.Mutex
-	taskIDMutex  sync.Mutex
+	waitingMutex deadlock.Mutex
+	taskIDMutex  deadlock.Mutex
 	Log          *logrus.Entry
 	Tr           *i18n.TranslationSet
 	newTaskId    int
@@ -21,7 +21,7 @@ type TaskManager struct {
 type Task struct {
 	stop          chan struct{}
 	stopped       bool
-	stopMutex     sync.Mutex
+	stopMutex     deadlock.Mutex
 	notifyStopped chan struct{}
 	Log           *logrus.Entry
 	f             func(chan struct{})
