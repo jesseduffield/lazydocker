@@ -3,6 +3,7 @@ package utils
 import (
 	"testing"
 
+	"github.com/go-errors/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -173,166 +174,6 @@ func TestDisplayArraysAligned(t *testing.T) {
 	}
 }
 
-type myDisplayable struct {
-	strings []string
-}
-
-type myStruct struct{}
-
-// GetDisplayStrings is a function.
-func (d *myDisplayable) GetDisplayStrings(isFocused bool) []string {
-	if isFocused {
-		return append(d.strings, "blah")
-	}
-	return d.strings
-}
-
-// TestGetDisplayStringArrays is a function.
-func TestGetDisplayStringArrays(t *testing.T) {
-	type scenario struct {
-		input     []Displayable
-		isFocused bool
-		expected  [][]string
-	}
-
-	scenarios := []scenario{
-		{
-			[]Displayable{
-				Displayable(&myDisplayable{[]string{"a", "b"}}),
-				Displayable(&myDisplayable{[]string{"c", "d"}}),
-			},
-			false,
-			[][]string{{"a", "b"}, {"c", "d"}},
-		},
-		{
-			[]Displayable{
-				Displayable(&myDisplayable{[]string{"a", "b"}}),
-				Displayable(&myDisplayable{[]string{"c", "d"}}),
-			},
-			true,
-			[][]string{{"a", "b", "blah"}, {"c", "d", "blah"}},
-		},
-	}
-
-	for _, s := range scenarios {
-		assert.EqualValues(t, s.expected, getDisplayStringArrays(s.input, s.isFocused))
-	}
-}
-
-// TestRenderDisplayableList is a function.
-func TestRenderDisplayableList(t *testing.T) {
-	type scenario struct {
-		input                []Displayable
-		config               RenderListConfig
-		expectedString       string
-		expectedErrorMessage string
-	}
-
-	scenarios := []scenario{
-		{
-			[]Displayable{
-				Displayable(&myDisplayable{[]string{}}),
-				Displayable(&myDisplayable{[]string{}}),
-			},
-			RenderListConfig{},
-			"\n",
-			"",
-		},
-		{
-			[]Displayable{
-				Displayable(&myDisplayable{[]string{"aa", "b"}}),
-				Displayable(&myDisplayable{[]string{"c", "d"}}),
-			},
-			RenderListConfig{},
-			"aa b\nc  d",
-			"",
-		},
-		{
-			[]Displayable{
-				Displayable(&myDisplayable{[]string{"a"}}),
-				Displayable(&myDisplayable{[]string{"b", "c"}}),
-			},
-			RenderListConfig{},
-			"",
-			"Each item must return the same number of strings to display",
-		},
-		{
-			[]Displayable{
-				Displayable(&myDisplayable{[]string{"a"}}),
-				Displayable(&myDisplayable{[]string{"b"}}),
-			},
-			RenderListConfig{IsFocused: true},
-			"a blah\nb blah",
-			"",
-		},
-	}
-
-	for _, s := range scenarios {
-		str, err := renderDisplayableList(s.input, s.config)
-		assert.EqualValues(t, s.expectedString, str)
-		if s.expectedErrorMessage != "" {
-			assert.EqualError(t, err, s.expectedErrorMessage)
-		} else {
-			assert.NoError(t, err)
-		}
-	}
-}
-
-// TestRenderList is a function.
-func TestRenderList(t *testing.T) {
-	type scenario struct {
-		input                interface{}
-		options              []func(*RenderListConfig)
-		expectedString       string
-		expectedErrorMessage string
-	}
-
-	scenarios := []scenario{
-		{
-			[]*myDisplayable{
-				{[]string{"aa", "b"}},
-				{[]string{"c", "d"}},
-			},
-			nil,
-			"aa b\nc  d",
-			"",
-		},
-		{
-			[]*myStruct{
-				{},
-				{},
-			},
-			nil,
-			"",
-			"item does not implement the Displayable interface",
-		},
-		{
-			&myStruct{},
-			nil,
-			"",
-			"RenderList given a non-slice type",
-		},
-		{
-			[]*myDisplayable{
-				{[]string{"a"}},
-			},
-			[]func(*RenderListConfig){IsFocused(true)},
-			"a blah",
-			"",
-		},
-	}
-
-	for _, s := range scenarios {
-		str, err := RenderList(s.input, s.options...)
-		assert.EqualValues(t, s.expectedString, str)
-		if s.expectedErrorMessage != "" {
-			assert.EqualError(t, err, s.expectedErrorMessage)
-		} else {
-			assert.NoError(t, err)
-		}
-	}
-}
-
 // TestGetPaddedDisplayStrings is a function.
 func TestGetPaddedDisplayStrings(t *testing.T) {
 	type scenario struct {
@@ -378,5 +219,41 @@ func TestGetPadWidths(t *testing.T) {
 
 	for _, s := range scenarios {
 		assert.EqualValues(t, s.expected, getPadWidths(s.stringArrays))
+	}
+}
+
+func TestRenderTable(t *testing.T) {
+	type scenario struct {
+		input       [][]string
+		expected    string
+		expectedErr error
+	}
+
+	scenarios := []scenario{
+		{
+			input:       [][]string{{"a", "b"}, {"c", "d"}},
+			expected:    "a b\nc d",
+			expectedErr: nil,
+		},
+		{
+			input:       [][]string{{"aaaa", "b"}, {"c", "d"}},
+			expected:    "aaaa b\nc    d",
+			expectedErr: nil,
+		},
+		{
+			input:       [][]string{{"a"}, {"c", "d"}},
+			expected:    "",
+			expectedErr: errors.New("Each item must return the same number of strings to display"),
+		},
+	}
+
+	for _, s := range scenarios {
+		output, err := RenderTable(s.input)
+		assert.EqualValues(t, s.expected, output)
+		if s.expectedErr != nil {
+			assert.EqualError(t, err, s.expectedErr.Error())
+		} else {
+			assert.NoError(t, err)
+		}
 	}
 }

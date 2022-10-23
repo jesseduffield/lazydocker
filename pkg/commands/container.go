@@ -49,14 +49,9 @@ type Container struct {
 	StatsMutex sync.Mutex
 }
 
-// GetDisplayStrings returns the dispaly string of Container
-func (c *Container) GetDisplayStrings(isFocused bool) []string {
-	image := strings.TrimPrefix(c.Container.Image, "sha256:")
+// TODO: move this stuff into a presentation layer
 
-	return []string{c.GetDisplayStatus(), c.GetDisplaySubstatus(), c.Name, c.GetDisplayCPUPerc(), utils.ColoredString(image, color.FgMagenta), c.displayPorts()}
-}
-
-func (c *Container) displayPorts() string {
+func (c *Container) DisplayPorts() string {
 	portStrings := lo.Map(c.Container.Ports, func(port types.Port, _ int) string {
 		if port.PublicPort == 0 {
 			return fmt.Sprintf("%d/%s", port.PrivatePort, port.Type)

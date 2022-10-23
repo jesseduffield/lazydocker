@@ -19,11 +19,6 @@ type Volume struct {
 	DockerCommand LimitedDockerCommand
 }
 
-// GetDisplayStrings returns the dispaly string of Container
-func (v *Volume) GetDisplayStrings(isFocused bool) []string {
-	return []string{v.Volume.Driver, v.Name}
-}
-
 // RefreshVolumes gets the volumes and stores them
 func (c *DockerCommand) RefreshVolumes() ([]*Volume, error) {
 	result, err := c.Client.VolumeList(context.Background(), filters.Args{})

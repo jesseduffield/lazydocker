@@ -71,14 +71,12 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 		return nil
 	}
 
-	currentSidePanel, ok := gui.currentSidePanel()
+	currentListPanel, ok := gui.currentListPanel()
 	if ok {
-		return currentSidePanel.HandleSelect()
+		return currentListPanel.HandleSelect()
 	}
 
 	switch v.Name() {
-	case "menu":
-		return gui.handleMenuSelect(gui.g, v)
 	case "confirmation":
 		return nil
 	case "main":
@@ -136,7 +134,7 @@ func (gui *Gui) returnFocus() error {
 func (gui *Gui) pushView(name string) {
 	// No matter what view we're pushing, we first remove all popup panels from the stack
 	gui.State.ViewStack = lo.Filter(gui.State.ViewStack, func(viewName string, _ int) bool {
-		return viewName != "confirmation" && viewName != "menu"
+		return !gui.isPopupPanel(viewName)
 	})
 
 	// If we're pushing a side panel, we remove all other panels
@@ -296,31 +294,6 @@ func (gui *Gui) renderOptionsMap(optionsMap map[string]string) error {
 	return gui.renderString(gui.g, "options", gui.optionsMapToString(optionsMap))
 }
 
-func (gui *Gui) getProjectView() *gocui.View {
-	v, _ := gui.g.View("project")
-	return v
-}
-
-func (gui *Gui) getServicesView() *gocui.View {
-	v, _ := gui.g.View("services")
-	return v
-}
-
-func (gui *Gui) getContainersView() *gocui.View {
-	v, _ := gui.g.View("containers")
-	return v
-}
-
-func (gui *Gui) getImagesView() *gocui.View {
-	v, _ := gui.g.View("images")
-	return v
-}
-
-func (gui *Gui) getVolumesView() *gocui.View {
-	v, _ := gui.g.View("volumes")
-	return v
-}
-
 func (gui *Gui) getMainView() *gocui.View {
 	return gui.Views.Main
 }
@@ -391,7 +364,7 @@ func (gui *Gui) renderPanelOptions() error {
 }
 
 func (gui *Gui) isPopupPanel(viewName string) bool {
-	return viewName == "confirmation" || viewName == "menu"
+	return lo.Contains(gui.popupViewNames(), viewName)
 }
 
 func (gui *Gui) popupPanelFocused() bool {
@@ -500,7 +473,7 @@ func (gui *Gui) CurrentView() *gocui.View {
 func (gui *Gui) currentSidePanel() (ISideListPanel, bool) {
 	viewName := gui.currentViewName()
 
-	for _, sidePanel := range gui.allSidepanels() {
+	for _, sidePanel := range gui.allSidePanels() {
 		if sidePanel.View().Name() == viewName {
 			return sidePanel, true
 		}
@@ -509,7 +482,19 @@ func (gui *Gui) currentSidePanel() (ISideListPanel, bool) {
 	return nil, false
 }
 
-func (gui *Gui) allSidepanels() []ISideListPanel {
+func (gui *Gui) currentListPanel() (ISideListPanel, bool) {
+	viewName := gui.currentViewName()
+
+	for _, sidePanel := range gui.allListPanels() {
+		if sidePanel.View().Name() == viewName {
+			return sidePanel, true
+		}
+	}
+
+	return nil, false
+}
+
+func (gui *Gui) allSidePanels() []ISideListPanel {
 	return []ISideListPanel{
 		gui.Panels.Projects,
 		gui.Panels.Services,
@@ -517,4 +502,8 @@ func (gui *Gui) allSidepanels() []ISideListPanel {
 		gui.Panels.Images,
 		gui.Panels.Volumes,
 	}
+}
+
+func (gui *Gui) allListPanels() []ISideListPanel {
+	return append(gui.allSidePanels(), gui.Panels.Menu)
 }

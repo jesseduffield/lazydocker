@@ -6,7 +6,6 @@ import (
 	"github.com/docker/docker/api/types/container"
 
 	"github.com/docker/docker/api/types"
-	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -19,16 +18,6 @@ type Service struct {
 	Log           *logrus.Entry
 	Container     *Container
 	DockerCommand LimitedDockerCommand
-}
-
-// GetDisplayStrings returns the dispaly string of Container
-func (s *Service) GetDisplayStrings(isFocused bool) []string {
-	if s.Container == nil {
-		return []string{utils.ColoredString("none", color.FgBlue), "", s.Name, "", ""}
-	}
-
-	cont := s.Container
-	return []string{cont.GetDisplayStatus(), cont.GetDisplaySubstatus(), s.Name, cont.GetDisplayCPUPerc(), utils.ColoredString(cont.displayPorts(), color.FgYellow)}
 }
 
 // Remove removes the service's containers

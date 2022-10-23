@@ -115,33 +115,14 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	return gui.resizeCurrentPopupPanel(g)
 }
 
-type listViewState struct {
-	selectedLine int
-	lineCount    int
-}
-
 func (gui *Gui) focusPointInView(view *gocui.View) {
 	if view == nil {
 		return
 	}
 
-	listViews := map[string]listViewState{
-		"menu": {selectedLine: gui.State.Panels.Menu.SelectedLine, lineCount: gui.State.MenuItemCount},
-	}
-
-	if state, ok := listViews[view.Name()]; ok {
-		gui.focusY(state.selectedLine, state.lineCount, view)
-	}
-
-	switch view.Name() {
-	case "images":
-		gui.Panels.Images.Refocus()
-	case "services":
-		gui.Panels.Services.Refocus()
-	case "volumes":
-		gui.Panels.Volumes.Refocus()
-	case "containers":
-		gui.Panels.Containers.Refocus()
+	currentPanel, ok := gui.currentListPanel()
+	if ok {
+		currentPanel.Refocus()
 	}
 }
 

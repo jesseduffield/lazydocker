@@ -53,20 +53,12 @@ type Panels struct {
 	Containers *SideListPanel[*commands.Container]
 	Images     *SideListPanel[*commands.Image]
 	Volumes    *SideListPanel[*commands.Volume]
+	Menu       *SideListPanel[*MenuItem]
 }
 
 type Mutexes struct {
 	SubprocessMutex sync.Mutex
 	ViewStackMutex  sync.Mutex
-}
-
-type projectState struct {
-	ContextIndex int // for specifying if you are looking at credits/logs
-}
-
-type menuPanelState struct {
-	SelectedLine int
-	OnPress      func(*gocui.Gui, *gocui.View) error
 }
 
 type mainPanelState struct {
@@ -75,13 +67,10 @@ type mainPanelState struct {
 }
 
 type panelStates struct {
-	Menu    *menuPanelState
-	Main    *mainPanelState
-	Project *projectState
+	Main *mainPanelState
 }
 
 type guiState struct {
-	MenuItemCount int // can't store the actual list because it's of interface{} type
 	// the names of views in the current focus stack (last item is the current view)
 	ViewStack        []string
 	Platform         commands.Platform
@@ -95,16 +84,6 @@ type guiState struct {
 	ScreenMode WindowMaximisation
 
 	Searching searchingState
-
-	Lists Lists
-}
-
-// these are the items we display, after filtering is applied.
-type Lists struct {
-	Containers *FilteredList[*commands.Container]
-	Services   *FilteredList[*commands.Service]
-	Images     *FilteredList[*commands.Image]
-	Volumes    *FilteredList[*commands.Volume]
 }
 
 type searchingState struct {
@@ -130,25 +109,13 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 	initialState := guiState{
 		Platform: *oSCommand.Platform,
 		Panels: &panelStates{
-			Menu: &menuPanelState{SelectedLine: 0},
 			Main: &mainPanelState{
 				ObjectKey: "",
 			},
-			Project: &projectState{ContextIndex: 0},
 		},
 		ViewStack: []string{},
-		Lists: Lists{
-			Containers: NewFilteredList[*commands.Container](),
-			Services:   NewFilteredList[*commands.Service](),
-			Images:     NewFilteredList[*commands.Image](),
-			Volumes:    NewFilteredList[*commands.Volume](),
-		},
-		ShowExitedContainers: true,
-	}
 
-	cyclableViews := []string{"project", "containers", "images", "volumes"}
-	if dockerCommand.InDockerComposeProject {
-		cyclableViews = []string{"project", "services", "containers", "images", "volumes"}
+		ShowExitedContainers: true,
 	}
 
 	gui := &Gui{
@@ -162,8 +129,9 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		statusManager: &statusManager{},
 		T:             tasks.NewTaskManager(log, tr),
 		ErrorChan:     errorChan,
-		CyclableViews: cyclableViews,
 	}
+
+	gui.CyclableViews = gui.sideViewNames()
 
 	return gui, nil
 }
@@ -245,6 +213,7 @@ func (gui *Gui) Run() error {
 		Containers: gui.getContainersPanel(),
 		Images:     gui.getImagesPanel(),
 		Volumes:    gui.getVolumesPanel(),
+		Menu:       gui.getMenuPanel(),
 	}
 
 	if err = gui.keybindings(g); err != nil {

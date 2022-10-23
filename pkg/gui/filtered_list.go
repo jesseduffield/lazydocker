@@ -44,6 +44,10 @@ func (self *FilteredList[T]) Sort(less func(T, T) bool) {
 	self.mutex.Lock()
 	defer self.mutex.Unlock()
 
+	if less == nil {
+		return
+	}
+
 	sort.Slice(self.indices, func(i, j int) bool {
 		return less(self.allItems[self.indices[i]], self.allItems[self.indices[j]])
 	})

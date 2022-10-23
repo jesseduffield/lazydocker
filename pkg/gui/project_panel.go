@@ -22,9 +22,9 @@ func (gui *Gui) getProjectPanel() *SideListPanel[*commands.Project] {
 			list: NewFilteredList[*commands.Project](),
 			view: gui.Views.Project,
 		},
-		contextIdx:    0,
-		noItemsMessge: "no projects", // we don't expect to ever actually see this
-		gui:           gui.intoInterface(),
+		contextIdx:     0,
+		noItemsMessage: "",
+		gui:            gui.intoInterface(),
 		getContexts: func() []ContextConfig[*commands.Project] {
 			if gui.DockerCommand.InDockerComposeProject {
 				return []ContextConfig[*commands.Project]{
@@ -62,6 +62,9 @@ func (gui *Gui) getProjectPanel() *SideListPanel[*commands.Project] {
 		},
 		sort: func(a *commands.Project, b *commands.Project) bool {
 			return false
+		},
+		getDisplayStrings: func(project *commands.Project) []string {
+			return []string{project.Name}
 		},
 	}
 }

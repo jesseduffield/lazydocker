@@ -8,6 +8,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/samber/lo"
 )
 
 func (gui *Gui) getVolumesPanel() *SideListPanel[*commands.Volume] {
@@ -17,9 +18,9 @@ func (gui *Gui) getVolumesPanel() *SideListPanel[*commands.Volume] {
 			list: NewFilteredList[*commands.Volume](),
 			view: gui.Views.Volumes,
 		},
-		contextIdx:    0,
-		noItemsMessge: gui.Tr.NoVolumes,
-		gui:           gui.intoInterface(),
+		contextIdx:     0,
+		noItemsMessage: gui.Tr.NoVolumes,
+		gui:            gui.intoInterface(),
 		getContexts: func() []ContextConfig[*commands.Volume] {
 			return []ContextConfig[*commands.Volume]{
 				{
@@ -47,6 +48,9 @@ func (gui *Gui) getVolumesPanel() *SideListPanel[*commands.Volume] {
 				return true
 			}
 			return a.Name < b.Name
+		},
+		getDisplayStrings: func(volume *commands.Volume) []string {
+			return []string{volume.Volume.Driver, volume.Name}
 		},
 	}
 }
@@ -104,22 +108,16 @@ func (gui *Gui) refreshStateVolumes() error {
 	return nil
 }
 
-type removeVolumeOption struct {
-	description string
-	command     string
-	force       bool
-	runCommand  bool
-}
-
-// GetDisplayStrings is a function.
-func (r *removeVolumeOption) GetDisplayStrings(isFocused bool) []string {
-	return []string{r.description, color.New(color.FgRed).Sprint(r.command)}
-}
-
 func (gui *Gui) handleVolumesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	volume, err := gui.Panels.Volumes.GetSelectedItem()
 	if err != nil {
 		return nil
+	}
+
+	type removeVolumeOption struct {
+		description string
+		command     string
+		force       bool
 	}
 
 	options := []*removeVolumeOption{
@@ -127,33 +125,32 @@ func (gui *Gui) handleVolumesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 			description: gui.Tr.Remove,
 			command:     utils.WithShortSha("docker volume rm " + volume.Name),
 			force:       false,
-			runCommand:  true,
 		},
 		{
 			description: gui.Tr.ForceRemove,
 			command:     utils.WithShortSha("docker volume rm --force " + volume.Name),
 			force:       true,
-			runCommand:  true,
-		},
-		{
-			description: gui.Tr.Cancel,
-			runCommand:  false,
 		},
 	}
 
-	handleMenuPress := func(index int) error {
-		if !options[index].runCommand {
-			return nil
+	menuItems := lo.Map(options, func(option *removeVolumeOption, _ int) *MenuItem {
+		return &MenuItem{
+			LabelColumns: []string{option.description, color.New(color.FgRed).Sprint(option.command)},
+			OnPress: func() error {
+				return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
+					if err := volume.Remove(option.force); err != nil {
+						return gui.createErrorPanel(err.Error())
+					}
+					return nil
+				})
+			},
 		}
-		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
-			if cerr := volume.Remove(options[index].force); cerr != nil {
-				return gui.createErrorPanel(cerr.Error())
-			}
-			return nil
-		})
-	}
+	})
 
-	return gui.createMenu("", options, len(options), handleMenuPress)
+	return gui.Menu(CreateMenuOptions{
+		Title: "",
+		Items: menuItems,
+	})
 }
 
 func (gui *Gui) handlePruneVolumes() error {

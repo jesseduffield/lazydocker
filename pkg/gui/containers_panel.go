@@ -39,9 +39,9 @@ func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
 			list: NewFilteredList[*commands.Container](),
 			view: gui.Views.Containers,
 		},
-		contextIdx:    0,
-		noItemsMessge: gui.Tr.NoContainers,
-		gui:           gui.intoInterface(),
+		contextIdx:     0,
+		noItemsMessage: gui.Tr.NoContainers,
+		gui:            gui.intoInterface(),
 		getContexts: func() []ContextConfig[*commands.Container] {
 			return []ContextConfig[*commands.Container]{
 				{
@@ -106,6 +106,18 @@ func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
 			}
 
 			return true
+		},
+		getDisplayStrings: func(container *commands.Container) []string {
+			image := strings.TrimPrefix(container.Container.Image, "sha256:")
+
+			return []string{
+				container.GetDisplayStatus(),
+				container.GetDisplaySubstatus(),
+				container.Name,
+				container.GetDisplayCPUPerc(),
+				utils.ColoredString(image, color.FgMagenta),
+				container.DisplayPorts(),
+			}
 		},
 	}
 }
@@ -243,8 +255,7 @@ func (gui *Gui) renderContainerTop(container *commands.Container) error {
 }
 
 func (gui *Gui) refreshContainersAndServices() error {
-	containersView := gui.getContainersView()
-	if containersView == nil {
+	if gui.Views.Containers == nil {
 		// if the containersView hasn't been instantiated yet we just return
 		return nil
 	}
@@ -300,11 +311,6 @@ type removeContainerOption struct {
 	configOptions types.ContainerRemoveOptions
 }
 
-// GetDisplayStrings is a function.
-func (r *removeContainerOption) GetDisplayStrings(isFocused bool) []string {
-	return []string{r.description, color.New(color.FgRed).Sprint(r.command)}
-}
-
 func (gui *Gui) handleHideStoppedContainers(g *gocui.Gui, v *gocui.View) error {
 	gui.State.ShowExitedContainers = !gui.State.ShowExitedContainers
 
@@ -317,28 +323,7 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	options := []*removeContainerOption{
-		{
-			description:   gui.Tr.Remove,
-			command:       "docker rm " + container.ID[1:10],
-			configOptions: types.ContainerRemoveOptions{},
-		},
-		{
-			description:   gui.Tr.RemoveWithVolumes,
-			command:       "docker rm --volumes " + container.ID[1:10],
-			configOptions: types.ContainerRemoveOptions{RemoveVolumes: true},
-		},
-		{
-			description: gui.Tr.Cancel,
-		},
-	}
-
-	handleMenuPress := func(index int) error {
-		if options[index].command == "" {
-			return nil
-		}
-		configOptions := options[index].configOptions
-
+	handleMenuPress := func(configOptions types.ContainerRemoveOptions) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 			if err := container.Remove(configOptions); err != nil {
 				if commands.HasErrorCode(err, commands.MustStopContainer) {
@@ -355,7 +340,21 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		})
 	}
 
-	return gui.createMenu("", options, len(options), handleMenuPress)
+	menuItems := []*MenuItem{
+		{
+			LabelColumns: []string{gui.Tr.Remove, "docker rm " + container.ID[1:10]},
+			OnPress:      func() error { return handleMenuPress(types.ContainerRemoveOptions{}) },
+		},
+		{
+			LabelColumns: []string{gui.Tr.RemoveWithVolumes, "docker rm --volumes " + container.ID[1:10]},
+			OnPress:      func() error { return handleMenuPress(types.ContainerRemoveOptions{RemoveVolumes: true}) },
+		},
+	}
+
+	return gui.Menu(CreateMenuOptions{
+		Title: "",
+		Items: menuItems,
+	})
 }
 
 func (gui *Gui) PauseContainer(container *commands.Container) error {

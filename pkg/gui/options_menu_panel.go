@@ -1,7 +1,7 @@
 package gui
 
 import (
-	"github.com/go-errors/errors"
+	"github.com/samber/lo"
 
 	"github.com/jesseduffield/gocui"
 )
@@ -51,22 +51,26 @@ func (gui *Gui) getBindings(v *gocui.View) []*Binding {
 }
 
 func (gui *Gui) handleCreateOptionsMenu(g *gocui.Gui, v *gocui.View) error {
-	if v.Name() == "menu" || v.Name() == "confirmation" {
+	if gui.isPopupPanel(v.Name()) {
 		return nil
 	}
 
-	bindings := gui.getBindings(v)
+	menuItems := lo.Map(gui.getBindings(v), func(binding *Binding, _ int) *MenuItem {
+		return &MenuItem{
+			LabelColumns: []string{binding.GetKey(), binding.Description},
+			OnPress: func() error {
+				if binding.Key == nil {
+					return nil
+				}
 
-	handleMenuPress := func(index int) error {
-		if bindings[index].Key == nil {
-			return nil
+				return binding.Handler(g, v)
+			},
 		}
-		if index >= len(bindings) {
-			return errors.New("Index is greater than size of bindings")
-		}
+	})
 
-		return bindings[index].Handler(g, v)
-	}
-
-	return gui.createMenu(gui.Tr.MenuTitle, bindings, len(bindings), handleMenuPress)
+	return gui.Menu(CreateMenuOptions{
+		Title:      gui.Tr.MenuTitle,
+		Items:      menuItems,
+		HideCancel: true,
+	})
 }

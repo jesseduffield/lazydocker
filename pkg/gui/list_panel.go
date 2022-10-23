@@ -57,7 +57,9 @@ type SideListPanel[T comparable] struct {
 
 	ListPanel[T]
 
-	noItemsMessge string
+	// message to render in the main view if there are no items in the panel
+	// and it has focus. Leave empty if you don't want to render anything
+	noItemsMessage string
 
 	gui IGui
 
@@ -67,12 +69,17 @@ type SideListPanel[T comparable] struct {
 	// this filter is applied on top of additional default filters
 	filter func(T) bool
 	sort   func(a, b T) bool
+
+	onClick func(T) error
+
+	getDisplayStrings func(T) []string
 }
 
 type ISideListPanel interface {
 	SetContextIndex(int)
 	HandleSelect() error
 	View() *gocui.View
+	Refocus()
 }
 
 var _ ISideListPanel = &SideListPanel[int]{}
@@ -106,7 +113,18 @@ func (self *SideListPanel[T]) OnClick() error {
 	handleSelect := self.HandleSelect
 	selectedLine := &self.selectedIdx
 
-	return self.gui.HandleClick(self.view, itemCount, selectedLine, handleSelect)
+	if err := self.gui.HandleClick(self.view, itemCount, selectedLine, handleSelect); err != nil {
+		return err
+	}
+
+	if self.onClick != nil {
+		selectedItem, err := self.GetSelectedItem()
+		if err == nil {
+			return self.onClick(selectedItem)
+		}
+	}
+
+	return nil
 }
 
 func (self *SideListPanel[T]) View() *gocui.View {
@@ -116,16 +134,28 @@ func (self *SideListPanel[T]) View() *gocui.View {
 func (self *SideListPanel[T]) HandleSelect() error {
 	item, err := self.GetSelectedItem()
 	if err != nil {
-		if err.Error() != self.noItemsMessge {
+		if err.Error() != self.noItemsMessage {
 			return err
 		}
 
-		return self.gui.RenderStringMain(self.noItemsMessge)
+		if self.noItemsMessage != "" {
+			return self.gui.RenderStringMain(self.noItemsMessage)
+		}
+
+		return nil
 	}
 
 	self.Refocus()
 
+	return self.renderContext(item)
+}
+
+func (self *SideListPanel[T]) renderContext(item T) error {
 	contexts := self.getContexts()
+
+	if len(contexts) == 0 {
+		return nil
+	}
 
 	key := self.contextKeyPrefix + "-" + self.getContextCacheKey(item) + "-" + contexts[self.contextIdx].key
 	if !self.gui.ShouldRefresh(key) {
@@ -136,7 +166,6 @@ func (self *SideListPanel[T]) HandleSelect() error {
 	mainView.Tabs = self.GetContextTitles()
 	mainView.TabIndex = self.contextIdx
 
-	// now I have an item. What do I do with it?
 	return contexts[self.contextIdx].render(item)
 }
 
@@ -152,34 +181,22 @@ func (self *SideListPanel[T]) GetSelectedItem() (T, error) {
 	item, ok := self.list.TryGet(self.selectedIdx)
 	if !ok {
 		// could probably have a better error here
-		return zero, errors.New(self.noItemsMessge)
+		return zero, errors.New(self.noItemsMessage)
 	}
 
 	return item, nil
 }
 
 func (self *SideListPanel[T]) OnNextLine() error {
-	if self.ignoreKeypress() {
-		return nil
-	}
-
 	self.SelectNextLine()
 
 	return self.HandleSelect()
 }
 
 func (self *SideListPanel[T]) OnPrevLine() error {
-	if self.ignoreKeypress() {
-		return nil
-	}
-
 	self.SelectPrevLine()
 
 	return self.HandleSelect()
-}
-
-func (self *SideListPanel[T]) ignoreKeypress() bool {
-	return self.gui.PopupPanelFocused() || self.gui.CurrentView() != self.view
 }
 
 func (self *SideListPanel[T]) OnNextContext() error {
@@ -250,12 +267,14 @@ func (self *SideListPanel[T]) RerenderList() error {
 
 	self.gui.Update(func() error {
 		self.view.Clear()
-		isFocused := self.gui.CurrentView() == self.view
-		list, err := utils.RenderList(self.list.GetItems(), utils.IsFocused(isFocused))
+		table := lo.Map(self.list.GetItems(), func(item T, index int) []string {
+			return self.getDisplayStrings(item)
+		})
+		renderedTable, err := utils.RenderTable(table)
 		if err != nil {
 			return err
 		}
-		fmt.Fprint(self.view, list)
+		fmt.Fprint(self.view, renderedTable)
 
 		if self.view == self.gui.CurrentView() {
 			return self.HandleSelect()

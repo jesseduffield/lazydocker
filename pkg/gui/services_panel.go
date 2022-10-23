@@ -9,6 +9,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/samber/lo"
 )
 
 func (gui *Gui) getServicesPanel() *SideListPanel[*commands.Service] {
@@ -20,8 +21,8 @@ func (gui *Gui) getServicesPanel() *SideListPanel[*commands.Service] {
 		},
 		contextIdx: 0,
 		// TODO: i18n
-		noItemsMessge: "no service selected",
-		gui:           gui.intoInterface(),
+		noItemsMessage: "no service selected",
+		gui:            gui.intoInterface(),
 		getContexts: func() []ContextConfig[*commands.Service] {
 			return []ContextConfig[*commands.Service]{
 				{
@@ -72,6 +73,26 @@ func (gui *Gui) getServicesPanel() *SideListPanel[*commands.Service] {
 			}
 
 			return a.Name < b.Name
+		},
+		getDisplayStrings: func(service *commands.Service) []string {
+			if service.Container == nil {
+				return []string{
+					utils.ColoredString("none", color.FgBlue),
+					"",
+					service.Name,
+					"",
+					"",
+				}
+			}
+
+			cont := service.Container
+			return []string{
+				cont.GetDisplayStatus(),
+				cont.GetDisplaySubstatus(),
+				service.Name,
+				cont.GetDisplayCPUPerc(),
+				utils.ColoredString(cont.DisplayPorts(), color.FgYellow),
+			}
 		},
 	}
 }
@@ -128,11 +149,10 @@ func (gui *Gui) renderServiceLogs(service *commands.Service) error {
 type commandOption struct {
 	description string
 	command     string
-	f           func() error
+	onPress     func() error
 }
 
-// GetDisplayStrings is a function.
-func (r *commandOption) GetDisplayStrings(isFocused bool) []string {
+func (r *commandOption) getDisplayStrings() []string {
 	return []string{r.description, color.New(color.FgCyan).Sprint(r.command)}
 }
 
@@ -153,12 +173,27 @@ func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 			description: gui.Tr.RemoveWithVolumes,
 			command:     fmt.Sprintf("%s rm --stop --force -v %s", composeCommand, service.Name),
 		},
-		{
-			description: gui.Tr.Cancel,
-		},
 	}
 
-	return gui.createServiceCommandMenu(options, gui.Tr.RemovingStatus)
+	menuItems := lo.Map(options, func(option *commandOption, _ int) *MenuItem {
+		return &MenuItem{
+			LabelColumns: option.getDisplayStrings(),
+			OnPress: func() error {
+				return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
+					if err := gui.OSCommand.RunCommand(option.command); err != nil {
+						return gui.createErrorPanel(err.Error())
+					}
+
+					return nil
+				})
+			},
+		}
+	})
+
+	return gui.Menu(CreateMenuOptions{
+		Title: "",
+		Items: menuItems,
+	})
 }
 
 func (gui *Gui) handleServicePause(g *gocui.Gui, v *gocui.View) error {
@@ -298,7 +333,7 @@ func (gui *Gui) handleProjectDown(g *gocui.Gui, v *gocui.View) error {
 		{
 			description: gui.Tr.Down,
 			command:     downCommand,
-			f: func() error {
+			onPress: func() error {
 				return gui.WithWaitingStatus(gui.Tr.DowningStatus, func() error {
 					if err := gui.OSCommand.RunCommand(downCommand); err != nil {
 						return gui.createErrorPanel(err.Error())
@@ -310,7 +345,7 @@ func (gui *Gui) handleProjectDown(g *gocui.Gui, v *gocui.View) error {
 		{
 			description: gui.Tr.DownWithVolumes,
 			command:     downWithVolumesCommand,
-			f: func() error {
+			onPress: func() error {
 				return gui.WithWaitingStatus(gui.Tr.DowningStatus, func() error {
 					if err := gui.OSCommand.RunCommand(downWithVolumesCommand); err != nil {
 						return gui.createErrorPanel(err.Error())
@@ -319,15 +354,19 @@ func (gui *Gui) handleProjectDown(g *gocui.Gui, v *gocui.View) error {
 				})
 			},
 		},
-		{
-			description: gui.Tr.Cancel,
-			f:           func() error { return nil },
-		},
 	}
 
-	handleMenuPress := func(index int) error { return options[index].f() }
+	menuItems := lo.Map(options, func(option *commandOption, _ int) *MenuItem {
+		return &MenuItem{
+			LabelColumns: option.getDisplayStrings(),
+			OnPress:      option.onPress,
+		}
+	})
 
-	return gui.createMenu("", options, len(options), handleMenuPress)
+	return gui.Menu(CreateMenuOptions{
+		Title: "",
+		Items: menuItems,
+	})
 }
 
 func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
@@ -353,7 +392,7 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 				gui.Config.UserConfig.CommandTemplates.RestartService,
 				gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
 			),
-			f: func() error {
+			onPress: func() error {
 				return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
 					if err := service.Restart(); err != nil {
 						return gui.createErrorPanel(err.Error())
@@ -368,7 +407,7 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 				gui.Config.UserConfig.CommandTemplates.RecreateService,
 				gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
 			),
-			f: func() error {
+			onPress: func() error {
 				return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
 					if err := gui.OSCommand.RunCommand(recreateCommand); err != nil {
 						return gui.createErrorPanel(err.Error())
@@ -383,36 +422,23 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 				gui.Config.UserConfig.CommandTemplates.RebuildService,
 				gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
 			),
-			f: func() error {
+			onPress: func() error {
 				return gui.runSubprocess(gui.OSCommand.RunCustomCommand(rebuildCommand))
 			},
 		},
-		{
-			description: gui.Tr.Cancel,
-			f:           func() error { return nil },
-		},
 	}
 
-	handleMenuPress := func(index int) error { return options[index].f() }
-
-	return gui.createMenu("", options, len(options), handleMenuPress)
-}
-
-func (gui *Gui) createServiceCommandMenu(options []*commandOption, status string) error {
-	handleMenuPress := func(index int) error {
-		if options[index].command == "" {
-			return nil
+	menuItems := lo.Map(options, func(option *commandOption, _ int) *MenuItem {
+		return &MenuItem{
+			LabelColumns: option.getDisplayStrings(),
+			OnPress:      option.onPress,
 		}
-		return gui.WithWaitingStatus(status, func() error {
-			if err := gui.OSCommand.RunCommand(options[index].command); err != nil {
-				return gui.createErrorPanel(err.Error())
-			}
+	})
 
-			return nil
-		})
-	}
-
-	return gui.createMenu("", options, len(options), handleMenuPress)
+	return gui.Menu(CreateMenuOptions{
+		Title: "",
+		Items: menuItems,
+	})
 }
 
 func (gui *Gui) handleServicesCustomCommand(g *gocui.Gui, v *gocui.View) error {

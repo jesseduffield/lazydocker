@@ -11,6 +11,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/samber/lo"
 )
 
 func (gui *Gui) getImagesPanel() *SideListPanel[*commands.Image] {
@@ -22,9 +23,9 @@ func (gui *Gui) getImagesPanel() *SideListPanel[*commands.Image] {
 			list: NewFilteredList[*commands.Image](),
 			view: gui.Views.Images,
 		},
-		contextIdx:    0,
-		noItemsMessge: gui.Tr.NoImages,
-		gui:           gui.intoInterface(),
+		contextIdx:     0,
+		noItemsMessage: gui.Tr.NoImages,
+		gui:            gui.intoInterface(),
 		getContexts: func() []ContextConfig[*commands.Image] {
 			return []ContextConfig[*commands.Image]{
 				{
@@ -52,6 +53,9 @@ func (gui *Gui) getImagesPanel() *SideListPanel[*commands.Image] {
 			}
 
 			return a.Name < b.Name
+		},
+		getDisplayStrings: func(image *commands.Image) []string {
+			return []string{image.Name, image.Tag, utils.FormatDecimalBytes(int(image.Image.Size))}
 		},
 	}
 }
@@ -113,19 +117,13 @@ func (gui *Gui) FilterString(view *gocui.View) string {
 	return gui.filterString(view)
 }
 
-type removeImageOption struct {
-	description   string
-	command       string
-	configOptions types.ImageRemoveOptions
-	runCommand    bool
-}
-
-// GetDisplayStrings is a function.
-func (r *removeImageOption) GetDisplayStrings(isFocused bool) []string {
-	return []string{r.description, color.New(color.FgRed).Sprint(r.command)}
-}
-
 func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
+	type removeImageOption struct {
+		description   string
+		command       string
+		configOptions types.ImageRemoveOptions
+	}
+
 	image, err := gui.Panels.Images.GetSelectedItem()
 	if err != nil {
 		return nil
@@ -139,45 +137,44 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 			description:   gui.Tr.Remove,
 			command:       "docker image rm " + shortSha,
 			configOptions: types.ImageRemoveOptions{PruneChildren: true, Force: false},
-			runCommand:    true,
 		},
 		{
 			description:   gui.Tr.RemoveWithoutPrune,
 			command:       "docker image rm --no-prune " + shortSha,
 			configOptions: types.ImageRemoveOptions{PruneChildren: false, Force: false},
-			runCommand:    true,
 		},
 		{
 			description:   gui.Tr.RemoveWithForce,
 			command:       "docker image rm --force " + shortSha,
 			configOptions: types.ImageRemoveOptions{PruneChildren: true, Force: true},
-			runCommand:    true,
 		},
 		{
 			description:   gui.Tr.RemoveWithoutPruneWithForce,
 			command:       "docker image rm --no-prune --force " + shortSha,
 			configOptions: types.ImageRemoveOptions{PruneChildren: false, Force: true},
-			runCommand:    true,
-		},
-		{
-			description: gui.Tr.Cancel,
-			runCommand:  false,
 		},
 	}
 
-	handleMenuPress := func(index int) error {
-		if !options[index].runCommand {
-			return nil
-		}
-		configOptions := options[index].configOptions
-		if cerr := image.Remove(configOptions); cerr != nil {
-			return gui.createErrorPanel(cerr.Error())
-		}
+	menuItems := lo.Map(options, func(option *removeImageOption, _ int) *MenuItem {
+		return &MenuItem{
+			LabelColumns: []string{
+				option.description,
+				color.New(color.FgRed).Sprint(option.command),
+			},
+			OnPress: func() error {
+				if err := image.Remove(option.configOptions); err != nil {
+					return gui.createErrorPanel(err.Error())
+				}
 
-		return nil
-	}
+				return nil
+			},
+		}
+	})
 
-	return gui.createMenu("", options, len(options), handleMenuPress)
+	return gui.Menu(CreateMenuOptions{
+		Title: "",
+		Items: menuItems,
+	})
 }
 
 func (gui *Gui) handlePruneImages() error {

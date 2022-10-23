@@ -17,11 +17,6 @@ type Binding struct {
 	Description string
 }
 
-// GetDisplayStrings returns the display string of a file
-func (b *Binding) GetDisplayStrings(isFocused bool) []string {
-	return []string{b.GetKey(), b.Description}
-}
-
 // GetKey is a function.
 func (b *Binding) GetKey() string {
 	key := 0
@@ -185,6 +180,24 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Key:      'q',
 			Modifier: gocui.ModNone,
 			Handler:  gui.handleMenuClose,
+		},
+		{
+			ViewName: "menu",
+			Key:      ' ',
+			Modifier: gocui.ModNone,
+			Handler:  wrappedHandler(gui.handleMenuPress),
+		},
+		{
+			ViewName: "menu",
+			Key:      gocui.KeyEnter,
+			Modifier: gocui.ModNone,
+			Handler:  wrappedHandler(gui.handleMenuPress),
+		},
+		{
+			ViewName: "menu",
+			Key:      'y',
+			Modifier: gocui.ModNone,
+			Handler:  wrappedHandler(gui.handleMenuPress),
 		},
 		{
 			ViewName: "information",
@@ -561,7 +574,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	}
 
 	// TODO: add more views here
-	for _, viewName := range []string{"project", "services", "containers", "images", "volumes", "menu"} {
+	for _, viewName := range []string{"project", "services", "containers", "images", "volumes"} {
 		bindings = append(bindings, []*Binding{
 			{ViewName: viewName, Key: gocui.KeyArrowLeft, Modifier: gocui.ModNone, Handler: gui.previousView},
 			{ViewName: viewName, Key: gocui.KeyArrowRight, Modifier: gocui.ModNone, Handler: gui.nextView},
@@ -577,7 +590,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		onKeyDownPress func(*gocui.Gui, *gocui.View) error
 		onClick        func(*gocui.Gui, *gocui.View) error
 	}{
-		"menu":       {onKeyUpPress: gui.handleMenuPrevLine, onKeyDownPress: gui.handleMenuNextLine, onClick: gui.handleMenuClick},
+		"menu":       {onKeyUpPress: wrappedHandler(gui.Panels.Menu.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Menu.OnNextLine), onClick: wrappedHandler(gui.Panels.Menu.OnClick)},
 		"services":   {onKeyUpPress: wrappedHandler(gui.Panels.Services.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Services.OnNextLine), onClick: wrappedHandler(gui.Panels.Services.OnClick)},
 		"containers": {onKeyUpPress: wrappedHandler(gui.Panels.Containers.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Containers.OnNextLine), onClick: wrappedHandler(gui.Panels.Containers.OnClick)},
 		"images":     {onKeyUpPress: wrappedHandler(gui.Panels.Images.OnPrevLine), onKeyDownPress: wrappedHandler(gui.Panels.Images.OnNextLine), onClick: wrappedHandler(gui.Panels.Images.OnClick)},
@@ -597,7 +610,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		}...)
 	}
 
-	for _, sidePanel := range gui.allSidepanels() {
+	for _, sidePanel := range gui.allSidePanels() {
 		bindings = append(bindings, &Binding{
 			ViewName:    sidePanel.View().Name(),
 			Key:         gocui.KeyEnter,
