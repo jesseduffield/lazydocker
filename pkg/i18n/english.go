@@ -119,7 +119,6 @@ type TranslationSet struct {
 	LcNextScreenMode string
 	LcPrevScreenMode string
 	FilterPrompt     string
-	PressEscToCancel string
 }
 
 func englishSet() TranslationSet {
@@ -246,6 +245,5 @@ func englishSet() TranslationSet {
 		LcNextScreenMode: "next screen mode (normal/half/fullscreen)",
 		LcPrevScreenMode: "prev screen mode",
 		FilterPrompt:     "filter",
-		PressEscToCancel: "press escape to cancel",
 	}
 }
