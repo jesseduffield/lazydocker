@@ -63,7 +63,7 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) resetMainView() {
 	gui.State.Panels.Main.ObjectKey = ""
-	gui.getMainView().Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
+	gui.Views.Main.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 }
 
 // if the cursor down past the last item, move it to the last line
@@ -185,12 +185,8 @@ func (gui *Gui) renderOptionsMap(optionsMap map[string]string) error {
 	return gui.renderString(gui.g, "options", gui.optionsMapToString(optionsMap))
 }
 
-func (gui *Gui) getMainView() *gocui.View {
-	return gui.Views.Main
-}
-
 func (gui *Gui) GetMainView() *gocui.View {
-	return gui.getMainView()
+	return gui.Views.Main
 }
 
 func (gui *Gui) trimmedContent(v *gocui.View) string {
@@ -268,7 +264,7 @@ func (gui *Gui) PopupPanelFocused() bool {
 }
 
 func (gui *Gui) clearMainView() {
-	mainView := gui.getMainView()
+	mainView := gui.Views.Main
 	mainView.Clear()
 	_ = mainView.SetOrigin(0, 0)
 	_ = mainView.SetCursor(0, 0)

@@ -16,7 +16,7 @@ import (
 )
 
 func (gui *Gui) renderContainerLogsToMain(container *commands.Container) error {
-	mainView := gui.getMainView()
+	mainView := gui.Views.Main
 	mainView.Autoscroll = true
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
@@ -37,7 +37,7 @@ func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, stop
 		ctxCancel()
 	}()
 
-	mainView := gui.getMainView()
+	mainView := gui.Views.Main
 
 	if err := gui.writeContainerLogs(container, ctx, mainView); err != nil {
 		gui.Log.Error(err)

@@ -353,7 +353,7 @@ func (gui *Gui) checkForContextChange() error {
 }
 
 func (gui *Gui) reRenderMain() error {
-	mainView := gui.getMainView()
+	mainView := gui.Views.Main
 	if mainView == nil {
 		return nil
 	}

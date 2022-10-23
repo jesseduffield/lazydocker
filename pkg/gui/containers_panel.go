@@ -125,7 +125,7 @@ func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 		})
 	}
 
-	mainView := gui.getMainView()
+	mainView := gui.Views.Main
 	mainView.Autoscroll = false
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
@@ -168,7 +168,7 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 		})
 	}
 
-	mainView := gui.getMainView()
+	mainView := gui.Views.Main
 	mainView.Autoscroll = false
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
@@ -219,7 +219,7 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 }
 
 func (gui *Gui) renderContainerStats(container *commands.Container) error {
-	mainView := gui.getMainView()
+	mainView := gui.Views.Main
 	mainView.Autoscroll = false
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
@@ -236,7 +236,7 @@ func (gui *Gui) renderContainerStats(container *commands.Container) error {
 }
 
 func (gui *Gui) renderContainerTop(container *commands.Container) error {
-	mainView := gui.getMainView()
+	mainView := gui.Views.Main
 	mainView.Autoscroll = false
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 

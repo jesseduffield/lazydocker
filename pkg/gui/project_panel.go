@@ -89,7 +89,7 @@ func (gui *Gui) getProjectName() string {
 
 func (gui *Gui) renderCredits(_project *commands.Project) error {
 	return gui.T.NewTask(func(stop chan struct{}) {
-		mainView := gui.getMainView()
+		mainView := gui.Views.Main
 		mainView.Autoscroll = false
 		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
@@ -114,7 +114,7 @@ func (gui *Gui) renderCredits(_project *commands.Project) error {
 
 func (gui *Gui) renderAllLogs(_project *commands.Project) error {
 	return gui.T.NewTask(func(stop chan struct{}) {
-		mainView := gui.getMainView()
+		mainView := gui.Views.Main
 		mainView.Autoscroll = true
 		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
@@ -146,7 +146,7 @@ func (gui *Gui) renderAllLogs(_project *commands.Project) error {
 
 func (gui *Gui) renderDockerComposeConfig(_project *commands.Project) error {
 	return gui.T.NewTask(func(stop chan struct{}) {
-		mainView := gui.getMainView()
+		mainView := gui.Views.Main
 		mainView.Autoscroll = false
 		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 

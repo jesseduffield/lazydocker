@@ -118,7 +118,7 @@ func (gui *Gui) renderServiceStats(service *commands.Service) error {
 }
 
 func (gui *Gui) renderServiceTop(service *commands.Service) error {
-	mainView := gui.getMainView()
+	mainView := gui.Views.Main
 	mainView.Autoscroll = false
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
