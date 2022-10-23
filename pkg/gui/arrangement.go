@@ -87,19 +87,6 @@ func (gui *Gui) getMidSectionWeights() (int, int) {
 }
 
 func (gui *Gui) infoSectionChildren(informationStr string, appStatus string) []*boxlayout.Box {
-	if gui.State.Filter.active {
-		return []*boxlayout.Box{
-			{
-				Window: "filterPrefix",
-				Size:   runewidth.StringWidth(gui.filterPrompt()),
-			},
-			{
-				Window: "filter",
-				Weight: 1,
-			},
-		}
-	}
-
 	result := []*boxlayout.Box{}
 
 	if len(appStatus) > 0 {
@@ -109,6 +96,19 @@ func (gui *Gui) infoSectionChildren(informationStr string, appStatus string) []*
 				Size:   runewidth.StringWidth(appStatus) + runewidth.StringWidth(INFO_SECTION_PADDING),
 			},
 		)
+	}
+
+	if gui.State.Filter.active {
+		return append(result, []*boxlayout.Box{
+			{
+				Window: "filterPrefix",
+				Size:   runewidth.StringWidth(gui.filterPrompt()),
+			},
+			{
+				Window: "filter",
+				Weight: 1,
+			},
+		}...)
 	}
 
 	result = append(result,
