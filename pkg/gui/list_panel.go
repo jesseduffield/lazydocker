@@ -73,6 +73,9 @@ type SideListPanel[T comparable] struct {
 	onClick func(T) error
 
 	getDisplayStrings func(T) []string
+
+	// function to be called after re-rendering list. Can be nil
+	onRerender func() error
 }
 
 type ISideListPanel interface {
@@ -80,6 +83,7 @@ type ISideListPanel interface {
 	HandleSelect() error
 	View() *gocui.View
 	Refocus()
+	RerenderList() error
 }
 
 var _ ISideListPanel = &SideListPanel[int]{}
@@ -274,6 +278,12 @@ func (self *SideListPanel[T]) RerenderList() error {
 			return err
 		}
 		fmt.Fprint(self.view, renderedTable)
+
+		if self.onRerender != nil {
+			if err := self.onRerender(); err != nil {
+				return err
+			}
+		}
 
 		if self.view == self.gui.CurrentView() {
 			return self.HandleSelect()

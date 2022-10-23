@@ -88,6 +88,7 @@ type guiState struct {
 
 type searchingState struct {
 	view         *gocui.View
+	panel        ISideListPanel
 	isSearching  bool
 	searchString string
 }

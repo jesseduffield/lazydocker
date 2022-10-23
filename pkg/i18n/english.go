@@ -38,6 +38,7 @@ type TranslationSet struct {
 	Confirm                     string
 	Return                      string
 	FocusMain                   string
+	LcFilter                    string
 	StopContainer               string
 	RestartingStatus            string
 	StartingStatus              string
@@ -148,6 +149,7 @@ func englishSet() TranslationSet {
 
 		Return:                      "return",
 		FocusMain:                   "focus main panel",
+		LcFilter:                    "filter list",
 		Navigate:                    "navigate",
 		Execute:                     "execute",
 		Close:                       "close",

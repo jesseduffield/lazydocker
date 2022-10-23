@@ -4,13 +4,15 @@ import (
 	"github.com/jesseduffield/gocui"
 )
 
-func (gui *Gui) handleOpenImageSearch() error {
-	return gui.handleOpenSearch(gui.Views.Images)
-}
+func (gui *Gui) handleOpenSearch() error {
+	panel, ok := gui.currentListPanel()
+	if !ok {
+		return nil
+	}
 
-func (gui *Gui) handleOpenSearch(view *gocui.View) error {
 	gui.State.Searching.isSearching = true
-	gui.State.Searching.view = view
+	gui.State.Searching.view = panel.View()
+	gui.State.Searching.panel = panel
 
 	return gui.switchFocus(gui.Views.Search)
 }
@@ -18,7 +20,7 @@ func (gui *Gui) handleOpenSearch(view *gocui.View) error {
 func (gui *Gui) onNewSearchString(value string) error {
 	// need to refresh the right list panel.
 	gui.State.Searching.searchString = value
-	return gui.Panels.Images.RerenderList()
+	return gui.State.Searching.panel.RerenderList()
 }
 
 func (gui *Gui) wrapEditor(f func(v *gocui.View, key gocui.Key, ch rune, mod gocui.Modifier) bool) func(v *gocui.View, key gocui.Key, ch rune, mod gocui.Modifier) bool {
@@ -44,9 +46,11 @@ func (gui *Gui) clearSearch() error {
 	gui.State.Searching.searchString = ""
 	gui.State.Searching.isSearching = false
 	gui.State.Searching.view = nil
+	panel := gui.State.Searching.panel
+	gui.State.Searching.panel = nil
 	gui.Views.Search.ClearTextArea()
 
-	return gui.Panels.Images.RerenderList()
+	return panel.RerenderList()
 }
 
 // returns to the list view with the filter still applied

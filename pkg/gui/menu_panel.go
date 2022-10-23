@@ -39,6 +39,9 @@ func (gui *Gui) getMenuPanel() *SideListPanel[*MenuItem] {
 		getDisplayStrings: func(menuItem *MenuItem) []string {
 			return menuItem.LabelColumns
 		},
+		onRerender: func() error {
+			return gui.resizePopupPanel(gui.Views.Menu)
+		},
 
 		// the menu panel doesn't actually have any contexts to display on the main view
 		// so what follows are all dummy values

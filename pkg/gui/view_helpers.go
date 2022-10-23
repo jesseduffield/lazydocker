@@ -133,9 +133,12 @@ func (gui *Gui) returnFocus() error {
 // Not to be called directly. Use `switchFocus` instead
 func (gui *Gui) pushView(name string) {
 	// No matter what view we're pushing, we first remove all popup panels from the stack
-	gui.State.ViewStack = lo.Filter(gui.State.ViewStack, func(viewName string, _ int) bool {
-		return !gui.isPopupPanel(viewName)
-	})
+	// (unless it's the search view because we may be searching the menu panel)
+	if name != "search" {
+		gui.State.ViewStack = lo.Filter(gui.State.ViewStack, func(viewName string, _ int) bool {
+			return !gui.isPopupPanel(viewName)
+		})
+	}
 
 	// If we're pushing a side panel, we remove all other panels
 	if lo.Contains(gui.sideViewNames(), name) {
@@ -318,21 +321,21 @@ func (gui *Gui) currentViewName() string {
 func (gui *Gui) resizeCurrentPopupPanel(g *gocui.Gui) error {
 	v := g.CurrentView()
 	if gui.isPopupPanel(v.Name()) {
-		return gui.resizePopupPanel(g, v)
+		return gui.resizePopupPanel(v)
 	}
 	return nil
 }
 
-func (gui *Gui) resizePopupPanel(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) resizePopupPanel(v *gocui.View) error {
 	// If the confirmation panel is already displayed, just resize the width,
 	// otherwise continue
 	content := v.Buffer()
-	x0, y0, x1, y1 := gui.getConfirmationPanelDimensions(g, v.Wrap, content)
+	x0, y0, x1, y1 := gui.getConfirmationPanelDimensions(v.Wrap, content)
 	vx0, vy0, vx1, vy1 := v.Dimensions()
 	if vx0 == x0 && vy0 == y0 && vx1 == x1 && vy1 == y1 {
 		return nil
 	}
-	_, err := g.SetView(v.Name(), x0, y0, x1, y1, 0)
+	_, err := gui.g.SetView(v.Name(), x0, y0, x1, y1, 0)
 	return err
 }
 
@@ -482,6 +485,7 @@ func (gui *Gui) currentSidePanel() (ISideListPanel, bool) {
 	return nil, false
 }
 
+// returns the current list panel. If no list panel is focused, returns false.
 func (gui *Gui) currentListPanel() (ISideListPanel, bool) {
 	viewName := gui.currentViewName()
 

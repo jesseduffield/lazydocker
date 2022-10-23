@@ -451,13 +451,6 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
-			ViewName:    "images",
-			Key:         '/',
-			Modifier:    gocui.ModNone,
-			Handler:     wrappedHandler(gui.handleOpenImageSearch),
-			Description: gui.Tr.FilterList,
-		},
-		{
 			ViewName:    "volumes",
 			Key:         '[',
 			Modifier:    gocui.ModNone,
@@ -618,6 +611,17 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:     gui.handleEnterMain,
 			Description: gui.Tr.FocusMain,
 		})
+	}
+
+	for _, panel := range gui.allListPanels() {
+		bindings = append(bindings,
+			&Binding{
+				ViewName:    panel.View().Name(),
+				Key:         '/',
+				Modifier:    gocui.ModNone,
+				Handler:     wrappedHandler(gui.handleOpenSearch),
+				Description: gui.Tr.LcFilter,
+			})
 	}
 
 	return bindings
