@@ -5,7 +5,6 @@ import (
 	"sync"
 )
 
-// TODO: extract into lazycore repo.
 // This wraps a writer and ensures that before we actually write anything we call a given function first
 
 type OnceWriter struct {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
+	lcUtils "github.com/jesseduffield/lazycore/pkg/utils"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
@@ -19,14 +20,14 @@ type ListPanel[T comparable] struct {
 func (self *ListPanel[T]) setSelectedLineIdx(value int) {
 	clampedValue := 0
 	if self.list.Len() > 0 {
-		clampedValue = utils.Clamp(value, 0, self.list.Len()-1)
+		clampedValue = lcUtils.Clamp(value, 0, self.list.Len()-1)
 	}
 
 	self.selectedIdx = clampedValue
 }
 
 func (self *ListPanel[T]) clampSelectedLineIdx() {
-	clamped := utils.Clamp(self.selectedIdx, 0, self.list.Len()-1)
+	clamped := lcUtils.Clamp(self.selectedIdx, 0, self.list.Len()-1)
 
 	if clamped != self.selectedIdx {
 		self.selectedIdx = clamped

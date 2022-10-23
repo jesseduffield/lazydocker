@@ -52,8 +52,8 @@ github.com/jesseduffield/gocui v0.3.1-0.20221023185936-ef06450f4fdc h1:Gi/uDpmlB
 github.com/jesseduffield/gocui v0.3.1-0.20221023185936-ef06450f4fdc/go.mod h1:znJuCDnF2Ph40YZSlBwdX/4GEofnIoWLGdT4mK5zRAU=
 github.com/jesseduffield/kill v0.0.0-20220618033138-bfbe04675d10 h1:jmpr7KpX2+2GRiE91zTgfq49QvgiqB0nbmlwZ8UnOx0=
 github.com/jesseduffield/kill v0.0.0-20220618033138-bfbe04675d10/go.mod h1:aA97kHeNA+sj2Hbki0pvLslmE4CbDyhBeSSTUUnOuVo=
-github.com/jesseduffield/lazycore v0.0.0-20221010211550-2c30efd18b93 h1:zY7ymCjXC7fZeJVXDpiicYx6c2YFgvsdZSOdch2f7gU=
-github.com/jesseduffield/lazycore v0.0.0-20221010211550-2c30efd18b93/go.mod h1:qxN4mHOAyeIDLP7IK7defgPClM/z1Kze8VVQiaEjzsQ=
+github.com/jesseduffield/lazycore v0.0.0-20221023210126-718a4caea996 h1:CH1en6GpXSwnXl5Ehc4WX1NpS3uw9qbi7o9A4T2YYmA=
+github.com/jesseduffield/lazycore v0.0.0-20221023210126-718a4caea996/go.mod h1:qxN4mHOAyeIDLP7IK7defgPClM/z1Kze8VVQiaEjzsQ=
 github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56 h1:33wSxJWU/f2TAozHYtJ8zqBxEnEVYM+22moLoiAkxvg=
 github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56/go.mod h1:FZJBwOhE+RXz8EVZfY+xnbCw2cVOwxlK3/aIi581z/s=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=

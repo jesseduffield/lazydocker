@@ -12,11 +12,11 @@ import (
 
 	throttle "github.com/boz/go-throttle"
 	"github.com/jesseduffield/gocui"
+	lcUtils "github.com/jesseduffield/lazycore/pkg/utils"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 )
@@ -188,7 +188,7 @@ func (gui *Gui) Run() error {
 
 	// if the deadlock package wants to report a deadlock, we first need to
 	// close the gui so that we can actually read what it prints.
-	deadlock.Opts.LogBuf = utils.NewOnceWriter(os.Stderr, func() {
+	deadlock.Opts.LogBuf = lcUtils.NewOnceWriter(os.Stderr, func() {
 		gui.g.Close()
 	})
 

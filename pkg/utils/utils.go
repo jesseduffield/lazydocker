@@ -335,15 +335,6 @@ func IsValidHexValue(v string) bool {
 	return true
 }
 
-func Clamp(x int, min int, max int) int {
-	if x < min {
-		return min
-	} else if x > max {
-		return max
-	}
-	return x
-}
-
 // Style used on menu items that open another menu
 func OpensMenuStyle(str string) string {
 	return ColoredString(fmt.Sprintf("%s...", str), color.FgMagenta)
