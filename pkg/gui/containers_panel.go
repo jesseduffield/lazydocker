@@ -112,7 +112,7 @@ func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
 				container.Name,
 				container.GetDisplayCPUPerc(),
 				utils.ColoredString(image, color.FgMagenta),
-				container.DisplayPorts(),
+				utils.ColoredString(container.DisplayPorts(), color.FgYellow),
 			}
 		},
 	}
