@@ -83,13 +83,19 @@ type guiState struct {
 
 	ScreenMode WindowMaximisation
 
-	Searching searchingState
+	// Maintains the state of manual filtering i.e. typing in a substring
+	// to filter on in the current panel.
+	Filter filterState
 }
 
-type searchingState struct {
-	panel        ISideListPanel
-	isSearching  bool
-	searchString string
+type filterState struct {
+	// If true then we're either currently inside the filter view
+	// or we've committed the filter and we're back in the list view
+	active bool
+	// The panel that we're filtering.
+	panel ISideListPanel
+	// The string that we're filtering on
+	needle string
 }
 
 // screen sizing determines how much space your selected window takes up (window
@@ -366,6 +372,16 @@ func (gui *Gui) quit(g *gocui.Gui, v *gocui.View) error {
 		}, nil)
 	}
 	return gocui.ErrQuit
+}
+
+// this handler is executed when we press escape when there is only one view
+// on the stack.
+func (gui *Gui) escape() error {
+	if gui.State.Filter.active {
+		return gui.clearFilter()
+	}
+
+	return nil
 }
 
 func (gui *Gui) handleDonate(g *gocui.Gui, v *gocui.View) error {

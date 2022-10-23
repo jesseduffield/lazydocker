@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
@@ -39,6 +38,11 @@ func (gui *Gui) getMenuPanel() *SideListPanel[*MenuItem] {
 		onRerender: func() error {
 			return gui.resizePopupPanel(gui.Views.Menu)
 		},
+		// so that we can avoid some UI trickiness, the menu will not have filtering
+		// abillity yet. To support it, we would need to have filter state against
+		// each panel (e.g. for when you filter the images panel, then bring up
+		// the options menu, then try to filter that too.
+		disableFilter: true,
 
 		// the menu panel doesn't actually have any contexts to display on the main view
 		// so what follows are all dummy values
@@ -54,17 +58,15 @@ func (gui *Gui) getMenuPanel() *SideListPanel[*MenuItem] {
 }
 
 func (gui *Gui) onMenuPress(menuItem *MenuItem) error {
-	gui.Views.Menu.Visible = false
-	err := gui.returnFocus()
-	if err != nil {
+	if err := gui.handleMenuClose(); err != nil {
 		return err
 	}
 
-	if menuItem.OnPress == nil {
-		return nil
+	if menuItem.OnPress != nil {
+		return menuItem.OnPress()
 	}
 
-	return menuItem.OnPress()
+	return nil
 }
 
 func (gui *Gui) handleMenuPress() error {
@@ -133,7 +135,21 @@ func (gui *Gui) renderMenuOptions() error {
 	return gui.renderOptionsMap(optionsMap)
 }
 
-func (gui *Gui) handleMenuClose(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleMenuClose() error {
 	gui.Views.Menu.Visible = false
+
+	// this code is here for when we do add filter ability to the menu panel,
+	// though it's currently disabled
+	if gui.State.Filter.panel == gui.Panels.Menu {
+		if err := gui.clearFilter(); err != nil {
+			return err
+		}
+
+		// we need to remove the view from the view stack because we're about to
+		// return focus and don't want to land in the search view when it was searching
+		// the menu in the first place
+		gui.removeViewFromStack(gui.Views.Filter)
+	}
+
 	return gui.returnFocus()
 }

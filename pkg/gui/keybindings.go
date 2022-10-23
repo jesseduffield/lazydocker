@@ -58,6 +58,12 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	bindings := []*Binding{
 		{
 			ViewName: "",
+			Key:      gocui.KeyEsc,
+			Modifier: gocui.ModNone,
+			Handler:  wrappedHandler(gui.escape),
+		},
+		{
+			ViewName: "",
 			Key:      'q',
 			Modifier: gocui.ModNone,
 			Handler:  gui.quit,
@@ -65,12 +71,6 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		{
 			ViewName: "",
 			Key:      gocui.KeyCtrlC,
-			Modifier: gocui.ModNone,
-			Handler:  gui.quit,
-		},
-		{
-			ViewName: "",
-			Key:      gocui.KeyEsc,
 			Modifier: gocui.ModNone,
 			Handler:  gui.quit,
 		},
@@ -173,13 +173,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			ViewName: "menu",
 			Key:      gocui.KeyEsc,
 			Modifier: gocui.ModNone,
-			Handler:  gui.handleMenuClose,
+			Handler:  wrappedHandler(gui.handleMenuClose),
 		},
 		{
 			ViewName: "menu",
 			Key:      'q',
 			Modifier: gocui.ModNone,
-			Handler:  gui.handleMenuClose,
+			Handler:  wrappedHandler(gui.handleMenuClose),
 		},
 		{
 			ViewName: "menu",
@@ -517,16 +517,16 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:  gui.scrollRightMain,
 		},
 		{
-			ViewName: "search",
+			ViewName: "filter",
 			Key:      gocui.KeyEnter,
 			Modifier: gocui.ModNone,
-			Handler:  wrappedHandler(gui.commitSearch),
+			Handler:  wrappedHandler(gui.commitFilter),
 		},
 		{
-			ViewName: "search",
+			ViewName: "filter",
 			Key:      gocui.KeyEsc,
 			Modifier: gocui.ModNone,
-			Handler:  wrappedHandler(gui.escapeSearchPrompt),
+			Handler:  wrappedHandler(gui.escapeFilterPrompt),
 		},
 		{
 			ViewName: "",
@@ -619,7 +619,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 				ViewName:    panel.View().Name(),
 				Key:         '/',
 				Modifier:    gocui.ModNone,
-				Handler:     wrappedHandler(gui.handleOpenSearch),
+				Handler:     wrappedHandler(gui.handleOpenFilter),
 				Description: gui.Tr.LcFilter,
 			})
 	}

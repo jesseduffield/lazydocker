@@ -5,8 +5,6 @@ import (
 	"github.com/jesseduffield/gocui"
 )
 
-const SEARCH_PREFIX = "filter: "
-
 type Views struct {
 	// side panels
 	Project    *gocui.View
@@ -23,9 +21,9 @@ type Views struct {
 	Information *gocui.View
 	AppStatus   *gocui.View
 	// text that prompts you to enter text in the Search view
-	SearchPrefix *gocui.View
+	FilterPrefix *gocui.View
 	// appears next to the SearchPrefix view, it's where you type in the search string
-	Search *gocui.View
+	Filter *gocui.View
 
 	// popups
 	Confirmation *gocui.View
@@ -56,8 +54,8 @@ func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
 		{viewPtr: &gui.Views.Options, name: "options"},
 		{viewPtr: &gui.Views.AppStatus, name: "appStatus"},
 		{viewPtr: &gui.Views.Information, name: "information"},
-		{viewPtr: &gui.Views.Search, name: "search"},
-		{viewPtr: &gui.Views.SearchPrefix, name: "searchPrefix"},
+		{viewPtr: &gui.Views.Filter, name: "filter"},
+		{viewPtr: &gui.Views.FilterPrefix, name: "filterPrefix"},
 
 		// popups.
 		{viewPtr: &gui.Views.Menu, name: "menu"},
@@ -128,16 +126,16 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Limit.Title = gui.Tr.NotEnoughSpace
 	gui.Views.Limit.Wrap = true
 
-	gui.Views.SearchPrefix.BgColor = gocui.ColorDefault
-	gui.Views.SearchPrefix.FgColor = gocui.ColorGreen
-	gui.Views.SearchPrefix.Frame = false
-	_ = gui.setViewContent(gui.Views.SearchPrefix, SEARCH_PREFIX)
+	gui.Views.FilterPrefix.BgColor = gocui.ColorDefault
+	gui.Views.FilterPrefix.FgColor = gocui.ColorGreen
+	gui.Views.FilterPrefix.Frame = false
+	_ = gui.setViewContent(gui.Views.FilterPrefix, gui.filterPrompt())
 
-	gui.Views.Search.BgColor = gocui.ColorDefault
-	gui.Views.Search.FgColor = gocui.ColorGreen
-	gui.Views.Search.Editable = true
-	gui.Views.Search.Frame = false
-	gui.Views.Search.Editor = gocui.EditorFunc(gui.wrapEditor(gocui.SimpleEditor))
+	gui.Views.Filter.BgColor = gocui.ColorDefault
+	gui.Views.Filter.FgColor = gocui.ColorGreen
+	gui.Views.Filter.Editable = true
+	gui.Views.Filter.Frame = false
+	gui.Views.Filter.Editor = gocui.EditorFunc(gui.wrapEditor(gocui.SimpleEditor))
 
 	return nil
 }
@@ -169,7 +167,7 @@ func (gui *Gui) controlledBoundsViewNames() []string {
 		"appStatus",
 		"main",
 		"limit",
-		"searchPrefix",
-		"search",
+		"filterPrefix",
+		"filter",
 	}
 }

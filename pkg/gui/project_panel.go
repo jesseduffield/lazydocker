@@ -63,6 +63,8 @@ func (gui *Gui) getProjectPanel() *SideListPanel[*commands.Project] {
 		getDisplayStrings: func(project *commands.Project) []string {
 			return []string{project.Name}
 		},
+		// It doesn't make sense to filter a list of only one item.
+		disableFilter: true,
 	}
 }
 

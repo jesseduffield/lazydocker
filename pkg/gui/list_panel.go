@@ -73,6 +73,9 @@ type SideListPanel[T comparable] struct {
 
 	// function to be called after re-rendering list. Can be nil
 	onRerender func() error
+
+	// set this to true if you don't want to allow manual filtering via '/'
+	disableFilter bool
 }
 
 type ISideListPanel interface {
@@ -81,6 +84,7 @@ type ISideListPanel interface {
 	View() *gocui.View
 	Refocus()
 	RerenderList() error
+	IsFilterDisabled() bool
 }
 
 var _ ISideListPanel = &SideListPanel[int]{}
@@ -293,4 +297,8 @@ func (self *SideListPanel[T]) RerenderList() error {
 
 func (self *SideListPanel[T]) SetContextIndex(index int) {
 	self.contextIdx = index
+}
+
+func (self *SideListPanel[T]) IsFilterDisabled() bool {
+	return self.disableFilter
 }

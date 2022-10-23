@@ -110,11 +110,11 @@ func (gui *Gui) refreshStateImages() error {
 }
 
 func (gui *Gui) filterString(view *gocui.View) string {
-	if gui.State.Searching.panel != nil && gui.State.Searching.panel.View() != view {
+	if gui.State.Filter.panel != nil && gui.State.Filter.panel.View() != view {
 		return ""
 	}
 
-	return gui.State.Searching.searchString
+	return gui.State.Filter.needle
 }
 
 // TODO: merge into the above

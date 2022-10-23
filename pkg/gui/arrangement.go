@@ -28,7 +28,7 @@ func (gui *Gui) getWindowDimensions(informationStr string, appStatus string) map
 		sidePanelsDirection = boxlayout.ROW
 	}
 
-	showInfoSection := gui.Config.UserConfig.Gui.ShowBottomLine || gui.State.Searching.isSearching
+	showInfoSection := gui.Config.UserConfig.Gui.ShowBottomLine || gui.State.Filter.active
 	infoSectionSize := 0
 	if showInfoSection {
 		infoSectionSize = 1
@@ -87,14 +87,14 @@ func (gui *Gui) getMidSectionWeights() (int, int) {
 }
 
 func (gui *Gui) infoSectionChildren(informationStr string, appStatus string) []*boxlayout.Box {
-	if gui.State.Searching.isSearching {
+	if gui.State.Filter.active {
 		return []*boxlayout.Box{
 			{
-				Window: "searchPrefix",
-				Size:   runewidth.StringWidth(SEARCH_PREFIX),
+				Window: "filterPrefix",
+				Size:   runewidth.StringWidth(gui.filterPrompt()),
 			},
 			{
-				Window: "search",
+				Window: "filter",
 				Weight: 1,
 			},
 		}
