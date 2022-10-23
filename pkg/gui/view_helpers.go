@@ -12,17 +12,18 @@ import (
 )
 
 func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
+	sideViewNames := gui.sideViewNames()
 	var focusedViewName string
-	if v == nil || v.Name() == gui.CyclableViews[len(gui.CyclableViews)-1] {
-		focusedViewName = gui.CyclableViews[0]
+	if v == nil || v.Name() == sideViewNames[len(sideViewNames)-1] {
+		focusedViewName = sideViewNames[0]
 	} else {
 		viewName := v.Name()
-		for i := range gui.CyclableViews {
-			if viewName == gui.CyclableViews[i] {
-				focusedViewName = gui.CyclableViews[i+1]
+		for i := range sideViewNames {
+			if viewName == sideViewNames[i] {
+				focusedViewName = sideViewNames[i+1]
 				break
 			}
-			if i == len(gui.CyclableViews)-1 {
+			if i == len(sideViewNames)-1 {
 				gui.Log.Info("not in list of views")
 				return nil
 			}
@@ -37,17 +38,18 @@ func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
+	sideViewNames := gui.sideViewNames()
 	var focusedViewName string
-	if v == nil || v.Name() == gui.CyclableViews[0] {
-		focusedViewName = gui.CyclableViews[len(gui.CyclableViews)-1]
+	if v == nil || v.Name() == sideViewNames[0] {
+		focusedViewName = sideViewNames[len(sideViewNames)-1]
 	} else {
 		viewName := v.Name()
-		for i := range gui.CyclableViews {
-			if viewName == gui.CyclableViews[i] {
-				focusedViewName = gui.CyclableViews[i-1]
+		for i := range sideViewNames {
+			if viewName == sideViewNames[i] {
+				focusedViewName = sideViewNames[i-1]
 				break
 			}
-			if i == len(gui.CyclableViews)-1 {
+			if i == len(sideViewNames)-1 {
 				gui.Log.Info("not in list of views")
 				return nil
 			}

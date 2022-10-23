@@ -36,7 +36,6 @@ type Gui struct {
 	statusManager *statusManager
 	T             *tasks.TaskManager
 	ErrorChan     chan error
-	CyclableViews []string
 	Views         Views
 
 	// if we've suspended the gui (e.g. because we've switched to a subprocess)
@@ -137,8 +136,6 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		T:             tasks.NewTaskManager(log, tr),
 		ErrorChan:     errorChan,
 	}
-
-	gui.CyclableViews = gui.sideViewNames()
 
 	deadlock.Opts.Disable = !gui.Config.Debug
 	deadlock.Opts.DeadlockTimeout = 5 * time.Second
