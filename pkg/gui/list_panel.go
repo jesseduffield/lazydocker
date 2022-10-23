@@ -76,6 +76,9 @@ type SideListPanel[T comparable] struct {
 
 	// set this to true if you don't want to allow manual filtering via '/'
 	disableFilter bool
+
+	// This can be nil if you want to always show the panel
+	hide func() bool
 }
 
 type ISideListPanel interface {
@@ -85,6 +88,7 @@ type ISideListPanel interface {
 	Refocus()
 	RerenderList() error
 	IsFilterDisabled() bool
+	IsHidden() bool
 	OnNextLine() error
 	OnPrevLine() error
 	OnClick() error
@@ -306,4 +310,12 @@ func (self *SideListPanel[T]) SetContextIndex(index int) {
 
 func (self *SideListPanel[T]) IsFilterDisabled() bool {
 	return self.disableFilter
+}
+
+func (self *SideListPanel[T]) IsHidden() bool {
+	if self.hide == nil {
+		return false
+	}
+
+	return self.hide()
 }

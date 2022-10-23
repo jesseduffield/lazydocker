@@ -129,11 +129,13 @@ func (gui *Gui) infoSectionChildren(informationStr string, appStatus string) []*
 }
 
 func (gui *Gui) sideViewNames() []string {
-	if gui.DockerCommand.InDockerComposeProject {
-		return []string{"project", "services", "containers", "images", "volumes"}
-	} else {
-		return []string{"project", "containers", "images", "volumes"}
-	}
+	visibleSidePanels := lo.Filter(gui.allSidePanels(), func(panel ISideListPanel, _ int) bool {
+		return !panel.IsHidden()
+	})
+
+	return lo.Map(visibleSidePanels, func(panel ISideListPanel, _ int) string {
+		return panel.View().Name()
+	})
 }
 
 func (gui *Gui) sidePanelChildren(width int, height int) []*boxlayout.Box {

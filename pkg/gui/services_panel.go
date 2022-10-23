@@ -90,6 +90,9 @@ func (gui *Gui) getServicesPanel() *SideListPanel[*commands.Service] {
 				utils.ColoredString(cont.DisplayPorts(), color.FgYellow),
 			}
 		},
+		hide: func() bool {
+			return !gui.DockerCommand.InDockerComposeProject
+		},
 	}
 }
 
