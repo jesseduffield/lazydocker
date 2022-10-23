@@ -98,7 +98,7 @@ func (gui *Gui) getServicesPanel() *SideListPanel[*commands.Service] {
 
 func (gui *Gui) renderServiceContainerConfig(service *commands.Service) error {
 	if service.Container == nil {
-		return gui.renderStringMain(gui.Tr.NoContainer)
+		return gui.RenderStringMain(gui.Tr.NoContainer)
 	}
 
 	return gui.renderContainerConfig(service.Container)
@@ -106,7 +106,7 @@ func (gui *Gui) renderServiceContainerConfig(service *commands.Service) error {
 
 func (gui *Gui) renderServiceContainerEnv(service *commands.Service) error {
 	if service.Container == nil {
-		return gui.renderStringMain(gui.Tr.NoContainer)
+		return gui.RenderStringMain(gui.Tr.NoContainer)
 	}
 
 	return gui.renderContainerEnv(service.Container)

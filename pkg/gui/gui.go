@@ -79,7 +79,7 @@ type guiState struct {
 	SubProcessOutput string
 	Stats            map[string]commands.ContainerStats
 
-	// if true, we show containers with an 'exited' status in the contaniners panel
+	// if true, we show containers with an 'exited' status in the containers panel
 	ShowExitedContainers bool
 
 	ScreenMode WindowMaximisation
@@ -138,7 +138,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 	}
 
 	deadlock.Opts.Disable = !gui.Config.Debug
-	deadlock.Opts.DeadlockTimeout = 5 * time.Second
+	deadlock.Opts.DeadlockTimeout = 10 * time.Second
 
 	return gui, nil
 }
@@ -257,7 +257,8 @@ func (gui *Gui) Run() error {
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
 		gui.goEvery(time.Millisecond*1000, gui.updateContainerDetails)
 		gui.goEvery(time.Millisecond*1000, gui.checkForContextChange)
-		gui.goEvery(time.Millisecond*1000, gui.rerenderContainersAndServices)
+		// we need to regularly re-render these because their stats will be changed in the background
+		gui.goEvery(time.Millisecond*1000, gui.renderContainersAndServices)
 	}()
 
 	err = g.MainLoop()
@@ -269,12 +270,6 @@ func (gui *Gui) Run() error {
 
 func (gui *Gui) updateContainerDetails() error {
 	return gui.DockerCommand.UpdateContainerDetails(gui.Panels.Containers.list.GetAllItems())
-}
-
-func (gui *Gui) rerenderContainersAndServices() error {
-	// we need to regularly re-render these because their stats will be changed in the background
-	gui.renderContainersAndServices()
-	return nil
 }
 
 func (gui *Gui) refresh() {
@@ -426,17 +421,13 @@ func (gui *Gui) handleCustomCommand(g *gocui.Gui, v *gocui.View) error {
 	})
 }
 
-func (gui *Gui) shouldRefresh(key string) bool {
+func (gui *Gui) ShouldRefresh(key string) bool {
 	if gui.State.Panels.Main.ObjectKey == key {
 		return false
 	}
 
 	gui.State.Panels.Main.ObjectKey = key
 	return true
-}
-
-func (gui *Gui) ShouldRefresh(key string) bool {
-	return gui.shouldRefresh(key)
 }
 
 func (gui *Gui) initiallyFocusedViewName() string {

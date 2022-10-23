@@ -108,7 +108,7 @@ func (gui *Gui) renderCredits(_project *commands.Project) error {
 				configBuf.String(),
 			}, "\n\n")
 
-		_ = gui.renderStringMain(dashboardString)
+		_ = gui.RenderStringMain(dashboardString)
 	})
 }
 
@@ -151,7 +151,7 @@ func (gui *Gui) renderDockerComposeConfig(_project *commands.Project) error {
 		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
 		config := gui.DockerCommand.DockerComposeConfig()
-		_ = gui.renderStringMain(config)
+		_ = gui.RenderStringMain(config)
 	})
 }
 

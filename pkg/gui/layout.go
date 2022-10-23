@@ -101,7 +101,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		return view, err
 	}
 
-	for _, viewName := range gui.controlledBoundsViewNames() {
+	for _, viewName := range gui.autoPositionedViewNames() {
 		_, err := setViewFromDimensions(viewName, viewName)
 		if err != nil && err.Error() != UNKNOWN_VIEW_ERROR_MSG {
 			return err

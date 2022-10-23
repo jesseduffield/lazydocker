@@ -121,7 +121,7 @@ func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
 func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 	if !container.DetailsLoaded() {
 		return gui.T.NewTask(func(stop chan struct{}) {
-			_ = gui.renderStringMain(gui.Tr.WaitingForContainerInfo)
+			_ = gui.RenderStringMain(gui.Tr.WaitingForContainerInfo)
 		})
 	}
 
@@ -130,7 +130,7 @@ func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
 	return gui.T.NewTask(func(stop chan struct{}) {
-		_ = gui.renderStringMain(gui.containerEnv(container))
+		_ = gui.RenderStringMain(gui.containerEnv(container))
 	})
 }
 
@@ -164,7 +164,7 @@ func (gui *Gui) containerEnv(container *commands.Container) string {
 func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 	if !container.DetailsLoaded() {
 		return gui.T.NewTask(func(stop chan struct{}) {
-			_ = gui.renderStringMain(gui.Tr.WaitingForContainerInfo)
+			_ = gui.RenderStringMain(gui.Tr.WaitingForContainerInfo)
 		})
 	}
 
@@ -214,7 +214,7 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 	output += fmt.Sprintf("\nFull details:\n\n%s", string(data))
 
 	return gui.T.NewTask(func(stop chan struct{}) {
-		_ = gui.renderStringMain(output)
+		_ = gui.RenderStringMain(output)
 	})
 }
 
@@ -299,12 +299,6 @@ func (gui *Gui) renderContainersAndServices() error {
 	}
 
 	return nil
-}
-
-type removeContainerOption struct {
-	description   string
-	command       string
-	configOptions types.ContainerRemoveOptions
 }
 
 func (gui *Gui) handleHideStoppedContainers(g *gocui.Gui, v *gocui.View) error {

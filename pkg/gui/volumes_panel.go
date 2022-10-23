@@ -81,7 +81,7 @@ func (gui *Gui) renderVolumeConfig(volume *commands.Volume) error {
 			output += utils.WithPadding("Size: ", padding) + utils.FormatBinaryBytes(int(volume.Volume.UsageData.Size)) + "\n"
 		}
 
-		_ = gui.renderStringMain(output)
+		_ = gui.RenderStringMain(output)
 	})
 }
 

@@ -8,22 +8,22 @@ import (
 
 func TestFilteredListGet(t *testing.T) {
 	tests := []struct {
-		f    FilteredList[int]
+		f    *FilteredList[int]
 		args int
 		want int
 	}{
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
 			args: 1,
 			want: 2,
 		},
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
 			args: 2,
 			want: 3,
 		},
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{1}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{1}},
 			args: 0,
 			want: 2,
 		},
@@ -38,15 +38,15 @@ func TestFilteredListGet(t *testing.T) {
 
 func TestFilteredListLen(t *testing.T) {
 	tests := []struct {
-		f    FilteredList[int]
+		f    *FilteredList[int]
 		want int
 	}{
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
 			want: 3,
 		},
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{1}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{1}},
 			want: 1,
 		},
 	}
@@ -60,19 +60,19 @@ func TestFilteredListLen(t *testing.T) {
 
 func TestFilteredListFilter(t *testing.T) {
 	tests := []struct {
-		f    FilteredList[int]
+		f    *FilteredList[int]
 		args func(int, int) bool
-		want FilteredList[int]
+		want *FilteredList[int]
 	}{
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
 			args: func(i int, _ int) bool { return i%2 == 0 },
-			want: FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{1}},
+			want: &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{1}},
 		},
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
 			args: func(i int, _ int) bool { return i%2 == 1 },
-			want: FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 2}},
+			want: &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 2}},
 		},
 	}
 
@@ -84,19 +84,19 @@ func TestFilteredListFilter(t *testing.T) {
 
 func TestFilteredListSort(t *testing.T) {
 	tests := []struct {
-		f    FilteredList[int]
+		f    *FilteredList[int]
 		args func(int, int) bool
-		want FilteredList[int]
+		want *FilteredList[int]
 	}{
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
 			args: func(i int, j int) bool { return i < j },
-			want: FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
+			want: &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
 		},
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
 			args: func(i int, j int) bool { return i > j },
-			want: FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{2, 1, 0}},
+			want: &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{2, 1, 0}},
 		},
 	}
 
@@ -108,22 +108,22 @@ func TestFilteredListSort(t *testing.T) {
 
 func TestFilteredListGetIndex(t *testing.T) {
 	tests := []struct {
-		f    FilteredList[int]
+		f    *FilteredList[int]
 		args int
 		want int
 	}{
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
 			args: 1,
 			want: 0,
 		},
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
 			args: 2,
 			want: 1,
 		},
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{1}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{1}},
 			args: 0,
 			want: -1,
 		},
@@ -138,15 +138,15 @@ func TestFilteredListGetIndex(t *testing.T) {
 
 func TestFilteredListGetItems(t *testing.T) {
 	tests := []struct {
-		f    FilteredList[int]
+		f    *FilteredList[int]
 		want []int
 	}{
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
 			want: []int{1, 2, 3},
 		},
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{1}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{1}},
 			want: []int{2},
 		},
 	}
@@ -159,19 +159,19 @@ func TestFilteredListGetItems(t *testing.T) {
 
 func TestFilteredListSetItems(t *testing.T) {
 	tests := []struct {
-		f    FilteredList[int]
+		f    *FilteredList[int]
 		args []int
-		want FilteredList[int]
+		want *FilteredList[int]
 	}{
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{0, 1, 2}},
 			args: []int{4, 5, 6},
-			want: FilteredList[int]{allItems: []int{4, 5, 6}, indices: []int{0, 1, 2}},
+			want: &FilteredList[int]{allItems: []int{4, 5, 6}, indices: []int{0, 1, 2}},
 		},
 		{
-			f:    FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{1}},
+			f:    &FilteredList[int]{allItems: []int{1, 2, 3}, indices: []int{1}},
 			args: []int{4},
-			want: FilteredList[int]{allItems: []int{4}, indices: []int{0}},
+			want: &FilteredList[int]{allItems: []int{4}, indices: []int{0}},
 		},
 	}
 

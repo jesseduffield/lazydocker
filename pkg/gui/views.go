@@ -3,6 +3,7 @@ package gui
 import (
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
+	"github.com/samber/lo"
 )
 
 type Views struct {
@@ -20,7 +21,7 @@ type Views struct {
 	Options     *gocui.View
 	Information *gocui.View
 	AppStatus   *gocui.View
-	// text that prompts you to enter text in the Search view
+	// text that prompts you to enter text in the Filter view
 	FilterPrefix *gocui.View
 	// appears next to the SearchPrefix view, it's where you type in the search string
 	Filter *gocui.View
@@ -36,33 +37,36 @@ type Views struct {
 type viewNameMapping struct {
 	viewPtr **gocui.View
 	name    string
+	// if true, we handle the position/size of the view in arrangement.go. Otherwise
+	// we handle it manually.
+	autoPosition bool
 }
 
 func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
 	return []viewNameMapping{
 		// first layer. Ordering within this layer does not matter because there are
 		// no overlapping views
-		{viewPtr: &gui.Views.Project, name: "project"},
-		{viewPtr: &gui.Views.Services, name: "services"},
-		{viewPtr: &gui.Views.Containers, name: "containers"},
-		{viewPtr: &gui.Views.Images, name: "images"},
-		{viewPtr: &gui.Views.Volumes, name: "volumes"},
+		{viewPtr: &gui.Views.Project, name: "project", autoPosition: true},
+		{viewPtr: &gui.Views.Services, name: "services", autoPosition: true},
+		{viewPtr: &gui.Views.Containers, name: "containers", autoPosition: true},
+		{viewPtr: &gui.Views.Images, name: "images", autoPosition: true},
+		{viewPtr: &gui.Views.Volumes, name: "volumes", autoPosition: true},
 
-		{viewPtr: &gui.Views.Main, name: "main"},
+		{viewPtr: &gui.Views.Main, name: "main", autoPosition: true},
 
 		// bottom line
-		{viewPtr: &gui.Views.Options, name: "options"},
-		{viewPtr: &gui.Views.AppStatus, name: "appStatus"},
-		{viewPtr: &gui.Views.Information, name: "information"},
-		{viewPtr: &gui.Views.Filter, name: "filter"},
-		{viewPtr: &gui.Views.FilterPrefix, name: "filterPrefix"},
+		{viewPtr: &gui.Views.Options, name: "options", autoPosition: true},
+		{viewPtr: &gui.Views.AppStatus, name: "appStatus", autoPosition: true},
+		{viewPtr: &gui.Views.Information, name: "information", autoPosition: true},
+		{viewPtr: &gui.Views.Filter, name: "filter", autoPosition: true},
+		{viewPtr: &gui.Views.FilterPrefix, name: "filterPrefix", autoPosition: true},
 
 		// popups.
-		{viewPtr: &gui.Views.Menu, name: "menu"},
-		{viewPtr: &gui.Views.Confirmation, name: "confirmation"},
+		{viewPtr: &gui.Views.Menu, name: "menu", autoPosition: false},
+		{viewPtr: &gui.Views.Confirmation, name: "confirmation", autoPosition: false},
 
 		// this guy will cover everything else when it appears
-		{viewPtr: &gui.Views.Limit, name: "limit"},
+		{viewPtr: &gui.Views.Limit, name: "limit", autoPosition: true},
 	}
 }
 
@@ -155,19 +159,12 @@ func (gui *Gui) popupViewNames() []string {
 }
 
 // these views have their position and size determined by arrangement.go
-func (gui *Gui) controlledBoundsViewNames() []string {
-	return []string{
-		"project",
-		"services",
-		"containers",
-		"images",
-		"volumes",
-		"options",
-		"information",
-		"appStatus",
-		"main",
-		"limit",
-		"filterPrefix",
-		"filter",
-	}
+func (gui *Gui) autoPositionedViewNames() []string {
+	views := lo.Filter(gui.orderedViewNameMappings(), func(viewNameMapping viewNameMapping, _ int) bool {
+		return viewNameMapping.autoPosition
+	})
+
+	return lo.Map(views, func(viewNameMapping viewNameMapping, _ int) string {
+		return viewNameMapping.name
+	})
 }

@@ -60,7 +60,11 @@ func (gui *Gui) getImagesPanel() *SideListPanel[*commands.Image] {
 			return a.ID < b.ID
 		},
 		getDisplayStrings: func(image *commands.Image) []string {
-			return []string{image.Name, image.Tag, utils.FormatDecimalBytes(int(image.Image.Size))}
+			return []string{
+				image.Name,
+				image.Tag,
+				utils.FormatDecimalBytes(int(image.Image.Size)),
+			}
 		},
 	}
 }
@@ -86,7 +90,7 @@ func (gui *Gui) renderImageConfig(image *commands.Image) error {
 		mainView.Autoscroll = false
 		mainView.Wrap = false // don't care what your config is this page is ugly without wrapping
 
-		_ = gui.renderStringMain(output)
+		_ = gui.RenderStringMain(output)
 	})
 }
 
