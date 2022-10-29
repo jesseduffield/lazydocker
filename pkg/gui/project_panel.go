@@ -17,54 +17,56 @@ import (
 
 func (gui *Gui) getProjectPanel() *SideListPanel[*commands.Project] {
 	return &SideListPanel[*commands.Project]{
-		contextKeyPrefix: "project",
-		ListPanel: ListPanel[*commands.Project]{
-			list: NewFilteredList[*commands.Project](),
-			view: gui.Views.Project,
-		},
-		contextIdx:     0,
-		noItemsMessage: "",
-		gui:            gui.intoInterface(),
-		getContexts: func() []ContextConfig[*commands.Project] {
-			if gui.DockerCommand.InDockerComposeProject {
+		ContextState: &ContextState[*commands.Project]{
+			GetContexts: func() []ContextConfig[*commands.Project] {
+				if gui.DockerCommand.InDockerComposeProject {
+					return []ContextConfig[*commands.Project]{
+						{
+							key:    "logs",
+							title:  gui.Tr.LogsTitle,
+							render: gui.renderAllLogs,
+						},
+						{
+							key:    "config",
+							title:  gui.Tr.DockerComposeConfigTitle,
+							render: gui.renderDockerComposeConfig,
+						},
+						{
+							key:    "credits",
+							title:  gui.Tr.CreditsTitle,
+							render: gui.renderCredits,
+						},
+					}
+				}
+
 				return []ContextConfig[*commands.Project]{
-					{
-						key:    "logs",
-						title:  gui.Tr.LogsTitle,
-						render: gui.renderAllLogs,
-					},
-					{
-						key:    "config",
-						title:  gui.Tr.DockerComposeConfigTitle,
-						render: gui.renderDockerComposeConfig,
-					},
 					{
 						key:    "credits",
 						title:  gui.Tr.CreditsTitle,
 						render: gui.renderCredits,
 					},
 				}
-			}
+			},
+			GetContextCacheKey: func(project *commands.Project) string {
+				return "projects-" + project.Name
+			},
+		},
 
-			return []ContextConfig[*commands.Project]{
-				{
-					key:    "credits",
-					title:  gui.Tr.CreditsTitle,
-					render: gui.renderCredits,
-				},
-			}
+		ListPanel: ListPanel[*commands.Project]{
+			List: NewFilteredList[*commands.Project](),
+			view: gui.Views.Project,
 		},
-		getContextCacheKey: func(project *commands.Project) string {
-			return project.Name
-		},
-		sort: func(a *commands.Project, b *commands.Project) bool {
+		NoItemsMessage: "",
+		gui:            gui.intoInterface(),
+
+		Sort: func(a *commands.Project, b *commands.Project) bool {
 			return false
 		},
-		getDisplayStrings: func(project *commands.Project) []string {
+		GetDisplayStrings: func(project *commands.Project) []string {
 			return []string{project.Name}
 		},
 		// It doesn't make sense to filter a list of only one item.
-		disableFilter: true,
+		DisableFilter: true,
 	}
 }
 
@@ -76,7 +78,7 @@ func (gui *Gui) refreshProject() error {
 func (gui *Gui) getProjectName() string {
 	projectName := path.Base(gui.Config.ProjectDir)
 	if gui.DockerCommand.InDockerComposeProject {
-		for _, service := range gui.Panels.Services.list.GetAllItems() {
+		for _, service := range gui.Panels.Services.List.GetAllItems() {
 			container := service.Container
 			if container != nil && container.DetailsLoaded() {
 				return container.Details.Config.Labels["com.docker.compose.project"]

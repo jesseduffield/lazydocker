@@ -14,52 +14,52 @@ import (
 
 func (gui *Gui) getServicesPanel() *SideListPanel[*commands.Service] {
 	return &SideListPanel[*commands.Service]{
-		contextKeyPrefix: "services",
+		ContextState: &ContextState[*commands.Service]{
+			GetContexts: func() []ContextConfig[*commands.Service] {
+				return []ContextConfig[*commands.Service]{
+					{
+						key:    "logs",
+						title:  gui.Tr.LogsTitle,
+						render: gui.renderServiceLogs,
+					},
+					{
+						key:    "stats",
+						title:  gui.Tr.StatsTitle,
+						render: gui.renderServiceStats,
+					},
+					{
+						key:    "container-env",
+						title:  gui.Tr.ContainerEnvTitle,
+						render: gui.renderServiceContainerEnv,
+					},
+					{
+						key:    "container-config",
+						title:  gui.Tr.ContainerConfigTitle,
+						render: gui.renderServiceContainerConfig,
+					},
+					{
+						key:    "top",
+						title:  gui.Tr.TopTitle,
+						render: gui.renderServiceTop,
+					},
+				}
+			},
+			GetContextCacheKey: func(service *commands.Service) string {
+				if service.Container == nil {
+					return "services-" + service.ID
+				}
+				return "services-" + service.ID + "-" + service.Container.ID + "-" + service.Container.Container.State
+			},
+		},
 		ListPanel: ListPanel[*commands.Service]{
-			list: NewFilteredList[*commands.Service](),
+			List: NewFilteredList[*commands.Service](),
 			view: gui.Views.Services,
 		},
-		contextIdx: 0,
 		// TODO: i18n
-		noItemsMessage: "no service selected",
+		NoItemsMessage: "no service selected",
 		gui:            gui.intoInterface(),
-		getContexts: func() []ContextConfig[*commands.Service] {
-			return []ContextConfig[*commands.Service]{
-				{
-					key:    "logs",
-					title:  gui.Tr.LogsTitle,
-					render: gui.renderServiceLogs,
-				},
-				{
-					key:    "stats",
-					title:  gui.Tr.StatsTitle,
-					render: gui.renderServiceStats,
-				},
-				{
-					key:    "container-env",
-					title:  gui.Tr.ContainerEnvTitle,
-					render: gui.renderServiceContainerEnv,
-				},
-				{
-					key:    "container-config",
-					title:  gui.Tr.ContainerConfigTitle,
-					render: gui.renderServiceContainerConfig,
-				},
-				{
-					key:    "top",
-					title:  gui.Tr.TopTitle,
-					render: gui.renderServiceTop,
-				},
-			}
-		},
-		getContextCacheKey: func(service *commands.Service) string {
-			if service.Container == nil {
-				return service.ID
-			}
-			return service.ID + "-" + service.Container.ID + "-" + service.Container.Container.State
-		},
 		// sort services first by whether they have a linked container, and second by alphabetical order
-		sort: func(a *commands.Service, b *commands.Service) bool {
+		Sort: func(a *commands.Service, b *commands.Service) bool {
 			if a.Container != nil && b.Container == nil {
 				return true
 			}
@@ -70,7 +70,7 @@ func (gui *Gui) getServicesPanel() *SideListPanel[*commands.Service] {
 
 			return a.Name < b.Name
 		},
-		getDisplayStrings: func(service *commands.Service) []string {
+		GetDisplayStrings: func(service *commands.Service) []string {
 			if service.Container == nil {
 				return []string{
 					utils.ColoredString("none", color.FgBlue),
@@ -90,7 +90,7 @@ func (gui *Gui) getServicesPanel() *SideListPanel[*commands.Service] {
 				utils.ColoredString(cont.DisplayPorts(), color.FgYellow),
 			}
 		},
-		hide: func() bool {
+		Hide: func() bool {
 			return !gui.DockerCommand.InDockerComposeProject
 		},
 	}

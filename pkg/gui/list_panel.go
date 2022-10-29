@@ -12,31 +12,31 @@ import (
 )
 
 type ListPanel[T comparable] struct {
-	selectedIdx int
-	list        *FilteredList[T]
+	SelectedIdx int
+	List        *FilteredList[T]
 	view        *gocui.View
 }
 
 func (self *ListPanel[T]) setSelectedLineIdx(value int) {
 	clampedValue := 0
-	if self.list.Len() > 0 {
-		clampedValue = lcUtils.Clamp(value, 0, self.list.Len()-1)
+	if self.List.Len() > 0 {
+		clampedValue = lcUtils.Clamp(value, 0, self.List.Len()-1)
 	}
 
-	self.selectedIdx = clampedValue
+	self.SelectedIdx = clampedValue
 }
 
 func (self *ListPanel[T]) clampSelectedLineIdx() {
-	clamped := lcUtils.Clamp(self.selectedIdx, 0, self.list.Len()-1)
+	clamped := lcUtils.Clamp(self.SelectedIdx, 0, self.List.Len()-1)
 
-	if clamped != self.selectedIdx {
-		self.selectedIdx = clamped
+	if clamped != self.SelectedIdx {
+		self.SelectedIdx = clamped
 	}
 }
 
 // moves the cursor up or down by the given amount (up for negative values)
 func (self *ListPanel[T]) moveSelectedLine(delta int) {
-	self.setSelectedLineIdx(self.selectedIdx + delta)
+	self.setSelectedLineIdx(self.SelectedIdx + delta)
 }
 
 func (self *ListPanel[T]) SelectNextLine() {
@@ -47,39 +47,42 @@ func (self *ListPanel[T]) SelectPrevLine() {
 	self.moveSelectedLine(-1)
 }
 
+type ContextState[T any] struct {
+	contextIdx int
+	// contexts    []ContextConfig[T]
+	GetContexts func() []ContextConfig[T]
+	// this tells us whether we need to re-render to the main panel
+	GetContextCacheKey func(item T) string
+}
+
 // list panel at the side of the screen that renders content to the main panel
 type SideListPanel[T comparable] struct {
-	contextKeyPrefix string
-	contextIdx       int
-	// contexts    []ContextConfig[T]
-	getContexts func() []ContextConfig[T]
-	// this tells us whether we need to re-render to the main panel
-	getContextCacheKey func(item T) string
+	ContextState *ContextState[T]
 
 	ListPanel[T]
 
 	// message to render in the main view if there are no items in the panel
 	// and it has focus. Leave empty if you don't want to render anything
-	noItemsMessage string
+	NoItemsMessage string
 
 	gui IGui
 
-	// this filter is applied on top of additional default filters
-	filter func(T) bool
-	sort   func(a, b T) bool
+	// this Filter is applied on top of additional default filters
+	Filter func(T) bool
+	Sort   func(a, b T) bool
 
-	onClick func(T) error
+	OnClick func(T) error
 
-	getDisplayStrings func(T) []string
+	GetDisplayStrings func(T) []string
 
 	// function to be called after re-rendering list. Can be nil
-	onRerender func() error
+	OnRerender func() error
 
 	// set this to true if you don't want to allow manual filtering via '/'
-	disableFilter bool
+	DisableFilter bool
 
 	// This can be nil if you want to always show the panel
-	hide func() bool
+	Hide func() bool
 }
 
 type ISideListPanel interface {
@@ -90,11 +93,11 @@ type ISideListPanel interface {
 	RerenderList() error
 	IsFilterDisabled() bool
 	IsHidden() bool
-	OnNextLine() error
-	OnPrevLine() error
-	OnClick() error
-	OnPrevContext() error
-	OnNextContext() error
+	HandleNextLine() error
+	HandlePrevLine() error
+	HandleClick() error
+	HandlePrevContext() error
+	HandleNextContext() error
 }
 
 var _ ISideListPanel = &SideListPanel[int]{}
@@ -122,19 +125,19 @@ func (gui *Gui) intoInterface() IGui {
 	return gui
 }
 
-func (self *SideListPanel[T]) OnClick() error {
-	itemCount := self.list.Len()
+func (self *SideListPanel[T]) HandleClick() error {
+	itemCount := self.List.Len()
 	handleSelect := self.HandleSelect
-	selectedLine := &self.selectedIdx
+	selectedLine := &self.SelectedIdx
 
 	if err := self.gui.HandleClick(self.view, itemCount, selectedLine, handleSelect); err != nil {
 		return err
 	}
 
-	if self.onClick != nil {
+	if self.OnClick != nil {
 		selectedItem, err := self.GetSelectedItem()
 		if err == nil {
-			return self.onClick(selectedItem)
+			return self.OnClick(selectedItem)
 		}
 	}
 
@@ -148,12 +151,12 @@ func (self *SideListPanel[T]) View() *gocui.View {
 func (self *SideListPanel[T]) HandleSelect() error {
 	item, err := self.GetSelectedItem()
 	if err != nil {
-		if err.Error() != self.noItemsMessage {
+		if err.Error() != self.NoItemsMessage {
 			return err
 		}
 
-		if self.noItemsMessage != "" {
-			return self.gui.RenderStringMain(self.noItemsMessage)
+		if self.NoItemsMessage != "" {
+			return self.gui.RenderStringMain(self.NoItemsMessage)
 		}
 
 		return nil
@@ -165,97 +168,119 @@ func (self *SideListPanel[T]) HandleSelect() error {
 }
 
 func (self *SideListPanel[T]) renderContext(item T) error {
-	contexts := self.getContexts()
-
-	if len(contexts) == 0 {
+	if self.ContextState == nil {
 		return nil
 	}
 
-	key := self.contextKeyPrefix + "-" + self.getContextCacheKey(item) + "-" + contexts[self.contextIdx].key
+	key := self.ContextState.GetCurrentContextKey(item)
 	if !self.gui.ShouldRefresh(key) {
 		return nil
 	}
 
 	mainView := self.gui.GetMainView()
-	mainView.Tabs = self.GetContextTitles()
-	mainView.TabIndex = self.contextIdx
+	mainView.Tabs = self.ContextState.GetContextTitles()
+	mainView.TabIndex = self.ContextState.contextIdx
 
-	return contexts[self.contextIdx].render(item)
+	return self.ContextState.GetCurrentContext().render(item)
 }
 
-func (self *SideListPanel[T]) GetContextTitles() []string {
-	return lo.Map(self.getContexts(), func(context ContextConfig[T], _ int) string {
+func (self *ContextState[T]) GetContextTitles() []string {
+	return lo.Map(self.GetContexts(), func(context ContextConfig[T], _ int) string {
 		return context.title
 	})
+}
+
+func (self *ContextState[T]) GetCurrentContextKey(item T) string {
+	return self.GetContextCacheKey(item) + "-" + self.GetCurrentContext().key
+}
+
+func (self *ContextState[T]) GetCurrentContext() ContextConfig[T] {
+	return self.GetContexts()[self.contextIdx]
 }
 
 func (self *SideListPanel[T]) GetSelectedItem() (T, error) {
 	var zero T
 
-	item, ok := self.list.TryGet(self.selectedIdx)
+	item, ok := self.List.TryGet(self.SelectedIdx)
 	if !ok {
 		// could probably have a better error here
-		return zero, errors.New(self.noItemsMessage)
+		return zero, errors.New(self.NoItemsMessage)
 	}
 
 	return item, nil
 }
 
-func (self *SideListPanel[T]) OnNextLine() error {
+func (self *SideListPanel[T]) HandleNextLine() error {
 	self.SelectNextLine()
 
 	return self.HandleSelect()
 }
 
-func (self *SideListPanel[T]) OnPrevLine() error {
+func (self *SideListPanel[T]) HandlePrevLine() error {
 	self.SelectPrevLine()
 
 	return self.HandleSelect()
 }
 
-func (self *SideListPanel[T]) OnNextContext() error {
-	contexts := self.getContexts()
+func (self *ContextState[T]) HandleNextContext() {
+	contexts := self.GetContexts()
 
 	if len(contexts) == 0 {
-		return nil
+		return
 	}
 
 	self.contextIdx = (self.contextIdx + 1) % len(contexts)
+}
+
+func (self *ContextState[T]) HandlePrevContext() {
+	contexts := self.GetContexts()
+
+	if len(contexts) == 0 {
+		return
+	}
+
+	self.contextIdx = (self.contextIdx - 1 + len(contexts)) % len(contexts)
+}
+
+func (self *SideListPanel[T]) HandleNextContext() error {
+	if self.ContextState == nil {
+		return nil
+	}
+
+	self.ContextState.HandleNextContext()
 
 	return self.HandleSelect()
 }
 
-func (self *SideListPanel[T]) OnPrevContext() error {
-	contexts := self.getContexts()
-
-	if len(contexts) == 0 {
+func (self *SideListPanel[T]) HandlePrevContext() error {
+	if self.ContextState == nil {
 		return nil
 	}
 
-	self.contextIdx = (self.contextIdx - 1 + len(contexts)) % len(contexts)
+	self.ContextState.HandlePrevContext()
 
 	return self.HandleSelect()
 }
 
 func (self *SideListPanel[T]) Refocus() {
-	self.gui.FocusY(self.selectedIdx, self.list.Len(), self.view)
+	self.gui.FocusY(self.SelectedIdx, self.List.Len(), self.view)
 }
 
 func (self *SideListPanel[T]) SetItems(items []T) {
-	self.list.SetItems(items)
+	self.List.SetItems(items)
 	self.FilterAndSort()
 }
 
 func (self *SideListPanel[T]) FilterAndSort() {
 	filterString := self.gui.FilterString(self.view)
 
-	self.list.Filter(func(item T, index int) bool {
-		if self.filter != nil && !self.filter(item) {
+	self.List.Filter(func(item T, index int) bool {
+		if self.Filter != nil && !self.Filter(item) {
 			return false
 		}
 
 		if lo.SomeBy(self.gui.IgnoreStrings(), func(ignore string) bool {
-			return lo.SomeBy(self.getDisplayStrings(item), func(searchString string) bool {
+			return lo.SomeBy(self.GetDisplayStrings(item), func(searchString string) bool {
 				return strings.Contains(searchString, ignore)
 			})
 		}) {
@@ -263,7 +288,7 @@ func (self *SideListPanel[T]) FilterAndSort() {
 		}
 
 		if filterString != "" {
-			return lo.SomeBy(self.getDisplayStrings(item), func(searchString string) bool {
+			return lo.SomeBy(self.GetDisplayStrings(item), func(searchString string) bool {
 				return strings.Contains(searchString, filterString)
 			})
 		}
@@ -271,7 +296,7 @@ func (self *SideListPanel[T]) FilterAndSort() {
 		return true
 	})
 
-	self.list.Sort(self.sort)
+	self.List.Sort(self.Sort)
 
 	self.clampSelectedLineIdx()
 }
@@ -281,8 +306,8 @@ func (self *SideListPanel[T]) RerenderList() error {
 
 	self.gui.Update(func() error {
 		self.view.Clear()
-		table := lo.Map(self.list.GetItems(), func(item T, index int) []string {
-			return self.getDisplayStrings(item)
+		table := lo.Map(self.List.GetItems(), func(item T, index int) []string {
+			return self.GetDisplayStrings(item)
 		})
 		renderedTable, err := utils.RenderTable(table)
 		if err != nil {
@@ -290,8 +315,8 @@ func (self *SideListPanel[T]) RerenderList() error {
 		}
 		fmt.Fprint(self.view, renderedTable)
 
-		if self.onRerender != nil {
-			if err := self.onRerender(); err != nil {
+		if self.OnRerender != nil {
+			if err := self.OnRerender(); err != nil {
 				return err
 			}
 		}
@@ -306,17 +331,25 @@ func (self *SideListPanel[T]) RerenderList() error {
 }
 
 func (self *SideListPanel[T]) SetContextIndex(index int) {
+	if self.ContextState == nil {
+		return
+	}
+
+	self.ContextState.SetContextIndex(index)
+}
+
+func (self *ContextState[T]) SetContextIndex(index int) {
 	self.contextIdx = index
 }
 
 func (self *SideListPanel[T]) IsFilterDisabled() bool {
-	return self.disableFilter
+	return self.DisableFilter
 }
 
 func (self *SideListPanel[T]) IsHidden() bool {
-	if self.hide == nil {
+	if self.Hide == nil {
 		return false
 	}
 
-	return self.hide()
+	return self.Hide()
 }

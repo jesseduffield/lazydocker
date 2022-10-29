@@ -13,30 +13,30 @@ import (
 
 func (gui *Gui) getVolumesPanel() *SideListPanel[*commands.Volume] {
 	return &SideListPanel[*commands.Volume]{
-		contextKeyPrefix: "volumes",
+		ContextState: &ContextState[*commands.Volume]{
+			GetContexts: func() []ContextConfig[*commands.Volume] {
+				return []ContextConfig[*commands.Volume]{
+					{
+						key:    "config",
+						title:  gui.Tr.ConfigTitle,
+						render: gui.renderVolumeConfig,
+					},
+				}
+			},
+			GetContextCacheKey: func(volume *commands.Volume) string {
+				return "volumes-" + volume.Name
+			},
+		},
 		ListPanel: ListPanel[*commands.Volume]{
-			list: NewFilteredList[*commands.Volume](),
+			List: NewFilteredList[*commands.Volume](),
 			view: gui.Views.Volumes,
 		},
-		contextIdx:     0,
-		noItemsMessage: gui.Tr.NoVolumes,
+		NoItemsMessage: gui.Tr.NoVolumes,
 		gui:            gui.intoInterface(),
-		getContexts: func() []ContextConfig[*commands.Volume] {
-			return []ContextConfig[*commands.Volume]{
-				{
-					key:    "config",
-					title:  gui.Tr.ConfigTitle,
-					render: gui.renderVolumeConfig,
-				},
-			}
-		},
-		getContextCacheKey: func(volume *commands.Volume) string {
-			return volume.Name
-		},
 		// we're sorting these volumes based on whether they have labels defined,
 		// because those are the ones you typically care about.
 		// Within that, we also sort them alphabetically
-		sort: func(a *commands.Volume, b *commands.Volume) bool {
+		Sort: func(a *commands.Volume, b *commands.Volume) bool {
 			if len(a.Volume.Labels) == 0 && len(b.Volume.Labels) > 0 {
 				return false
 			}
@@ -45,7 +45,7 @@ func (gui *Gui) getVolumesPanel() *SideListPanel[*commands.Volume] {
 			}
 			return a.Name < b.Name
 		},
-		getDisplayStrings: func(volume *commands.Volume) []string {
+		GetDisplayStrings: func(volume *commands.Volume) []string {
 			return []string{volume.Volume.Driver, volume.Name}
 		},
 	}

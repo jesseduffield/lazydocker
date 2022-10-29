@@ -22,58 +22,58 @@ func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
 			return true
 		}
 
-		return !lo.SomeBy(gui.Panels.Services.list.GetAllItems(), func(service *commands.Service) bool {
+		return !lo.SomeBy(gui.Panels.Services.List.GetAllItems(), func(service *commands.Service) bool {
 			return service.Name == container.ServiceName
 		})
 	}
 
 	return &SideListPanel[*commands.Container]{
-		contextKeyPrefix: "containers",
+		ContextState: &ContextState[*commands.Container]{
+			GetContexts: func() []ContextConfig[*commands.Container] {
+				return []ContextConfig[*commands.Container]{
+					{
+						key:    "logs",
+						title:  gui.Tr.LogsTitle,
+						render: gui.renderContainerLogsToMain,
+					},
+					{
+						key:    "stats",
+						title:  gui.Tr.StatsTitle,
+						render: gui.renderContainerStats,
+					},
+					{
+						key:    "env",
+						title:  gui.Tr.EnvTitle,
+						render: gui.renderContainerEnv,
+					},
+					{
+						key:    "config",
+						title:  gui.Tr.ConfigTitle,
+						render: gui.renderContainerConfig,
+					},
+					{
+						key:    "top",
+						title:  gui.Tr.TopTitle,
+						render: gui.renderContainerTop,
+					},
+				}
+			},
+			GetContextCacheKey: func(container *commands.Container) string {
+				return "containers-" + container.ID + "-" + container.Container.State
+			},
+		},
 		ListPanel: ListPanel[*commands.Container]{
-			list: NewFilteredList[*commands.Container](),
+			List: NewFilteredList[*commands.Container](),
 			view: gui.Views.Containers,
 		},
-		contextIdx:     0,
-		noItemsMessage: gui.Tr.NoContainers,
+		NoItemsMessage: gui.Tr.NoContainers,
 		gui:            gui.intoInterface(),
-		getContexts: func() []ContextConfig[*commands.Container] {
-			return []ContextConfig[*commands.Container]{
-				{
-					key:    "logs",
-					title:  gui.Tr.LogsTitle,
-					render: gui.renderContainerLogsToMain,
-				},
-				{
-					key:    "stats",
-					title:  gui.Tr.StatsTitle,
-					render: gui.renderContainerStats,
-				},
-				{
-					key:    "env",
-					title:  gui.Tr.EnvTitle,
-					render: gui.renderContainerEnv,
-				},
-				{
-					key:    "config",
-					title:  gui.Tr.ConfigTitle,
-					render: gui.renderContainerConfig,
-				},
-				{
-					key:    "top",
-					title:  gui.Tr.TopTitle,
-					render: gui.renderContainerTop,
-				},
-			}
-		},
-		getContextCacheKey: func(container *commands.Container) string {
-			return container.ID + "-" + container.Container.State
-		},
 		// sortedContainers returns containers sorted by state if c.SortContainersByState is true (follows 1- running, 2- exited, 3- created)
 		// and sorted by name if c.SortContainersByState is false
-		sort: func(a *commands.Container, b *commands.Container) bool {
+		Sort: func(a *commands.Container, b *commands.Container) bool {
 			return sortContainers(a, b, gui.Config.UserConfig.Gui.LegacySortContainers)
 		},
-		filter: func(container *commands.Container) bool {
+		Filter: func(container *commands.Container) bool {
 			// Note that this is O(N*M) time complexity where N is the number of services
 			// and M is the number of containers. We expect N to be small but M may be large,
 			// so we will need to keep an eye on this.
@@ -87,7 +87,7 @@ func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
 
 			return true
 		},
-		getDisplayStrings: func(container *commands.Container) []string {
+		GetDisplayStrings: func(container *commands.Container) []string {
 			image := strings.TrimPrefix(container.Container.Image, "sha256:")
 
 			return []string{
@@ -261,12 +261,12 @@ func (gui *Gui) refreshContainersAndServices() error {
 	}
 
 	// keep track of current service selected so that we can reposition our cursor if it moves position in the list
-	originalSelectedLineIdx := gui.Panels.Services.selectedIdx
-	selectedService, isServiceSelected := gui.Panels.Services.list.TryGet(originalSelectedLineIdx)
+	originalSelectedLineIdx := gui.Panels.Services.SelectedIdx
+	selectedService, isServiceSelected := gui.Panels.Services.List.TryGet(originalSelectedLineIdx)
 
 	containers, services, err := gui.DockerCommand.RefreshContainersAndServices(
-		gui.Panels.Services.list.GetAllItems(),
-		gui.Panels.Containers.list.GetAllItems(),
+		gui.Panels.Services.List.GetAllItems(),
+		gui.Panels.Containers.List.GetAllItems(),
 	)
 	if err != nil {
 		return err
@@ -277,7 +277,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 
 	// see if our selected service has moved
 	if isServiceSelected {
-		for i, service := range gui.Panels.Services.list.GetItems() {
+		for i, service := range gui.Panels.Services.List.GetItems() {
 			if service.ID == selectedService.ID {
 				if i == originalSelectedLineIdx {
 					break
@@ -484,7 +484,7 @@ func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error
 func (gui *Gui) handleStopContainers() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmStopContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
-			for _, container := range gui.Panels.Containers.list.GetAllItems() {
+			for _, container := range gui.Panels.Containers.List.GetAllItems() {
 				if err := container.Stop(); err != nil {
 					gui.Log.Error(err)
 				}
@@ -498,7 +498,7 @@ func (gui *Gui) handleStopContainers() error {
 func (gui *Gui) handleRemoveContainers() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmRemoveContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
-			for _, container := range gui.Panels.Containers.list.GetAllItems() {
+			for _, container := range gui.Panels.Containers.List.GetAllItems() {
 				if err := container.Remove(types.ContainerRemoveOptions{Force: true}); err != nil {
 					gui.Log.Error(err)
 				}

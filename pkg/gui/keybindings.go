@@ -514,7 +514,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	}
 
 	for _, panel := range gui.allListPanels() {
-		setUpDownClickBindings(panel.View().Name(), panel.OnPrevLine, panel.OnNextLine, panel.OnClick)
+		setUpDownClickBindings(panel.View().Name(), panel.HandlePrevLine, panel.HandleNextLine, panel.HandleClick)
 	}
 
 	setUpDownClickBindings("main", gui.scrollUpMain, gui.scrollDownMain, gui.handleMainClick)
@@ -532,14 +532,14 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 				ViewName:    panel.View().Name(),
 				Key:         '[',
 				Modifier:    gocui.ModNone,
-				Handler:     wrappedHandler(panel.OnPrevContext),
+				Handler:     wrappedHandler(panel.HandlePrevContext),
 				Description: gui.Tr.PreviousContext,
 			},
 			&Binding{
 				ViewName:    panel.View().Name(),
 				Key:         ']',
 				Modifier:    gocui.ModNone,
-				Handler:     wrappedHandler(panel.OnNextContext),
+				Handler:     wrappedHandler(panel.HandleNextContext),
 				Description: gui.Tr.NextContext,
 			},
 		)

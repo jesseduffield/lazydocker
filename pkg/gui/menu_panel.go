@@ -25,35 +25,24 @@ type CreateMenuOptions struct {
 func (gui *Gui) getMenuPanel() *SideListPanel[*MenuItem] {
 	return &SideListPanel[*MenuItem]{
 		ListPanel: ListPanel[*MenuItem]{
-			list: NewFilteredList[*MenuItem](),
+			List: NewFilteredList[*MenuItem](),
 			view: gui.Views.Menu,
 		},
-		noItemsMessage: "",
+		NoItemsMessage: "",
 		gui:            gui.intoInterface(),
-		onClick:        gui.onMenuPress,
-		sort:           nil,
-		getDisplayStrings: func(menuItem *MenuItem) []string {
+		OnClick:        gui.onMenuPress,
+		Sort:           nil,
+		GetDisplayStrings: func(menuItem *MenuItem) []string {
 			return menuItem.LabelColumns
 		},
-		onRerender: func() error {
+		OnRerender: func() error {
 			return gui.resizePopupPanel(gui.Views.Menu)
 		},
 		// so that we can avoid some UI trickiness, the menu will not have filtering
 		// abillity yet. To support it, we would need to have filter state against
 		// each panel (e.g. for when you filter the images panel, then bring up
 		// the options menu, then try to filter that too.
-		disableFilter: true,
-
-		// the menu panel doesn't actually have any contexts to display on the main view
-		// so what follows are all dummy values
-		contextKeyPrefix: "menu",
-		contextIdx:       0,
-		getContextCacheKey: func(menuItem *MenuItem) string {
-			return ""
-		},
-		getContexts: func() []ContextConfig[*MenuItem] {
-			return []ContextConfig[*MenuItem]{}
-		},
+		DisableFilter: true,
 	}
 }
 

@@ -269,7 +269,7 @@ func (gui *Gui) Run() error {
 }
 
 func (gui *Gui) updateContainerDetails() error {
-	return gui.DockerCommand.UpdateContainerDetails(gui.Panels.Containers.list.GetAllItems())
+	return gui.DockerCommand.UpdateContainerDetails(gui.Panels.Containers.List.GetAllItems())
 }
 
 func (gui *Gui) refresh() {
@@ -455,7 +455,7 @@ func (gui *Gui) monitorContainerStats(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			for _, container := range gui.Panels.Containers.list.GetAllItems() {
+			for _, container := range gui.Panels.Containers.List.GetAllItems() {
 				if !container.MonitoringStats {
 					go gui.DockerCommand.CreateClientStatMonitor(container)
 				}

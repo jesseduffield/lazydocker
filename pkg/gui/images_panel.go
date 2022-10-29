@@ -18,29 +18,29 @@ func (gui *Gui) getImagesPanel() *SideListPanel[*commands.Image] {
 	noneLabel := "<none>"
 
 	return &SideListPanel[*commands.Image]{
-		contextKeyPrefix: "images",
+		ContextState: &ContextState[*commands.Image]{
+			GetContexts: func() []ContextConfig[*commands.Image] {
+				return []ContextConfig[*commands.Image]{
+					{
+						key:   "config",
+						title: gui.Tr.ConfigTitle,
+						render: func(image *commands.Image) error {
+							return gui.renderImageConfig(image)
+						},
+					},
+				}
+			},
+			GetContextCacheKey: func(image *commands.Image) string {
+				return "images-" + image.ID
+			},
+		},
 		ListPanel: ListPanel[*commands.Image]{
-			list: NewFilteredList[*commands.Image](),
+			List: NewFilteredList[*commands.Image](),
 			view: gui.Views.Images,
 		},
-		contextIdx:     0,
-		noItemsMessage: gui.Tr.NoImages,
+		NoItemsMessage: gui.Tr.NoImages,
 		gui:            gui.intoInterface(),
-		getContexts: func() []ContextConfig[*commands.Image] {
-			return []ContextConfig[*commands.Image]{
-				{
-					key:   "config",
-					title: gui.Tr.ConfigTitle,
-					render: func(image *commands.Image) error {
-						return gui.renderImageConfig(image)
-					},
-				},
-			}
-		},
-		getContextCacheKey: func(image *commands.Image) string {
-			return image.ID
-		},
-		sort: func(a *commands.Image, b *commands.Image) bool {
+		Sort: func(a *commands.Image, b *commands.Image) bool {
 			if a.Name == noneLabel && b.Name != noneLabel {
 				return false
 			}
@@ -59,7 +59,7 @@ func (gui *Gui) getImagesPanel() *SideListPanel[*commands.Image] {
 
 			return a.ID < b.ID
 		},
-		getDisplayStrings: func(image *commands.Image) []string {
+		GetDisplayStrings: func(image *commands.Image) []string {
 			return []string{
 				image.Name,
 				image.Tag,
