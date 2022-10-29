@@ -4,7 +4,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/docker/docker/api/types"
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,28 +14,28 @@ func sampleContainers() []*commands.Container {
 		{
 			ID:   "1",
 			Name: "1",
-			Container: types.Container{
+			Container: dockerTypes.Container{
 				State: "exited",
 			},
 		},
 		{
 			ID:   "2",
 			Name: "2",
-			Container: types.Container{
+			Container: dockerTypes.Container{
 				State: "running",
 			},
 		},
 		{
 			ID:   "3",
 			Name: "3",
-			Container: types.Container{
+			Container: dockerTypes.Container{
 				State: "running",
 			},
 		},
 		{
 			ID:   "4",
 			Name: "4",
-			Container: types.Container{
+			Container: dockerTypes.Container{
 				State: "created",
 			},
 		},
@@ -47,28 +47,28 @@ func expectedPerStatusContainers() []*commands.Container {
 		{
 			ID:   "2",
 			Name: "2",
-			Container: types.Container{
+			Container: dockerTypes.Container{
 				State: "running",
 			},
 		},
 		{
 			ID:   "3",
 			Name: "3",
-			Container: types.Container{
+			Container: dockerTypes.Container{
 				State: "running",
 			},
 		},
 		{
 			ID:   "1",
 			Name: "1",
-			Container: types.Container{
+			Container: dockerTypes.Container{
 				State: "exited",
 			},
 		},
 		{
 			ID:   "4",
 			Name: "4",
-			Container: types.Container{
+			Container: dockerTypes.Container{
 				State: "created",
 			},
 		},
@@ -80,28 +80,28 @@ func expectedLegacySortedContainers() []*commands.Container {
 		{
 			ID:   "1",
 			Name: "1",
-			Container: types.Container{
+			Container: dockerTypes.Container{
 				State: "exited",
 			},
 		},
 		{
 			ID:   "2",
 			Name: "2",
-			Container: types.Container{
+			Container: dockerTypes.Container{
 				State: "running",
 			},
 		},
 		{
 			ID:   "3",
 			Name: "3",
-			Container: types.Container{
+			Container: dockerTypes.Container{
 				State: "running",
 			},
 		},
 		{
 			ID:   "4",
 			Name: "4",
-			Container: types.Container{
+			Container: dockerTypes.Container{
 				State: "created",
 			},
 		},

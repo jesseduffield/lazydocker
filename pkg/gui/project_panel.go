@@ -9,6 +9,7 @@ import (
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
+	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/jesseduffield/yaml"
 )
@@ -63,9 +64,7 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 		Sort: func(a *commands.Project, b *commands.Project) bool {
 			return false
 		},
-		GetDisplayStrings: func(project *commands.Project) []string {
-			return []string{project.Name}
-		},
+		GetDisplayStrings: presentation.GetProjectDisplayStrings,
 		// It doesn't make sense to filter a list of only one item.
 		DisableFilter: true,
 	}

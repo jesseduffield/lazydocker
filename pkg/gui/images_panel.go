@@ -5,12 +5,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
+	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
+	"github.com/jesseduffield/lazydocker/pkg/gui/types"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
@@ -60,13 +62,7 @@ func (gui *Gui) getImagesPanel() *panels.SideListPanel[*commands.Image] {
 
 			return a.ID < b.ID
 		},
-		GetDisplayStrings: func(image *commands.Image) []string {
-			return []string{
-				image.Name,
-				image.Tag,
-				utils.FormatDecimalBytes(int(image.Image.Size)),
-			}
-		},
+		GetDisplayStrings: presentation.GetImageDisplayStrings,
 	}
 }
 
@@ -126,7 +122,7 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	type removeImageOption struct {
 		description   string
 		command       string
-		configOptions types.ImageRemoveOptions
+		configOptions dockerTypes.ImageRemoveOptions
 	}
 
 	image, err := gui.Panels.Images.GetSelectedItem()
@@ -141,27 +137,27 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		{
 			description:   gui.Tr.Remove,
 			command:       "docker image rm " + shortSha,
-			configOptions: types.ImageRemoveOptions{PruneChildren: true, Force: false},
+			configOptions: dockerTypes.ImageRemoveOptions{PruneChildren: true, Force: false},
 		},
 		{
 			description:   gui.Tr.RemoveWithoutPrune,
 			command:       "docker image rm --no-prune " + shortSha,
-			configOptions: types.ImageRemoveOptions{PruneChildren: false, Force: false},
+			configOptions: dockerTypes.ImageRemoveOptions{PruneChildren: false, Force: false},
 		},
 		{
 			description:   gui.Tr.RemoveWithForce,
 			command:       "docker image rm --force " + shortSha,
-			configOptions: types.ImageRemoveOptions{PruneChildren: true, Force: true},
+			configOptions: dockerTypes.ImageRemoveOptions{PruneChildren: true, Force: true},
 		},
 		{
 			description:   gui.Tr.RemoveWithoutPruneWithForce,
 			command:       "docker image rm --no-prune --force " + shortSha,
-			configOptions: types.ImageRemoveOptions{PruneChildren: false, Force: true},
+			configOptions: dockerTypes.ImageRemoveOptions{PruneChildren: false, Force: true},
 		},
 	}
 
-	menuItems := lo.Map(options, func(option *removeImageOption, _ int) *MenuItem {
-		return &MenuItem{
+	menuItems := lo.Map(options, func(option *removeImageOption, _ int) *types.MenuItem {
+		return &types.MenuItem{
 			LabelColumns: []string{
 				option.description,
 				color.New(color.FgRed).Sprint(option.command),

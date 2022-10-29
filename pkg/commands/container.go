@@ -4,18 +4,14 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
-	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/docker/docker/api/types/container"
-	"github.com/samber/lo"
 	"github.com/sasha-s/go-deadlock"
 
-	"github.com/docker/docker/api/types"
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-	"github.com/fatih/color"
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
@@ -34,13 +30,13 @@ type Container struct {
 	OneOff          bool
 	ProjectName     string
 	ID              string
-	Container       types.Container
+	Container       dockerTypes.Container
 	Client          *client.Client
 	OSCommand       *OSCommand
 	Config          *config.AppConfig
 	Log             *logrus.Entry
 	StatHistory     []*RecordedStats
-	Details         types.ContainerJSON
+	Details         dockerTypes.ContainerJSON
 	MonitoringStats bool
 	DockerCommand   LimitedDockerCommand
 	Tr              *i18n.TranslationSet
@@ -48,126 +44,8 @@ type Container struct {
 	StatsMutex deadlock.Mutex
 }
 
-// TODO: move this stuff into a presentation layer
-
-func (c *Container) DisplayPorts() string {
-	portStrings := lo.Map(c.Container.Ports, func(port types.Port, _ int) string {
-		if port.PublicPort == 0 {
-			return fmt.Sprintf("%d/%s", port.PrivatePort, port.Type)
-		}
-
-		// docker ps will show '0.0.0.0:80->80/tcp' but we'll show
-		// '80->80/tcp' instead to save space (unless the IP is something other than
-		// 0.0.0.0)
-		ipString := ""
-		if port.IP != "0.0.0.0" {
-			ipString = port.IP + ":"
-		}
-		return fmt.Sprintf("%s%d->%d/%s", ipString, port.PublicPort, port.PrivatePort, port.Type)
-	})
-
-	// sorting because the order of the ports is not deterministic
-	// and we don't want to have them constantly swapping
-	sort.Strings(portStrings)
-
-	return strings.Join(portStrings, ", ")
-}
-
-// GetDisplayStatus returns the colored status of the container
-func (c *Container) GetDisplayStatus() string {
-	return utils.ColoredString(c.Container.State, c.GetColor())
-}
-
-// GetDisplayStatus returns the exit code if the container has exited, and the health status if the container is running (and has a health check)
-func (c *Container) GetDisplaySubstatus() string {
-	if !c.DetailsLoaded() {
-		return ""
-	}
-
-	switch c.Container.State {
-	case "exited":
-		return utils.ColoredString(
-			fmt.Sprintf("(%s)", strconv.Itoa(c.Details.State.ExitCode)), c.GetColor(),
-		)
-	case "running":
-		return c.getHealthStatus()
-	default:
-		return ""
-	}
-}
-
-func (c *Container) getHealthStatus() string {
-	if !c.DetailsLoaded() {
-		return ""
-	}
-
-	healthStatusColorMap := map[string]color.Attribute{
-		"healthy":   color.FgGreen,
-		"unhealthy": color.FgRed,
-		"starting":  color.FgYellow,
-	}
-
-	if c.Details.State.Health == nil {
-		return ""
-	}
-	healthStatus := c.Details.State.Health.Status
-	if healthStatusColor, ok := healthStatusColorMap[healthStatus]; ok {
-		return utils.ColoredString(fmt.Sprintf("(%s)", healthStatus), healthStatusColor)
-	}
-	return ""
-}
-
-// GetDisplayCPUPerc colors the cpu percentage based on how extreme it is
-func (c *Container) GetDisplayCPUPerc() string {
-	stats, ok := c.getLastStats()
-	if !ok {
-		return ""
-	}
-
-	percentage := stats.DerivedStats.CPUPercentage
-	formattedPercentage := fmt.Sprintf("%.2f%%", stats.DerivedStats.CPUPercentage)
-
-	var clr color.Attribute
-	if percentage > 90 {
-		clr = color.FgRed
-	} else if percentage > 50 {
-		clr = color.FgYellow
-	} else {
-		clr = color.FgWhite
-	}
-
-	return utils.ColoredString(formattedPercentage, clr)
-}
-
-// GetColor Container color
-func (c *Container) GetColor() color.Attribute {
-	switch c.Container.State {
-	case "exited":
-		// This means the colour may be briefly yellow and then switch to red upon starting
-		// Not sure what a better alternative is.
-		if !c.DetailsLoaded() || c.Details.State.ExitCode == 0 {
-			return color.FgYellow
-		}
-		return color.FgRed
-	case "created":
-		return color.FgCyan
-	case "running":
-		return color.FgGreen
-	case "paused":
-		return color.FgYellow
-	case "dead":
-		return color.FgRed
-	case "restarting":
-		return color.FgBlue
-	case "removing":
-		return color.FgMagenta
-	default:
-		return color.FgWhite
-	}
-}
-
 // Remove removes the container
-func (c *Container) Remove(options types.ContainerRemoveOptions) error {
+func (c *Container) Remove(options dockerTypes.ContainerRemoveOptions) error {
 	c.Log.Warn(fmt.Sprintf("removing container %s", c.Name))
 	if err := c.Client.ContainerRemove(context.Background(), c.ID, options); err != nil {
 		if strings.Contains(err.Error(), "Stop the container before attempting removal or force remove") {
@@ -250,7 +128,7 @@ func (c *DockerCommand) PruneContainers() error {
 }
 
 // Inspect returns details about the container
-func (c *Container) Inspect() (types.ContainerJSON, error) {
+func (c *Container) Inspect() (dockerTypes.ContainerJSON, error) {
 	return c.Client.ContainerInspect(context.Background(), c.ID)
 }
 

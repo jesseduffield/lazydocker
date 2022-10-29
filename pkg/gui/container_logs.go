@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/docker/docker/api/types"
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
@@ -107,7 +107,7 @@ func (gui *Gui) promptToReturn() {
 }
 
 func (gui *Gui) writeContainerLogs(container *commands.Container, ctx context.Context, writer io.Writer) error {
-	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, container.ID, types.ContainerLogsOptions{
+	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, container.ID, dockerTypes.ContainerLogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Timestamps: gui.Config.UserConfig.Logs.Timestamps,

@@ -5,7 +5,7 @@ import (
 
 	"github.com/docker/docker/api/types/container"
 
-	"github.com/docker/docker/api/types"
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -21,7 +21,7 @@ type Service struct {
 }
 
 // Remove removes the service's containers
-func (s *Service) Remove(options types.ContainerRemoveOptions) error {
+func (s *Service) Remove(options dockerTypes.ContainerRemoveOptions) error {
 	return s.Container.Remove(options)
 }
 

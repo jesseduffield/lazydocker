@@ -9,6 +9,8 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
+	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
+	"github.com/jesseduffield/lazydocker/pkg/gui/types"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
@@ -70,26 +72,7 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 
 			return a.Name < b.Name
 		},
-		GetDisplayStrings: func(service *commands.Service) []string {
-			if service.Container == nil {
-				return []string{
-					utils.ColoredString("none", color.FgBlue),
-					"",
-					service.Name,
-					"",
-					"",
-				}
-			}
-
-			cont := service.Container
-			return []string{
-				cont.GetDisplayStatus(),
-				cont.GetDisplaySubstatus(),
-				service.Name,
-				cont.GetDisplayCPUPerc(),
-				utils.ColoredString(cont.DisplayPorts(), color.FgYellow),
-			}
-		},
+		GetDisplayStrings: presentation.GetServiceDisplayStrings,
 		Hide: func() bool {
 			return !gui.DockerCommand.InDockerComposeProject
 		},
@@ -174,8 +157,8 @@ func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		},
 	}
 
-	menuItems := lo.Map(options, func(option *commandOption, _ int) *MenuItem {
-		return &MenuItem{
+	menuItems := lo.Map(options, func(option *commandOption, _ int) *types.MenuItem {
+		return &types.MenuItem{
 			LabelColumns: option.getDisplayStrings(),
 			OnPress: func() error {
 				return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
@@ -355,8 +338,8 @@ func (gui *Gui) handleProjectDown(g *gocui.Gui, v *gocui.View) error {
 		},
 	}
 
-	menuItems := lo.Map(options, func(option *commandOption, _ int) *MenuItem {
-		return &MenuItem{
+	menuItems := lo.Map(options, func(option *commandOption, _ int) *types.MenuItem {
+		return &types.MenuItem{
 			LabelColumns: option.getDisplayStrings(),
 			OnPress:      option.onPress,
 		}
@@ -427,8 +410,8 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 		},
 	}
 
-	menuItems := lo.Map(options, func(option *commandOption, _ int) *MenuItem {
-		return &MenuItem{
+	menuItems := lo.Map(options, func(option *commandOption, _ int) *types.MenuItem {
+		return &types.MenuItem{
 			LabelColumns: option.getDisplayStrings(),
 			OnPress:      option.onPress,
 		}

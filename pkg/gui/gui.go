@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
+	dockerTypes "github.com/docker/docker/api/types"
 
 	"github.com/go-errors/errors"
 
@@ -16,6 +16,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
+	"github.com/jesseduffield/lazydocker/pkg/gui/types"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/sasha-s/go-deadlock"
@@ -55,7 +56,7 @@ type Panels struct {
 	Containers *panels.SideListPanel[*commands.Container]
 	Images     *panels.SideListPanel[*commands.Image]
 	Volumes    *panels.SideListPanel[*commands.Volume]
-	Menu       *panels.SideListPanel[*MenuItem]
+	Menu       *panels.SideListPanel[*types.MenuItem]
 }
 
 type Mutexes struct {
@@ -309,7 +310,7 @@ func (gui *Gui) listenForEvents(ctx context.Context, refresh func()) {
 
 outer:
 	for {
-		messageChan, errChan := gui.DockerCommand.Client.Events(context.Background(), types.EventsOptions{})
+		messageChan, errChan := gui.DockerCommand.Client.Events(context.Background(), dockerTypes.EventsOptions{})
 
 		if errorCount > 0 {
 			select {

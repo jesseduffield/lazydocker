@@ -6,12 +6,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
+	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
+	"github.com/jesseduffield/lazydocker/pkg/gui/types"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
@@ -88,18 +90,7 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 
 			return true
 		},
-		GetDisplayStrings: func(container *commands.Container) []string {
-			image := strings.TrimPrefix(container.Container.Image, "sha256:")
-
-			return []string{
-				container.GetDisplayStatus(),
-				container.GetDisplaySubstatus(),
-				container.Name,
-				container.GetDisplayCPUPerc(),
-				utils.ColoredString(image, color.FgMagenta),
-				utils.ColoredString(container.DisplayPorts(), color.FgYellow),
-			}
-		},
+		GetDisplayStrings: presentation.GetContainerDisplayStrings,
 	}
 }
 
@@ -318,7 +309,7 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	handleMenuPress := func(configOptions types.ContainerRemoveOptions) error {
+	handleMenuPress := func(configOptions dockerTypes.ContainerRemoveOptions) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 			if err := container.Remove(configOptions); err != nil {
 				if commands.HasErrorCode(err, commands.MustStopContainer) {
@@ -335,14 +326,14 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		})
 	}
 
-	menuItems := []*MenuItem{
+	menuItems := []*types.MenuItem{
 		{
 			LabelColumns: []string{gui.Tr.Remove, "docker rm " + container.ID[1:10]},
-			OnPress:      func() error { return handleMenuPress(types.ContainerRemoveOptions{}) },
+			OnPress:      func() error { return handleMenuPress(dockerTypes.ContainerRemoveOptions{}) },
 		},
 		{
 			LabelColumns: []string{gui.Tr.RemoveWithVolumes, "docker rm --volumes " + container.ID[1:10]},
-			OnPress:      func() error { return handleMenuPress(types.ContainerRemoveOptions{RemoveVolumes: true}) },
+			OnPress:      func() error { return handleMenuPress(dockerTypes.ContainerRemoveOptions{RemoveVolumes: true}) },
 		},
 	}
 
@@ -500,7 +491,7 @@ func (gui *Gui) handleRemoveContainers() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmRemoveContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 			for _, container := range gui.Panels.Containers.List.GetAllItems() {
-				if err := container.Remove(types.ContainerRemoveOptions{Force: true}); err != nil {
+				if err := container.Remove(dockerTypes.ContainerRemoveOptions{Force: true}); err != nil {
 					gui.Log.Error(err)
 				}
 			}

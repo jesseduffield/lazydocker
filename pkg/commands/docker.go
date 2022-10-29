@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/imdario/mergo"
 	"github.com/jesseduffield/lazydocker/pkg/commands/ssh"
@@ -189,7 +189,7 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 	c.ContainerMutex.Lock()
 	defer c.ContainerMutex.Unlock()
 
-	containers, err := c.Client.ContainerList(context.Background(), types.ContainerListOptions{All: true})
+	containers, err := c.Client.ContainerList(context.Background(), dockerTypes.ContainerListOptions{All: true})
 	if err != nil {
 		return nil, err
 	}

@@ -168,7 +168,7 @@ func (s *ContainerStats) CalculateContainerMemoryUsage() float64 {
 
 // RenderStats returns a string containing the rendered stats of the container
 func (c *Container) RenderStats(viewWidth int) (string, error) {
-	stats, ok := c.getLastStats()
+	stats, ok := c.GetLastStats()
 	if !ok {
 		return "", nil
 	}
@@ -225,7 +225,7 @@ func (c *Container) eraseOldHistory() {
 	}
 }
 
-func (c *Container) getLastStats() (*RecordedStats, bool) {
+func (c *Container) GetLastStats() (*RecordedStats, bool) {
 	c.StatsMutex.Lock()
 	defer c.StatsMutex.Unlock()
 	history := c.StatHistory

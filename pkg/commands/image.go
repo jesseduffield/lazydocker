@@ -7,7 +7,7 @@ import (
 	"github.com/docker/docker/api/types/image"
 	"github.com/samber/lo"
 
-	"github.com/docker/docker/api/types"
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/fatih/color"
@@ -20,7 +20,7 @@ type Image struct {
 	Name          string
 	Tag           string
 	ID            string
-	Image         types.ImageSummary
+	Image         dockerTypes.ImageSummary
 	Client        *client.Client
 	OSCommand     *OSCommand
 	Log           *logrus.Entry
@@ -28,7 +28,7 @@ type Image struct {
 }
 
 // Remove removes the image
-func (i *Image) Remove(options types.ImageRemoveOptions) error {
+func (i *Image) Remove(options dockerTypes.ImageRemoveOptions) error {
 	if _, err := i.Client.ImageRemove(context.Background(), i.ID, options); err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func (i *Image) RenderHistory() (string, error) {
 
 // RefreshImages returns a slice of docker images
 func (c *DockerCommand) RefreshImages() ([]*Image, error) {
-	images, err := c.Client.ImageList(context.Background(), types.ImageListOptions{})
+	images, err := c.Client.ImageList(context.Background(), dockerTypes.ImageListOptions{})
 	if err != nil {
 		return nil, err
 	}

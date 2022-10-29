@@ -4,6 +4,7 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/jesseduffield/gocui"
+	"github.com/jesseduffield/lazydocker/pkg/gui/types"
 )
 
 func (gui *Gui) getBindings(v *gocui.View) []*Binding {
@@ -55,8 +56,8 @@ func (gui *Gui) handleCreateOptionsMenu(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	menuItems := lo.Map(gui.getBindings(v), func(binding *Binding, _ int) *MenuItem {
-		return &MenuItem{
+	menuItems := lo.Map(gui.getBindings(v), func(binding *Binding, _ int) *types.MenuItem {
+		return &types.MenuItem{
 			LabelColumns: []string{binding.GetKey(), binding.Description},
 			OnPress: func() error {
 				if binding.Key == nil {

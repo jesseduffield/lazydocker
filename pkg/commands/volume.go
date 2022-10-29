@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 
-	"github.com/docker/docker/api/types"
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
@@ -12,7 +12,7 @@ import (
 // Volume : A docker Volume
 type Volume struct {
 	Name          string
-	Volume        *types.Volume
+	Volume        *dockerTypes.Volume
 	Client        *client.Client
 	OSCommand     *OSCommand
 	Log           *logrus.Entry

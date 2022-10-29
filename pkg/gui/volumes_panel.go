@@ -8,6 +8,8 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
+	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
+	"github.com/jesseduffield/lazydocker/pkg/gui/types"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
@@ -46,9 +48,7 @@ func (gui *Gui) getVolumesPanel() *panels.SideListPanel[*commands.Volume] {
 			}
 			return a.Name < b.Name
 		},
-		GetDisplayStrings: func(volume *commands.Volume) []string {
-			return []string{volume.Volume.Driver, volume.Name}
-		},
+		GetDisplayStrings: presentation.GetVolumeDisplayStrings,
 	}
 }
 
@@ -130,8 +130,8 @@ func (gui *Gui) handleVolumesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		},
 	}
 
-	menuItems := lo.Map(options, func(option *removeVolumeOption, _ int) *MenuItem {
-		return &MenuItem{
+	menuItems := lo.Map(options, func(option *removeVolumeOption, _ int) *types.MenuItem {
+		return &types.MenuItem{
 			LabelColumns: []string{option.description, color.New(color.FgRed).Sprint(option.command)},
 			OnPress: func() error {
 				return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {

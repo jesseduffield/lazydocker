@@ -2,40 +2,28 @@ package gui
 
 import (
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
+	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
+	"github.com/jesseduffield/lazydocker/pkg/gui/types"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
-type MenuItem struct {
-	Label string
-
-	// alternative to Label. Allows specifying columns which will be auto-aligned
-	LabelColumns []string
-
-	OnPress func() error
-
-	// Only applies when Label is used
-	OpensMenu bool
-}
-
 type CreateMenuOptions struct {
 	Title      string
-	Items      []*MenuItem
+	Items      []*types.MenuItem
 	HideCancel bool
 }
 
-func (gui *Gui) getMenuPanel() *panels.SideListPanel[*MenuItem] {
-	return &panels.SideListPanel[*MenuItem]{
-		ListPanel: panels.ListPanel[*MenuItem]{
-			List: panels.NewFilteredList[*MenuItem](),
+func (gui *Gui) getMenuPanel() *panels.SideListPanel[*types.MenuItem] {
+	return &panels.SideListPanel[*types.MenuItem]{
+		ListPanel: panels.ListPanel[*types.MenuItem]{
+			List: panels.NewFilteredList[*types.MenuItem](),
 			View: gui.Views.Menu,
 		},
-		NoItemsMessage: "",
-		Gui:            gui.intoInterface(),
-		OnClick:        gui.onMenuPress,
-		Sort:           nil,
-		GetDisplayStrings: func(menuItem *MenuItem) []string {
-			return menuItem.LabelColumns
-		},
+		NoItemsMessage:    "",
+		Gui:               gui.intoInterface(),
+		OnClick:           gui.onMenuPress,
+		Sort:              nil,
+		GetDisplayStrings: presentation.GetMenuItemDisplayStrings,
 		OnRerender: func() error {
 			return gui.resizePopupPanel(gui.Views.Menu)
 		},
@@ -47,7 +35,7 @@ func (gui *Gui) getMenuPanel() *panels.SideListPanel[*MenuItem] {
 	}
 }
 
-func (gui *Gui) onMenuPress(menuItem *MenuItem) error {
+func (gui *Gui) onMenuPress(menuItem *types.MenuItem) error {
 	if err := gui.handleMenuClose(); err != nil {
 		return err
 	}
@@ -71,7 +59,7 @@ func (gui *Gui) handleMenuPress() error {
 func (gui *Gui) Menu(opts CreateMenuOptions) error {
 	if !opts.HideCancel {
 		// this is mutative but I'm okay with that for now
-		opts.Items = append(opts.Items, &MenuItem{
+		opts.Items = append(opts.Items, &types.MenuItem{
 			LabelColumns: []string{gui.Tr.Cancel},
 			OnPress: func() error {
 				return nil
