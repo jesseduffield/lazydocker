@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/jesseduffield/gocui"
+	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 	"github.com/spkg/bom"
@@ -329,11 +330,11 @@ func (gui *Gui) CurrentView() *gocui.View {
 	return gui.g.CurrentView()
 }
 
-func (gui *Gui) currentSidePanel() (ISideListPanel, bool) {
+func (gui *Gui) currentSidePanel() (panels.ISideListPanel, bool) {
 	viewName := gui.currentViewName()
 
 	for _, sidePanel := range gui.allSidePanels() {
-		if sidePanel.View().Name() == viewName {
+		if sidePanel.GetView().Name() == viewName {
 			return sidePanel, true
 		}
 	}
@@ -342,11 +343,11 @@ func (gui *Gui) currentSidePanel() (ISideListPanel, bool) {
 }
 
 // returns the current list panel. If no list panel is focused, returns false.
-func (gui *Gui) currentListPanel() (ISideListPanel, bool) {
+func (gui *Gui) currentListPanel() (panels.ISideListPanel, bool) {
 	viewName := gui.currentViewName()
 
 	for _, sidePanel := range gui.allListPanels() {
-		if sidePanel.View().Name() == viewName {
+		if sidePanel.GetView().Name() == viewName {
 			return sidePanel, true
 		}
 	}
@@ -354,8 +355,8 @@ func (gui *Gui) currentListPanel() (ISideListPanel, bool) {
 	return nil, false
 }
 
-func (gui *Gui) allSidePanels() []ISideListPanel {
-	return []ISideListPanel{
+func (gui *Gui) allSidePanels() []panels.ISideListPanel {
+	return []panels.ISideListPanel{
 		gui.Panels.Projects,
 		gui.Panels.Services,
 		gui.Panels.Containers,
@@ -364,6 +365,6 @@ func (gui *Gui) allSidePanels() []ISideListPanel {
 	}
 }
 
-func (gui *Gui) allListPanels() []ISideListPanel {
+func (gui *Gui) allListPanels() []panels.ISideListPanel {
 	return append(gui.allSidePanels(), gui.Panels.Menu)
 }

@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
@@ -22,14 +23,14 @@ type CreateMenuOptions struct {
 	HideCancel bool
 }
 
-func (gui *Gui) getMenuPanel() *SideListPanel[*MenuItem] {
-	return &SideListPanel[*MenuItem]{
-		ListPanel: ListPanel[*MenuItem]{
-			List: NewFilteredList[*MenuItem](),
-			view: gui.Views.Menu,
+func (gui *Gui) getMenuPanel() *panels.SideListPanel[*MenuItem] {
+	return &panels.SideListPanel[*MenuItem]{
+		ListPanel: panels.ListPanel[*MenuItem]{
+			List: panels.NewFilteredList[*MenuItem](),
+			View: gui.Views.Menu,
 		},
 		NoItemsMessage: "",
-		gui:            gui.intoInterface(),
+		Gui:            gui.intoInterface(),
 		OnClick:        gui.onMenuPress,
 		Sort:           nil,
 		GetDisplayStrings: func(menuItem *MenuItem) []string {
@@ -101,7 +102,7 @@ func (gui *Gui) Menu(opts CreateMenuOptions) error {
 	}
 
 	gui.Panels.Menu.SetItems(opts.Items)
-	gui.Panels.Menu.setSelectedLineIdx(0)
+	gui.Panels.Menu.SetSelectedLineIdx(0)
 
 	if err := gui.Panels.Menu.RerenderList(); err != nil {
 		return err

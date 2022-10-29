@@ -7,19 +7,20 @@ import (
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
 
-func (gui *Gui) getVolumesPanel() *SideListPanel[*commands.Volume] {
-	return &SideListPanel[*commands.Volume]{
-		ContextState: &ContextState[*commands.Volume]{
-			GetContexts: func() []ContextConfig[*commands.Volume] {
-				return []ContextConfig[*commands.Volume]{
+func (gui *Gui) getVolumesPanel() *panels.SideListPanel[*commands.Volume] {
+	return &panels.SideListPanel[*commands.Volume]{
+		ContextState: &panels.ContextState[*commands.Volume]{
+			GetContexts: func() []panels.ContextConfig[*commands.Volume] {
+				return []panels.ContextConfig[*commands.Volume]{
 					{
-						key:    "config",
-						title:  gui.Tr.ConfigTitle,
-						render: gui.renderVolumeConfig,
+						Key:    "config",
+						Title:  gui.Tr.ConfigTitle,
+						Render: gui.renderVolumeConfig,
 					},
 				}
 			},
@@ -27,12 +28,12 @@ func (gui *Gui) getVolumesPanel() *SideListPanel[*commands.Volume] {
 				return "volumes-" + volume.Name
 			},
 		},
-		ListPanel: ListPanel[*commands.Volume]{
-			List: NewFilteredList[*commands.Volume](),
-			view: gui.Views.Volumes,
+		ListPanel: panels.ListPanel[*commands.Volume]{
+			List: panels.NewFilteredList[*commands.Volume](),
+			View: gui.Views.Volumes,
 		},
 		NoItemsMessage: gui.Tr.NoVolumes,
-		gui:            gui.intoInterface(),
+		Gui:            gui.intoInterface(),
 		// we're sorting these volumes based on whether they have labels defined,
 		// because those are the ones you typically care about.
 		// Within that, we also sort them alphabetically

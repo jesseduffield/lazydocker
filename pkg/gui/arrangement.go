@@ -2,6 +2,7 @@ package gui
 
 import (
 	"github.com/jesseduffield/lazycore/pkg/boxlayout"
+	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/mattn/go-runewidth"
 	"github.com/samber/lo"
@@ -129,12 +130,12 @@ func (gui *Gui) infoSectionChildren(informationStr string, appStatus string) []*
 }
 
 func (gui *Gui) sideViewNames() []string {
-	visibleSidePanels := lo.Filter(gui.allSidePanels(), func(panel ISideListPanel, _ int) bool {
+	visibleSidePanels := lo.Filter(gui.allSidePanels(), func(panel panels.ISideListPanel, _ int) bool {
 		return !panel.IsHidden()
 	})
 
-	return lo.Map(visibleSidePanels, func(panel ISideListPanel, _ int) string {
-		return panel.View().Name()
+	return lo.Map(visibleSidePanels, func(panel panels.ISideListPanel, _ int) string {
+		return panel.GetView().Name()
 	})
 }
 

@@ -492,12 +492,12 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 
 	for _, panel := range gui.allSidePanels() {
 		bindings = append(bindings, []*Binding{
-			{ViewName: panel.View().Name(), Key: gocui.KeyArrowLeft, Modifier: gocui.ModNone, Handler: gui.previousView},
-			{ViewName: panel.View().Name(), Key: gocui.KeyArrowRight, Modifier: gocui.ModNone, Handler: gui.nextView},
-			{ViewName: panel.View().Name(), Key: 'h', Modifier: gocui.ModNone, Handler: gui.previousView},
-			{ViewName: panel.View().Name(), Key: 'l', Modifier: gocui.ModNone, Handler: gui.nextView},
-			{ViewName: panel.View().Name(), Key: gocui.KeyTab, Modifier: gocui.ModNone, Handler: gui.nextView},
-			{ViewName: panel.View().Name(), Key: gocui.KeyBacktab, Modifier: gocui.ModNone, Handler: gui.previousView},
+			{ViewName: panel.GetView().Name(), Key: gocui.KeyArrowLeft, Modifier: gocui.ModNone, Handler: gui.previousView},
+			{ViewName: panel.GetView().Name(), Key: gocui.KeyArrowRight, Modifier: gocui.ModNone, Handler: gui.nextView},
+			{ViewName: panel.GetView().Name(), Key: 'h', Modifier: gocui.ModNone, Handler: gui.previousView},
+			{ViewName: panel.GetView().Name(), Key: 'l', Modifier: gocui.ModNone, Handler: gui.nextView},
+			{ViewName: panel.GetView().Name(), Key: gocui.KeyTab, Modifier: gocui.ModNone, Handler: gui.nextView},
+			{ViewName: panel.GetView().Name(), Key: gocui.KeyBacktab, Modifier: gocui.ModNone, Handler: gui.previousView},
 		}...)
 	}
 
@@ -514,7 +514,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	}
 
 	for _, panel := range gui.allListPanels() {
-		setUpDownClickBindings(panel.View().Name(), panel.HandlePrevLine, panel.HandleNextLine, panel.HandleClick)
+		setUpDownClickBindings(panel.GetView().Name(), panel.HandlePrevLine, panel.HandleNextLine, panel.HandleClick)
 	}
 
 	setUpDownClickBindings("main", gui.scrollUpMain, gui.scrollDownMain, gui.handleMainClick)
@@ -522,21 +522,21 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	for _, panel := range gui.allSidePanels() {
 		bindings = append(bindings,
 			&Binding{
-				ViewName:    panel.View().Name(),
+				ViewName:    panel.GetView().Name(),
 				Key:         gocui.KeyEnter,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.handleEnterMain,
 				Description: gui.Tr.FocusMain,
 			},
 			&Binding{
-				ViewName:    panel.View().Name(),
+				ViewName:    panel.GetView().Name(),
 				Key:         '[',
 				Modifier:    gocui.ModNone,
 				Handler:     wrappedHandler(panel.HandlePrevContext),
 				Description: gui.Tr.PreviousContext,
 			},
 			&Binding{
-				ViewName:    panel.View().Name(),
+				ViewName:    panel.GetView().Name(),
 				Key:         ']',
 				Modifier:    gocui.ModNone,
 				Handler:     wrappedHandler(panel.HandleNextContext),
@@ -547,7 +547,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 
 	for _, panel := range gui.allListPanels() {
 		bindings = append(bindings, &Binding{
-			ViewName:    panel.View().Name(),
+			ViewName:    panel.GetView().Name(),
 			Key:         '/',
 			Modifier:    gocui.ModNone,
 			Handler:     wrappedHandler(gui.handleOpenFilter),

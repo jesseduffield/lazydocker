@@ -1,4 +1,4 @@
-package gui
+package panels
 
 import (
 	"sort"

@@ -52,7 +52,7 @@ func (gui *Gui) switchFocusAux(newView *gocui.View) error {
 
 	newViewStack := gui.State.ViewStack
 
-	if gui.State.Filter.panel != nil && !lo.Contains(newViewStack, gui.State.Filter.panel.View().Name()) {
+	if gui.State.Filter.panel != nil && !lo.Contains(newViewStack, gui.State.Filter.panel.GetView().Name()) {
 		if err := gui.clearFilter(); err != nil {
 			return err
 		}

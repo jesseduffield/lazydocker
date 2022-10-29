@@ -76,6 +76,7 @@ type TranslationSet struct {
 	NoContainer                 string
 	NoImages                    string
 	NoVolumes                   string
+	NoServices                  string
 	RemoveImage                 string
 	RemoveVolume                string
 	RemoveWithoutPrune          string
@@ -225,6 +226,7 @@ func englishSet() TranslationSet {
 		NoContainer:  "No container",
 		NoImages:     "No images",
 		NoVolumes:    "No volumes",
+		NoServices:   "No services",
 
 		ConfirmQuit:                "Are you sure you want to quit?",
 		ConfirmUpProject:           "Are you sure you want to 'up' your docker compose project?",

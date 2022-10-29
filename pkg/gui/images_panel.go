@@ -10,21 +10,22 @@ import (
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
 
-func (gui *Gui) getImagesPanel() *SideListPanel[*commands.Image] {
+func (gui *Gui) getImagesPanel() *panels.SideListPanel[*commands.Image] {
 	noneLabel := "<none>"
 
-	return &SideListPanel[*commands.Image]{
-		ContextState: &ContextState[*commands.Image]{
-			GetContexts: func() []ContextConfig[*commands.Image] {
-				return []ContextConfig[*commands.Image]{
+	return &panels.SideListPanel[*commands.Image]{
+		ContextState: &panels.ContextState[*commands.Image]{
+			GetContexts: func() []panels.ContextConfig[*commands.Image] {
+				return []panels.ContextConfig[*commands.Image]{
 					{
-						key:   "config",
-						title: gui.Tr.ConfigTitle,
-						render: func(image *commands.Image) error {
+						Key:   "config",
+						Title: gui.Tr.ConfigTitle,
+						Render: func(image *commands.Image) error {
 							return gui.renderImageConfig(image)
 						},
 					},
@@ -34,12 +35,12 @@ func (gui *Gui) getImagesPanel() *SideListPanel[*commands.Image] {
 				return "images-" + image.ID
 			},
 		},
-		ListPanel: ListPanel[*commands.Image]{
-			List: NewFilteredList[*commands.Image](),
-			view: gui.Views.Images,
+		ListPanel: panels.ListPanel[*commands.Image]{
+			List: panels.NewFilteredList[*commands.Image](),
+			View: gui.Views.Images,
 		},
 		NoItemsMessage: gui.Tr.NoImages,
-		gui:            gui.intoInterface(),
+		Gui:            gui.intoInterface(),
 		Sort: func(a *commands.Image, b *commands.Image) bool {
 			if a.Name == noneLabel && b.Name != noneLabel {
 				return false
@@ -114,7 +115,7 @@ func (gui *Gui) refreshStateImages() error {
 }
 
 func (gui *Gui) FilterString(view *gocui.View) string {
-	if gui.State.Filter.panel != nil && gui.State.Filter.panel.View() != view {
+	if gui.State.Filter.panel != nil && gui.State.Filter.panel.GetView() != view {
 		return ""
 	}
 

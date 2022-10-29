@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/jesseduffield/yaml"
 )
@@ -15,35 +16,35 @@ import (
 // Although at the moment we'll only have one project, in future we could have
 // a list of projects in the project panel.
 
-func (gui *Gui) getProjectPanel() *SideListPanel[*commands.Project] {
-	return &SideListPanel[*commands.Project]{
-		ContextState: &ContextState[*commands.Project]{
-			GetContexts: func() []ContextConfig[*commands.Project] {
+func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
+	return &panels.SideListPanel[*commands.Project]{
+		ContextState: &panels.ContextState[*commands.Project]{
+			GetContexts: func() []panels.ContextConfig[*commands.Project] {
 				if gui.DockerCommand.InDockerComposeProject {
-					return []ContextConfig[*commands.Project]{
+					return []panels.ContextConfig[*commands.Project]{
 						{
-							key:    "logs",
-							title:  gui.Tr.LogsTitle,
-							render: gui.renderAllLogs,
+							Key:    "logs",
+							Title:  gui.Tr.LogsTitle,
+							Render: gui.renderAllLogs,
 						},
 						{
-							key:    "config",
-							title:  gui.Tr.DockerComposeConfigTitle,
-							render: gui.renderDockerComposeConfig,
+							Key:    "config",
+							Title:  gui.Tr.DockerComposeConfigTitle,
+							Render: gui.renderDockerComposeConfig,
 						},
 						{
-							key:    "credits",
-							title:  gui.Tr.CreditsTitle,
-							render: gui.renderCredits,
+							Key:    "credits",
+							Title:  gui.Tr.CreditsTitle,
+							Render: gui.renderCredits,
 						},
 					}
 				}
 
-				return []ContextConfig[*commands.Project]{
+				return []panels.ContextConfig[*commands.Project]{
 					{
-						key:    "credits",
-						title:  gui.Tr.CreditsTitle,
-						render: gui.renderCredits,
+						Key:    "credits",
+						Title:  gui.Tr.CreditsTitle,
+						Render: gui.renderCredits,
 					},
 				}
 			},
@@ -52,12 +53,12 @@ func (gui *Gui) getProjectPanel() *SideListPanel[*commands.Project] {
 			},
 		},
 
-		ListPanel: ListPanel[*commands.Project]{
-			List: NewFilteredList[*commands.Project](),
-			view: gui.Views.Project,
+		ListPanel: panels.ListPanel[*commands.Project]{
+			List: panels.NewFilteredList[*commands.Project](),
+			View: gui.Views.Project,
 		},
 		NoItemsMessage: "",
-		gui:            gui.intoInterface(),
+		Gui:            gui.intoInterface(),
 
 		Sort: func(a *commands.Project, b *commands.Project) bool {
 			return false

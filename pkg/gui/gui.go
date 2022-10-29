@@ -15,6 +15,7 @@ import (
 	lcUtils "github.com/jesseduffield/lazycore/pkg/utils"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/sasha-s/go-deadlock"
@@ -49,12 +50,12 @@ type Gui struct {
 }
 
 type Panels struct {
-	Projects   *SideListPanel[*commands.Project]
-	Services   *SideListPanel[*commands.Service]
-	Containers *SideListPanel[*commands.Container]
-	Images     *SideListPanel[*commands.Image]
-	Volumes    *SideListPanel[*commands.Volume]
-	Menu       *SideListPanel[*MenuItem]
+	Projects   *panels.SideListPanel[*commands.Project]
+	Services   *panels.SideListPanel[*commands.Service]
+	Containers *panels.SideListPanel[*commands.Container]
+	Images     *panels.SideListPanel[*commands.Image]
+	Volumes    *panels.SideListPanel[*commands.Volume]
+	Menu       *panels.SideListPanel[*MenuItem]
 }
 
 type Mutexes struct {
@@ -94,7 +95,7 @@ type filterState struct {
 	// or we've committed the filter and we're back in the list view
 	active bool
 	// The panel that we're filtering.
-	panel ISideListPanel
+	panel panels.ISideListPanel
 	// The string that we're filtering on
 	needle string
 }

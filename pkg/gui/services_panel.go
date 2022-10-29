@@ -8,39 +8,40 @@ import (
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
 
-func (gui *Gui) getServicesPanel() *SideListPanel[*commands.Service] {
-	return &SideListPanel[*commands.Service]{
-		ContextState: &ContextState[*commands.Service]{
-			GetContexts: func() []ContextConfig[*commands.Service] {
-				return []ContextConfig[*commands.Service]{
+func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
+	return &panels.SideListPanel[*commands.Service]{
+		ContextState: &panels.ContextState[*commands.Service]{
+			GetContexts: func() []panels.ContextConfig[*commands.Service] {
+				return []panels.ContextConfig[*commands.Service]{
 					{
-						key:    "logs",
-						title:  gui.Tr.LogsTitle,
-						render: gui.renderServiceLogs,
+						Key:    "logs",
+						Title:  gui.Tr.LogsTitle,
+						Render: gui.renderServiceLogs,
 					},
 					{
-						key:    "stats",
-						title:  gui.Tr.StatsTitle,
-						render: gui.renderServiceStats,
+						Key:    "stats",
+						Title:  gui.Tr.StatsTitle,
+						Render: gui.renderServiceStats,
 					},
 					{
-						key:    "container-env",
-						title:  gui.Tr.ContainerEnvTitle,
-						render: gui.renderServiceContainerEnv,
+						Key:    "container-env",
+						Title:  gui.Tr.ContainerEnvTitle,
+						Render: gui.renderServiceContainerEnv,
 					},
 					{
-						key:    "container-config",
-						title:  gui.Tr.ContainerConfigTitle,
-						render: gui.renderServiceContainerConfig,
+						Key:    "container-config",
+						Title:  gui.Tr.ContainerConfigTitle,
+						Render: gui.renderServiceContainerConfig,
 					},
 					{
-						key:    "top",
-						title:  gui.Tr.TopTitle,
-						render: gui.renderServiceTop,
+						Key:    "top",
+						Title:  gui.Tr.TopTitle,
+						Render: gui.renderServiceTop,
 					},
 				}
 			},
@@ -51,13 +52,12 @@ func (gui *Gui) getServicesPanel() *SideListPanel[*commands.Service] {
 				return "services-" + service.ID + "-" + service.Container.ID + "-" + service.Container.Container.State
 			},
 		},
-		ListPanel: ListPanel[*commands.Service]{
-			List: NewFilteredList[*commands.Service](),
-			view: gui.Views.Services,
+		ListPanel: panels.ListPanel[*commands.Service]{
+			List: panels.NewFilteredList[*commands.Service](),
+			View: gui.Views.Services,
 		},
-		// TODO: i18n
-		NoItemsMessage: "no service selected",
-		gui:            gui.intoInterface(),
+		NoItemsMessage: gui.Tr.NoServices,
+		Gui:            gui.intoInterface(),
 		// sort services first by whether they have a linked container, and second by alphabetical order
 		Sort: func(a *commands.Service, b *commands.Service) bool {
 			if a.Container != nil && b.Container == nil {

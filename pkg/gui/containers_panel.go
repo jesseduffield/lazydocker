@@ -11,11 +11,12 @@ import (
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
 
-func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
+func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] {
 	// Standalone containers are containers which are either one-off containers, or whose service is not part of this docker-compose context.
 	isStandaloneContainer := func(container *commands.Container) bool {
 		if container.OneOff || container.ServiceName == "" {
@@ -27,34 +28,34 @@ func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
 		})
 	}
 
-	return &SideListPanel[*commands.Container]{
-		ContextState: &ContextState[*commands.Container]{
-			GetContexts: func() []ContextConfig[*commands.Container] {
-				return []ContextConfig[*commands.Container]{
+	return &panels.SideListPanel[*commands.Container]{
+		ContextState: &panels.ContextState[*commands.Container]{
+			GetContexts: func() []panels.ContextConfig[*commands.Container] {
+				return []panels.ContextConfig[*commands.Container]{
 					{
-						key:    "logs",
-						title:  gui.Tr.LogsTitle,
-						render: gui.renderContainerLogsToMain,
+						Key:    "logs",
+						Title:  gui.Tr.LogsTitle,
+						Render: gui.renderContainerLogsToMain,
 					},
 					{
-						key:    "stats",
-						title:  gui.Tr.StatsTitle,
-						render: gui.renderContainerStats,
+						Key:    "stats",
+						Title:  gui.Tr.StatsTitle,
+						Render: gui.renderContainerStats,
 					},
 					{
-						key:    "env",
-						title:  gui.Tr.EnvTitle,
-						render: gui.renderContainerEnv,
+						Key:    "env",
+						Title:  gui.Tr.EnvTitle,
+						Render: gui.renderContainerEnv,
 					},
 					{
-						key:    "config",
-						title:  gui.Tr.ConfigTitle,
-						render: gui.renderContainerConfig,
+						Key:    "config",
+						Title:  gui.Tr.ConfigTitle,
+						Render: gui.renderContainerConfig,
 					},
 					{
-						key:    "top",
-						title:  gui.Tr.TopTitle,
-						render: gui.renderContainerTop,
+						Key:    "top",
+						Title:  gui.Tr.TopTitle,
+						Render: gui.renderContainerTop,
 					},
 				}
 			},
@@ -62,12 +63,12 @@ func (gui *Gui) getContainersPanel() *SideListPanel[*commands.Container] {
 				return "containers-" + container.ID + "-" + container.Container.State
 			},
 		},
-		ListPanel: ListPanel[*commands.Container]{
-			List: NewFilteredList[*commands.Container](),
-			view: gui.Views.Containers,
+		ListPanel: panels.ListPanel[*commands.Container]{
+			List: panels.NewFilteredList[*commands.Container](),
+			View: gui.Views.Containers,
 		},
 		NoItemsMessage: gui.Tr.NoContainers,
-		gui:            gui.intoInterface(),
+		Gui:            gui.intoInterface(),
 		// sortedContainers returns containers sorted by state if c.SortContainersByState is true (follows 1- running, 2- exited, 3- created)
 		// and sorted by name if c.SortContainersByState is false
 		Sort: func(a *commands.Container, b *commands.Container) bool {
@@ -282,7 +283,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 				if i == originalSelectedLineIdx {
 					break
 				}
-				gui.Panels.Services.setSelectedLineIdx(i)
+				gui.Panels.Services.SetSelectedLineIdx(i)
 				gui.Panels.Services.Refocus()
 			}
 		}

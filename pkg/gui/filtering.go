@@ -24,7 +24,7 @@ func (gui *Gui) handleOpenFilter() error {
 
 func (gui *Gui) onNewFilterNeedle(value string) error {
 	gui.State.Filter.needle = value
-	gui.ResetOrigin(gui.State.Filter.panel.View())
+	gui.ResetOrigin(gui.State.Filter.panel.GetView())
 	return gui.State.Filter.panel.RerenderList()
 }
 
@@ -59,7 +59,7 @@ func (gui *Gui) clearFilter() error {
 		return nil
 	}
 
-	gui.ResetOrigin(panel.View())
+	gui.ResetOrigin(panel.GetView())
 
 	return panel.RerenderList()
 }
