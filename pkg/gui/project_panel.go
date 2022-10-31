@@ -20,9 +20,9 @@ import (
 func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 	return &panels.SideListPanel[*commands.Project]{
 		ContextState: &panels.ContextState[*commands.Project]{
-			GetContexts: func() []panels.ContextConfig[*commands.Project] {
+			GetMainTabs: func() []panels.MainTab[*commands.Project] {
 				if gui.DockerCommand.InDockerComposeProject {
-					return []panels.ContextConfig[*commands.Project]{
+					return []panels.MainTab[*commands.Project]{
 						{
 							Key:    "logs",
 							Title:  gui.Tr.LogsTitle,
@@ -41,7 +41,7 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 					}
 				}
 
-				return []panels.ContextConfig[*commands.Project]{
+				return []panels.MainTab[*commands.Project]{
 					{
 						Key:    "credits",
 						Title:  gui.Tr.CreditsTitle,
@@ -49,7 +49,7 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 					},
 				}
 			},
-			GetContextCacheKey: func(project *commands.Project) string {
+			GetItemContextCacheKey: func(project *commands.Project) string {
 				return "projects-" + project.Name
 			},
 		},

@@ -17,8 +17,8 @@ import (
 func (gui *Gui) getVolumesPanel() *panels.SideListPanel[*commands.Volume] {
 	return &panels.SideListPanel[*commands.Volume]{
 		ContextState: &panels.ContextState[*commands.Volume]{
-			GetContexts: func() []panels.ContextConfig[*commands.Volume] {
-				return []panels.ContextConfig[*commands.Volume]{
+			GetMainTabs: func() []panels.MainTab[*commands.Volume] {
+				return []panels.MainTab[*commands.Volume]{
 					{
 						Key:    "config",
 						Title:  gui.Tr.ConfigTitle,
@@ -26,7 +26,7 @@ func (gui *Gui) getVolumesPanel() *panels.SideListPanel[*commands.Volume] {
 					},
 				}
 			},
-			GetContextCacheKey: func(volume *commands.Volume) string {
+			GetItemContextCacheKey: func(volume *commands.Volume) string {
 				return "volumes-" + volume.Name
 			},
 		},

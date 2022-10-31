@@ -11,7 +11,7 @@ import (
 )
 
 type ISideListPanel interface {
-	SetContextIndex(int)
+	SetMainTabIndex(int)
 	HandleSelect() error
 	GetView() *gocui.View
 	Refocus()
@@ -21,8 +21,8 @@ type ISideListPanel interface {
 	HandleNextLine() error
 	HandlePrevLine() error
 	HandleClick() error
-	HandlePrevContext() error
-	HandleNextContext() error
+	HandlePrevMainTab() error
+	HandleNextMainTab() error
 }
 
 // list panel at the side of the screen that renders content to the main panel
@@ -43,6 +43,7 @@ type SideListPanel[T comparable] struct {
 
 	OnClick func(T) error
 
+	// returns the columns that we render to the view in a table formats
 	GetDisplayStrings func(T) []string
 
 	// function to be called after re-rendering list. Can be nil
@@ -57,25 +58,11 @@ type SideListPanel[T comparable] struct {
 
 var _ ISideListPanel = &SideListPanel[int]{}
 
-type ContextState[T any] struct {
-	contextIdx int
-	// contexts    []ContextConfig[T]
-	GetContexts func() []ContextConfig[T]
-	// this tells us whether we need to re-render to the main panel
-	GetContextCacheKey func(item T) string
-}
-
-type ContextConfig[T any] struct {
-	Key    string
-	Title  string
-	Render func(item T) error
-}
-
 type IGui interface {
 	HandleClick(v *gocui.View, itemCount int, selectedLine *int, handleSelect func() error) error
 	RenderStringMain(message string) error
 	FocusY(selectedLine int, itemCount int, view *gocui.View)
-	ShouldRefresh(key string) bool
+	ShouldRefresh(contextKey string) bool
 	GetMainView() *gocui.View
 	// TODO: replace with IsCurrentView() bool
 	CurrentView() *gocui.View
@@ -137,24 +124,10 @@ func (self *SideListPanel[T]) renderContext(item T) error {
 	}
 
 	mainView := self.Gui.GetMainView()
-	mainView.Tabs = self.ContextState.GetContextTitles()
-	mainView.TabIndex = self.ContextState.contextIdx
+	mainView.Tabs = self.ContextState.GetMainTabTitles()
+	mainView.TabIndex = self.ContextState.mainTabIdx
 
-	return self.ContextState.GetCurrentContext().Render(item)
-}
-
-func (self *ContextState[T]) GetContextTitles() []string {
-	return lo.Map(self.GetContexts(), func(context ContextConfig[T], _ int) string {
-		return context.Title
-	})
-}
-
-func (self *ContextState[T]) GetCurrentContextKey(item T) string {
-	return self.GetContextCacheKey(item) + "-" + self.GetCurrentContext().Key
-}
-
-func (self *ContextState[T]) GetCurrentContext() ContextConfig[T] {
-	return self.GetContexts()[self.contextIdx]
+	return self.ContextState.GetCurrentMainTab().Render(item)
 }
 
 func (self *SideListPanel[T]) GetSelectedItem() (T, error) {
@@ -181,42 +154,22 @@ func (self *SideListPanel[T]) HandlePrevLine() error {
 	return self.HandleSelect()
 }
 
-func (self *ContextState[T]) HandleNextContext() {
-	contexts := self.GetContexts()
-
-	if len(contexts) == 0 {
-		return
-	}
-
-	self.contextIdx = (self.contextIdx + 1) % len(contexts)
-}
-
-func (self *ContextState[T]) HandlePrevContext() {
-	contexts := self.GetContexts()
-
-	if len(contexts) == 0 {
-		return
-	}
-
-	self.contextIdx = (self.contextIdx - 1 + len(contexts)) % len(contexts)
-}
-
-func (self *SideListPanel[T]) HandleNextContext() error {
+func (self *SideListPanel[T]) HandleNextMainTab() error {
 	if self.ContextState == nil {
 		return nil
 	}
 
-	self.ContextState.HandleNextContext()
+	self.ContextState.HandleNextMainTab()
 
 	return self.HandleSelect()
 }
 
-func (self *SideListPanel[T]) HandlePrevContext() error {
+func (self *SideListPanel[T]) HandlePrevMainTab() error {
 	if self.ContextState == nil {
 		return nil
 	}
 
-	self.ContextState.HandlePrevContext()
+	self.ContextState.HandlePrevMainTab()
 
 	return self.HandleSelect()
 }
@@ -289,16 +242,12 @@ func (self *SideListPanel[T]) RerenderList() error {
 	return nil
 }
 
-func (self *SideListPanel[T]) SetContextIndex(index int) {
+func (self *SideListPanel[T]) SetMainTabIndex(index int) {
 	if self.ContextState == nil {
 		return
 	}
 
-	self.ContextState.SetContextIndex(index)
-}
-
-func (self *ContextState[T]) SetContextIndex(index int) {
-	self.contextIdx = index
+	self.ContextState.SetMainTabIndex(index)
 }
 
 func (self *SideListPanel[T]) IsFilterDisabled() bool {

@@ -32,8 +32,8 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 
 	return &panels.SideListPanel[*commands.Container]{
 		ContextState: &panels.ContextState[*commands.Container]{
-			GetContexts: func() []panels.ContextConfig[*commands.Container] {
-				return []panels.ContextConfig[*commands.Container]{
+			GetMainTabs: func() []panels.MainTab[*commands.Container] {
+				return []panels.MainTab[*commands.Container]{
 					{
 						Key:    "logs",
 						Title:  gui.Tr.LogsTitle,
@@ -61,7 +61,12 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 					},
 				}
 			},
-			GetContextCacheKey: func(container *commands.Container) string {
+			GetItemContextCacheKey: func(container *commands.Container) string {
+				// Including the container state in the cache key so that if the container
+				// restarts we re-read the logs. In the past we've had some glitchiness
+				// where a container restarts but the new logs don't get read.
+				// Note that this might be jarring if we have a lot of logs and the container
+				// restarts a lot, so let's keep an eye on it.
 				return "containers-" + container.ID + "-" + container.Container.State
 			},
 		},

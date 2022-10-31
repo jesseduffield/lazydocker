@@ -18,8 +18,8 @@ import (
 func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 	return &panels.SideListPanel[*commands.Service]{
 		ContextState: &panels.ContextState[*commands.Service]{
-			GetContexts: func() []panels.ContextConfig[*commands.Service] {
-				return []panels.ContextConfig[*commands.Service]{
+			GetMainTabs: func() []panels.MainTab[*commands.Service] {
+				return []panels.MainTab[*commands.Service]{
 					{
 						Key:    "logs",
 						Title:  gui.Tr.LogsTitle,
@@ -47,7 +47,7 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 					},
 				}
 			},
-			GetContextCacheKey: func(service *commands.Service) string {
+			GetItemContextCacheKey: func(service *commands.Service) string {
 				if service.Container == nil {
 					return "services-" + service.ID
 				}

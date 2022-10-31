@@ -100,18 +100,6 @@ func getBindingSections(mApp *app.App) []*bindingSection {
 		bindingSections = addBinding(titleMap[viewName], bindingSections, binding)
 	}
 
-	// for view, contexts := range mApp.Gui.GetContextMap() {
-	// 	for contextName, contextBindings := range contexts {
-	// 		translatedView := localisedTitle(mApp, view)
-	// 		translatedContextName := localisedTitle(mApp, contextName)
-	// 		title := fmt.Sprintf("%s (%s)", translatedView, translatedContextName)
-
-	// 		for _, binding := range contextBindings {
-	// 			bindingSections = addBinding(title, bindingSections, binding)
-	// 		}
-	// 	}
-	// }
-
 	return bindingSections
 }
 

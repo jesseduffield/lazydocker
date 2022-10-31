@@ -22,8 +22,8 @@ func (gui *Gui) getImagesPanel() *panels.SideListPanel[*commands.Image] {
 
 	return &panels.SideListPanel[*commands.Image]{
 		ContextState: &panels.ContextState[*commands.Image]{
-			GetContexts: func() []panels.ContextConfig[*commands.Image] {
-				return []panels.ContextConfig[*commands.Image]{
+			GetMainTabs: func() []panels.MainTab[*commands.Image] {
+				return []panels.MainTab[*commands.Image]{
 					{
 						Key:   "config",
 						Title: gui.Tr.ConfigTitle,
@@ -33,7 +33,7 @@ func (gui *Gui) getImagesPanel() *panels.SideListPanel[*commands.Image] {
 					},
 				}
 			},
-			GetContextCacheKey: func(image *commands.Image) string {
+			GetItemContextCacheKey: func(image *commands.Image) string {
 				return "images-" + image.ID
 			},
 		},

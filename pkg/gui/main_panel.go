@@ -89,7 +89,7 @@ func (gui *Gui) onMainTabClick(tabIndex int) error {
 		return nil
 	}
 
-	currentSidePanel.SetContextIndex(tabIndex)
+	currentSidePanel.SetMainTabIndex(tabIndex)
 	return currentSidePanel.HandleSelect()
 }
 

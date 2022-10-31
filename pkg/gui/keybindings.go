@@ -532,14 +532,14 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 				ViewName:    panel.GetView().Name(),
 				Key:         '[',
 				Modifier:    gocui.ModNone,
-				Handler:     wrappedHandler(panel.HandlePrevContext),
+				Handler:     wrappedHandler(panel.HandlePrevMainTab),
 				Description: gui.Tr.PreviousContext,
 			},
 			&Binding{
 				ViewName:    panel.GetView().Name(),
 				Key:         ']',
 				Modifier:    gocui.ModNone,
-				Handler:     wrappedHandler(panel.HandleNextContext),
+				Handler:     wrappedHandler(panel.HandleNextMainTab),
 				Description: gui.Tr.NextContext,
 			},
 		)
