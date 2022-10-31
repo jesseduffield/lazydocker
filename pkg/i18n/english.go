@@ -112,6 +112,7 @@ type TranslationSet struct {
 	ContainerConfigTitle      string
 	ContainerEnvTitle         string
 	NothingToDisplay          string
+	NoContainerForService     string
 	CannotDisplayEnvVariables string
 
 	No  string
@@ -220,6 +221,7 @@ func englishSet() TranslationSet {
 		ContainerConfigTitle:      "Container Config",
 		ContainerEnvTitle:         "Container Env",
 		NothingToDisplay:          "Nothing to display",
+		NoContainerForService:     "No logs to show; service is not associated with a container",
 		CannotDisplayEnvVariables: "Something went wrong while displaying environment variables",
 
 		NoContainers: "No containers",

@@ -95,23 +95,25 @@ func (gui *Gui) renderCredits(_project *commands.Project) error {
 		mainView.Autoscroll = false
 		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
-		var configBuf bytes.Buffer
-		_ = yaml.NewEncoder(&configBuf, yaml.IncludeOmitted).Encode(gui.Config.UserConfig)
-
-		dashboardString := strings.Join(
-			[]string{
-				lazydockerTitle(),
-				"Copyright (c) 2019 Jesse Duffield",
-				"Keybindings: https://github.com/jesseduffield/lazydocker/blob/master/docs/keybindings",
-				"Config Options: https://github.com/jesseduffield/lazydocker/blob/master/docs/Config.md",
-				"Raise an Issue: https://github.com/jesseduffield/lazydocker/issues",
-				utils.ColoredString("Buy Jesse a coffee: https://github.com/sponsors/jesseduffield", color.FgMagenta), // caffeine ain't free
-				"Here's your lazydocker config when merged in with the defaults (you can open your config by pressing 'o'):",
-				configBuf.String(),
-			}, "\n\n")
-
-		_ = gui.RenderStringMain(dashboardString)
+		_ = gui.RenderStringMain(gui.creditsStr())
 	})
+}
+
+func (gui *Gui) creditsStr() string {
+	var configBuf bytes.Buffer
+	_ = yaml.NewEncoder(&configBuf, yaml.IncludeOmitted).Encode(gui.Config.UserConfig)
+
+	return strings.Join(
+		[]string{
+			lazydockerTitle(),
+			"Copyright (c) 2019 Jesse Duffield",
+			"Keybindings: https://github.com/jesseduffield/lazydocker/blob/master/docs/keybindings",
+			"Config Options: https://github.com/jesseduffield/lazydocker/blob/master/docs/Config.md",
+			"Raise an Issue: https://github.com/jesseduffield/lazydocker/issues",
+			utils.ColoredString("Buy Jesse a coffee: https://github.com/sponsors/jesseduffield", color.FgMagenta), // caffeine ain't free
+			"Here's your lazydocker config when merged in with the defaults (you can open your config by pressing 'o'):",
+			configBuf.String(),
+		}, "\n\n")
 }
 
 func (gui *Gui) renderAllLogs(_project *commands.Project) error {

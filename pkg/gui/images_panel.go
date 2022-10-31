@@ -68,27 +68,31 @@ func (gui *Gui) getImagesPanel() *panels.SideListPanel[*commands.Image] {
 
 func (gui *Gui) renderImageConfig(image *commands.Image) error {
 	return gui.T.NewTask(func(stop chan struct{}) {
-		padding := 10
-		output := ""
-		output += utils.WithPadding("Name: ", padding) + image.Name + "\n"
-		output += utils.WithPadding("ID: ", padding) + image.Image.ID + "\n"
-		output += utils.WithPadding("Tags: ", padding) + utils.ColoredString(strings.Join(image.Image.RepoTags, ", "), color.FgGreen) + "\n"
-		output += utils.WithPadding("Size: ", padding) + utils.FormatDecimalBytes(int(image.Image.Size)) + "\n"
-		output += utils.WithPadding("Created: ", padding) + fmt.Sprintf("%v", time.Unix(image.Image.Created, 0).Format(time.RFC1123)) + "\n"
-
-		history, err := image.RenderHistory()
-		if err != nil {
-			gui.Log.Error(err)
-		}
-
-		output += "\n\n" + history
-
 		mainView := gui.Views.Main
 		mainView.Autoscroll = false
 		mainView.Wrap = false // don't care what your config is this page is ugly without wrapping
 
-		_ = gui.RenderStringMain(output)
+		_ = gui.RenderStringMain(gui.imageConfigStr(image))
 	})
+}
+
+func (gui *Gui) imageConfigStr(image *commands.Image) string {
+	padding := 10
+	output := ""
+	output += utils.WithPadding("Name: ", padding) + image.Name + "\n"
+	output += utils.WithPadding("ID: ", padding) + image.Image.ID + "\n"
+	output += utils.WithPadding("Tags: ", padding) + utils.ColoredString(strings.Join(image.Image.RepoTags, ", "), color.FgGreen) + "\n"
+	output += utils.WithPadding("Size: ", padding) + utils.FormatDecimalBytes(int(image.Image.Size)) + "\n"
+	output += utils.WithPadding("Created: ", padding) + fmt.Sprintf("%v", time.Unix(image.Image.Created, 0).Format(time.RFC1123)) + "\n"
+
+	history, err := image.RenderHistory()
+	if err != nil {
+		gui.Log.Error(err)
+	}
+
+	output += "\n\n" + history
+
+	return output
 }
 
 func (gui *Gui) reloadImages() error {

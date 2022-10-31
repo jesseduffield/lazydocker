@@ -119,13 +119,16 @@ func sortContainers(a *commands.Container, b *commands.Container, legacySort boo
 	return containerStates[a.Container.State] < containerStates[b.Container.State]
 }
 
-func (gui *Gui) renderContainerEnv(container *commands.Container) error {
-	if !container.DetailsLoaded() {
-		return gui.T.NewTask(func(stop chan struct{}) {
-			_ = gui.RenderStringMain(gui.Tr.WaitingForContainerInfo)
-		})
-	}
+type MainRenderTask struct {
+	Wrap       bool
+	Autoscroll bool
 
+	StrContent string
+
+	// TicketTask
+}
+
+func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 	mainView := gui.Views.Main
 	mainView.Autoscroll = false
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
@@ -135,7 +138,14 @@ func (gui *Gui) renderContainerEnv(container *commands.Container) error {
 	})
 }
 
+// I want a struct that gets returned explaining what needs to happen. So for example,
+// autoscroll: true, wrap: true, content: string
+
 func (gui *Gui) containerEnv(container *commands.Container) string {
+	if !container.DetailsLoaded() {
+		return gui.Tr.WaitingForContainerInfo
+	}
+
 	if len(container.Details.Config.Env) == 0 {
 		return gui.Tr.NothingToDisplay
 	}
@@ -163,15 +173,19 @@ func (gui *Gui) containerEnv(container *commands.Container) string {
 }
 
 func (gui *Gui) renderContainerConfig(container *commands.Container) error {
-	if !container.DetailsLoaded() {
-		return gui.T.NewTask(func(stop chan struct{}) {
-			_ = gui.RenderStringMain(gui.Tr.WaitingForContainerInfo)
-		})
-	}
-
 	mainView := gui.Views.Main
 	mainView.Autoscroll = false
 	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
+
+	return gui.T.NewTask(func(stop chan struct{}) {
+		_ = gui.RenderStringMain(gui.containerConfigStr(container))
+	})
+}
+
+func (gui *Gui) containerConfigStr(container *commands.Container) string {
+	if !container.DetailsLoaded() {
+		return gui.Tr.WaitingForContainerInfo
+	}
 
 	padding := 10
 	output := ""
@@ -210,13 +224,12 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 
 	data, err := json.MarshalIndent(&container.Details, "", "  ")
 	if err != nil {
-		return err
+		return fmt.Sprintf("Error marshalling container details: %v", err)
 	}
+
 	output += fmt.Sprintf("\nFull details:\n\n%s", string(data))
 
-	return gui.T.NewTask(func(stop chan struct{}) {
-		_ = gui.RenderStringMain(output)
-	})
+	return output
 }
 
 func (gui *Gui) renderContainerStats(container *commands.Container) error {

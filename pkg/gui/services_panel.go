@@ -121,7 +121,7 @@ func (gui *Gui) renderServiceTop(service *commands.Service) error {
 func (gui *Gui) renderServiceLogs(service *commands.Service) error {
 	if service.Container == nil {
 		return gui.T.NewTask(func(stop chan struct{}) {
-			gui.clearMainView()
+			gui.reRenderStringMain(gui.Tr.NoContainerForService)
 		})
 	}
 

@@ -58,32 +58,36 @@ func (gui *Gui) renderVolumeConfig(volume *commands.Volume) error {
 		mainView.Autoscroll = false
 		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 
-		padding := 15
-		output := ""
-		output += utils.WithPadding("Name: ", padding) + volume.Name + "\n"
-		output += utils.WithPadding("Driver: ", padding) + volume.Volume.Driver + "\n"
-		output += utils.WithPadding("Scope: ", padding) + volume.Volume.Scope + "\n"
-		output += utils.WithPadding("Mountpoint: ", padding) + volume.Volume.Mountpoint + "\n"
-		output += utils.WithPadding("Labels: ", padding) + utils.FormatMap(padding, volume.Volume.Labels) + "\n"
-		output += utils.WithPadding("Options: ", padding) + utils.FormatMap(padding, volume.Volume.Options) + "\n"
-
-		output += utils.WithPadding("Status: ", padding)
-		if volume.Volume.Status != nil {
-			output += "\n"
-			for k, v := range volume.Volume.Status {
-				output += utils.FormatMapItem(padding, k, v)
-			}
-		} else {
-			output += "n/a"
-		}
-
-		if volume.Volume.UsageData != nil {
-			output += utils.WithPadding("RefCount: ", padding) + fmt.Sprintf("%d", volume.Volume.UsageData.RefCount) + "\n"
-			output += utils.WithPadding("Size: ", padding) + utils.FormatBinaryBytes(int(volume.Volume.UsageData.Size)) + "\n"
-		}
-
-		_ = gui.RenderStringMain(output)
+		_ = gui.RenderStringMain(gui.volumeConfigStr(volume))
 	})
+}
+
+func (gui *Gui) volumeConfigStr(volume *commands.Volume) string {
+	padding := 15
+	output := ""
+	output += utils.WithPadding("Name: ", padding) + volume.Name + "\n"
+	output += utils.WithPadding("Driver: ", padding) + volume.Volume.Driver + "\n"
+	output += utils.WithPadding("Scope: ", padding) + volume.Volume.Scope + "\n"
+	output += utils.WithPadding("Mountpoint: ", padding) + volume.Volume.Mountpoint + "\n"
+	output += utils.WithPadding("Labels: ", padding) + utils.FormatMap(padding, volume.Volume.Labels) + "\n"
+	output += utils.WithPadding("Options: ", padding) + utils.FormatMap(padding, volume.Volume.Options) + "\n"
+
+	output += utils.WithPadding("Status: ", padding)
+	if volume.Volume.Status != nil {
+		output += "\n"
+		for k, v := range volume.Volume.Status {
+			output += utils.FormatMapItem(padding, k, v)
+		}
+	} else {
+		output += "n/a"
+	}
+
+	if volume.Volume.UsageData != nil {
+		output += utils.WithPadding("RefCount: ", padding) + fmt.Sprintf("%d", volume.Volume.UsageData.RefCount) + "\n"
+		output += utils.WithPadding("Size: ", padding) + utils.FormatBinaryBytes(int(volume.Volume.UsageData.Size)) + "\n"
+	}
+
+	return output
 }
 
 func (gui *Gui) reloadVolumes() error {
