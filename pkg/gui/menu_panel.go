@@ -19,11 +19,11 @@ func (gui *Gui) getMenuPanel() *panels.SideListPanel[*types.MenuItem] {
 			List: panels.NewFilteredList[*types.MenuItem](),
 			View: gui.Views.Menu,
 		},
-		NoItemsMessage:    "",
-		Gui:               gui.intoInterface(),
-		OnClick:           gui.onMenuPress,
-		Sort:              nil,
-		GetDisplayStrings: presentation.GetMenuItemDisplayStrings,
+		NoItemsMessage: "",
+		Gui:            gui.intoInterface(),
+		OnClick:        gui.onMenuPress,
+		Sort:           nil,
+		GetTableCells:  presentation.GetMenuItemDisplayStrings,
 		OnRerender: func() error {
 			return gui.resizePopupPanel(gui.Views.Menu)
 		},

@@ -35,16 +35,19 @@ type SideListPanel[T comparable] struct {
 	// and it has focus. Leave empty if you don't want to render anything
 	NoItemsMessage string
 
+	// a representation of the gui
 	Gui IGui
 
 	// this Filter is applied on top of additional default filters
 	Filter func(T) bool
 	Sort   func(a, b T) bool
 
+	// a callback to invoke when the item is clicked
 	OnClick func(T) error
 
-	// returns the columns that we render to the view in a table formats
-	GetDisplayStrings func(T) []string
+	// returns the cells that we render to the view in a table format. The cells will
+	// be rendered with padding.
+	GetTableCells func(T) []string
 
 	// function to be called after re-rendering list. Can be nil
 	OnRerender func() error
@@ -192,7 +195,7 @@ func (self *SideListPanel[T]) FilterAndSort() {
 		}
 
 		if lo.SomeBy(self.Gui.IgnoreStrings(), func(ignore string) bool {
-			return lo.SomeBy(self.GetDisplayStrings(item), func(searchString string) bool {
+			return lo.SomeBy(self.GetTableCells(item), func(searchString string) bool {
 				return strings.Contains(searchString, ignore)
 			})
 		}) {
@@ -200,7 +203,7 @@ func (self *SideListPanel[T]) FilterAndSort() {
 		}
 
 		if filterString != "" {
-			return lo.SomeBy(self.GetDisplayStrings(item), func(searchString string) bool {
+			return lo.SomeBy(self.GetTableCells(item), func(searchString string) bool {
 				return strings.Contains(searchString, filterString)
 			})
 		}
@@ -219,7 +222,7 @@ func (self *SideListPanel[T]) RerenderList() error {
 	self.Gui.Update(func() error {
 		self.View.Clear()
 		table := lo.Map(self.List.GetItems(), func(item T, index int) []string {
-			return self.GetDisplayStrings(item)
+			return self.GetTableCells(item)
 		})
 		renderedTable, err := utils.RenderTable(table)
 		if err != nil {

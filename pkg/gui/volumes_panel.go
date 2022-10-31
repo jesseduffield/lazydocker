@@ -48,7 +48,7 @@ func (gui *Gui) getVolumesPanel() *panels.SideListPanel[*commands.Volume] {
 			}
 			return a.Name < b.Name
 		},
-		GetDisplayStrings: presentation.GetVolumeDisplayStrings,
+		GetTableCells: presentation.GetVolumeDisplayStrings,
 	}
 }
 

@@ -62,7 +62,7 @@ func (gui *Gui) getImagesPanel() *panels.SideListPanel[*commands.Image] {
 
 			return a.ID < b.ID
 		},
-		GetDisplayStrings: presentation.GetImageDisplayStrings,
+		GetTableCells: presentation.GetImageDisplayStrings,
 	}
 }
 
