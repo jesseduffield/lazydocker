@@ -222,7 +222,7 @@ func (gui *Gui) renderContainerStats(container *commands.Container) error {
 	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
 		width, _ := mainView.Size()
 
-		contents, err := container.RenderStats(width)
+		contents, err := presentation.RenderStats(gui.Config.UserConfig, container, width)
 		if err != nil {
 			_ = gui.createErrorPanel(err.Error())
 		}

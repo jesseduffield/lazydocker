@@ -13,7 +13,6 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
-	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
@@ -33,7 +32,6 @@ type Container struct {
 	Container       dockerTypes.Container
 	Client          *client.Client
 	OSCommand       *OSCommand
-	Config          *config.AppConfig
 	Log             *logrus.Entry
 	StatHistory     []*RecordedStats
 	Details         dockerTypes.ContainerJSON

@@ -140,7 +140,7 @@ func (c *DockerCommand) CreateClientStatMonitor(container *Container) {
 			RecordedAt: time.Now(),
 		}
 
-		container.appendStats(recordedStats)
+		container.appendStats(recordedStats, c.Config.UserConfig.Stats.MaxDuration)
 	}
 
 	container.MonitoringStats = false
@@ -214,7 +214,6 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 				Client:        c.Client,
 				OSCommand:     c.OSCommand,
 				Log:           c.Log,
-				Config:        c.Config,
 				DockerCommand: c,
 				Tr:            c.Tr,
 			}
