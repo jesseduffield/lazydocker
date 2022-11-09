@@ -236,7 +236,7 @@ everything is one keypress away (or one click away! Mouse support FTW):
 There is still a lot of work to go! Please check out the [contributing guide](CONTRIBUTING.md).
 For contributor discussion about things not better discussed here in the repo, join the discord channel
 
-<img src='/docs/resources/discord.png' width='75'>
+<a href="https://discord.gg/ehwFt2t4wt"><img src='/docs/resources/discord.png' width='75'></a>
 
 ## Donate
 
