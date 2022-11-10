@@ -1,12 +1,13 @@
 package gui
 
 import (
+	"context"
 	"time"
 
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
 )
 
-func (gui *Gui) QueueTask(f func(stop chan struct{})) error {
+func (gui *Gui) QueueTask(f func(ctx context.Context)) error {
 	return gui.taskManager.NewTask(f)
 }
 
@@ -19,13 +20,13 @@ type RenderStringTaskOpts struct {
 type TaskOpts struct {
 	Autoscroll bool
 	Wrap       bool
-	Func       func(stop chan struct{})
+	Func       func(ctx context.Context)
 }
 
 type TickerTaskOpts struct {
 	Duration   time.Duration
-	Before     func(stop chan struct{})
-	Func       func(stop, notifyStopped chan struct{})
+	Before     func(ctx context.Context)
+	Func       func(ctx context.Context, notifyStopped chan struct{})
 	Autoscroll bool
 	Wrap       bool
 }
@@ -34,10 +35,7 @@ func (gui *Gui) NewRenderStringTask(opts RenderStringTaskOpts) tasks.TaskFunc {
 	taskOpts := TaskOpts{
 		Autoscroll: opts.Autoscroll,
 		Wrap:       opts.Wrap,
-		Func: func(stop chan struct{}) {
-			// GetStrContent may be a slow function, so we clear the main view first
-			// so that we're not seeing the previous tab's content appear.
-			gui.clearMainView()
+		Func: func(ctx context.Context) {
 			gui.RenderStringMain(opts.GetStrContent())
 		},
 	}
@@ -55,12 +53,12 @@ func (gui *Gui) NewSimpleRenderStringTask(getContent func() string) tasks.TaskFu
 }
 
 func (gui *Gui) NewTask(opts TaskOpts) tasks.TaskFunc {
-	return func(stop chan struct{}) {
+	return func(ctx context.Context) {
 		mainView := gui.Views.Main
 		mainView.Autoscroll = opts.Autoscroll
 		mainView.Wrap = opts.Wrap
 
-		opts.Func(stop)
+		opts.Func(ctx)
 	}
 }
 
@@ -70,25 +68,25 @@ func (gui *Gui) NewTask(opts TaskOpts) tasks.TaskFunc {
 func (gui *Gui) NewTickerTask(opts TickerTaskOpts) tasks.TaskFunc {
 	notifyStopped := make(chan struct{}, 10)
 
-	task := func(stop chan struct{}) {
+	task := func(ctx context.Context) {
 		if opts.Before != nil {
-			opts.Before(stop)
+			opts.Before(ctx)
 		}
 		tickChan := time.NewTicker(opts.Duration)
 		defer tickChan.Stop()
 		// calling f first so that we're not waiting for the first tick
-		opts.Func(stop, notifyStopped)
+		opts.Func(ctx, notifyStopped)
 		for {
 			select {
 			case <-notifyStopped:
 				gui.Log.Info("exiting ticker task due to notifyStopped channel")
 				return
-			case <-stop:
+			case <-ctx.Done():
 				gui.Log.Info("exiting ticker task due to stopped channel")
 				return
 			case <-tickChan.C:
 				gui.Log.Info("running ticker task again")
-				opts.Func(stop, notifyStopped)
+				opts.Func(ctx, notifyStopped)
 			}
 		}
 	}

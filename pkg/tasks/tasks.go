@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -19,15 +20,16 @@ type TaskManager struct {
 }
 
 type Task struct {
-	stop          chan struct{}
+	ctx           context.Context
+	cancel        context.CancelFunc
 	stopped       bool
 	stopMutex     deadlock.Mutex
 	notifyStopped chan struct{}
 	Log           *logrus.Entry
-	f             func(chan struct{})
+	f             func(ctx context.Context)
 }
 
-type TaskFunc func(stop chan struct{})
+type TaskFunc func(ctx context.Context)
 
 func NewTaskManager(log *logrus.Entry, translationSet *i18n.TranslationSet) *TaskManager {
 	return &TaskManager{Log: log, Tr: translationSet}
@@ -54,7 +56,7 @@ func (t *TaskManager) Close() {
 	}
 }
 
-func (t *TaskManager) NewTask(f func(stop chan struct{})) error {
+func (t *TaskManager) NewTask(f func(ctx context.Context)) error {
 	go func() {
 		t.taskIDMutex.Lock()
 		t.newTaskId++
@@ -67,7 +69,7 @@ func (t *TaskManager) NewTask(f func(stop chan struct{})) error {
 			return
 		}
 
-		stop := make(chan struct{}, 1) // we don't want to block on this in case the task already returned
+		ctx, cancel := context.WithCancel(context.Background())
 		notifyStopped := make(chan struct{})
 
 		if t.currentTask != nil {
@@ -77,14 +79,15 @@ func (t *TaskManager) NewTask(f func(stop chan struct{})) error {
 		}
 
 		t.currentTask = &Task{
-			stop:          stop,
+			ctx:           ctx,
+			cancel:        cancel,
 			notifyStopped: notifyStopped,
 			Log:           t.Log,
 			f:             f,
 		}
 
 		go func() {
-			f(stop)
+			f(ctx)
 			t.Log.Info("returned from function, closing notifyStopped")
 			close(notifyStopped)
 		}()
@@ -99,7 +102,8 @@ func (t *Task) Stop() {
 	if t.stopped {
 		return
 	}
-	close(t.stop)
+
+	t.cancel()
 	t.Log.Info("closed stop channel, waiting for notifyStopped message")
 	<-t.notifyStopped
 	t.Log.Info("received notifystopped message")
@@ -109,28 +113,28 @@ func (t *Task) Stop() {
 // NewTickerTask is a convenience function for making a new task that repeats some action once per e.g. second
 // the before function gets called after the lock is obtained, but before the ticker starts.
 // if you handle a message on the stop channel in f() you need to send a message on the notifyStopped channel because returning is not sufficient. Here, unlike in a regular task, simply returning means we're now going to wait till the next tick to run again.
-func (t *TaskManager) NewTickerTask(duration time.Duration, before func(stop chan struct{}), f func(stop, notifyStopped chan struct{})) error {
+func (t *TaskManager) NewTickerTask(duration time.Duration, before func(ctx context.Context), f func(ctx context.Context, notifyStopped chan struct{})) error {
 	notifyStopped := make(chan struct{}, 10)
 
-	return t.NewTask(func(stop chan struct{}) {
+	return t.NewTask(func(ctx context.Context) {
 		if before != nil {
-			before(stop)
+			before(ctx)
 		}
 		tickChan := time.NewTicker(duration)
 		defer tickChan.Stop()
 		// calling f first so that we're not waiting for the first tick
-		f(stop, notifyStopped)
+		f(ctx, notifyStopped)
 		for {
 			select {
 			case <-notifyStopped:
 				t.Log.Info("exiting ticker task due to notifyStopped channel")
 				return
-			case <-stop:
+			case <-ctx.Done():
 				t.Log.Info("exiting ticker task due to stopped cahnnel")
 				return
 			case <-tickChan.C:
 				t.Log.Info("running ticker task again")
-				f(stop, notifyStopped)
+				f(ctx, notifyStopped)
 			}
 		}
 	})

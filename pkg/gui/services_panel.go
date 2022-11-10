@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -106,8 +107,7 @@ func (gui *Gui) renderServiceStats(service *commands.Service) tasks.TaskFunc {
 
 func (gui *Gui) renderServiceTop(service *commands.Service) tasks.TaskFunc {
 	return gui.NewTickerTask(TickerTaskOpts{
-		Func: func(stop, notifyStopped chan struct{}) {
-			ctx := stopIntoCtx(stop)
+		Func: func(ctx context.Context, notifyStopped chan struct{}) {
 			contents, err := service.RenderTop(ctx)
 			if err != nil {
 				gui.RenderStringMain(err.Error())
@@ -116,7 +116,7 @@ func (gui *Gui) renderServiceTop(service *commands.Service) tasks.TaskFunc {
 			gui.reRenderStringMain(contents)
 		},
 		Duration:   time.Second,
-		Before:     func(stop chan struct{}) { gui.clearMainView() },
+		Before:     func(ctx context.Context) { gui.clearMainView() },
 		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
 		Autoscroll: false,
 	})

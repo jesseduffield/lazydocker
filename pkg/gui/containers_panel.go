@@ -212,7 +212,7 @@ func (gui *Gui) containerConfigStr(container *commands.Container) string {
 
 func (gui *Gui) renderContainerStats(container *commands.Container) tasks.TaskFunc {
 	return gui.NewTickerTask(TickerTaskOpts{
-		Func: func(stop, notifyStopped chan struct{}) {
+		Func: func(ctx context.Context, notifyStopped chan struct{}) {
 			contents, err := presentation.RenderStats(gui.Config.UserConfig, container, gui.Views.Main.Width())
 			if err != nil {
 				_ = gui.createErrorPanel(err.Error())
@@ -221,26 +221,15 @@ func (gui *Gui) renderContainerStats(container *commands.Container) tasks.TaskFu
 			gui.reRenderStringMain(contents)
 		},
 		Duration:   time.Second,
-		Before:     func(stop chan struct{}) { gui.clearMainView() },
+		Before:     func(ctx context.Context) { gui.clearMainView() },
 		Wrap:       false, // wrapping looks bad here so we're overriding the config value
 		Autoscroll: false,
 	})
 }
 
-// TODO: remove this and just use a context
-func stopIntoCtx(stop chan struct{}) context.Context {
-	ctx, ctxCancel := context.WithCancel(context.Background())
-	go func() {
-		<-stop
-		ctxCancel()
-	}()
-	return ctx
-}
-
 func (gui *Gui) renderContainerTop(container *commands.Container) tasks.TaskFunc {
 	return gui.NewTickerTask(TickerTaskOpts{
-		Func: func(stop, notifyStopped chan struct{}) {
-			ctx := stopIntoCtx(stop)
+		Func: func(ctx context.Context, notifyStopped chan struct{}) {
 			contents, err := container.RenderTop(ctx)
 			if err != nil {
 				gui.RenderStringMain(err.Error())
@@ -249,7 +238,7 @@ func (gui *Gui) renderContainerTop(container *commands.Container) tasks.TaskFunc
 			gui.reRenderStringMain(contents)
 		},
 		Duration:   time.Second,
-		Before:     func(stop chan struct{}) { gui.clearMainView() },
+		Before:     func(ctx context.Context) { gui.clearMainView() },
 		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
 		Autoscroll: false,
 	})

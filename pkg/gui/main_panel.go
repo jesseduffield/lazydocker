@@ -76,13 +76,6 @@ func (gui *Gui) jumpToTopMain(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) onMainTabClick(tabIndex int) error {
 	gui.Log.Warn(tabIndex)
 
-	viewName := gui.currentViewName()
-
-	mainView := gui.Views.Main
-	if viewName == "main" && mainView.ParentView != nil {
-		viewName = mainView.ParentView.Name()
-	}
-
 	currentSidePanel, ok := gui.currentSidePanel()
 
 	if !ok {

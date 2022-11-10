@@ -2,6 +2,7 @@ package gui
 
 import (
 	"bytes"
+	"context"
 	"path"
 	"strings"
 
@@ -115,7 +116,7 @@ func (gui *Gui) renderAllLogs(_project *commands.Project) tasks.TaskFunc {
 	return gui.NewTask(TaskOpts{
 		Autoscroll: true,
 		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
-		Func: func(stop chan struct{}) {
+		Func: func(ctx context.Context) {
 			gui.clearMainView()
 
 			cmd := gui.OSCommand.RunCustomCommand(
@@ -132,7 +133,7 @@ func (gui *Gui) renderAllLogs(_project *commands.Project) tasks.TaskFunc {
 			_ = cmd.Start()
 
 			go func() {
-				<-stop
+				<-ctx.Done()
 				if err := gui.OSCommand.Kill(cmd); err != nil {
 					gui.Log.Error(err)
 				}

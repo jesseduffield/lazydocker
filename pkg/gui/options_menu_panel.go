@@ -41,10 +41,6 @@ func (gui *Gui) getBindings(v *gocui.View) []*Binding {
 		}
 	}
 
-	// } else if v.ParentView != nil && binding.ViewName == v.ParentView.Name() {
-	// 	// only add this if we don't have our own matching binding
-	// 	bindingsPanel = append(bindingsPanel, binding)
-
 	// append dummy element to have a separator between
 	// panel and global keybindings
 	bindingsPanel = append(bindingsPanel, &Binding{})

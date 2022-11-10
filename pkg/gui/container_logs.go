@@ -18,24 +18,22 @@ import (
 
 func (gui *Gui) renderContainerLogsToMain(container *commands.Container) tasks.TaskFunc {
 	return gui.NewTickerTask(TickerTaskOpts{
-		Func: func(stop, notifyStopped chan struct{}) {
-			gui.renderContainerLogsToMainAux(container, stop, notifyStopped)
+		Func: func(ctx context.Context, notifyStopped chan struct{}) {
+			gui.renderContainerLogsToMainAux(container, ctx, notifyStopped)
 		},
 		Duration: time.Millisecond * 200,
 		// TODO: see why this isn't working (when switching from Top tab to Logs tab in the services panel, the tops tab's content isn't removed)
-		Before:     func(stop chan struct{}) { gui.clearMainView() },
+		Before:     func(ctx context.Context) { gui.clearMainView() },
 		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
 		Autoscroll: true,
 	})
 }
 
-func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, stop, notifyStopped chan struct{}) {
+func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, ctx context.Context, notifyStopped chan struct{}) {
 	gui.clearMainView()
 	defer func() {
 		notifyStopped <- struct{}{}
 	}()
-
-	ctx := stopIntoCtx(stop)
 
 	mainView := gui.Views.Main
 
@@ -49,7 +47,7 @@ func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, stop
 	defer ticker.Stop()
 	for {
 		select {
-		case <-stop:
+		case <-ctx.Done():
 			return
 		case <-ticker.C:
 			result, err := container.Inspect()

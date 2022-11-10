@@ -1,6 +1,7 @@
 package panels
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -74,7 +75,7 @@ type IGui interface {
 	IgnoreStrings() []string
 	Update(func() error)
 
-	QueueTask(f func(stop chan struct{})) error
+	QueueTask(f func(ctx context.Context)) error
 }
 
 func (self *SideListPanel[T]) HandleClick() error {
