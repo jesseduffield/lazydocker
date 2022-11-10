@@ -1,6 +1,9 @@
 package panels
 
-import "github.com/samber/lo"
+import (
+	"github.com/jesseduffield/lazydocker/pkg/tasks"
+	"github.com/samber/lo"
+)
 
 // A 'context' generally corresponds to an item and the tab in the main panel that we're
 // displaying. So if we switch to a new item, or change the tab in the panel panel
@@ -24,7 +27,7 @@ type MainTab[T any] struct {
 	// title of the tab, rendered in the main view
 	Title string
 	// function to render the content of the tab
-	Render func(item T) error
+	Render func(item T) tasks.TaskFunc
 }
 
 func (self *ContextState[T]) GetMainTabTitles() []string {

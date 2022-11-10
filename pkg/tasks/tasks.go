@@ -27,6 +27,8 @@ type Task struct {
 	f             func(chan struct{})
 }
 
+type TaskFunc func(stop chan struct{})
+
 func NewTaskManager(log *logrus.Entry, translationSet *i18n.TranslationSet) *TaskManager {
 	return &TaskManager{Log: log, Tr: translationSet}
 }

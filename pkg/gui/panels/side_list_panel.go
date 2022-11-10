@@ -63,7 +63,7 @@ var _ ISideListPanel = &SideListPanel[int]{}
 
 type IGui interface {
 	HandleClick(v *gocui.View, itemCount int, selectedLine *int, handleSelect func() error) error
-	RenderStringMain(message string) error
+	RenderStringMain(message string)
 	FocusY(selectedLine int, itemCount int, view *gocui.View)
 	ShouldRefresh(contextKey string) bool
 	GetMainView() *gocui.View
@@ -72,6 +72,8 @@ type IGui interface {
 	FilterString(view *gocui.View) string
 	IgnoreStrings() []string
 	Update(func() error)
+
+	QueueTask(f func(stop chan struct{})) error
 }
 
 func (self *SideListPanel[T]) HandleClick() error {
@@ -105,7 +107,8 @@ func (self *SideListPanel[T]) HandleSelect() error {
 		}
 
 		if self.NoItemsMessage != "" {
-			return self.Gui.RenderStringMain(self.NoItemsMessage)
+			// TODO: use task for this
+			self.Gui.RenderStringMain(self.NoItemsMessage)
 		}
 
 		return nil
@@ -130,7 +133,9 @@ func (self *SideListPanel[T]) renderContext(item T) error {
 	mainView.Tabs = self.ContextState.GetMainTabTitles()
 	mainView.TabIndex = self.ContextState.mainTabIdx
 
-	return self.ContextState.GetCurrentMainTab().Render(item)
+	task := self.ContextState.GetCurrentMainTab().Render(item)
+
+	return self.Gui.QueueTask(task)
 }
 
 func (self *SideListPanel[T]) GetSelectedItem() (T, error) {

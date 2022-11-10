@@ -14,6 +14,7 @@ func GetServiceDisplayStrings(service *commands.Service) []string {
 			service.Name,
 			"",
 			"",
+			"",
 		}
 	}
 
@@ -24,5 +25,6 @@ func GetServiceDisplayStrings(service *commands.Service) []string {
 		service.Name,
 		getDisplayCPUPerc(container),
 		utils.ColoredString(displayPorts(container), color.FgYellow),
+		utils.ColoredString(displayContainerImage(container), color.FgMagenta),
 	}
 }

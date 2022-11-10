@@ -10,6 +10,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
+	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/jesseduffield/yaml"
 )
@@ -89,14 +90,8 @@ func (gui *Gui) getProjectName() string {
 	return projectName
 }
 
-func (gui *Gui) renderCredits(_project *commands.Project) error {
-	return gui.T.NewTask(func(stop chan struct{}) {
-		mainView := gui.Views.Main
-		mainView.Autoscroll = false
-		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-
-		_ = gui.RenderStringMain(gui.creditsStr())
-	})
+func (gui *Gui) renderCredits(_project *commands.Project) tasks.TaskFunc {
+	return gui.NewSimpleRenderStringTask(func() string { return gui.creditsStr() })
 }
 
 func (gui *Gui) creditsStr() string {
@@ -116,47 +111,40 @@ func (gui *Gui) creditsStr() string {
 		}, "\n\n")
 }
 
-func (gui *Gui) renderAllLogs(_project *commands.Project) error {
-	return gui.T.NewTask(func(stop chan struct{}) {
-		mainView := gui.Views.Main
-		mainView.Autoscroll = true
-		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
+func (gui *Gui) renderAllLogs(_project *commands.Project) tasks.TaskFunc {
+	return gui.NewTask(TaskOpts{
+		Autoscroll: true,
+		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
+		Func: func(stop chan struct{}) {
+			gui.clearMainView()
 
-		gui.clearMainView()
+			cmd := gui.OSCommand.RunCustomCommand(
+				utils.ApplyTemplate(
+					gui.Config.UserConfig.CommandTemplates.AllLogs,
+					gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+				),
+			)
 
-		cmd := gui.OSCommand.RunCustomCommand(
-			utils.ApplyTemplate(
-				gui.Config.UserConfig.CommandTemplates.AllLogs,
-				gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
-			),
-		)
+			cmd.Stdout = gui.Views.Main
+			cmd.Stderr = gui.Views.Main
 
-		cmd.Stdout = mainView
-		cmd.Stderr = mainView
+			gui.OSCommand.PrepareForChildren(cmd)
+			_ = cmd.Start()
 
-		gui.OSCommand.PrepareForChildren(cmd)
-		_ = cmd.Start()
+			go func() {
+				<-stop
+				if err := gui.OSCommand.Kill(cmd); err != nil {
+					gui.Log.Error(err)
+				}
+			}()
 
-		go func() {
-			<-stop
-			if err := gui.OSCommand.Kill(cmd); err != nil {
-				gui.Log.Error(err)
-			}
-		}()
-
-		_ = cmd.Wait()
+			_ = cmd.Wait()
+		},
 	})
 }
 
-func (gui *Gui) renderDockerComposeConfig(_project *commands.Project) error {
-	return gui.T.NewTask(func(stop chan struct{}) {
-		mainView := gui.Views.Main
-		mainView.Autoscroll = false
-		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-
-		config := gui.DockerCommand.DockerComposeConfig()
-		_ = gui.RenderStringMain(config)
-	})
+func (gui *Gui) renderDockerComposeConfig(_project *commands.Project) tasks.TaskFunc {
+	return gui.NewSimpleRenderStringTask(func() string { return gui.DockerCommand.DockerComposeConfig() })
 }
 
 func (gui *Gui) handleOpenConfig(g *gocui.Gui, v *gocui.View) error {

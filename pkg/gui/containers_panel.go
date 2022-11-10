@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
 	"github.com/jesseduffield/lazydocker/pkg/gui/types"
+	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
@@ -119,27 +121,9 @@ func sortContainers(a *commands.Container, b *commands.Container, legacySort boo
 	return containerStates[a.Container.State] < containerStates[b.Container.State]
 }
 
-type MainRenderTask struct {
-	Wrap       bool
-	Autoscroll bool
-
-	StrContent string
-
-	// TicketTask
+func (gui *Gui) renderContainerEnv(container *commands.Container) tasks.TaskFunc {
+	return gui.NewSimpleRenderStringTask(func() string { return gui.containerEnv(container) })
 }
-
-func (gui *Gui) renderContainerEnv(container *commands.Container) error {
-	mainView := gui.Views.Main
-	mainView.Autoscroll = false
-	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-
-	return gui.T.NewTask(func(stop chan struct{}) {
-		_ = gui.RenderStringMain(gui.containerEnv(container))
-	})
-}
-
-// I want a struct that gets returned explaining what needs to happen. So for example,
-// autoscroll: true, wrap: true, content: string
 
 func (gui *Gui) containerEnv(container *commands.Container) string {
 	if !container.DetailsLoaded() {
@@ -172,14 +156,8 @@ func (gui *Gui) containerEnv(container *commands.Container) string {
 	return output
 }
 
-func (gui *Gui) renderContainerConfig(container *commands.Container) error {
-	mainView := gui.Views.Main
-	mainView.Autoscroll = false
-	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-
-	return gui.T.NewTask(func(stop chan struct{}) {
-		_ = gui.RenderStringMain(gui.containerConfigStr(container))
-	})
+func (gui *Gui) renderContainerConfig(container *commands.Container) tasks.TaskFunc {
+	return gui.NewSimpleRenderStringTask(func() string { return gui.containerConfigStr(container) })
 }
 
 func (gui *Gui) containerConfigStr(container *commands.Container) string {
@@ -232,35 +210,48 @@ func (gui *Gui) containerConfigStr(container *commands.Container) string {
 	return output
 }
 
-func (gui *Gui) renderContainerStats(container *commands.Container) error {
-	mainView := gui.Views.Main
-	mainView.Autoscroll = false
-	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
+func (gui *Gui) renderContainerStats(container *commands.Container) tasks.TaskFunc {
+	return gui.NewTickerTask(TickerTaskOpts{
+		Func: func(stop, notifyStopped chan struct{}) {
+			contents, err := presentation.RenderStats(gui.Config.UserConfig, container, gui.Views.Main.Width())
+			if err != nil {
+				_ = gui.createErrorPanel(err.Error())
+			}
 
-	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
-		width, _ := mainView.Size()
-
-		contents, err := presentation.RenderStats(gui.Config.UserConfig, container, width)
-		if err != nil {
-			_ = gui.createErrorPanel(err.Error())
-		}
-
-		gui.reRenderStringMain(contents)
+			gui.reRenderStringMain(contents)
+		},
+		Duration:   time.Second,
+		Before:     func(stop chan struct{}) { gui.clearMainView() },
+		Wrap:       false, // wrapping looks bad here so we're overriding the config value
+		Autoscroll: false,
 	})
 }
 
-func (gui *Gui) renderContainerTop(container *commands.Container) error {
-	mainView := gui.Views.Main
-	mainView.Autoscroll = false
-	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
+// TODO: remove this and just use a context
+func stopIntoCtx(stop chan struct{}) context.Context {
+	ctx, ctxCancel := context.WithCancel(context.Background())
+	go func() {
+		<-stop
+		ctxCancel()
+	}()
+	return ctx
+}
 
-	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
-		contents, err := container.RenderTop()
-		if err != nil {
-			gui.reRenderStringMain(err.Error())
-		}
+func (gui *Gui) renderContainerTop(container *commands.Container) tasks.TaskFunc {
+	return gui.NewTickerTask(TickerTaskOpts{
+		Func: func(stop, notifyStopped chan struct{}) {
+			ctx := stopIntoCtx(stop)
+			contents, err := container.RenderTop(ctx)
+			if err != nil {
+				gui.RenderStringMain(err.Error())
+			}
 
-		gui.reRenderStringMain(contents)
+			gui.reRenderStringMain(contents)
+		},
+		Duration:   time.Second,
+		Before:     func(stop chan struct{}) { gui.clearMainView() },
+		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
+		Autoscroll: false,
 	})
 }
 

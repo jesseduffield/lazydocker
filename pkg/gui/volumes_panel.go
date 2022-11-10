@@ -10,6 +10,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
 	"github.com/jesseduffield/lazydocker/pkg/gui/types"
+	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
@@ -52,14 +53,8 @@ func (gui *Gui) getVolumesPanel() *panels.SideListPanel[*commands.Volume] {
 	}
 }
 
-func (gui *Gui) renderVolumeConfig(volume *commands.Volume) error {
-	return gui.T.NewTask(func(stop chan struct{}) {
-		mainView := gui.Views.Main
-		mainView.Autoscroll = false
-		mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-
-		_ = gui.RenderStringMain(gui.volumeConfigStr(volume))
-	})
+func (gui *Gui) renderVolumeConfig(volume *commands.Volume) tasks.TaskFunc {
+	return gui.NewSimpleRenderStringTask(func() string { return gui.volumeConfigStr(volume) })
 }
 
 func (gui *Gui) volumeConfigStr(volume *commands.Volume) string {

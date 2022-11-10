@@ -1,9 +1,8 @@
 package commands
 
 import (
+	"context"
 	"os/exec"
-
-	"github.com/docker/docker/api/types/container"
 
 	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
@@ -58,11 +57,6 @@ func (s *Service) Attach() (*exec.Cmd, error) {
 	return s.Container.Attach()
 }
 
-// Top returns process information
-func (s *Service) Top() (container.ContainerTopOKBody, error) {
-	return s.Container.Top()
-}
-
 // ViewLogs attaches to a subprocess viewing the service's logs
 func (s *Service) ViewLogs() (*exec.Cmd, error) {
 	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.ViewServiceLogs
@@ -78,12 +72,12 @@ func (s *Service) ViewLogs() (*exec.Cmd, error) {
 }
 
 // RenderTop renders the process list of the service
-func (s *Service) RenderTop() (string, error) {
+func (s *Service) RenderTop(ctx context.Context) (string, error) {
 	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.ServiceTop
 	command := utils.ApplyTemplate(
 		templateString,
 		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
 	)
 
-	return s.OSCommand.RunCommandWithOutput(command)
+	return s.OSCommand.RunCommandWithOutputContext(ctx, command)
 }

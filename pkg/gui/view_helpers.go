@@ -145,8 +145,8 @@ func (gui *Gui) renderString(g *gocui.Gui, viewName, s string) error {
 	return nil
 }
 
-func (gui *Gui) RenderStringMain(s string) error {
-	return gui.renderString(gui.g, "main", s)
+func (gui *Gui) RenderStringMain(s string) {
+	_ = gui.renderString(gui.g, "main", s)
 }
 
 // reRenderString sets the main view's content, without changing its origin

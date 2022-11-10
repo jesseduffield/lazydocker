@@ -14,16 +14,18 @@ import (
 )
 
 func GetContainerDisplayStrings(container *commands.Container) []string {
-	image := strings.TrimPrefix(container.Container.Image, "sha256:")
-
 	return []string{
 		getContainerDisplayStatus(container),
 		getContainerDisplaySubstatus(container),
 		container.Name,
 		getDisplayCPUPerc(container),
-		utils.ColoredString(image, color.FgMagenta),
 		utils.ColoredString(displayPorts(container), color.FgYellow),
+		utils.ColoredString(displayContainerImage(container), color.FgMagenta),
 	}
+}
+
+func displayContainerImage(container *commands.Container) string {
+	return strings.TrimPrefix(container.Container.Image, "sha256:")
 }
 
 func displayPorts(c *commands.Container) string {

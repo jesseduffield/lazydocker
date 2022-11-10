@@ -11,6 +11,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
 	"github.com/jesseduffield/lazydocker/pkg/gui/types"
+	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
@@ -79,50 +80,51 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 	}
 }
 
-func (gui *Gui) renderServiceContainerConfig(service *commands.Service) error {
+func (gui *Gui) renderServiceContainerConfig(service *commands.Service) tasks.TaskFunc {
 	if service.Container == nil {
-		return gui.RenderStringMain(gui.Tr.NoContainer)
+		return gui.NewSimpleRenderStringTask(func() string { return gui.Tr.NoContainer })
 	}
 
 	return gui.renderContainerConfig(service.Container)
 }
 
-func (gui *Gui) renderServiceContainerEnv(service *commands.Service) error {
+func (gui *Gui) renderServiceContainerEnv(service *commands.Service) tasks.TaskFunc {
 	if service.Container == nil {
-		return gui.RenderStringMain(gui.Tr.NoContainer)
+		return gui.NewSimpleRenderStringTask(func() string { return gui.Tr.NoContainer })
 	}
 
 	return gui.renderContainerEnv(service.Container)
 }
 
-func (gui *Gui) renderServiceStats(service *commands.Service) error {
+func (gui *Gui) renderServiceStats(service *commands.Service) tasks.TaskFunc {
 	if service.Container == nil {
-		return nil
+		return gui.NewSimpleRenderStringTask(func() string { return gui.Tr.NoContainer })
 	}
 
 	return gui.renderContainerStats(service.Container)
 }
 
-func (gui *Gui) renderServiceTop(service *commands.Service) error {
-	mainView := gui.Views.Main
-	mainView.Autoscroll = false
-	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
+func (gui *Gui) renderServiceTop(service *commands.Service) tasks.TaskFunc {
+	return gui.NewTickerTask(TickerTaskOpts{
+		Func: func(stop, notifyStopped chan struct{}) {
+			ctx := stopIntoCtx(stop)
+			contents, err := service.RenderTop(ctx)
+			if err != nil {
+				gui.RenderStringMain(err.Error())
+			}
 
-	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
-		contents, err := service.RenderTop()
-		if err != nil {
-			gui.reRenderStringMain(err.Error())
-		}
-
-		gui.reRenderStringMain(contents)
+			gui.reRenderStringMain(contents)
+		},
+		Duration:   time.Second,
+		Before:     func(stop chan struct{}) { gui.clearMainView() },
+		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
+		Autoscroll: false,
 	})
 }
 
-func (gui *Gui) renderServiceLogs(service *commands.Service) error {
+func (gui *Gui) renderServiceLogs(service *commands.Service) tasks.TaskFunc {
 	if service.Container == nil {
-		return gui.T.NewTask(func(stop chan struct{}) {
-			gui.reRenderStringMain(gui.Tr.NoContainerForService)
-		})
+		return gui.NewSimpleRenderStringTask(func() string { return gui.Tr.NoContainerForService })
 	}
 
 	return gui.renderContainerLogsToMain(service.Container)

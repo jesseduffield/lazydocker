@@ -12,16 +12,19 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
-func (gui *Gui) renderContainerLogsToMain(container *commands.Container) error {
-	mainView := gui.Views.Main
-	mainView.Autoscroll = true
-	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-
-	return gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
-		gui.renderContainerLogsToMainAux(container, stop, notifyStopped)
+func (gui *Gui) renderContainerLogsToMain(container *commands.Container) tasks.TaskFunc {
+	return gui.NewTickerTask(TickerTaskOpts{
+		Func: func(stop, notifyStopped chan struct{}) {
+			gui.renderContainerLogsToMainAux(container, stop, notifyStopped)
+		},
+		Duration:   time.Millisecond * 200,
+		Before:     nil,
+		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
+		Autoscroll: true,
 	})
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
 	"github.com/jesseduffield/lazydocker/pkg/gui/types"
+	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
@@ -25,11 +26,9 @@ func (gui *Gui) getImagesPanel() *panels.SideListPanel[*commands.Image] {
 			GetMainTabs: func() []panels.MainTab[*commands.Image] {
 				return []panels.MainTab[*commands.Image]{
 					{
-						Key:   "config",
-						Title: gui.Tr.ConfigTitle,
-						Render: func(image *commands.Image) error {
-							return gui.renderImageConfig(image)
-						},
+						Key:    "config",
+						Title:  gui.Tr.ConfigTitle,
+						Render: gui.renderImageConfigTask,
 					},
 				}
 			},
@@ -66,13 +65,11 @@ func (gui *Gui) getImagesPanel() *panels.SideListPanel[*commands.Image] {
 	}
 }
 
-func (gui *Gui) renderImageConfig(image *commands.Image) error {
-	return gui.T.NewTask(func(stop chan struct{}) {
-		mainView := gui.Views.Main
-		mainView.Autoscroll = false
-		mainView.Wrap = false // don't care what your config is this page is ugly without wrapping
-
-		_ = gui.RenderStringMain(gui.imageConfigStr(image))
+func (gui *Gui) renderImageConfigTask(image *commands.Image) tasks.TaskFunc {
+	return gui.NewRenderStringTask(RenderStringTaskOpts{
+		GetStrContent: func() string { return gui.imageConfigStr(image) },
+		Autoscroll:    false,
+		Wrap:          false, // don't care what your config is this page is ugly without wrapping
 	})
 }
 

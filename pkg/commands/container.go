@@ -105,7 +105,7 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 }
 
 // Top returns process information
-func (c *Container) Top() (container.ContainerTopOKBody, error) {
+func (c *Container) Top(ctx context.Context) (container.ContainerTopOKBody, error) {
 	detail, err := c.Inspect()
 	if err != nil {
 		return container.ContainerTopOKBody{}, err
@@ -116,7 +116,7 @@ func (c *Container) Top() (container.ContainerTopOKBody, error) {
 		return container.ContainerTopOKBody{}, errors.New("container is not running")
 	}
 
-	return c.Client.ContainerTop(context.Background(), c.ID, []string{})
+	return c.Client.ContainerTop(ctx, c.ID, []string{})
 }
 
 // PruneContainers prunes containers
@@ -131,8 +131,8 @@ func (c *Container) Inspect() (dockerTypes.ContainerJSON, error) {
 }
 
 // RenderTop returns details about the container
-func (c *Container) RenderTop() (string, error) {
-	result, err := c.Top()
+func (c *Container) RenderTop(ctx context.Context) (string, error) {
+	result, err := c.Top(ctx)
 	if err != nil {
 		return "", err
 	}
