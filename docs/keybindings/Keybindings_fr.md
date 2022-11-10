@@ -7,17 +7,15 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>e</kbd>: modifier la configuration lazydocker
   <kbd>o</kbd>: ouvrire la configuration lazydocker
-  <kbd>[</kbd>: onglet précédent
-  <kbd>]</kbd>: onglet suivant
   <kbd>m</kbd>: voir les enregistrements
   <kbd>enter</kbd>: focus paneau principal
+  <kbd>[</kbd>: onglet précédent
+  <kbd>]</kbd>: onglet suivant
 </pre>
 
 ## Conteneurs
 
 <pre>
-  <kbd>[</kbd>: onglet précédent
-  <kbd>]</kbd>: onglet suivant
   <kbd>d</kbd>: supprimer
   <kbd>e</kbd>: cacher/montrer les conteneurs arrêtés
   <kbd>p</kbd>: pause
@@ -30,6 +28,9 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>b</kbd>: voir les commandes groupés
   <kbd>w</kbd>: ouvrir dans le navgateur (le premier port est http)
   <kbd>enter</kbd>: focus paneau principal
+  <kbd>[</kbd>: onglet précédent
+  <kbd>]</kbd>: onglet suivant
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Services
@@ -45,36 +46,39 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>m</kbd>: voir les enregistrements
   <kbd>U</kbd>: up project
   <kbd>D</kbd>: down project
-  <kbd>[</kbd>: onglet précédent
-  <kbd>]</kbd>: onglet suivant
   <kbd>R</kbd>: voir les options de redémarrage
   <kbd>c</kbd>: executer une commande prédéfinie
   <kbd>b</kbd>: voir les commandes groupés
   <kbd>E</kbd>: executer le shell
   <kbd>w</kbd>: ouvrir dans le navgateur (le premier port est http)
   <kbd>enter</kbd>: focus paneau principal
+  <kbd>[</kbd>: onglet précédent
+  <kbd>]</kbd>: onglet suivant
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Images
 
 <pre>
-  <kbd>[</kbd>: onglet précédent
-  <kbd>]</kbd>: onglet suivant
   <kbd>c</kbd>: executer une commande prédéfinie
   <kbd>d</kbd>: supprimer l'image
   <kbd>b</kbd>: voir les commandes groupés
   <kbd>enter</kbd>: focus paneau principal
+  <kbd>[</kbd>: onglet précédent
+  <kbd>]</kbd>: onglet suivant
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Volumes
 
 <pre>
-  <kbd>[</kbd>: onglet précédent
-  <kbd>]</kbd>: onglet suivant
   <kbd>c</kbd>: executer une commande prédéfinie
   <kbd>d</kbd>: supprimer le volume
   <kbd>b</kbd>: voir les commandes groupés
   <kbd>enter</kbd>: focus paneau principal
+  <kbd>[</kbd>: onglet précédent
+  <kbd>]</kbd>: onglet suivant
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Principal

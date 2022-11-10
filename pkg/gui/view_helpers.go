@@ -6,23 +6,25 @@ import (
 	"strings"
 
 	"github.com/jesseduffield/gocui"
+	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 	"github.com/spkg/bom"
 )
 
 func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
+	sideViewNames := gui.sideViewNames()
 	var focusedViewName string
-	if v == nil || v.Name() == gui.CyclableViews[len(gui.CyclableViews)-1] {
-		focusedViewName = gui.CyclableViews[0]
+	if v == nil || v.Name() == sideViewNames[len(sideViewNames)-1] {
+		focusedViewName = sideViewNames[0]
 	} else {
 		viewName := v.Name()
-		for i := range gui.CyclableViews {
-			if viewName == gui.CyclableViews[i] {
-				focusedViewName = gui.CyclableViews[i+1]
+		for i := range sideViewNames {
+			if viewName == sideViewNames[i] {
+				focusedViewName = sideViewNames[i+1]
 				break
 			}
-			if i == len(gui.CyclableViews)-1 {
+			if i == len(sideViewNames)-1 {
 				gui.Log.Info("not in list of views")
 				return nil
 			}
@@ -37,17 +39,18 @@ func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
+	sideViewNames := gui.sideViewNames()
 	var focusedViewName string
-	if v == nil || v.Name() == gui.CyclableViews[0] {
-		focusedViewName = gui.CyclableViews[len(gui.CyclableViews)-1]
+	if v == nil || v.Name() == sideViewNames[0] {
+		focusedViewName = sideViewNames[len(sideViewNames)-1]
 	} else {
 		viewName := v.Name()
-		for i := range gui.CyclableViews {
-			if viewName == gui.CyclableViews[i] {
-				focusedViewName = gui.CyclableViews[i-1]
+		for i := range sideViewNames {
+			if viewName == sideViewNames[i] {
+				focusedViewName = sideViewNames[i-1]
 				break
 			}
-			if i == len(gui.CyclableViews)-1 {
+			if i == len(sideViewNames)-1 {
 				gui.Log.Info("not in list of views")
 				return nil
 			}
@@ -63,126 +66,7 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) resetMainView() {
 	gui.State.Panels.Main.ObjectKey = ""
-	gui.getMainView().Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-}
-
-func (gui *Gui) newLineFocused(v *gocui.View) error {
-	if v == nil {
-		return nil
-	}
-
-	switch v.Name() {
-	case "menu":
-		return gui.handleMenuSelect(gui.g, v)
-	case "project":
-		return gui.handleProjectSelect(gui.g, v)
-	case "services":
-		return gui.handleServiceSelect(gui.g, v)
-	case "containers":
-		return gui.handleContainerSelect(gui.g, v)
-	case "images":
-		return gui.handleImageSelect(gui.g, v)
-	case "volumes":
-		return gui.handleVolumeSelect(gui.g, v)
-	case "confirmation":
-		return nil
-	case "main":
-		v.Highlight = false
-		return nil
-	default:
-		panic(gui.Tr.NoViewMachingNewLineFocusedSwitchStatement)
-	}
-}
-
-// TODO: move some of this logic into our onFocusLost and onFocus hooks
-func (gui *Gui) switchFocus(newView *gocui.View) error {
-	gui.Mutexes.ViewStackMutex.Lock()
-	defer gui.Mutexes.ViewStackMutex.Unlock()
-
-	return gui.switchFocusAux(newView)
-}
-
-func (gui *Gui) switchFocusAux(newView *gocui.View) error {
-	gui.pushView(newView.Name())
-	gui.Log.Info("setting highlight to true for view " + newView.Name())
-	gui.Log.Info("new focused view is " + newView.Name())
-	if _, err := gui.g.SetCurrentView(newView.Name()); err != nil {
-		return err
-	}
-
-	gui.g.Cursor = newView.Editable
-
-	if err := gui.renderPanelOptions(); err != nil {
-		return err
-	}
-
-	return gui.newLineFocused(newView)
-}
-
-func (gui *Gui) returnFocus() error {
-	gui.Mutexes.ViewStackMutex.Lock()
-	defer gui.Mutexes.ViewStackMutex.Unlock()
-
-	if len(gui.State.ViewStack) <= 1 {
-		return nil
-	}
-
-	previousViewName := gui.State.ViewStack[len(gui.State.ViewStack)-2]
-	previousView, err := gui.g.View(previousViewName)
-	if err != nil {
-		return err
-	}
-	return gui.switchFocusAux(previousView)
-}
-
-// Not to be called directly. Use `switchFocus` instead
-func (gui *Gui) pushView(name string) {
-	// No matter what view we're pushing, we first remove all popup panels from the stack
-	gui.State.ViewStack = lo.Filter(gui.State.ViewStack, func(viewName string, _ int) bool {
-		return viewName != "confirmation" && viewName != "menu"
-	})
-
-	// If we're pushing a side panel, we remove all other panels
-	if lo.Contains(gui.sideViewNames(), name) {
-		gui.State.ViewStack = []string{}
-	}
-
-	// If we're pushing a panel that's already in the stack, we remove it
-	gui.State.ViewStack = lo.Filter(gui.State.ViewStack, func(viewName string, _ int) bool {
-		return viewName != name
-	})
-
-	gui.State.ViewStack = append(gui.State.ViewStack, name)
-}
-
-// excludes popups
-func (gui *Gui) currentStaticViewName() string {
-	gui.Mutexes.ViewStackMutex.Lock()
-	defer gui.Mutexes.ViewStackMutex.Unlock()
-
-	for i := len(gui.State.ViewStack) - 1; i >= 0; i-- {
-		if !lo.Contains(gui.popupViewNames(), gui.State.ViewStack[i]) {
-			return gui.State.ViewStack[i]
-		}
-	}
-
-	return gui.initiallyFocusedViewName()
-}
-
-func (gui *Gui) currentSideViewName() string {
-	gui.Mutexes.ViewStackMutex.Lock()
-	defer gui.Mutexes.ViewStackMutex.Unlock()
-
-	// we expect that there is a side window somewhere in the view stack, so we will search from top to bottom
-	for idx := range gui.State.ViewStack {
-		reversedIdx := len(gui.State.ViewStack) - 1 - idx
-		viewName := gui.State.ViewStack[reversedIdx]
-		if lo.Contains(gui.sideViewNames(), viewName) {
-			return viewName
-		}
-	}
-
-	return gui.initiallyFocusedViewName()
+	gui.Views.Main.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 }
 
 // if the cursor down past the last item, move it to the last line
@@ -223,8 +107,13 @@ func (gui *Gui) focusPoint(selectedX int, selectedY int, lineCount int, v *gocui
 	}
 }
 
-func (gui *Gui) focusY(selectedY int, lineCount int, v *gocui.View) {
+func (gui *Gui) FocusY(selectedY int, lineCount int, v *gocui.View) {
 	gui.focusPoint(0, selectedY, lineCount, v)
+}
+
+func (gui *Gui) ResetOrigin(v *gocui.View) {
+	_ = v.SetOrigin(0, 0)
+	_ = v.SetCursor(0, 0)
 }
 
 func (gui *Gui) cleanString(s string) string {
@@ -256,6 +145,10 @@ func (gui *Gui) renderString(g *gocui.Gui, viewName, s string) error {
 	return nil
 }
 
+func (gui *Gui) RenderStringMain(s string) {
+	_ = gui.renderString(gui.g, "main", s)
+}
+
 // reRenderString sets the main view's content, without changing its origin
 func (gui *Gui) reRenderStringMain(s string) {
 	gui.reRenderString("main", s)
@@ -285,34 +178,8 @@ func (gui *Gui) renderOptionsMap(optionsMap map[string]string) error {
 	return gui.renderString(gui.g, "options", gui.optionsMapToString(optionsMap))
 }
 
-func (gui *Gui) getProjectView() *gocui.View {
-	v, _ := gui.g.View("project")
-	return v
-}
-
-func (gui *Gui) getServicesView() *gocui.View {
-	v, _ := gui.g.View("services")
-	return v
-}
-
-func (gui *Gui) getContainersView() *gocui.View {
-	v, _ := gui.g.View("containers")
-	return v
-}
-
-func (gui *Gui) getImagesView() *gocui.View {
-	v, _ := gui.g.View("images")
-	return v
-}
-
-func (gui *Gui) getVolumesView() *gocui.View {
-	v, _ := gui.g.View("volumes")
-	return v
-}
-
-func (gui *Gui) getMainView() *gocui.View {
-	v, _ := gui.g.View("main")
-	return v
+func (gui *Gui) GetMainView() *gocui.View {
+	return gui.Views.Main
 }
 
 func (gui *Gui) trimmedContent(v *gocui.View) string {
@@ -331,38 +198,22 @@ func (gui *Gui) currentViewName() string {
 func (gui *Gui) resizeCurrentPopupPanel(g *gocui.Gui) error {
 	v := g.CurrentView()
 	if gui.isPopupPanel(v.Name()) {
-		return gui.resizePopupPanel(g, v)
+		return gui.resizePopupPanel(v)
 	}
 	return nil
 }
 
-func (gui *Gui) resizePopupPanel(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) resizePopupPanel(v *gocui.View) error {
 	// If the confirmation panel is already displayed, just resize the width,
 	// otherwise continue
 	content := v.Buffer()
-	x0, y0, x1, y1 := gui.getConfirmationPanelDimensions(g, v.Wrap, content)
+	x0, y0, x1, y1 := gui.getConfirmationPanelDimensions(v.Wrap, content)
 	vx0, vy0, vx1, vy1 := v.Dimensions()
 	if vx0 == x0 && vy0 == y0 && vx1 == x1 && vy1 == y1 {
 		return nil
 	}
-	_, err := g.SetView(v.Name(), x0, y0, x1, y1, 0)
+	_, err := gui.g.SetView(v.Name(), x0, y0, x1, y1, 0)
 	return err
-}
-
-func (gui *Gui) changeSelectedLine(line *int, total int, up bool) {
-	if up {
-		if *line == -1 || *line == 0 {
-			return
-		}
-
-		*line -= 1
-	} else {
-		if *line == -1 || *line == total-1 {
-			return
-		}
-
-		*line += 1
-	}
 }
 
 func (gui *Gui) renderPanelOptions() error {
@@ -377,7 +228,7 @@ func (gui *Gui) renderPanelOptions() error {
 }
 
 func (gui *Gui) isPopupPanel(viewName string) bool {
-	return viewName == "confirmation" || viewName == "menu"
+	return lo.Contains(gui.popupViewNames(), viewName)
 }
 
 func (gui *Gui) popupPanelFocused() bool {
@@ -385,19 +236,22 @@ func (gui *Gui) popupPanelFocused() bool {
 }
 
 func (gui *Gui) clearMainView() {
-	mainView := gui.getMainView()
+	mainView := gui.Views.Main
 	mainView.Clear()
 	_ = mainView.SetOrigin(0, 0)
 	_ = mainView.SetCursor(0, 0)
 }
 
-func (gui *Gui) handleClick(v *gocui.View, itemCount int, selectedLine *int, handleSelect func(*gocui.Gui, *gocui.View) error) error {
+func (gui *Gui) HandleClick(v *gocui.View, itemCount int, selectedLine *int, handleSelect func() error) error {
+	wrappedHandleSelect := func(g *gocui.Gui, v *gocui.View) error {
+		return handleSelect()
+	}
+	return gui.handleClickAux(v, itemCount, selectedLine, wrappedHandleSelect)
+}
+
+func (gui *Gui) handleClickAux(v *gocui.View, itemCount int, selectedLine *int, handleSelect func(*gocui.Gui, *gocui.View) error) error {
 	if gui.popupPanelFocused() && v != nil && !gui.isPopupPanel(v.Name()) {
 		return nil
-	}
-
-	if _, err := gui.g.SetCurrentView(v.Name()); err != nil {
-		return err
 	}
 
 	_, cy := v.Cursor()
@@ -414,6 +268,12 @@ func (gui *Gui) handleClick(v *gocui.View, itemCount int, selectedLine *int, han
 	}
 
 	*selectedLine = newSelectedLine
+
+	if gui.currentViewName() != v.Name() {
+		if err := gui.switchFocus(v); err != nil {
+			return err
+		}
+	}
 
 	return handleSelect(gui.g, v)
 }
@@ -464,4 +324,51 @@ func prevIntInCycle(sl []WindowMaximisation, current WindowMaximisation) WindowM
 		}
 	}
 	return sl[len(sl)-1]
+}
+
+func (gui *Gui) CurrentView() *gocui.View {
+	return gui.g.CurrentView()
+}
+
+func (gui *Gui) currentSidePanel() (panels.ISideListPanel, bool) {
+	viewName := gui.currentViewName()
+
+	for _, sidePanel := range gui.allSidePanels() {
+		if sidePanel.GetView().Name() == viewName {
+			return sidePanel, true
+		}
+	}
+
+	return nil, false
+}
+
+// returns the current list panel. If no list panel is focused, returns false.
+func (gui *Gui) currentListPanel() (panels.ISideListPanel, bool) {
+	viewName := gui.currentViewName()
+
+	for _, sidePanel := range gui.allListPanels() {
+		if sidePanel.GetView().Name() == viewName {
+			return sidePanel, true
+		}
+	}
+
+	return nil, false
+}
+
+func (gui *Gui) allSidePanels() []panels.ISideListPanel {
+	return []panels.ISideListPanel{
+		gui.Panels.Projects,
+		gui.Panels.Services,
+		gui.Panels.Containers,
+		gui.Panels.Images,
+		gui.Panels.Volumes,
+	}
+}
+
+func (gui *Gui) allListPanels() []panels.ISideListPanel {
+	return append(gui.allSidePanels(), gui.Panels.Menu)
+}
+
+func (gui *Gui) IsCurrentView(view *gocui.View) bool {
+	return view == gui.CurrentView()
 }

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -65,6 +66,15 @@ func (c *OSCommand) RunCommandWithOutput(command string) (string, error) {
 	return output, err
 }
 
+// RunCommandWithOutput wrapper around commands returning their output and error
+func (c *OSCommand) RunCommandWithOutputContext(ctx context.Context, command string) (string, error) {
+	cmd := c.ExecutableFromStringContext(ctx, command)
+	before := time.Now()
+	output, err := sanitisedCommandOutput(cmd.Output())
+	c.Log.Warn(fmt.Sprintf("'%s': %s", command, time.Since(before)))
+	return output, err
+}
+
 // RunExecutableWithOutput runs an executable file and returns its output
 func (c *OSCommand) RunExecutableWithOutput(cmd *exec.Cmd) (string, error) {
 	return sanitisedCommandOutput(cmd.CombinedOutput())
@@ -79,8 +89,13 @@ func (c *OSCommand) RunExecutable(cmd *exec.Cmd) error {
 // ExecutableFromString takes a string like `docker ps -a` and returns an executable command for it
 func (c *OSCommand) ExecutableFromString(commandStr string) *exec.Cmd {
 	splitCmd := str.ToArgv(commandStr)
-	// c.Log.Info(splitCmd)
 	return c.command(splitCmd[0], splitCmd[1:]...)
+}
+
+// Same as ExecutableFromString but cancellable via a context
+func (c *OSCommand) ExecutableFromStringContext(ctx context.Context, commandStr string) *exec.Cmd {
+	splitCmd := str.ToArgv(commandStr)
+	return exec.CommandContext(ctx, splitCmd[0], splitCmd[1:]...)
 }
 
 // RunCommand runs a command and just returns the error

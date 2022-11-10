@@ -53,7 +53,7 @@ github.com/fatih/color
 # github.com/gdamore/encoding v1.0.0
 ## explicit; go 1.9
 github.com/gdamore/encoding
-# github.com/gdamore/tcell/v2 v2.5.1
+# github.com/gdamore/tcell/v2 v2.5.3
 ## explicit; go 1.12
 github.com/gdamore/tcell/v2
 github.com/gdamore/tcell/v2/terminfo
@@ -112,13 +112,13 @@ github.com/integrii/flaggy
 # github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee
 ## explicit
 github.com/jesseduffield/asciigraph
-# github.com/jesseduffield/gocui v0.3.1-0.20220417002912-bce22fd599f6
+# github.com/jesseduffield/gocui v0.3.1-0.20221023185936-ef06450f4fdc
 ## explicit; go 1.12
 github.com/jesseduffield/gocui
 # github.com/jesseduffield/kill v0.0.0-20220618033138-bfbe04675d10
 ## explicit; go 1.18
 github.com/jesseduffield/kill
-# github.com/jesseduffield/lazycore v0.0.0-20221010211550-2c30efd18b93
+# github.com/jesseduffield/lazycore v0.0.0-20221023210126-718a4caea996
 ## explicit; go 1.18
 github.com/jesseduffield/lazycore/pkg/boxlayout
 github.com/jesseduffield/lazycore/pkg/utils
@@ -137,7 +137,7 @@ github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.11
 ## explicit; go 1.12
 github.com/mattn/go-isatty
-# github.com/mattn/go-runewidth v0.0.13
+# github.com/mattn/go-runewidth v0.0.14
 ## explicit; go 1.9
 github.com/mattn/go-runewidth
 # github.com/mcuadros/go-lookup v0.0.0-20171110082742-5650f26be767
@@ -161,18 +161,24 @@ github.com/opencontainers/go-digest
 ## explicit
 github.com/opencontainers/image-spec/specs-go
 github.com/opencontainers/image-spec/specs-go/v1
+# github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5
+## explicit
+github.com/petermattis/goid
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
 github.com/pmezard/go-difflib/difflib
-# github.com/rivo/uniseg v0.2.0
-## explicit; go 1.12
+# github.com/rivo/uniseg v0.4.2
+## explicit; go 1.18
 github.com/rivo/uniseg
 # github.com/samber/lo v1.31.0
 ## explicit; go 1.18
 github.com/samber/lo
+# github.com/sasha-s/go-deadlock v0.3.1
+## explicit
+github.com/sasha-s/go-deadlock
 # github.com/sirupsen/logrus v1.4.2
 ## explicit
 github.com/sirupsen/logrus
@@ -192,16 +198,16 @@ golang.org/x/exp/constraints
 ## explicit; go 1.11
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
-# golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6
+# golang.org/x/sys v0.1.0
 ## explicit; go 1.17
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.0.0-20220411215600-e5f449aeb171
+# golang.org/x/term v0.1.0
 ## explicit; go 1.17
 golang.org/x/term
-# golang.org/x/text v0.3.7
+# golang.org/x/text v0.4.0
 ## explicit; go 1.17
 golang.org/x/text/encoding
 golang.org/x/text/encoding/internal/identifier

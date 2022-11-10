@@ -52,8 +52,8 @@ func (gui *Gui) getMessageHeight(wrap bool, message string, width int) int {
 	return lineCount
 }
 
-func (gui *Gui) getConfirmationPanelDimensions(g *gocui.Gui, wrap bool, prompt string) (int, int, int, int) {
-	width, height := g.Size()
+func (gui *Gui) getConfirmationPanelDimensions(wrap bool, prompt string) (int, int, int, int) {
+	width, height := gui.g.Size()
 	panelWidth := width / 2
 	panelHeight := gui.getMessageHeight(wrap, prompt, panelWidth)
 	return width/2 - panelWidth/2,
@@ -73,7 +73,7 @@ func (gui *Gui) createPromptPanel(title string, handleConfirm func(*gocui.Gui, *
 }
 
 func (gui *Gui) prepareConfirmationPanel(title, prompt string, hasLoader bool) error {
-	x0, y0, x1, y1 := gui.getConfirmationPanelDimensions(gui.g, true, prompt)
+	x0, y0, x1, y1 := gui.getConfirmationPanelDimensions(true, prompt)
 	confirmationView := gui.Views.Confirmation
 	_, err := gui.g.SetView("confirmation", x0, y0, x1, y1, 0)
 	if err != nil {
@@ -126,17 +126,17 @@ func (gui *Gui) createPopupPanel(title, prompt string, hasLoader bool, handleCon
 
 func (gui *Gui) setKeyBindings(g *gocui.Gui, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
 	// would use a loop here but because the function takes an interface{} and slices of interfaces require even more boilerplate
-	if err := g.SetKeybinding("confirmation", nil, gocui.KeyEnter, gocui.ModNone, gui.wrappedConfirmationFunction(handleConfirm)); err != nil {
+	if err := g.SetKeybinding("confirmation", gocui.KeyEnter, gocui.ModNone, gui.wrappedConfirmationFunction(handleConfirm)); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("confirmation", nil, 'y', gocui.ModNone, gui.wrappedConfirmationFunction(handleConfirm)); err != nil {
+	if err := g.SetKeybinding("confirmation", 'y', gocui.ModNone, gui.wrappedConfirmationFunction(handleConfirm)); err != nil {
 		return err
 	}
 
-	if err := g.SetKeybinding("confirmation", nil, gocui.KeyEsc, gocui.ModNone, gui.wrappedConfirmationFunction(handleClose)); err != nil {
+	if err := g.SetKeybinding("confirmation", gocui.KeyEsc, gocui.ModNone, gui.wrappedConfirmationFunction(handleClose)); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("confirmation", nil, 'n', gocui.ModNone, gui.wrappedConfirmationFunction(handleClose)); err != nil {
+	if err := g.SetKeybinding("confirmation", 'n', gocui.ModNone, gui.wrappedConfirmationFunction(handleClose)); err != nil {
 		return err
 	}
 

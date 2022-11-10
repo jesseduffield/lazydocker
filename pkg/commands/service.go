@@ -1,12 +1,10 @@
 package commands
 
 import (
+	"context"
 	"os/exec"
 
-	"github.com/docker/docker/api/types/container"
-
-	"github.com/docker/docker/api/types"
-	"github.com/fatih/color"
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -21,18 +19,8 @@ type Service struct {
 	DockerCommand LimitedDockerCommand
 }
 
-// GetDisplayStrings returns the dispaly string of Container
-func (s *Service) GetDisplayStrings(isFocused bool) []string {
-	if s.Container == nil {
-		return []string{utils.ColoredString("none", color.FgBlue), "", s.Name, "", ""}
-	}
-
-	cont := s.Container
-	return []string{cont.GetDisplayStatus(), cont.GetDisplaySubstatus(), s.Name, cont.GetDisplayCPUPerc(), utils.ColoredString(cont.displayPorts(), color.FgYellow)}
-}
-
 // Remove removes the service's containers
-func (s *Service) Remove(options types.ContainerRemoveOptions) error {
+func (s *Service) Remove(options dockerTypes.ContainerRemoveOptions) error {
 	return s.Container.Remove(options)
 }
 
@@ -69,11 +57,6 @@ func (s *Service) Attach() (*exec.Cmd, error) {
 	return s.Container.Attach()
 }
 
-// Top returns process information
-func (s *Service) Top() (container.ContainerTopOKBody, error) {
-	return s.Container.Top()
-}
-
 // ViewLogs attaches to a subprocess viewing the service's logs
 func (s *Service) ViewLogs() (*exec.Cmd, error) {
 	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.ViewServiceLogs
@@ -89,12 +72,12 @@ func (s *Service) ViewLogs() (*exec.Cmd, error) {
 }
 
 // RenderTop renders the process list of the service
-func (s *Service) RenderTop() (string, error) {
+func (s *Service) RenderTop(ctx context.Context) (string, error) {
 	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.ServiceTop
 	command := utils.ApplyTemplate(
 		templateString,
 		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
 	)
 
-	return s.OSCommand.RunCommandWithOutput(command)
+	return s.OSCommand.RunCommandWithOutputContext(ctx, command)
 }

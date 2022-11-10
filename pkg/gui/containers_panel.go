@@ -1,145 +1,169 @@
 package gui
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/fatih/color"
-	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
+	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
+	"github.com/jesseduffield/lazydocker/pkg/gui/types"
+	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/samber/lo"
 )
 
-// list panel functions
-
-func (gui *Gui) getContainerContexts() []string {
-	return []string{"logs", "stats", "env", "config", "top"}
-}
-
-func (gui *Gui) getContainerContextTitles() []string {
-	return []string{gui.Tr.LogsTitle, gui.Tr.StatsTitle, gui.Tr.EnvTitle, gui.Tr.ConfigTitle, gui.Tr.TopTitle}
-}
-
-func (gui *Gui) getSelectedContainer() (*commands.Container, error) {
-	selectedLine := gui.State.Panels.Containers.SelectedLine
-	if selectedLine == -1 {
-		return &commands.Container{}, gui.Errors.ErrNoContainers
-	}
-
-	return gui.DockerCommand.DisplayContainers[selectedLine], nil
-}
-
-func (gui *Gui) handleContainersClick(g *gocui.Gui, v *gocui.View) error {
-	itemCount := len(gui.DockerCommand.DisplayContainers)
-	handleSelect := gui.handleContainerSelect
-	selectedLine := &gui.State.Panels.Containers.SelectedLine
-
-	return gui.handleClick(v, itemCount, selectedLine, handleSelect)
-}
-
-func (gui *Gui) handleContainerSelect(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer()
-	if err != nil {
-		if err != gui.Errors.ErrNoContainers {
-			return err
+func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] {
+	// Standalone containers are containers which are either one-off containers, or whose service is not part of this docker-compose context.
+	isStandaloneContainer := func(container *commands.Container) bool {
+		if container.OneOff || container.ServiceName == "" {
+			return true
 		}
-		return nil
-	}
 
-	gui.focusY(gui.State.Panels.Containers.SelectedLine, len(gui.DockerCommand.DisplayContainers), v)
-
-	key := "containers-" + container.ID + "-" + gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex]
-	if !gui.shouldRefresh(key) {
-		return nil
-	}
-
-	mainView := gui.getMainView()
-	mainView.Tabs = gui.getContainerContextTitles()
-	mainView.TabIndex = gui.State.Panels.Containers.ContextIndex
-
-	gui.clearMainView()
-
-	switch gui.getContainerContexts()[gui.State.Panels.Containers.ContextIndex] {
-	case "logs":
-		if err := gui.renderContainerLogsToMain(container); err != nil {
-			return err
-		}
-	case "config":
-		if err := gui.renderContainerConfig(container); err != nil {
-			return err
-		}
-	case "env":
-		if err := gui.renderContainerEnv(container); err != nil {
-			return err
-		}
-	case "stats":
-		if err := gui.renderContainerStats(container); err != nil {
-			return err
-		}
-	case "top":
-		if err := gui.renderContainerTop(container); err != nil {
-			return err
-		}
-	default:
-		return errors.New("Unknown context for containers panel")
-	}
-
-	return nil
-}
-
-func (gui *Gui) renderContainerEnv(container *commands.Container) error {
-	if !container.DetailsLoaded() {
-		return gui.T.NewTask(func(stop chan struct{}) {
-			_ = gui.renderString(gui.g, "main", gui.Tr.WaitingForContainerInfo)
+		return !lo.SomeBy(gui.Panels.Services.List.GetAllItems(), func(service *commands.Service) bool {
+			return service.Name == container.ServiceName
 		})
 	}
 
-	mainView := gui.getMainView()
-	mainView.Autoscroll = false
-	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-	envVariablesList := [][]string{}
-	renderedTable := gui.Tr.NothingToDisplay
-	if len(container.Details.Config.Env) > 0 {
-		var err error
-		for _, env := range container.Details.Config.Env {
-			splitEnv := strings.SplitN(env, "=", 2)
-			key := splitEnv[0]
-			value := ""
-			if len(splitEnv) > 1 {
-				value = splitEnv[1]
+	return &panels.SideListPanel[*commands.Container]{
+		ContextState: &panels.ContextState[*commands.Container]{
+			GetMainTabs: func() []panels.MainTab[*commands.Container] {
+				return []panels.MainTab[*commands.Container]{
+					{
+						Key:    "logs",
+						Title:  gui.Tr.LogsTitle,
+						Render: gui.renderContainerLogsToMain,
+					},
+					{
+						Key:    "stats",
+						Title:  gui.Tr.StatsTitle,
+						Render: gui.renderContainerStats,
+					},
+					{
+						Key:    "env",
+						Title:  gui.Tr.EnvTitle,
+						Render: gui.renderContainerEnv,
+					},
+					{
+						Key:    "config",
+						Title:  gui.Tr.ConfigTitle,
+						Render: gui.renderContainerConfig,
+					},
+					{
+						Key:    "top",
+						Title:  gui.Tr.TopTitle,
+						Render: gui.renderContainerTop,
+					},
+				}
+			},
+			GetItemContextCacheKey: func(container *commands.Container) string {
+				// Including the container state in the cache key so that if the container
+				// restarts we re-read the logs. In the past we've had some glitchiness
+				// where a container restarts but the new logs don't get read.
+				// Note that this might be jarring if we have a lot of logs and the container
+				// restarts a lot, so let's keep an eye on it.
+				return "containers-" + container.ID + "-" + container.Container.State
+			},
+		},
+		ListPanel: panels.ListPanel[*commands.Container]{
+			List: panels.NewFilteredList[*commands.Container](),
+			View: gui.Views.Containers,
+		},
+		NoItemsMessage: gui.Tr.NoContainers,
+		Gui:            gui.intoInterface(),
+		// sortedContainers returns containers sorted by state if c.SortContainersByState is true (follows 1- running, 2- exited, 3- created)
+		// and sorted by name if c.SortContainersByState is false
+		Sort: func(a *commands.Container, b *commands.Container) bool {
+			return sortContainers(a, b, gui.Config.UserConfig.Gui.LegacySortContainers)
+		},
+		Filter: func(container *commands.Container) bool {
+			// Note that this is O(N*M) time complexity where N is the number of services
+			// and M is the number of containers. We expect N to be small but M may be large,
+			// so we will need to keep an eye on this.
+			if !gui.Config.UserConfig.Gui.ShowAllContainers && !isStandaloneContainer(container) {
+				return false
 			}
-			envVariablesList = append(envVariablesList,
-				[]string{
-					utils.ColoredString(key+":", color.FgGreen),
-					utils.ColoredString(value, color.FgYellow),
-				})
-		}
-		renderedTable, err = utils.RenderTable(envVariablesList)
-		if err != nil {
-			gui.Log.Error(err)
-			renderedTable = gui.Tr.CannotDisplayEnvVariables
-		}
+
+			if !gui.State.ShowExitedContainers && container.Container.State == "exited" {
+				return false
+			}
+
+			return true
+		},
+		GetTableCells: presentation.GetContainerDisplayStrings,
 	}
-	return gui.T.NewTask(func(stop chan struct{}) {
-		_ = gui.renderString(gui.g, "main", renderedTable)
-	})
 }
 
-func (gui *Gui) renderContainerConfig(container *commands.Container) error {
-	if !container.DetailsLoaded() {
-		return gui.T.NewTask(func(stop chan struct{}) {
-			_ = gui.renderString(gui.g, "main", gui.Tr.WaitingForContainerInfo)
-		})
+var containerStates = map[string]int{
+	"running": 1,
+	"exited":  2,
+	"created": 3,
+}
+
+func sortContainers(a *commands.Container, b *commands.Container, legacySort bool) bool {
+	if legacySort {
+		return a.Name < b.Name
 	}
 
-	mainView := gui.getMainView()
-	mainView.Autoscroll = false
-	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
+	stateLeft := containerStates[a.Container.State]
+	stateRight := containerStates[b.Container.State]
+	if stateLeft == stateRight {
+		return a.Name < b.Name
+	}
+
+	return containerStates[a.Container.State] < containerStates[b.Container.State]
+}
+
+func (gui *Gui) renderContainerEnv(container *commands.Container) tasks.TaskFunc {
+	return gui.NewSimpleRenderStringTask(func() string { return gui.containerEnv(container) })
+}
+
+func (gui *Gui) containerEnv(container *commands.Container) string {
+	if !container.DetailsLoaded() {
+		return gui.Tr.WaitingForContainerInfo
+	}
+
+	if len(container.Details.Config.Env) == 0 {
+		return gui.Tr.NothingToDisplay
+	}
+
+	envVarsList := lo.Map(container.Details.Config.Env, func(envVar string, _ int) []string {
+		splitEnv := strings.SplitN(envVar, "=", 2)
+		key := splitEnv[0]
+		value := ""
+		if len(splitEnv) > 1 {
+			value = splitEnv[1]
+		}
+		return []string{
+			utils.ColoredString(key+":", color.FgGreen),
+			utils.ColoredString(value, color.FgYellow),
+		}
+	})
+
+	output, err := utils.RenderTable(envVarsList)
+	if err != nil {
+		gui.Log.Error(err)
+		return gui.Tr.CannotDisplayEnvVariables
+	}
+
+	return output
+}
+
+func (gui *Gui) renderContainerConfig(container *commands.Container) tasks.TaskFunc {
+	return gui.NewSimpleRenderStringTask(func() string { return gui.containerConfigStr(container) })
+}
+
+func (gui *Gui) containerConfigStr(container *commands.Container) string {
+	if !container.DetailsLoaded() {
+		return gui.Tr.WaitingForContainerInfo
+	}
 
 	padding := 10
 	output := ""
@@ -178,233 +202,112 @@ func (gui *Gui) renderContainerConfig(container *commands.Container) error {
 
 	data, err := json.MarshalIndent(&container.Details, "", "  ")
 	if err != nil {
-		return err
+		return fmt.Sprintf("Error marshalling container details: %v", err)
 	}
+
 	output += fmt.Sprintf("\nFull details:\n\n%s", string(data))
 
-	return gui.T.NewTask(func(stop chan struct{}) {
-		_ = gui.renderString(gui.g, "main", output)
+	return output
+}
+
+func (gui *Gui) renderContainerStats(container *commands.Container) tasks.TaskFunc {
+	return gui.NewTickerTask(TickerTaskOpts{
+		Func: func(ctx context.Context, notifyStopped chan struct{}) {
+			contents, err := presentation.RenderStats(gui.Config.UserConfig, container, gui.Views.Main.Width())
+			if err != nil {
+				_ = gui.createErrorPanel(err.Error())
+			}
+
+			gui.reRenderStringMain(contents)
+		},
+		Duration:   time.Second,
+		Before:     func(ctx context.Context) { gui.clearMainView() },
+		Wrap:       false, // wrapping looks bad here so we're overriding the config value
+		Autoscroll: false,
 	})
 }
 
-func (gui *Gui) renderContainerStats(container *commands.Container) error {
-	mainView := gui.getMainView()
-	mainView.Autoscroll = false
-	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
+func (gui *Gui) renderContainerTop(container *commands.Container) tasks.TaskFunc {
+	return gui.NewTickerTask(TickerTaskOpts{
+		Func: func(ctx context.Context, notifyStopped chan struct{}) {
+			contents, err := container.RenderTop(ctx)
+			if err != nil {
+				gui.RenderStringMain(err.Error())
+			}
 
-	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
-		width, _ := mainView.Size()
-
-		contents, err := container.RenderStats(width)
-		if err != nil {
-			_ = gui.createErrorPanel(err.Error())
-		}
-
-		gui.reRenderStringMain(contents)
-	})
-}
-
-func (gui *Gui) renderContainerTop(container *commands.Container) error {
-	mainView := gui.getMainView()
-	mainView.Autoscroll = false
-	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-
-	return gui.T.NewTickerTask(time.Second, func(stop chan struct{}) { gui.clearMainView() }, func(stop, notifyStopped chan struct{}) {
-		contents, err := container.RenderTop()
-		if err != nil {
-			gui.reRenderStringMain(err.Error())
-		}
-
-		gui.reRenderStringMain(contents)
+			gui.reRenderStringMain(contents)
+		},
+		Duration:   time.Second,
+		Before:     func(ctx context.Context) { gui.clearMainView() },
+		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
+		Autoscroll: false,
 	})
 }
 
 func (gui *Gui) refreshContainersAndServices() error {
-	containersView := gui.getContainersView()
-	if containersView == nil {
+	if gui.Views.Containers == nil {
 		// if the containersView hasn't been instantiated yet we just return
 		return nil
 	}
 
 	// keep track of current service selected so that we can reposition our cursor if it moves position in the list
-	sl := gui.State.Panels.Services.SelectedLine
-	var selectedService *commands.Service
-	if len(gui.DockerCommand.Services) > 0 {
-		selectedService = gui.DockerCommand.Services[sl]
-	}
+	originalSelectedLineIdx := gui.Panels.Services.SelectedIdx
+	selectedService, isServiceSelected := gui.Panels.Services.List.TryGet(originalSelectedLineIdx)
 
-	if err := gui.DockerCommand.RefreshContainersAndServices(); err != nil {
+	containers, services, err := gui.DockerCommand.RefreshContainersAndServices(
+		gui.Panels.Services.List.GetAllItems(),
+		gui.Panels.Containers.List.GetAllItems(),
+	)
+	if err != nil {
 		return err
 	}
 
+	gui.Panels.Services.SetItems(services)
+	gui.Panels.Containers.SetItems(containers)
+
 	// see if our selected service has moved
-	if selectedService != nil {
-		for i, service := range gui.DockerCommand.Services {
+	if isServiceSelected {
+		for i, service := range gui.Panels.Services.List.GetItems() {
 			if service.ID == selectedService.ID {
-				if i == sl {
+				if i == originalSelectedLineIdx {
 					break
 				}
-				gui.State.Panels.Services.SelectedLine = i
-				gui.focusY(i, len(gui.DockerCommand.Services), gui.getServicesView())
+				gui.Panels.Services.SetSelectedLineIdx(i)
+				gui.Panels.Services.Refocus()
 			}
 		}
 	}
 
-	if len(gui.DockerCommand.DisplayContainers) > 0 && gui.State.Panels.Containers.SelectedLine == -1 {
-		gui.State.Panels.Containers.SelectedLine = 0
-	}
-	if len(gui.DockerCommand.DisplayContainers)-1 < gui.State.Panels.Containers.SelectedLine {
-		gui.State.Panels.Containers.SelectedLine = len(gui.DockerCommand.DisplayContainers) - 1
-	}
-
-	// doing the exact same thing for services
-	if len(gui.DockerCommand.Services) > 0 && gui.State.Panels.Services.SelectedLine == -1 {
-		gui.State.Panels.Services.SelectedLine = 0
-	}
-	if len(gui.DockerCommand.Services)-1 < gui.State.Panels.Services.SelectedLine {
-		gui.State.Panels.Services.SelectedLine = len(gui.DockerCommand.Services) - 1
-	}
-
-	gui.renderContainersAndServices()
-
-	return nil
+	return gui.renderContainersAndServices()
 }
 
-func (gui *Gui) renderContainersAndServices() {
-	gui.g.Update(func(g *gocui.Gui) error {
-		containersView := gui.getContainersView()
-		containersView.Clear()
-		isFocused := gui.g.CurrentView().Name() == "containers"
-
-		list, err := utils.RenderList(gui.DockerCommand.DisplayContainers, utils.IsFocused(isFocused))
-		if err != nil {
+func (gui *Gui) renderContainersAndServices() error {
+	if gui.DockerCommand.InDockerComposeProject {
+		if err := gui.Panels.Services.RerenderList(); err != nil {
 			return err
 		}
-		fmt.Fprint(containersView, list)
-
-		if containersView == g.CurrentView() {
-			if err := gui.handleContainerSelect(g, containersView); err != nil {
-				return err
-			}
-		}
-
-		// doing the exact same thing for services
-		if !gui.DockerCommand.InDockerComposeProject {
-			return nil
-		}
-		servicesView := gui.getServicesView()
-		servicesView.Clear()
-		isFocused = gui.g.CurrentView().Name() == "services"
-		list, err = utils.RenderList(gui.DockerCommand.Services, utils.IsFocused(isFocused))
-		if err != nil {
-			return err
-		}
-		fmt.Fprint(servicesView, list)
-
-		if servicesView == g.CurrentView() {
-			return gui.handleServiceSelect(g, servicesView)
-		}
-		return nil
-	})
-}
-
-func (gui *Gui) handleContainersNextLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
-		return nil
 	}
 
-	panelState := gui.State.Panels.Containers
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.DisplayContainers), false)
-
-	return gui.handleContainerSelect(gui.g, v)
-}
-
-func (gui *Gui) handleContainersPrevLine(g *gocui.Gui, v *gocui.View) error {
-	if gui.popupPanelFocused() || gui.g.CurrentView() != v {
-		return nil
+	if err := gui.Panels.Containers.RerenderList(); err != nil {
+		return err
 	}
-
-	panelState := gui.State.Panels.Containers
-	gui.changeSelectedLine(&panelState.SelectedLine, len(gui.DockerCommand.DisplayContainers), true)
-
-	return gui.handleContainerSelect(gui.g, v)
-}
-
-func (gui *Gui) handleContainersNextContext(g *gocui.Gui, v *gocui.View) error {
-	contexts := gui.getContainerContexts()
-	if gui.State.Panels.Containers.ContextIndex >= len(contexts)-1 {
-		gui.State.Panels.Containers.ContextIndex = 0
-	} else {
-		gui.State.Panels.Containers.ContextIndex++
-	}
-
-	_ = gui.handleContainerSelect(gui.g, v)
 
 	return nil
-}
-
-func (gui *Gui) handleContainersPrevContext(g *gocui.Gui, v *gocui.View) error {
-	contexts := gui.getContainerContexts()
-	if gui.State.Panels.Containers.ContextIndex <= 0 {
-		gui.State.Panels.Containers.ContextIndex = len(contexts) - 1
-	} else {
-		gui.State.Panels.Containers.ContextIndex--
-	}
-
-	_ = gui.handleContainerSelect(gui.g, v)
-
-	return nil
-}
-
-type removeContainerOption struct {
-	description   string
-	command       string
-	configOptions types.ContainerRemoveOptions
-}
-
-// GetDisplayStrings is a function.
-func (r *removeContainerOption) GetDisplayStrings(isFocused bool) []string {
-	return []string{r.description, color.New(color.FgRed).Sprint(r.command)}
 }
 
 func (gui *Gui) handleHideStoppedContainers(g *gocui.Gui, v *gocui.View) error {
-	gui.DockerCommand.ShowExited = !gui.DockerCommand.ShowExited
+	gui.State.ShowExitedContainers = !gui.State.ShowExitedContainers
 
-	if err := gui.refreshContainersAndServices(); err != nil {
-		return err
-	}
-
-	return nil
+	return gui.Panels.Containers.RerenderList()
 }
 
 func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer()
+	container, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
-	options := []*removeContainerOption{
-		{
-			description:   gui.Tr.Remove,
-			command:       "docker rm " + container.ID[1:10],
-			configOptions: types.ContainerRemoveOptions{},
-		},
-		{
-			description:   gui.Tr.RemoveWithVolumes,
-			command:       "docker rm --volumes " + container.ID[1:10],
-			configOptions: types.ContainerRemoveOptions{RemoveVolumes: true},
-		},
-		{
-			description: gui.Tr.Cancel,
-		},
-	}
-
-	handleMenuPress := func(index int) error {
-		if options[index].command == "" {
-			return nil
-		}
-		configOptions := options[index].configOptions
-
+	handleMenuPress := func(configOptions dockerTypes.ContainerRemoveOptions) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 			if err := container.Remove(configOptions); err != nil {
 				if commands.HasErrorCode(err, commands.MustStopContainer) {
@@ -421,7 +324,21 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		})
 	}
 
-	return gui.createMenu("", options, len(options), handleMenuPress)
+	menuItems := []*types.MenuItem{
+		{
+			LabelColumns: []string{gui.Tr.Remove, "docker rm " + container.ID[1:10]},
+			OnPress:      func() error { return handleMenuPress(dockerTypes.ContainerRemoveOptions{}) },
+		},
+		{
+			LabelColumns: []string{gui.Tr.RemoveWithVolumes, "docker rm --volumes " + container.ID[1:10]},
+			OnPress:      func() error { return handleMenuPress(dockerTypes.ContainerRemoveOptions{RemoveVolumes: true}) },
+		},
+	}
+
+	return gui.Menu(CreateMenuOptions{
+		Title: "",
+		Items: menuItems,
+	})
 }
 
 func (gui *Gui) PauseContainer(container *commands.Container) error {
@@ -441,7 +358,7 @@ func (gui *Gui) PauseContainer(container *commands.Container) error {
 }
 
 func (gui *Gui) handleContainerPause(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer()
+	container, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
@@ -450,7 +367,7 @@ func (gui *Gui) handleContainerPause(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer()
+	container, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
@@ -467,7 +384,7 @@ func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer()
+	container, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
@@ -482,7 +399,7 @@ func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer()
+	container, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
@@ -508,7 +425,7 @@ func (gui *Gui) handlePruneContainers() error {
 }
 
 func (gui *Gui) handleContainerViewLogs(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer()
+	container, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
@@ -519,7 +436,7 @@ func (gui *Gui) handleContainerViewLogs(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleContainersExecShell(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer()
+	container, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
@@ -540,7 +457,7 @@ func (gui *Gui) containerExecShell(container *commands.Container) error {
 }
 
 func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer()
+	container, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
@@ -557,8 +474,10 @@ func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error
 func (gui *Gui) handleStopContainers() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmStopContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
-			for _, container := range gui.DockerCommand.Containers {
-				_ = container.Stop()
+			for _, container := range gui.Panels.Containers.List.GetAllItems() {
+				if err := container.Stop(); err != nil {
+					gui.Log.Error(err)
+				}
 			}
 
 			return nil
@@ -569,8 +488,10 @@ func (gui *Gui) handleStopContainers() error {
 func (gui *Gui) handleRemoveContainers() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmRemoveContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
-			for _, container := range gui.DockerCommand.Containers {
-				_ = container.Remove(types.ContainerRemoveOptions{Force: true})
+			for _, container := range gui.Panels.Containers.List.GetAllItems() {
+				if err := container.Remove(dockerTypes.ContainerRemoveOptions{Force: true}); err != nil {
+					gui.Log.Error(err)
+				}
 			}
 
 			return nil
@@ -602,7 +523,7 @@ func (gui *Gui) handleContainersBulkCommand(g *gocui.Gui, v *gocui.View) error {
 
 // Open first port in browser
 func (gui *Gui) handleContainersOpenInBrowserCommand(g *gocui.Gui, v *gocui.View) error {
-	container, err := gui.getSelectedContainer()
+	container, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}

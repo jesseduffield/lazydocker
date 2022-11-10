@@ -7,17 +7,15 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>e</kbd>: edit lazydocker config
   <kbd>o</kbd>: open lazydocker config
-  <kbd>[</kbd>: previous tab
-  <kbd>]</kbd>: next tab
   <kbd>m</kbd>: view logs
   <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: previous tab
+  <kbd>]</kbd>: next tab
 </pre>
 
 ## Containers
 
 <pre>
-  <kbd>[</kbd>: previous tab
-  <kbd>]</kbd>: next tab
   <kbd>d</kbd>: remove
   <kbd>e</kbd>: hide/show stopped containers
   <kbd>p</kbd>: pause
@@ -30,6 +28,9 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>b</kbd>: view bulk commands
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: previous tab
+  <kbd>]</kbd>: next tab
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Services
@@ -45,36 +46,39 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>m</kbd>: view logs
   <kbd>U</kbd>: up project
   <kbd>D</kbd>: down project
-  <kbd>[</kbd>: previous tab
-  <kbd>]</kbd>: next tab
   <kbd>R</kbd>: view restart options
   <kbd>c</kbd>: run predefined custom command
   <kbd>b</kbd>: view bulk commands
   <kbd>E</kbd>: exec shell
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: previous tab
+  <kbd>]</kbd>: next tab
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Images
 
 <pre>
-  <kbd>[</kbd>: previous tab
-  <kbd>]</kbd>: next tab
   <kbd>c</kbd>: run predefined custom command
   <kbd>d</kbd>: remove image
   <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: previous tab
+  <kbd>]</kbd>: next tab
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Volumes
 
 <pre>
-  <kbd>[</kbd>: previous tab
-  <kbd>]</kbd>: next tab
   <kbd>c</kbd>: run predefined custom command
   <kbd>d</kbd>: remove volume
   <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: previous tab
+  <kbd>]</kbd>: next tab
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Main

@@ -12,6 +12,7 @@ type TranslationSet struct {
 	Execute                                    string
 	Scroll                                     string
 	Close                                      string
+	Quit                                       string
 	ErrorTitle                                 string
 	NoViewMachingNewLineFocusedSwitchStatement string
 	OpenConfig                                 string
@@ -38,6 +39,7 @@ type TranslationSet struct {
 	Confirm                     string
 	Return                      string
 	FocusMain                   string
+	LcFilter                    string
 	StopContainer               string
 	RestartingStatus            string
 	StartingStatus              string
@@ -75,6 +77,7 @@ type TranslationSet struct {
 	NoContainer                 string
 	NoImages                    string
 	NoVolumes                   string
+	NoServices                  string
 	RemoveImage                 string
 	RemoveVolume                string
 	RemoveWithoutPrune          string
@@ -97,6 +100,7 @@ type TranslationSet struct {
 	ExecShell                   string
 	RunCustomCommand            string
 	ViewBulkCommands            string
+	FilterList                  string
 	OpenInBrowser               string
 	SortContainersByState       string
 
@@ -109,6 +113,7 @@ type TranslationSet struct {
 	ContainerConfigTitle      string
 	ContainerEnvTitle         string
 	NothingToDisplay          string
+	NoContainerForService     string
 	CannotDisplayEnvVariables string
 
 	No  string
@@ -116,6 +121,7 @@ type TranslationSet struct {
 
 	LcNextScreenMode string
 	LcPrevScreenMode string
+	FilterPrompt     string
 }
 
 func englishSet() TranslationSet {
@@ -147,9 +153,11 @@ func englishSet() TranslationSet {
 
 		Return:                      "return",
 		FocusMain:                   "focus main panel",
+		LcFilter:                    "filter list",
 		Navigate:                    "navigate",
 		Execute:                     "execute",
 		Close:                       "close",
+		Quit:                        "quit",
 		Menu:                        "menu",
 		MenuTitle:                   "Menu",
 		Scroll:                      "scroll",
@@ -190,6 +198,7 @@ func englishSet() TranslationSet {
 		ExecShell:                   "exec shell",
 		RunCustomCommand:            "run predefined custom command",
 		ViewBulkCommands:            "view bulk commands",
+		FilterList:                  "filter list",
 		OpenInBrowser:               "open in browser (first port is http)",
 		SortContainersByState:       "sort containers by state",
 
@@ -214,12 +223,14 @@ func englishSet() TranslationSet {
 		ContainerConfigTitle:      "Container Config",
 		ContainerEnvTitle:         "Container Env",
 		NothingToDisplay:          "Nothing to display",
+		NoContainerForService:     "No logs to show; service is not associated with a container",
 		CannotDisplayEnvVariables: "Something went wrong while displaying environment variables",
 
 		NoContainers: "No containers",
 		NoContainer:  "No container",
 		NoImages:     "No images",
 		NoVolumes:    "No volumes",
+		NoServices:   "No services",
 
 		ConfirmQuit:                "Are you sure you want to quit?",
 		ConfirmUpProject:           "Are you sure you want to 'up' your docker compose project?",
@@ -239,5 +250,6 @@ func englishSet() TranslationSet {
 
 		LcNextScreenMode: "next screen mode (normal/half/fullscreen)",
 		LcPrevScreenMode: "prev screen mode",
+		FilterPrompt:     "filter",
 	}
 }

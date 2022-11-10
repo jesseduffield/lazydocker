@@ -4,67 +4,47 @@ import (
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	"github.com/jesseduffield/lazydocker/pkg/gui/types"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/samber/lo"
 )
 
-type customCommandOption struct {
-	customCommand config.CustomCommand
-	description   string
-	command       string
-	name          string
-	runCommand    bool
-	attach        bool
-}
-
-// GetDisplayStrings is a function.
-func (r *customCommandOption) GetDisplayStrings(isFocused bool) []string {
-	return []string{r.name, utils.ColoredString(r.description, color.FgCyan)}
-}
-
 func (gui *Gui) createCommandMenu(customCommands []config.CustomCommand, commandObject commands.CommandObject, title string, waitingStatus string) error {
-	options := make([]*customCommandOption, len(customCommands)+1)
-	for i, command := range customCommands {
+	menuItems := lo.Map(customCommands, func(command config.CustomCommand, _ int) *types.MenuItem {
 		resolvedCommand := utils.ApplyTemplate(command.Command, commandObject)
 
-		options[i] = &customCommandOption{
-			customCommand: command,
-			description:   utils.WithShortSha(resolvedCommand),
-			command:       resolvedCommand,
-			runCommand:    true,
-			attach:        command.Attach,
-			name:          command.Name,
-		}
-	}
-	options[len(options)-1] = &customCommandOption{
-		name:       gui.Tr.Cancel,
-		runCommand: false,
-	}
-
-	handleMenuPress := func(index int) error {
-		option := options[index]
-		if !option.runCommand {
-			return nil
-		}
-
-		if option.customCommand.InternalFunction != nil {
-			return option.customCommand.InternalFunction()
-		}
-
-		// if we have a command for attaching, we attach and return the subprocess error
-		if option.customCommand.Attach {
-			cmd := gui.OSCommand.ExecutableFromString(option.command)
-			return gui.runSubprocess(cmd)
-		}
-
-		return gui.WithWaitingStatus(waitingStatus, func() error {
-			if err := gui.OSCommand.RunCommand(option.command); err != nil {
-				return gui.createErrorPanel(err.Error())
+		onPress := func() error {
+			if command.InternalFunction != nil {
+				return command.InternalFunction()
 			}
-			return nil
-		})
-	}
 
-	return gui.createMenu(title, options, len(options), handleMenuPress)
+			// if we have a command for attaching, we attach and return the subprocess error
+			if command.Attach {
+				cmd := gui.OSCommand.ExecutableFromString(resolvedCommand)
+				return gui.runSubprocess(cmd)
+			}
+
+			return gui.WithWaitingStatus(waitingStatus, func() error {
+				if err := gui.OSCommand.RunCommand(resolvedCommand); err != nil {
+					return gui.createErrorPanel(err.Error())
+				}
+				return nil
+			})
+		}
+
+		return &types.MenuItem{
+			LabelColumns: []string{
+				command.Name,
+				utils.ColoredString(utils.WithShortSha(resolvedCommand), color.FgCyan),
+			},
+			OnPress: onPress,
+		}
+	})
+
+	return gui.Menu(CreateMenuOptions{
+		Title: title,
+		Items: menuItems,
+	})
 }
 
 func (gui *Gui) createCustomCommandMenu(customCommands []config.CustomCommand, commandObject commands.CommandObject) error {

@@ -2,6 +2,7 @@ package gui
 
 import (
 	"github.com/jesseduffield/lazycore/pkg/boxlayout"
+	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/mattn/go-runewidth"
 	"github.com/samber/lo"
@@ -28,7 +29,7 @@ func (gui *Gui) getWindowDimensions(informationStr string, appStatus string) map
 		sidePanelsDirection = boxlayout.ROW
 	}
 
-	showInfoSection := gui.Config.UserConfig.Gui.ShowBottomLine
+	showInfoSection := gui.Config.UserConfig.Gui.ShowBottomLine || gui.State.Filter.active
 	infoSectionSize := 0
 	if showInfoSection {
 		infoSectionSize = 1
@@ -98,6 +99,19 @@ func (gui *Gui) infoSectionChildren(informationStr string, appStatus string) []*
 		)
 	}
 
+	if gui.State.Filter.active {
+		return append(result, []*boxlayout.Box{
+			{
+				Window: "filterPrefix",
+				Size:   runewidth.StringWidth(gui.filterPrompt()),
+			},
+			{
+				Window: "filter",
+				Weight: 1,
+			},
+		}...)
+	}
+
 	result = append(result,
 		[]*boxlayout.Box{
 			{
@@ -116,11 +130,13 @@ func (gui *Gui) infoSectionChildren(informationStr string, appStatus string) []*
 }
 
 func (gui *Gui) sideViewNames() []string {
-	if gui.DockerCommand.InDockerComposeProject {
-		return []string{"project", "services", "containers", "images", "volumes"}
-	} else {
-		return []string{"project", "containers", "images", "volumes"}
-	}
+	visibleSidePanels := lo.Filter(gui.allSidePanels(), func(panel panels.ISideListPanel, _ int) bool {
+		return !panel.IsHidden()
+	})
+
+	return lo.Map(visibleSidePanels, func(panel panels.ISideListPanel, _ int) string {
+		return panel.GetView().Name()
+	})
 }
 
 func (gui *Gui) sidePanelChildren(width int, height int) []*boxlayout.Box {

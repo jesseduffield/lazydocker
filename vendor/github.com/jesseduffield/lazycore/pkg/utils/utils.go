@@ -22,6 +22,16 @@ func Max(x, y int) int {
 	return y
 }
 
+// Clamp returns a value x restricted between min and max
+func Clamp(x int, min int, max int) int {
+	if x < min {
+		return min
+	} else if x > max {
+		return max
+	}
+	return x
+}
+
 // GetLazyRootDirectory finds a lazy project root directory.
 //
 // It's used for cheatsheet scripts and integration tests. Not to be confused with finding the

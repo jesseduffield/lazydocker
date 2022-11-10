@@ -1,112 +1,133 @@
 package gui
 
 import (
-	"fmt"
-
-	"github.com/jesseduffield/gocui"
+	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
+	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
+	"github.com/jesseduffield/lazydocker/pkg/gui/types"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
-// list panel functions
-
-func (gui *Gui) handleMenuSelect(g *gocui.Gui, v *gocui.View) error {
-	gui.focusY(gui.State.Panels.Menu.SelectedLine, gui.State.MenuItemCount, v)
-	return nil
+type CreateMenuOptions struct {
+	Title      string
+	Items      []*types.MenuItem
+	HideCancel bool
 }
 
-func (gui *Gui) handleMenuNextLine(g *gocui.Gui, v *gocui.View) error {
-	panelState := gui.State.Panels.Menu
-	gui.changeSelectedLine(&panelState.SelectedLine, v.LinesHeight(), false)
-
-	return gui.handleMenuSelect(g, v)
+func (gui *Gui) getMenuPanel() *panels.SideListPanel[*types.MenuItem] {
+	return &panels.SideListPanel[*types.MenuItem]{
+		ListPanel: panels.ListPanel[*types.MenuItem]{
+			List: panels.NewFilteredList[*types.MenuItem](),
+			View: gui.Views.Menu,
+		},
+		NoItemsMessage: "",
+		Gui:            gui.intoInterface(),
+		OnClick:        gui.onMenuPress,
+		Sort:           nil,
+		GetTableCells:  presentation.GetMenuItemDisplayStrings,
+		OnRerender: func() error {
+			return gui.resizePopupPanel(gui.Views.Menu)
+		},
+		// so that we can avoid some UI trickiness, the menu will not have filtering
+		// abillity yet. To support it, we would need to have filter state against
+		// each panel (e.g. for when you filter the images panel, then bring up
+		// the options menu, then try to filter that too.
+		DisableFilter: true,
+	}
 }
 
-func (gui *Gui) handleMenuClick(g *gocui.Gui, v *gocui.View) error {
-	itemCount := gui.State.MenuItemCount
-	handleSelect := gui.handleMenuSelect
-	selectedLine := &gui.State.Panels.Menu.SelectedLine
-
-	if err := gui.handleClick(v, itemCount, selectedLine, handleSelect); err != nil {
+func (gui *Gui) onMenuPress(menuItem *types.MenuItem) error {
+	if err := gui.handleMenuClose(); err != nil {
 		return err
 	}
 
-	return gui.State.Panels.Menu.OnPress(g, v)
+	if menuItem.OnPress != nil {
+		return menuItem.OnPress()
+	}
+
+	return nil
 }
 
-func (gui *Gui) handleMenuPrevLine(g *gocui.Gui, v *gocui.View) error {
-	panelState := gui.State.Panels.Menu
-	gui.changeSelectedLine(&panelState.SelectedLine, v.LinesHeight(), true)
+func (gui *Gui) handleMenuPress() error {
+	selectedMenuItem, err := gui.Panels.Menu.GetSelectedItem()
+	if err != nil {
+		return nil
+	}
 
-	return gui.handleMenuSelect(g, v)
+	return gui.onMenuPress(selectedMenuItem)
+}
+
+func (gui *Gui) Menu(opts CreateMenuOptions) error {
+	if !opts.HideCancel {
+		// this is mutative but I'm okay with that for now
+		opts.Items = append(opts.Items, &types.MenuItem{
+			LabelColumns: []string{gui.Tr.Cancel},
+			OnPress: func() error {
+				return nil
+			},
+		})
+	}
+
+	maxColumnSize := 1
+
+	for _, item := range opts.Items {
+		if item.LabelColumns == nil {
+			item.LabelColumns = []string{item.Label}
+		}
+
+		if item.OpensMenu {
+			item.LabelColumns[0] = utils.OpensMenuStyle(item.LabelColumns[0])
+		}
+
+		maxColumnSize = utils.Max(maxColumnSize, len(item.LabelColumns))
+	}
+
+	for _, item := range opts.Items {
+		if len(item.LabelColumns) < maxColumnSize {
+			// we require that each item has the same number of columns so we're padding out with blank strings
+			// if this item has too few
+			item.LabelColumns = append(item.LabelColumns, make([]string, maxColumnSize-len(item.LabelColumns))...)
+		}
+	}
+
+	gui.Panels.Menu.SetItems(opts.Items)
+	gui.Panels.Menu.SetSelectedLineIdx(0)
+
+	if err := gui.Panels.Menu.RerenderList(); err != nil {
+		return err
+	}
+
+	gui.Views.Menu.Title = opts.Title
+	gui.Views.Menu.Visible = true
+
+	return gui.switchFocus(gui.Views.Menu)
 }
 
 // specific functions
 
 func (gui *Gui) renderMenuOptions() error {
 	optionsMap := map[string]string{
-		"esc/q": gui.Tr.Close,
+		"esc":   gui.Tr.Close,
 		"↑ ↓":   gui.Tr.Navigate,
 		"enter": gui.Tr.Execute,
 	}
 	return gui.renderOptionsMap(optionsMap)
 }
 
-func (gui *Gui) handleMenuClose(g *gocui.Gui, v *gocui.View) error {
-	for _, key := range []gocui.Key{gocui.KeySpace, gocui.KeyEnter, 'y'} {
-		if err := g.DeleteKeybinding("menu", key, gocui.ModNone); err != nil {
-			return err
-		}
-	}
+func (gui *Gui) handleMenuClose() error {
 	gui.Views.Menu.Visible = false
+
+	// this code is here for when we do add filter ability to the menu panel,
+	// though it's currently disabled
+	if gui.State.Filter.panel == gui.Panels.Menu {
+		if err := gui.clearFilter(); err != nil {
+			return err
+		}
+
+		// we need to remove the view from the view stack because we're about to
+		// return focus and don't want to land in the search view when it was searching
+		// the menu in the first place
+		gui.removeViewFromStack(gui.Views.Filter)
+	}
+
 	return gui.returnFocus()
-}
-
-func (gui *Gui) createMenu(title string, items interface{}, itemCount int, handlePress func(int) error) error {
-	isFocused := gui.g.CurrentView().Name() == "menu"
-	gui.State.MenuItemCount = itemCount
-	list, err := utils.RenderList(items, utils.IsFocused(isFocused))
-	if err != nil {
-		return err
-	}
-
-	x0, y0, x1, y1 := gui.getConfirmationPanelDimensions(gui.g, false, list)
-	_, _ = gui.g.SetView("menu", x0, y0, x1, y1, 0)
-	menuView := gui.Views.Menu
-	menuView.Title = title
-	menuView.FgColor = gocui.ColorDefault
-	menuView.Clear()
-	fmt.Fprint(menuView, list)
-	gui.State.Panels.Menu.SelectedLine = 0
-
-	wrappedHandlePress := func(g *gocui.Gui, v *gocui.View) error {
-		selectedLine := gui.State.Panels.Menu.SelectedLine
-
-		menuView.Visible = false
-		err := gui.returnFocus()
-		if err != nil {
-			return err
-		}
-
-		if err := handlePress(selectedLine); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	gui.State.Panels.Menu.OnPress = wrappedHandlePress
-
-	for _, key := range []gocui.Key{gocui.KeySpace, gocui.KeyEnter, 'y'} {
-		_ = gui.g.DeleteKeybinding("menu", key, gocui.ModNone)
-
-		if err := gui.g.SetKeybinding("menu", nil, key, gocui.ModNone, wrappedHandlePress); err != nil {
-			return err
-		}
-	}
-
-	gui.g.Update(func(g *gocui.Gui) error {
-		menuView.Visible = true
-		return gui.switchFocus(menuView)
-	})
-	return nil
 }

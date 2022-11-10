@@ -59,14 +59,6 @@ func (gui *Gui) onFocus(v *gocui.View) {
 
 // layout is called for every screen re-render e.g. when the screen is resized
 func (gui *Gui) layout(g *gocui.Gui) error {
-	if !gui.ViewsSetup {
-		if err := gui.createAllViews(); err != nil {
-			return err
-		}
-
-		gui.ViewsSetup = true
-	}
-
 	g.Highlight = true
 	width, height := g.Size()
 
@@ -109,21 +101,9 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		return view, err
 	}
 
-	for _, viewName := range gui.controlledBoundsViewNames() {
+	for _, viewName := range gui.autoPositionedViewNames() {
 		_, err := setViewFromDimensions(viewName, viewName)
 		if err != nil && err.Error() != UNKNOWN_VIEW_ERROR_MSG {
-			return err
-		}
-	}
-
-	if gui.g.CurrentView() == nil {
-		viewName := gui.initiallyFocusedViewName()
-		view, err := gui.g.View(viewName)
-		if err != nil {
-			return err
-		}
-
-		if err := gui.switchFocus(view); err != nil {
 			return err
 		}
 	}
@@ -135,26 +115,14 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	return gui.resizeCurrentPopupPanel(g)
 }
 
-type listViewState struct {
-	selectedLine int
-	lineCount    int
-}
-
 func (gui *Gui) focusPointInView(view *gocui.View) {
 	if view == nil {
 		return
 	}
 
-	listViews := map[string]listViewState{
-		"containers": {selectedLine: gui.State.Panels.Containers.SelectedLine, lineCount: len(gui.DockerCommand.DisplayContainers)},
-		"images":     {selectedLine: gui.State.Panels.Images.SelectedLine, lineCount: len(gui.DockerCommand.Images)},
-		"volumes":    {selectedLine: gui.State.Panels.Volumes.SelectedLine, lineCount: len(gui.DockerCommand.Volumes)},
-		"services":   {selectedLine: gui.State.Panels.Services.SelectedLine, lineCount: len(gui.DockerCommand.Services)},
-		"menu":       {selectedLine: gui.State.Panels.Menu.SelectedLine, lineCount: gui.State.MenuItemCount},
-	}
-
-	if state, ok := listViews[view.Name()]; ok {
-		gui.focusY(state.selectedLine, state.lineCount, view)
+	currentPanel, ok := gui.currentListPanel()
+	if ok {
+		currentPanel.Refocus()
 	}
 }
 

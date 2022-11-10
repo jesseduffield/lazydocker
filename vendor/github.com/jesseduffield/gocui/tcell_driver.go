@@ -84,6 +84,10 @@ func (g *Gui) tcellInitSimulation() error {
 	} else {
 		g.screen = s
 		Screen = s
+		// setting to a larger value than the typical terminal size
+		// so that during a test we're more likely to see an item to select in a view.
+		s.SetSize(100, 100)
+		s.Sync()
 		return nil
 	}
 }
@@ -232,11 +236,11 @@ func (g *Gui) timeSinceStart() int64 {
 // pollEvent get tcell.Event and transform it into gocuiEvent
 func (g *Gui) pollEvent() GocuiEvent {
 	var tev tcell.Event
-	if g.PlayMode == REPLAYING {
+	if g.PlayMode == REPLAYING || g.PlayMode == REPLAYING_NEW {
 		select {
-		case ev := <-g.ReplayedEvents.keys:
+		case ev := <-g.ReplayedEvents.Keys:
 			tev = (ev).toTcellEvent()
-		case ev := <-g.ReplayedEvents.resizes:
+		case ev := <-g.ReplayedEvents.Resizes:
 			tev = (ev).toTcellEvent()
 		}
 	} else {

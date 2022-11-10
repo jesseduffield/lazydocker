@@ -8,36 +8,34 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/docker/docker/api/types"
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
-func (gui *Gui) renderContainerLogsToMain(container *commands.Container) error {
-	mainView := gui.getMainView()
-	mainView.Autoscroll = true
-	mainView.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-
-	return gui.T.NewTickerTask(time.Millisecond*200, nil, func(stop, notifyStopped chan struct{}) {
-		gui.renderContainerLogsToMainAux(container, stop, notifyStopped)
+func (gui *Gui) renderContainerLogsToMain(container *commands.Container) tasks.TaskFunc {
+	return gui.NewTickerTask(TickerTaskOpts{
+		Func: func(ctx context.Context, notifyStopped chan struct{}) {
+			gui.renderContainerLogsToMainAux(container, ctx, notifyStopped)
+		},
+		Duration: time.Millisecond * 200,
+		// TODO: see why this isn't working (when switching from Top tab to Logs tab in the services panel, the tops tab's content isn't removed)
+		Before:     func(ctx context.Context) { gui.clearMainView() },
+		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
+		Autoscroll: true,
 	})
 }
 
-func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, stop, notifyStopped chan struct{}) {
+func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, ctx context.Context, notifyStopped chan struct{}) {
 	gui.clearMainView()
 	defer func() {
 		notifyStopped <- struct{}{}
 	}()
 
-	ctx, ctxCancel := context.WithCancel(context.Background())
-	go func() {
-		<-stop
-		ctxCancel()
-	}()
-
-	mainView := gui.getMainView()
+	mainView := gui.Views.Main
 
 	if err := gui.writeContainerLogs(container, ctx, mainView); err != nil {
 		gui.Log.Error(err)
@@ -49,7 +47,7 @@ func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, stop
 	defer ticker.Stop()
 	for {
 		select {
-		case <-stop:
+		case <-ctx.Done():
 			return
 		case <-ticker.C:
 			result, err := container.Inspect()
@@ -107,7 +105,7 @@ func (gui *Gui) promptToReturn() {
 }
 
 func (gui *Gui) writeContainerLogs(container *commands.Container, ctx context.Context, writer io.Writer) error {
-	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, container.ID, types.ContainerLogsOptions{
+	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, container.ID, dockerTypes.ContainerLogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Timestamps: gui.Config.UserConfig.Logs.Timestamps,

@@ -78,15 +78,12 @@ type ViewMouseBinding struct {
 	// the view that is clicked
 	ViewName string
 
-	// the context we are in when the click occurs. Not necessarily the context
-	// of the view we're clicking. If this is blank then it is a global binding.
-	FromContext string
-
-	// the context assigned to the clicked view. If blank, then we don't care
-	// what context is assigned
-	ToContext string
+	// the view that has focus when the click occurs.
+	FocusedView string
 
 	Handler func(ViewMouseBindingOpts) error
+
+	Modifier Modifier
 
 	// must be a mouse key
 	Key Key
@@ -111,6 +108,8 @@ const (
 	NORMAL PlayMode = iota
 	RECORDING
 	REPLAYING
+	// for the new form of integration tests
+	REPLAYING_NEW
 )
 
 type Recording struct {
@@ -119,8 +118,8 @@ type Recording struct {
 }
 
 type replayedEvents struct {
-	keys    chan *TcellKeyEventWrapper
-	resizes chan *TcellResizeEventWrapper
+	Keys    chan *TcellKeyEventWrapper
+	Resizes chan *TcellResizeEventWrapper
 }
 
 type RecordingConfig struct {
@@ -191,8 +190,6 @@ type Gui struct {
 	screen         tcell.Screen
 	suspendedMutex sync.Mutex
 	suspended      bool
-
-	currentContext string
 }
 
 // NewGui returns a new Gui object with a given output mode.
@@ -209,6 +206,16 @@ func NewGui(mode OutputMode, supportOverlaps bool, playMode PlayMode, headless b
 		return nil, err
 	}
 
+	if headless || runtime.GOOS == "windows" {
+		g.maxX, g.maxY = g.screen.Size()
+	} else {
+		// TODO: find out if we actually need this bespoke logic for linux
+		g.maxX, g.maxY, err = g.getTermWindowSize()
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	g.outputMode = mode
 
 	g.stop = make(chan struct{})
@@ -221,20 +228,11 @@ func NewGui(mode OutputMode, supportOverlaps bool, playMode PlayMode, headless b
 			KeyEvents:    []*TcellKeyEventWrapper{},
 			ResizeEvents: []*TcellResizeEventWrapper{},
 		}
-	} else if playMode == REPLAYING {
+	} else if playMode == REPLAYING || playMode == REPLAYING_NEW {
 		g.ReplayedEvents = replayedEvents{
-			keys:    make(chan *TcellKeyEventWrapper),
-			resizes: make(chan *TcellResizeEventWrapper),
+			Keys:    make(chan *TcellKeyEventWrapper),
+			Resizes: make(chan *TcellResizeEventWrapper),
 		}
-	}
-
-	if runtime.GOOS != "windows" {
-		g.maxX, g.maxY, err = g.getTermWindowSize()
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		g.maxX, g.maxY = Screen.Size()
 	}
 
 	g.BgColor, g.FgColor, g.FrameColor = ColorDefault, ColorDefault, ColorDefault
@@ -266,10 +264,6 @@ func (g *Gui) Close() {
 // Size returns the terminal's size.
 func (g *Gui) Size() (x, y int) {
 	return g.maxX, g.maxY
-}
-
-func (g *Gui) SetCurrentContext(context string) {
-	g.currentContext = context
 }
 
 // SetRune writes a rune at the given point, relative to the top-left
@@ -368,6 +362,60 @@ func (g *Gui) SetViewOnBottom(name string) (*View, error) {
 		}
 	}
 	return nil, errors.Wrap(ErrUnknownView, 0)
+}
+
+func (g *Gui) SetViewOnTopOf(toMove string, other string) error {
+	g.Mutexes.ViewsMutex.Lock()
+	defer g.Mutexes.ViewsMutex.Unlock()
+
+	if toMove == other {
+		return nil
+	}
+
+	// need to find the two current positions and then move toMove before other in the list.
+	toMoveIndex := -1
+	otherIndex := -1
+
+	for i, v := range g.views {
+		if v.name == toMove {
+			toMoveIndex = i
+		}
+
+		if v.name == other {
+			otherIndex = i
+		}
+	}
+
+	if toMoveIndex == -1 || otherIndex == -1 {
+		return errors.Wrap(ErrUnknownView, 0)
+	}
+
+	// already on top
+	if toMoveIndex > otherIndex {
+		return nil
+	}
+
+	// need to actually do it the other way around. Last is highest
+	viewToMove := g.views[toMoveIndex]
+
+	g.views = append(g.views[:toMoveIndex], g.views[toMoveIndex+1:]...)
+	g.views = append(g.views[:otherIndex], append([]*View{viewToMove}, g.views[otherIndex:]...)...)
+	return nil
+}
+
+// replaces the content in toView with the content in fromView
+func (g *Gui) CopyContent(fromView *View, toView *View) {
+	g.Mutexes.ViewsMutex.Lock()
+	defer g.Mutexes.ViewsMutex.Unlock()
+
+	toView.clear()
+
+	toView.lines = fromView.lines
+	toView.viewLines = fromView.viewLines
+	toView.ox = fromView.ox
+	toView.oy = fromView.oy
+	toView.cx = fromView.cx
+	toView.cy = fromView.cy
 }
 
 // Views returns all the views in the GUI.
@@ -470,7 +518,7 @@ func (g *Gui) CurrentView() *View {
 // It behaves differently on different platforms. Somewhere it doesn't register Alt key press,
 // on others it might report Ctrl as Alt. It's not consistent and therefore it's not recommended
 // to use with mouse keys.
-func (g *Gui) SetKeybinding(viewname string, contexts []string, key interface{}, mod Modifier, handler func(*Gui, *View) error) error {
+func (g *Gui) SetKeybinding(viewname string, key interface{}, mod Modifier, handler func(*Gui, *View) error) error {
 	var kb *keybinding
 
 	k, ch, err := getKey(key)
@@ -482,7 +530,7 @@ func (g *Gui) SetKeybinding(viewname string, contexts []string, key interface{},
 		return ErrBlacklisted
 	}
 
-	kb = newKeybinding(viewname, contexts, k, ch, mod, handler)
+	kb = newKeybinding(viewname, k, ch, mod, handler)
 	g.keybindings = append(g.keybindings, kb)
 	return nil
 }
@@ -563,6 +611,8 @@ func (g *Gui) WhitelistKeybinding(k Key) error {
 // typed Key or rune.
 func getKey(key interface{}) (Key, rune, error) {
 	switch t := key.(type) {
+	case nil: // Ignore keybinding if `nil`
+		return 0, 0, nil
 	case Key:
 		return t, 0, nil
 	case rune:
@@ -1158,9 +1208,11 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 			if len(v.Tabs) > 0 {
 				tabIndex := v.GetClickedTabIndex(mx - v.x0)
 
-				for _, binding := range g.tabClickBindings {
-					if binding.viewName == v.Name() {
-						return binding.handler(tabIndex)
+				if tabIndex >= 0 {
+					for _, binding := range g.tabClickBindings {
+						if binding.viewName == v.Name() {
+							return binding.handler(tabIndex)
+						}
 					}
 				}
 			}
@@ -1179,7 +1231,7 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 			return err
 		}
 
-		if ev.Mod == ModNone && IsMouseKey(ev.Key) {
+		if IsMouseKey(ev.Key) {
 			opts := ViewMouseBindingOpts{X: newCx + v.ox, Y: newCy + v.oy}
 			matched, err := g.execMouseKeybindings(v, ev, opts)
 			if err != nil {
@@ -1200,18 +1252,20 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 
 func (g *Gui) execMouseKeybindings(view *View, ev *GocuiEvent, opts ViewMouseBindingOpts) (bool, error) {
 	isMatch := func(binding *ViewMouseBinding) bool {
-		return binding.ViewName == view.Name() && ev.Key == binding.Key && (binding.ToContext == "" || binding.ToContext == view.Context)
+		return binding.ViewName == view.Name() &&
+			ev.Key == binding.Key &&
+			ev.Mod == binding.Modifier
 	}
 
-	// first pass looks for ones that match both the view and the from context
+	// first pass looks for ones that match the focused view
 	for _, binding := range g.viewMouseBindings {
-		if isMatch(binding) && binding.FromContext != "" && binding.FromContext == g.currentContext {
+		if isMatch(binding) && binding.FocusedView != "" && binding.FocusedView == g.currentView.Name() {
 			return true, binding.Handler(opts)
 		}
 	}
 
 	for _, binding := range g.viewMouseBindings {
-		if isMatch(binding) && binding.FromContext == "" {
+		if isMatch(binding) && binding.FocusedView == "" {
 			return true, binding.Handler(opts)
 		}
 	}
@@ -1386,7 +1440,7 @@ func (g *Gui) replayRecording() {
 				case <-ticker.C:
 					timeWaited += 1
 					if timeWaited >= timeToWait {
-						g.ReplayedEvents.keys <- event
+						g.ReplayedEvents.Keys <- event
 						break middle
 					}
 				case <-g.stop:
@@ -1419,7 +1473,7 @@ func (g *Gui) replayRecording() {
 				case <-ticker.C:
 					timeWaited += 1
 					if timeWaited >= timeToWait {
-						g.ReplayedEvents.resizes <- event
+						g.ReplayedEvents.Resizes <- event
 						break middle2
 					}
 				case <-g.stop:
@@ -1483,14 +1537,5 @@ func (g *Gui) matchView(v *View, kb *keybinding) bool {
 	if kb.viewName != v.name {
 		return false
 	}
-	// if the keybinding doesn't specify contexts, it applies for all contexts
-	if len(kb.contexts) == 0 {
-		return true
-	}
-	for _, context := range kb.contexts {
-		if context == v.Context {
-			return true
-		}
-	}
-	return false
+	return true
 }
