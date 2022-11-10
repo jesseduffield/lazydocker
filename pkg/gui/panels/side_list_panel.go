@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
+	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
@@ -63,7 +64,7 @@ var _ ISideListPanel = &SideListPanel[int]{}
 
 type IGui interface {
 	HandleClick(v *gocui.View, itemCount int, selectedLine *int, handleSelect func() error) error
-	RenderStringMain(message string)
+	NewSimpleRenderStringTask(getContent func() string) tasks.TaskFunc
 	FocusY(selectedLine int, itemCount int, view *gocui.View)
 	ShouldRefresh(contextKey string) bool
 	GetMainView() *gocui.View
@@ -107,8 +108,7 @@ func (self *SideListPanel[T]) HandleSelect() error {
 		}
 
 		if self.NoItemsMessage != "" {
-			// TODO: use task for this
-			self.Gui.RenderStringMain(self.NoItemsMessage)
+			self.Gui.NewSimpleRenderStringTask(func() string { return self.NoItemsMessage })
 		}
 
 		return nil

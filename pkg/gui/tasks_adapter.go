@@ -35,6 +35,9 @@ func (gui *Gui) NewRenderStringTask(opts RenderStringTaskOpts) tasks.TaskFunc {
 		Autoscroll: opts.Autoscroll,
 		Wrap:       opts.Wrap,
 		Func: func(stop chan struct{}) {
+			// GetStrContent may be a slow function, so we clear the main view first
+			// so that we're not seeing the previous tab's content appear.
+			gui.clearMainView()
 			gui.RenderStringMain(opts.GetStrContent())
 		},
 	}
@@ -81,7 +84,7 @@ func (gui *Gui) NewTickerTask(opts TickerTaskOpts) tasks.TaskFunc {
 				gui.Log.Info("exiting ticker task due to notifyStopped channel")
 				return
 			case <-stop:
-				gui.Log.Info("exiting ticker task due to stopped cahnnel")
+				gui.Log.Info("exiting ticker task due to stopped channel")
 				return
 			case <-tickChan.C:
 				gui.Log.Info("running ticker task again")

@@ -21,8 +21,9 @@ func (gui *Gui) renderContainerLogsToMain(container *commands.Container) tasks.T
 		Func: func(stop, notifyStopped chan struct{}) {
 			gui.renderContainerLogsToMainAux(container, stop, notifyStopped)
 		},
-		Duration:   time.Millisecond * 200,
-		Before:     nil,
+		Duration: time.Millisecond * 200,
+		// TODO: see why this isn't working (when switching from Top tab to Logs tab in the services panel, the tops tab's content isn't removed)
+		Before:     func(stop chan struct{}) { gui.clearMainView() },
 		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
 		Autoscroll: true,
 	})
@@ -34,11 +35,7 @@ func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, stop
 		notifyStopped <- struct{}{}
 	}()
 
-	ctx, ctxCancel := context.WithCancel(context.Background())
-	go func() {
-		<-stop
-		ctxCancel()
-	}()
+	ctx := stopIntoCtx(stop)
 
 	mainView := gui.Views.Main
 
