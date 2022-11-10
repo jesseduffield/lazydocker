@@ -368,3 +368,7 @@ func (gui *Gui) allSidePanels() []panels.ISideListPanel {
 func (gui *Gui) allListPanels() []panels.ISideListPanel {
 	return append(gui.allSidePanels(), gui.Panels.Menu)
 }
+
+func (gui *Gui) IsCurrentView(view *gocui.View) bool {
+	return view == gui.CurrentView()
+}

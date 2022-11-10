@@ -69,8 +69,7 @@ type IGui interface {
 	FocusY(selectedLine int, itemCount int, view *gocui.View)
 	ShouldRefresh(contextKey string) bool
 	GetMainView() *gocui.View
-	// TODO: replace with IsCurrentView() bool
-	CurrentView() *gocui.View
+	IsCurrentView(*gocui.View) bool
 	FilterString(view *gocui.View) string
 	IgnoreStrings() []string
 	Update(func() error)
@@ -242,7 +241,7 @@ func (self *SideListPanel[T]) RerenderList() error {
 			}
 		}
 
-		if self.View == self.Gui.CurrentView() {
+		if self.Gui.IsCurrentView(self.View) {
 			return self.HandleSelect()
 		}
 		return nil
