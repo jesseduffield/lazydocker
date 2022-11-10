@@ -149,7 +149,7 @@ func (gui *Gui) renderGlobalOptions() error {
 	return gui.renderOptionsMap(map[string]string{
 		"PgUp/PgDn": gui.Tr.Scroll,
 		"← → ↑ ↓":   gui.Tr.Navigate,
-		"esc/q":     gui.Tr.Close,
+		"q":         gui.Tr.Quit,
 		"b":         gui.Tr.ViewBulkCommands,
 		"x":         gui.Tr.Menu,
 	})

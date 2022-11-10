@@ -106,7 +106,7 @@ func (gui *Gui) Menu(opts CreateMenuOptions) error {
 
 func (gui *Gui) renderMenuOptions() error {
 	optionsMap := map[string]string{
-		"esc/q": gui.Tr.Close,
+		"esc":   gui.Tr.Close,
 		"↑ ↓":   gui.Tr.Navigate,
 		"enter": gui.Tr.Execute,
 	}
