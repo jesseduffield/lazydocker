@@ -7,17 +7,15 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>e</kbd>: edytuj konfigurację
   <kbd>o</kbd>: otwórz konfigurację
-  <kbd>[</kbd>: poprzednia zakładka
-  <kbd>]</kbd>: następna zakładka
   <kbd>m</kbd>: pokaż logi
   <kbd>enter</kbd>: skup na głównym panelu
+  <kbd>[</kbd>: poprzednia zakładka
+  <kbd>]</kbd>: następna zakładka
 </pre>
 
 ## Kontenery
 
 <pre>
-  <kbd>[</kbd>: poprzednia zakładka
-  <kbd>]</kbd>: następna zakładka
   <kbd>d</kbd>: usuń
   <kbd>e</kbd>: hide/show stopped containers
   <kbd>p</kbd>: pause
@@ -30,6 +28,9 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>b</kbd>: view bulk commands
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: skup na głównym panelu
+  <kbd>[</kbd>: poprzednia zakładka
+  <kbd>]</kbd>: następna zakładka
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Serwisy
@@ -45,36 +46,39 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>m</kbd>: pokaż logi
   <kbd>U</kbd>: up project
   <kbd>D</kbd>: down project
-  <kbd>[</kbd>: poprzednia zakładka
-  <kbd>]</kbd>: następna zakładka
   <kbd>R</kbd>: pokaż opcje restartu
   <kbd>c</kbd>: wykonaj predefiniowaną własną komende
   <kbd>b</kbd>: view bulk commands
   <kbd>E</kbd>: exec shell
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: skup na głównym panelu
+  <kbd>[</kbd>: poprzednia zakładka
+  <kbd>]</kbd>: następna zakładka
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Obrazy
 
 <pre>
-  <kbd>[</kbd>: poprzednia zakładka
-  <kbd>]</kbd>: następna zakładka
   <kbd>c</kbd>: wykonaj predefiniowaną własną komende
   <kbd>d</kbd>: usuń obraz
   <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: skup na głównym panelu
+  <kbd>[</kbd>: poprzednia zakładka
+  <kbd>]</kbd>: następna zakładka
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Wolumeny
 
 <pre>
-  <kbd>[</kbd>: poprzednia zakładka
-  <kbd>]</kbd>: następna zakładka
   <kbd>c</kbd>: wykonaj predefiniowaną własną komende
   <kbd>d</kbd>: usuń wolumen
   <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: skup na głównym panelu
+  <kbd>[</kbd>: poprzednia zakładka
+  <kbd>]</kbd>: następna zakładka
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Główne

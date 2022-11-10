@@ -546,13 +546,15 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	}
 
 	for _, panel := range gui.allListPanels() {
-		bindings = append(bindings, &Binding{
-			ViewName:    panel.GetView().Name(),
-			Key:         '/',
-			Modifier:    gocui.ModNone,
-			Handler:     wrappedHandler(gui.handleOpenFilter),
-			Description: gui.Tr.LcFilter,
-		})
+		if !panel.IsFilterDisabled() {
+			bindings = append(bindings, &Binding{
+				ViewName:    panel.GetView().Name(),
+				Key:         '/',
+				Modifier:    gocui.ModNone,
+				Handler:     wrappedHandler(gui.handleOpenFilter),
+				Description: gui.Tr.LcFilter,
+			})
+		}
 	}
 
 	return bindings

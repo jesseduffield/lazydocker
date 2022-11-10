@@ -220,16 +220,12 @@ func (gui *Gui) Run() error {
 	if err := gui.createAllViews(); err != nil {
 		return err
 	}
+	if err := gui.setInitialViewContent(); err != nil {
+		return err
+	}
 
 	// TODO: see if we can avoid the circular dependency
-	gui.Panels = Panels{
-		Projects:   gui.getProjectPanel(),
-		Services:   gui.getServicesPanel(),
-		Containers: gui.getContainersPanel(),
-		Images:     gui.getImagesPanel(),
-		Volumes:    gui.getVolumesPanel(),
-		Menu:       gui.getMenuPanel(),
-	}
+	gui.setPanels()
 
 	if err = gui.keybindings(g); err != nil {
 		return err
@@ -268,6 +264,17 @@ func (gui *Gui) Run() error {
 		return nil
 	}
 	return err
+}
+
+func (gui *Gui) setPanels() {
+	gui.Panels = Panels{
+		Projects:   gui.getProjectPanel(),
+		Services:   gui.getServicesPanel(),
+		Containers: gui.getContainersPanel(),
+		Images:     gui.getImagesPanel(),
+		Volumes:    gui.getVolumesPanel(),
+		Menu:       gui.getMenuPanel(),
+	}
 }
 
 func (gui *Gui) updateContainerDetails() error {
@@ -464,4 +471,21 @@ func (gui *Gui) monitorContainerStats(ctx context.Context) {
 			}
 		}
 	}
+}
+
+// this is used by our cheatsheet code to generate keybindings. We need some views
+// and panels to exist for us to know what keybindings there are, so we invoke
+// gocui in headless mode and create them.
+func (gui *Gui) SetupFakeGui() {
+	g, err := gocui.NewGui(gocui.OutputTrue, false, gocui.NORMAL, true, map[rune]string{})
+	if err != nil {
+		panic(err)
+	}
+	gui.g = g
+	defer g.Close()
+	if err := gui.createAllViews(); err != nil {
+		panic(err)
+	}
+
+	gui.setPanels()
 }

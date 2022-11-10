@@ -7,17 +7,15 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>e</kbd>: verander de lazydocker configuratie
   <kbd>o</kbd>: open de lazydocker configuratie
-  <kbd>[</kbd>: vorige tab
-  <kbd>]</kbd>: volgende tab
   <kbd>m</kbd>: bekijk logs
   <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
 </pre>
 
 ## Containers
 
 <pre>
-  <kbd>[</kbd>: vorige tab
-  <kbd>]</kbd>: volgende tab
   <kbd>d</kbd>: verwijder
   <kbd>e</kbd>: verberg gestopte containers
   <kbd>p</kbd>: pause
@@ -30,6 +28,9 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>b</kbd>: view bulk commands
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Diensten
@@ -45,36 +46,39 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>m</kbd>: bekijk logs
   <kbd>U</kbd>: up project
   <kbd>D</kbd>: down project
-  <kbd>[</kbd>: vorige tab
-  <kbd>]</kbd>: volgende tab
   <kbd>R</kbd>: bekijk herstart opties
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>b</kbd>: view bulk commands
   <kbd>E</kbd>: exec shell
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Images
 
 <pre>
-  <kbd>[</kbd>: vorige tab
-  <kbd>]</kbd>: volgende tab
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>d</kbd>: verwijder image
   <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Volumes
 
 <pre>
-  <kbd>[</kbd>: vorige tab
-  <kbd>]</kbd>: volgende tab
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>d</kbd>: verwijder volume
   <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Hoofd

@@ -117,10 +117,6 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Information.Frame = false
 	gui.Views.Information.FgColor = gocui.ColorGreen
 
-	if err := gui.renderString(gui.g, "information", gui.getInformationContent()); err != nil {
-		return err
-	}
-
 	gui.Views.Confirmation.Visible = false
 	gui.Views.Confirmation.Wrap = true
 	gui.Views.Menu.Visible = false
@@ -133,13 +129,22 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.FilterPrefix.BgColor = gocui.ColorDefault
 	gui.Views.FilterPrefix.FgColor = gocui.ColorGreen
 	gui.Views.FilterPrefix.Frame = false
-	_ = gui.setViewContent(gui.Views.FilterPrefix, gui.filterPrompt())
 
 	gui.Views.Filter.BgColor = gocui.ColorDefault
 	gui.Views.Filter.FgColor = gocui.ColorGreen
 	gui.Views.Filter.Editable = true
 	gui.Views.Filter.Frame = false
 	gui.Views.Filter.Editor = gocui.EditorFunc(gui.wrapEditor(gocui.SimpleEditor))
+
+	return nil
+}
+
+func (gui *Gui) setInitialViewContent() error {
+	if err := gui.renderString(gui.g, "information", gui.getInformationContent()); err != nil {
+		return err
+	}
+
+	_ = gui.setViewContent(gui.Views.FilterPrefix, gui.filterPrompt())
 
 	return nil
 }

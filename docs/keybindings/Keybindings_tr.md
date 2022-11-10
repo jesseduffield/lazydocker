@@ -7,17 +7,15 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>e</kbd>: lazzydocker ayarlarını düzenle
   <kbd>o</kbd>: lazydocker ayarlarını aç
-  <kbd>[</kbd>: önceki sekme
-  <kbd>]</kbd>: sonraki sekme
   <kbd>m</kbd>: kayıt defterini görüntüle
   <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
 </pre>
 
 ## Konteynerler
 
 <pre>
-  <kbd>[</kbd>: önceki sekme
-  <kbd>]</kbd>: sonraki sekme
   <kbd>d</kbd>: kaldır
   <kbd>e</kbd>: hide/show stopped containers
   <kbd>p</kbd>: pause
@@ -30,6 +28,9 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>b</kbd>: view bulk commands
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Servisler
@@ -45,36 +46,39 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>m</kbd>: kayıt defterini görüntüle
   <kbd>U</kbd>: up project
   <kbd>D</kbd>: down project
-  <kbd>[</kbd>: önceki sekme
-  <kbd>]</kbd>: sonraki sekme
   <kbd>R</kbd>: yeniden başlatma seçeneklerini görüntüle
   <kbd>c</kbd>: önceden tanımlanmış özel komutu çalıştır
   <kbd>b</kbd>: view bulk commands
   <kbd>E</kbd>: exec shell
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Imajlar
 
 <pre>
-  <kbd>[</kbd>: önceki sekme
-  <kbd>]</kbd>: sonraki sekme
   <kbd>c</kbd>: önceden tanımlanmış özel komutu çalıştır
   <kbd>d</kbd>: imajı kaldır
   <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Alanlar
 
 <pre>
-  <kbd>[</kbd>: önceki sekme
-  <kbd>]</kbd>: sonraki sekme
   <kbd>c</kbd>: önceden tanımlanmış özel komutu çalıştır
   <kbd>d</kbd>: alanı kaldır
   <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Ana

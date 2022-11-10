@@ -41,6 +41,7 @@ func generateAtDir(dir string) {
 	for lang := range i18n.GetTranslationSets() {
 		os.Setenv("LC_ALL", lang)
 		mApp, _ := app.NewApp(mConfig)
+		mApp.Gui.SetupFakeGui()
 
 		file, err := os.Create(dir + "/Keybindings_" + lang + ".md")
 		if err != nil {
