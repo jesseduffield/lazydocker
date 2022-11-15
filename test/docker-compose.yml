@@ -1,0 +1,25 @@
+version: "3.5"
+services:
+  my-service:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
+    depends_on:
+      - my-service2
+    ports:
+      - 123:321
+
+  my-service2:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
+    ports:
+      - 12345:12345
+
+  my-service3:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
