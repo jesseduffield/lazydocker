@@ -1,10 +1,29 @@
 package gui
 
 import (
+	"os"
+
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
 	"github.com/samber/lo"
 )
+
+// See https://github.com/xtermjs/xterm.js/issues/4238
+// VSCode is soon to fix this in an upcoming update.
+// Once that's done, we can scrap the HIDE_UNDERSCORES variable
+var (
+	underscoreEnvChecked bool
+	hideUnderscores      bool
+)
+
+func hideUnderScores() bool {
+	if !underscoreEnvChecked {
+		hideUnderscores = os.Getenv("TERM_PROGRAM") == "vscode"
+		underscoreEnvChecked = true
+	}
+
+	return hideUnderscores
+}
 
 type Views struct {
 	// side panels
@@ -155,7 +174,12 @@ func (gui *Gui) getInformationContent() string {
 		return informationStr
 	}
 
-	donate := color.New(color.FgMagenta, color.Underline).Sprint(gui.Tr.Donate)
+	attrs := []color.Attribute{color.FgMagenta}
+	if !hideUnderScores() {
+		attrs = append(attrs, color.Underline)
+	}
+
+	donate := color.New(attrs...).Sprint(gui.Tr.Donate)
 	return donate + " " + informationStr
 }
 
