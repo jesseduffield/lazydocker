@@ -244,22 +244,21 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	}
 
 	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
-	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --hash=*", composeCommand))
+	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --services", composeCommand))
 	if err != nil {
 		return nil, err
 	}
 
 	// output looks like:
-	// service1 998d6d286b0499e0ff23d66302e720991a2asdkf9c30d0542034f610daf8a971
-	// service2 asdld98asdklasd9bccd02438de0994f8e19cbe691feb3755336ec5ca2c55971
+	// service1
+	// service2
 
 	lines := utils.SplitLines(output)
 	services := make([]*Service, len(lines))
 	for i, str := range lines {
-		arr := strings.Split(str, " ")
 		services[i] = &Service{
-			Name:          arr[0],
-			ID:            arr[1],
+			Name:          str,
+			ID:            str,
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,
 			DockerCommand: c,
