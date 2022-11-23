@@ -324,6 +324,7 @@ type CustomCommand struct {
 type LogsConfig struct {
 	Timestamps bool   `yaml:"timestamps,omitempty"`
 	Since      string `yaml:"since,omitempty"`
+	Tail       string `yaml:"tail,omitempty"`
 }
 
 // GetDefaultConfig returns the application default configuration NOTE (to
@@ -359,6 +360,7 @@ func GetDefaultConfig() UserConfig {
 		Logs: LogsConfig{
 			Timestamps: false,
 			Since:      "60m",
+			Tail:       "",
 		},
 		CommandTemplates: CommandTemplatesConfig{
 			DockerCompose:            "docker-compose",

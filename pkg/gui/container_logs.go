@@ -110,6 +110,7 @@ func (gui *Gui) writeContainerLogs(container *commands.Container, ctx context.Co
 		ShowStderr: true,
 		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
 		Since:      gui.Config.UserConfig.Logs.Since,
+		Tail:       gui.Config.UserConfig.Logs.Tail,
 		Follow:     true,
 	})
 	if err != nil {
