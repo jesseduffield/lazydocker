@@ -48,7 +48,7 @@ func (gui *Gui) NewSimpleRenderStringTask(getContent func() string) tasks.TaskFu
 	return gui.NewRenderStringTask(RenderStringTaskOpts{
 		GetStrContent: getContent,
 		Autoscroll:    false,
-		Wrap:          gui.Config.UserConfig.Gui.WrapMainPanel,
+		Wrap:          gui.State.LogConfig.Wrap,
 	})
 }
 

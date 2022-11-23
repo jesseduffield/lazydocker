@@ -453,6 +453,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:  wrappedHandler(gui.escapeFilterPrompt),
 		},
 		{
+			ViewName:    "",
+			Key:         'i',
+			Modifier:    gocui.ModNone,
+			Handler:     wrappedHandler(gui.handleOpenLogMenu),
+			Description: "Set log args (tail, since, etc)",
+		},
+		{
 			ViewName: "",
 			Key:      'J',
 			Modifier: gocui.ModNone,

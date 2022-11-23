@@ -50,10 +50,13 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 				}
 			},
 			GetItemContextCacheKey: func(service *commands.Service) string {
+				key := "services-" + service.ID + "-" + gui.logArgsKey()
+
 				if service.Container == nil {
-					return "services-" + service.ID
+					return key
 				}
-				return "services-" + service.ID + "-" + service.Container.ID + "-" + service.Container.Container.State
+
+				return key + service.Container.ID + "-" + service.Container.Container.State
 			},
 		},
 		ListPanel: panels.ListPanel[*commands.Service]{
@@ -117,7 +120,7 @@ func (gui *Gui) renderServiceTop(service *commands.Service) tasks.TaskFunc {
 		},
 		Duration:   time.Second,
 		Before:     func(ctx context.Context) { gui.clearMainView() },
-		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
+		Wrap:       gui.State.LogConfig.Wrap,
 		Autoscroll: false,
 	})
 }

@@ -89,6 +89,16 @@ type guiState struct {
 	// Maintains the state of manual filtering i.e. typing in a substring
 	// to filter on in the current panel.
 	Filter filterState
+
+	LogConfig LogConfig
+}
+
+type LogConfig struct {
+	Tail       string
+	Since      string
+	Autoscroll bool
+	Timestamps bool
+	Wrap       bool
 }
 
 type filterState struct {
@@ -123,7 +133,13 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 			},
 		},
 		ViewStack: []string{},
-
+		LogConfig: LogConfig{
+			Tail:       config.UserConfig.Logs.Tail,
+			Since:      config.UserConfig.Logs.Since,
+			Timestamps: config.UserConfig.Logs.Timestamps,
+			Wrap:       config.UserConfig.Gui.WrapMainPanel,
+			Autoscroll: true,
+		},
 		ShowExitedContainers: true,
 	}
 
@@ -424,9 +440,8 @@ func (gui *Gui) openFile(filename string) error {
 }
 
 func (gui *Gui) handleCustomCommand(g *gocui.Gui, v *gocui.View) error {
-	return gui.createPromptPanel(gui.Tr.CustomCommandTitle, func(g *gocui.Gui, v *gocui.View) error {
-		command := gui.trimmedContent(v)
-		return gui.runSubprocess(gui.OSCommand.RunCustomCommand(command))
+	return gui.Prompt(gui.Tr.CustomCommandTitle, func(input string) error {
+		return gui.runSubprocess(gui.OSCommand.RunCustomCommand(input))
 	})
 }
 

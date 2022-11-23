@@ -35,6 +35,25 @@ func (gui *Gui) getWindowDimensions(informationStr string, appStatus string) map
 		infoSectionSize = 1
 	}
 
+	mainBox := &boxlayout.Box{
+		Direction: boxlayout.ROW,
+		Weight:    mainSectionWeight,
+		Children: []*boxlayout.Box{
+			{
+				Window: "main",
+				Weight: 1,
+			},
+		},
+	}
+
+	showMainInfoView := true
+	if showMainInfoView {
+		mainBox.Children = utils.Append(mainBox.Children, &boxlayout.Box{
+			Window: "mainInfo",
+			Size:   3,
+		})
+	}
+
 	root := &boxlayout.Box{
 		Direction: boxlayout.ROW,
 		Children: []*boxlayout.Box{
@@ -47,10 +66,7 @@ func (gui *Gui) getWindowDimensions(informationStr string, appStatus string) map
 						Weight:              sideSectionWeight,
 						ConditionalChildren: gui.sidePanelChildren,
 					},
-					{
-						Window: "main",
-						Weight: mainSectionWeight,
-					},
+					mainBox,
 				},
 			},
 			{

@@ -52,7 +52,7 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 				}
 			},
 			GetItemContextCacheKey: func(project *commands.Project) string {
-				return "projects-" + project.Name
+				return "projects-" + project.Name + gui.logArgsKey()
 			},
 		},
 
@@ -115,7 +115,7 @@ func (gui *Gui) creditsStr() string {
 func (gui *Gui) renderAllLogs(_project *commands.Project) tasks.TaskFunc {
 	return gui.NewTask(TaskOpts{
 		Autoscroll: true,
-		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
+		Wrap:       gui.State.LogConfig.Wrap,
 		Func: func(ctx context.Context) {
 			gui.clearMainView()
 

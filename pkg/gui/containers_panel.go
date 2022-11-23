@@ -69,7 +69,7 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 				// where a container restarts but the new logs don't get read.
 				// Note that this might be jarring if we have a lot of logs and the container
 				// restarts a lot, so let's keep an eye on it.
-				return "containers-" + container.ID + "-" + container.Container.State
+				return "containers-" + container.ID + "-" + container.Container.State + gui.logArgsKey()
 			},
 		},
 		ListPanel: panels.ListPanel[*commands.Container]{
@@ -239,7 +239,7 @@ func (gui *Gui) renderContainerTop(container *commands.Container) tasks.TaskFunc
 		},
 		Duration:   time.Second,
 		Before:     func(ctx context.Context) { gui.clearMainView() },
-		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
+		Wrap:       gui.State.LogConfig.Wrap,
 		Autoscroll: false,
 	})
 }
