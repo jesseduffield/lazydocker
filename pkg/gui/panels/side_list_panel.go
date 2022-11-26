@@ -25,6 +25,7 @@ type ISideListPanel interface {
 	HandleClick() error
 	HandlePrevMainTab() error
 	HandleNextMainTab() error
+	GetTitle() string
 }
 
 // list panel at the side of the screen that renders content to the main panel
@@ -59,6 +60,9 @@ type SideListPanel[T comparable] struct {
 
 	// This can be nil if you want to always show the panel
 	Hide func() bool
+
+	// The title of the view
+	Title string
 }
 
 var _ ISideListPanel = &SideListPanel[int]{}
@@ -268,4 +272,8 @@ func (self *SideListPanel[T]) IsHidden() bool {
 	}
 
 	return self.Hide()
+}
+
+func (self *SideListPanel[T]) GetTitle() string {
+	return self.Title
 }

@@ -105,26 +105,16 @@ func (gui *Gui) createAllViews() error {
 	// when you run a docker container with the -it flags (interactive mode) it adds carriage returns for some reason. This is not docker's fault, it's an os-level default.
 	gui.Views.Main.IgnoreCarriageReturns = true
 
-	gui.Views.Project.Title = gui.Tr.ProjectTitle
-
 	gui.Views.Services.Highlight = true
-	gui.Views.Services.Title = gui.Tr.ServicesTitle
 	gui.Views.Services.SelBgColor = selectedLineBgColor
 
 	gui.Views.Containers.Highlight = true
 	gui.Views.Containers.SelBgColor = selectedLineBgColor
-	if gui.Config.UserConfig.Gui.ShowAllContainers || !gui.DockerCommand.InDockerComposeProject {
-		gui.Views.Containers.Title = gui.Tr.ContainersTitle
-	} else {
-		gui.Views.Containers.Title = gui.Tr.StandaloneContainersTitle
-	}
 
 	gui.Views.Images.Highlight = true
-	gui.Views.Images.Title = gui.Tr.ImagesTitle
 	gui.Views.Images.SelBgColor = selectedLineBgColor
 
 	gui.Views.Volumes.Highlight = true
-	gui.Views.Volumes.Title = gui.Tr.VolumesTitle
 	gui.Views.Volumes.SelBgColor = selectedLineBgColor
 
 	gui.Views.Options.Frame = false

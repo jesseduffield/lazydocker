@@ -98,6 +98,7 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 			return true
 		},
 		GetTableCells: presentation.GetContainerDisplayStrings,
+		Title:         gui.containersPanelTitle(),
 	}
 }
 
@@ -547,4 +548,12 @@ func (gui *Gui) openContainerInBrowser(container *commands.Container) error {
 	}
 	link := fmt.Sprintf("http://%s:%d/", ip, port.PublicPort)
 	return gui.OSCommand.OpenLink(link)
+}
+
+func (gui *Gui) containersPanelTitle() string {
+	if gui.Config.UserConfig.Gui.ShowAllContainers || !gui.DockerCommand.InDockerComposeProject {
+		return gui.Tr.ContainersTitle
+	} else {
+		return gui.Tr.StandaloneContainersTitle
+	}
 }

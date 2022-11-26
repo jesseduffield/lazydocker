@@ -76,12 +76,8 @@ func (gui *Gui) getMidSectionWeights() (int, int) {
 	if currentWindow == "main" && gui.State.ScreenMode == SCREEN_FULL {
 		mainSectionWeight = 1
 		sideSectionWeight = 0
-	} else {
-		if gui.State.ScreenMode == SCREEN_HALF {
-			mainSectionWeight = 1
-		} else if gui.State.ScreenMode == SCREEN_FULL {
-			mainSectionWeight = 0
-		}
+	} else if gui.State.ScreenMode == SCREEN_FULL {
+		mainSectionWeight = 0
 	}
 
 	return sideSectionWeight, mainSectionWeight

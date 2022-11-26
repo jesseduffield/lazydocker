@@ -280,29 +280,51 @@ func (gui *Gui) handleClickAux(v *gocui.View, itemCount int, selectedLine *int, 
 
 func (gui *Gui) nextScreenMode() error {
 	if gui.currentViewName() == "main" {
-		gui.State.ScreenMode = prevIntInCycle([]WindowMaximisation{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
-
-		return nil
+		gui.State.ScreenMode = prevIntInCycle([]ScreenMode{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
+	} else {
+		gui.State.ScreenMode = nextIntInCycle([]ScreenMode{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
 	}
 
-	gui.State.ScreenMode = nextIntInCycle([]WindowMaximisation{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
+	gui.setSidePanelHeaders()
 
 	return nil
 }
 
 func (gui *Gui) prevScreenMode() error {
 	if gui.currentViewName() == "main" {
-		gui.State.ScreenMode = nextIntInCycle([]WindowMaximisation{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
-
-		return nil
+		gui.State.ScreenMode = nextIntInCycle([]ScreenMode{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
+	} else {
+		gui.State.ScreenMode = prevIntInCycle([]ScreenMode{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
 	}
 
-	gui.State.ScreenMode = prevIntInCycle([]WindowMaximisation{SCREEN_NORMAL, SCREEN_HALF, SCREEN_FULL}, gui.State.ScreenMode)
+	gui.setSidePanelHeaders()
 
 	return nil
 }
 
-func nextIntInCycle(sl []WindowMaximisation, current WindowMaximisation) WindowMaximisation {
+func (gui *Gui) setSidePanelHeaders() {
+	sidePanels := gui.allSidePanels()
+
+	if gui.State.ScreenMode == SCREEN_NORMAL {
+		for _, panel := range sidePanels {
+			view := panel.GetView()
+			view.Tabs = nil
+			view.TabIndex = 0
+			view.Title = panel.GetTitle()
+		}
+	} else {
+		filteredSidePanels := lo.Filter(sidePanels, func(panel panels.ISideListPanel, _ int) bool { return !panel.IsHidden() })
+		panelTitles := lo.Map(filteredSidePanels, func(panel panels.ISideListPanel, _ int) string { return panel.GetTitle() })
+		for i, panel := range filteredSidePanels {
+			view := panel.GetView()
+			view.Tabs = panelTitles
+			view.TabIndex = i
+			view.Title = ""
+		}
+	}
+}
+
+func nextIntInCycle(sl []ScreenMode, current ScreenMode) ScreenMode {
 	for i, val := range sl {
 		if val == current {
 			if i == len(sl)-1 {
@@ -314,7 +336,7 @@ func nextIntInCycle(sl []WindowMaximisation, current WindowMaximisation) WindowM
 	return sl[0]
 }
 
-func prevIntInCycle(sl []WindowMaximisation, current WindowMaximisation) WindowMaximisation {
+func prevIntInCycle(sl []ScreenMode, current ScreenMode) ScreenMode {
 	for i, val := range sl {
 		if val == current {
 			if i > 0 {
