@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
+	"os"
+	"io"
+	"encoding/hex"
 	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
@@ -17,6 +19,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
+
 
 func (gui *Gui) getImagesPanel() *panels.SideListPanel[*commands.Image] {
 	noneLabel := "<none>"
@@ -118,6 +121,260 @@ func (gui *Gui) FilterString(view *gocui.View) string {
 
 	return gui.State.Filter.needle
 }
+
+func layout(g *gocui.Gui) error {
+	maxX, maxY := g.Size()
+
+	if v, err := g.SetView("help", maxX-23, 0, maxX-1, maxY-50, 5); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		fmt.Fprintln(v, "KEYBINDINGS")
+		fmt.Fprintln(v, "↑ ↓: Seek input")
+		fmt.Fprintln(v, "a: Enable autoscroll")
+		fmt.Fprintln(v, "^C: Exit")
+	}
+
+	if v, err := g.SetView("stdin", 0, 0, 80, 80, 35); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		if _, err := g.SetCurrentView("stdin"); err != nil {
+			return err
+		}
+		dumper := hex.Dumper(v)
+		if _, err := io.Copy(dumper, os.Stdin); err != nil {
+			return err
+		}
+		v.Wrap = true
+	}
+
+	return nil
+}
+
+func initKeybindings(g *gocui.Gui) error {
+	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("stdin", 'a', gocui.ModNone, autoscroll); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("stdin", gocui.KeyArrowUp, gocui.ModNone,
+		func(g *gocui.Gui, v *gocui.View) error {
+			scrollView(v, -1)
+			return nil
+		}); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("stdin", gocui.KeyArrowDown, gocui.ModNone,
+		func(g *gocui.Gui, v *gocui.View) error {
+			scrollView(v, 1)
+			return nil
+		}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func quit(g *gocui.Gui, v *gocui.View) error {
+	return gocui.ErrQuit
+}
+
+func autoscroll(g *gocui.Gui, v *gocui.View) error {
+	v.Autoscroll = true
+	return nil
+}
+
+func scrollView(v *gocui.View, dy int) error {
+	if v != nil {
+		v.Autoscroll = false
+		ox, oy := v.Origin()
+		if err := v.SetOrigin(ox, oy+dy); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (gui *Gui) handleImagePush(g *gocui.Gui, v *gocui.View) error {
+	type pushImageOption struct {
+		description   string
+		command       string
+		configOptions dockerTypes.ImagePushOptions
+	}
+	image, err := gui.Panels.Images.GetSelectedItem()
+	if err != nil {
+		return err
+	}
+	
+	
+	err = gui.createPromptPanel("Push " + image.Name, func (g *gocui.Gui, v *gocui.View) error {
+		value := gui.trimmedContent(v)
+		if value != "" {
+			options := []*pushImageOption{
+				{
+					description:   gui.Tr.ImagePull,
+					command:       "docker push " + value,
+					configOptions: dockerTypes.ImagePushOptions{},
+				},
+			}
+		
+			menuItems := lo.Map(options, func(option *pushImageOption, _ int) *types.MenuItem {
+				return &types.MenuItem{
+					LabelColumns: []string{
+						option.description,
+						color.New(color.FgRed).Sprint(option.command),
+					},
+					OnPress: func() error {
+						if err := image.Push(option.configOptions); err != nil {
+							return gui.createErrorPanel(err.Error())
+						}
+		
+						return nil
+					},
+				}
+			})
+		
+			return gui.Menu(CreateMenuOptions{
+				Title: "",
+				Items: menuItems,
+			})
+		}
+		return gui.createErrorPanel("empty image:tag passed")
+	})
+	if err != nil {
+		return err
+	}
+	
+
+	if err := initKeybindings(g); err != nil  {
+		fmt.Println("error in setting key binding: ", err)
+		return err
+	}
+
+	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+		fmt.Println("error in quitting input prompt: ", err)
+		return err
+	}
+
+	
+	return nil
+}
+
+func (gui *Gui) handleImagePull(g *gocui.Gui, v *gocui.View) error {
+	type pullImageOption struct {
+		description   string
+		command       string
+		configOptions dockerTypes.ImagePullOptions
+	}
+	
+	image, err := gui.Panels.Images.GetSelectedItem()
+	if err != nil {
+		return err
+	}
+
+	
+	err = gui.createPromptPanel("Pull for " + image.Name, func (g *gocui.Gui, v *gocui.View) error {
+		value := gui.trimmedContent(v)
+		if value != "" {
+			options := []*pullImageOption{
+				{
+					description:   gui.Tr.ImagePull,
+					command:       "docker pull " + value,
+					configOptions: dockerTypes.ImagePullOptions{},
+				},
+			}
+		
+			menuItems := lo.Map(options, func(option *pullImageOption, _ int) *types.MenuItem {
+				return &types.MenuItem{
+					LabelColumns: []string{
+						option.description,
+						color.New(color.FgRed).Sprint(option.command),
+					},
+					OnPress: func() error {
+						if err := image.Pull(option.configOptions); err != nil {
+							return gui.createErrorPanel(err.Error())
+						}
+		
+						return nil
+					},
+				}
+			})
+		
+			return gui.Menu(CreateMenuOptions{
+				Title: "",
+				Items: menuItems,
+			})
+		}
+		return gui.createErrorPanel("empty image:tag passed")
+		// err = gui.createPopupPanel("Image Name", value, false, func (g *gocui.Gui, v *gocui.View) error {
+		// 	return nil
+		// }, func(*gocui.Gui, *gocui.View) error {
+		// 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
+		// 		return err
+		// 	}
+		// 	return nil
+		// })
+		// if err != nil {
+		// 	return err
+		// }
+		// return nil
+	})
+	if err != nil {
+		return err
+	}
+	
+
+	if err := initKeybindings(g); err != nil  {
+		fmt.Println("error in setting key binding: ", err)
+		return err
+	}
+
+	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+		fmt.Println("error in quitting input prompt: ", err)
+		return err
+	}
+
+	
+	return nil
+}
+
+func (gui *Gui) handleImageTagging(g *gocui.Gui, v *gocui.View) error {
+
+	image, err := gui.Panels.Images.GetSelectedItem()
+	if err != nil {
+		return err
+	}
+	
+	
+	err = gui.createPopupPanel("Image Name", image.Name, false, func (g *gocui.Gui, v *gocui.View) error {
+		return nil
+	}, func(*gocui.Gui, *gocui.View) error {
+		if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	
+
+	if err := initKeybindings(g); err != nil  {
+		fmt.Println("error in setting key binding: ", err)
+		return err
+	}
+
+	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+		fmt.Println("error in quitting popUp panel: ", err)
+		return err
+	}
+
+	
+	return nil
+}
+
+
 
 func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	type removeImageOption struct {

@@ -122,6 +122,9 @@ type TranslationSet struct {
 	LcNextScreenMode string
 	LcPrevScreenMode string
 	FilterPrompt     string
+	ImageTagging     string
+	ImagePull        string
+	ImagePush        string
 }
 
 func englishSet() TranslationSet {
@@ -251,5 +254,8 @@ func englishSet() TranslationSet {
 		LcNextScreenMode: "next screen mode (normal/half/fullscreen)",
 		LcPrevScreenMode: "prev screen mode",
 		FilterPrompt:     "filter",
+		ImageTagging:     "tag an image",
+		ImagePull:        "pull an image",
+		ImagePush:        "push an image",
 	}
 }

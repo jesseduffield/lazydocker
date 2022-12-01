@@ -389,6 +389,27 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
+			ViewName:    "images",
+			Key:         't',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleImageTagging,
+			Description: gui.Tr.ImageTagging,
+		},
+		{
+			ViewName:    "images",
+			Key:         'p',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleImagePull,
+			Description: gui.Tr.ImagePull,
+		},
+		{
+			ViewName:    "images",
+			Key:         'P',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleImagePush,
+			Description: gui.Tr.ImagePush,
+		},
+		{
 			ViewName:    "volumes",
 			Key:         'c',
 			Modifier:    gocui.ModNone,

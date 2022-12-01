@@ -36,6 +36,22 @@ func (i *Image) Remove(options dockerTypes.ImageRemoveOptions) error {
 	return nil
 }
 
+// Pulls an image
+func (i *Image) Pull(options dockerTypes.ImagePullOptions) error {
+	if _, err := i.Client.ImagePull(context.Background(), i.ID, options); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Pushes an image
+func (i *Image) Push(options dockerTypes.ImagePushOptions) error {
+	if _, err := i.Client.ImagePush(context.Background(), i.ID, options); err != nil {
+		return err
+	}
+	return nil
+}
+
 func getHistoryResponseItemDisplayStrings(layer image.HistoryResponseItem) []string {
 	tag := ""
 	if len(layer.Tags) > 0 {
