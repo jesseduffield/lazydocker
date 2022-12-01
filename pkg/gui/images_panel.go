@@ -213,7 +213,7 @@ func (gui *Gui) handleImagePush(g *gocui.Gui, v *gocui.View) error {
 		if value != "" {
 			options := []*pushImageOption{
 				{
-					description:   gui.Tr.ImagePull,
+					description:   gui.Tr.ImagePush,
 					command:       "docker push " + value,
 					configOptions: dockerTypes.ImagePushOptions{},
 				},
