@@ -409,7 +409,7 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 		return gui.createErrorPanel(err.Error())
 	}
 
-	return gui.runSubprocess(c)
+	return gui.runSubprocessWithMessage (c, "By default, to detach from the container press ctrl-p then ctrl-q")
 }
 
 func (gui *Gui) handlePruneContainers() error {
