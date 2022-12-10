@@ -408,7 +408,7 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 		return gui.createErrorPanel(err.Error())
 	}
 
-	return gui.runSubprocess(c)
+	return gui.runSubprocessWithMessage(c, gui.Tr.DetachFromContainerShortCut)
 }
 
 func (gui *Gui) handlePruneContainers() error {

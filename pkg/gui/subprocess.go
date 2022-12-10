@@ -13,6 +13,10 @@ import (
 )
 
 func (gui *Gui) runSubprocess(cmd *exec.Cmd) error {
+	return gui.runSubprocessWithMessage(cmd, "")
+}
+
+func (gui *Gui) runSubprocessWithMessage(cmd *exec.Cmd, msg string) error {
 	gui.Mutexes.SubprocessMutex.Lock()
 	defer gui.Mutexes.SubprocessMutex.Unlock()
 
@@ -22,7 +26,7 @@ func (gui *Gui) runSubprocess(cmd *exec.Cmd) error {
 
 	gui.PauseBackgroundThreads = true
 
-	gui.runCommand(cmd)
+	gui.runCommand(cmd, msg)
 
 	if err := gui.g.Resume(); err != nil {
 		return gui.createErrorPanel(err.Error())
@@ -33,7 +37,7 @@ func (gui *Gui) runSubprocess(cmd *exec.Cmd) error {
 	return nil
 }
 
-func (gui *Gui) runCommand(cmd *exec.Cmd) {
+func (gui *Gui) runCommand(cmd *exec.Cmd, msg string) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stdout
 	cmd.Stdin = os.Stdin
@@ -51,7 +55,9 @@ func (gui *Gui) runCommand(cmd *exec.Cmd) {
 	}()
 
 	fmt.Fprintf(os.Stdout, "\n%s\n\n", utils.ColoredString("+ "+strings.Join(cmd.Args, " "), color.FgBlue))
-
+	if msg != "" {
+		fmt.Fprintf(os.Stdout, "\n%s\n\n", utils.ColoredString(msg, color.FgGreen))
+	}
 	if err := cmd.Run(); err != nil {
 		// not handling the error explicitly because usually we're going to see it
 		// in the output anyway
