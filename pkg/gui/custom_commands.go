@@ -18,10 +18,14 @@ func (gui *Gui) createCommandMenu(customCommands []config.CustomCommand, command
 				return command.InternalFunction()
 			}
 
+			resolvedCommand := command.Command
+			if command.Shell {
+				resolvedCommand = gui.OSCommand.NewCommandStringWithShell(command.Command)
+			}
+
 			// if we have a command for attaching, we attach and return the subprocess error
 			if command.Attach {
-				cmd := gui.OSCommand.ExecutableFromString(resolvedCommand)
-				return gui.runSubprocess(cmd)
+				return gui.runSubprocess(gui.OSCommand.ExecutableFromString(resolvedCommand))
 			}
 
 			return gui.WithWaitingStatus(waitingStatus, func() error {
