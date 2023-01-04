@@ -36,6 +36,8 @@ gui:
   # When true, increases vertical space used by focused side panel,
   # creating an accordion effect
   expandFocusedSidePanel: false
+  # Determines which screen mode will be used on startup
+  screenMode: "normal" # one of 'normal' | 'half' | 'fullscreen'
 logs:
   timestamps: false
   since: '60m' # set to '' to show all logs

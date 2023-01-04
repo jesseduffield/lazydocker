@@ -130,6 +130,9 @@ type GuiConfig struct {
 	// When true, increases vertical space used by focused side panel,
 	// creating an accordion effect
 	ExpandFocusedSidePanel bool `yaml:"expandFocusedSidePanel"`
+
+	// ScreenMode allow user to specify which screen mode will be used on startup
+	ScreenMode string `yaml:"screenMode,omitempty"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
@@ -359,6 +362,7 @@ func GetDefaultConfig() UserConfig {
 			SidePanelWidth:         0.3333,
 			ShowBottomLine:         true,
 			ExpandFocusedSidePanel: false,
+			ScreenMode:             "normal",
 		},
 		ConfirmOnQuit: false,
 		Logs: LogsConfig{
