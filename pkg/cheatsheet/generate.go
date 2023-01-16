@@ -96,6 +96,7 @@ func getBindingSections(mApp *app.App) []*bindingSection {
 			"containers": mApp.Tr.ContainersTitle,
 			"images":     mApp.Tr.ImagesTitle,
 			"volumes":    mApp.Tr.VolumesTitle,
+			"networks":   mApp.Tr.NetworksTitle,
 		}
 
 		bindingSections = addBinding(titleMap[viewName], bindingSections, binding)

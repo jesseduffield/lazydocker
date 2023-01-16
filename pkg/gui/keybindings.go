@@ -410,6 +410,27 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
+			ViewName:    "networks",
+			Key:         'c',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleNetworksCustomCommand,
+			Description: gui.Tr.RunCustomCommand,
+		},
+		{
+			ViewName:    "networks",
+			Key:         'd',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleNetworksRemoveMenu,
+			Description: gui.Tr.RemoveNetwork,
+		},
+		{
+			ViewName:    "networks",
+			Key:         'b',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleNetworksBulkCommand,
+			Description: gui.Tr.ViewBulkCommands,
+		},
+		{
 			ViewName:    "main",
 			Key:         gocui.KeyEsc,
 			Modifier:    gocui.ModNone,
