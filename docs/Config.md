@@ -87,7 +87,12 @@ The available attributes are:
 - magenta
 - cyan
 - white
+- '#ff00ff'
+
+**Modifiers**
+
 - bold
+- default
 - reverse # useful for high-contrast
 - underline
 
