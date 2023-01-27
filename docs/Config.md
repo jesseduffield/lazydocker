@@ -31,7 +31,7 @@ gui:
   # Side panel width as a ratio of the screen's width
   sidePanelWidth: 0.333
   # Determines whether we show the bottom line (the one containing keybinding
-	# info and the status of the app).
+  # info and the status of the app).
   showBottomLine: true
   # When true, increases vertical space used by focused side panel,
   # creating an accordion effect
