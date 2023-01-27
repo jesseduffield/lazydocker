@@ -104,7 +104,7 @@ customCommands:
       serviceNames: []
 ```
 
-For a full list of template variables that are available (such as `{{ .Container.ID }}`), see the fields of our [Container struct](https://github.com/jesseduffield/lazydocker/blob/17fcdb2b202c18b340737c31ae5429fe0c1478a8/pkg/commands/container.go#L23-L43). For example, to write a command that uses a container's image ID, you can use `{{ .Container.Container.ImageID }}`.
+For a full list of template variables that are available (such as `{{ .Container.ID }}`), see the fields of our [Container struct](https://pkg.go.dev/github.com/jesseduffield/lazydocker@v0.20.0/pkg/commands#Container). For example, to write a command that uses a container's image ID, you can use `{{ .Container.Container.ImageID }}`.
 
 ## Replacements
 
