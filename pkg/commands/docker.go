@@ -33,7 +33,7 @@ type DockerCommand struct {
 	Tr                     *i18n.TranslationSet
 	Config                 *config.AppConfig
 	Client                 *client.Client
-	InDockerComposeProject bool
+	SelectedComposeProject *ComposeProject
 	ErrorChan              chan error
 	ContainerMutex         deadlock.Mutex
 	ServiceMutex           deadlock.Mutex
@@ -57,6 +57,11 @@ type CommandObject struct {
 	Volume        *Volume
 }
 
+type ComposeProject struct {
+	Name       string
+	WorkingDir string
+}
+
 // NewCommandObject takes a command object and returns a default command object with the passed command object merged in
 func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	defaultObj := CommandObject{DockerCompose: c.Config.UserConfig.CommandTemplates.DockerCompose}
@@ -77,14 +82,13 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 	}
 
 	dockerCommand := &DockerCommand{
-		Log:                    log,
-		OSCommand:              osCommand,
-		Tr:                     tr,
-		Config:                 config,
-		Client:                 cli,
-		ErrorChan:              errorChan,
-		InDockerComposeProject: true,
-		Closers:                []io.Closer{tunnelCloser},
+		Log:       log,
+		OSCommand: osCommand,
+		Tr:        tr,
+		Config:    config,
+		Client:    cli,
+		ErrorChan: errorChan,
+		Closers:   []io.Closer{tunnelCloser},
 	}
 
 	command := utils.ApplyTemplate(
@@ -94,22 +98,38 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 
 	log.Warn(command)
 
-	err = osCommand.RunCommand(
-		utils.ApplyTemplate(
-			config.UserConfig.CommandTemplates.CheckDockerComposeConfig,
-			dockerCommand.NewCommandObject(CommandObject{}),
-		),
-	)
-	if err != nil {
-		dockerCommand.InDockerComposeProject = false
-		log.Warn(err.Error())
-	}
+	//dockerCommand.GetAllComposeProjects()
+	//err = osCommand.RunCommand(
+	//	utils.ApplyTemplate(
+	//		config.UserConfig.CommandTemplates.CheckDockerComposeConfig,
+	//		dockerCommand.NewCommandObject(CommandObject{}),
+	//	),
+	//)
 
 	return dockerCommand, nil
 }
 
 func (c *DockerCommand) Close() error {
 	return utils.CloseMany(c.Closers)
+}
+
+func (c *DockerCommand) GetAllComposeProjects() map[string]ComposeProject {
+	containers, _ := c.Client.ContainerList(context.Background(), dockerTypes.ContainerListOptions{
+		All: true,
+	})
+
+	projects := make(map[string]ComposeProject)
+	for _, c := range containers {
+		projectName, ok := c.Labels["com.docker.compose.project"]
+		if ok {
+			workingDir, ok := c.Labels["com.docker.compose.project.working_dir"]
+			//configFiles, ok := c.Labels["com.docker.compose.project.config_files"]
+			if ok {
+				projects[projectName] = ComposeProject{Name: projectName, WorkingDir: workingDir}
+			}
+		}
+	}
+	return projects
 }
 
 func (c *DockerCommand) CreateClientStatMonitor(container *Container) {
@@ -239,12 +259,12 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 
 // GetServices gets services
 func (c *DockerCommand) GetServices() ([]*Service, error) {
-	if !c.InDockerComposeProject {
+	if c.SelectedComposeProject == nil {
 		return nil, nil
 	}
 
 	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
-	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --services", composeCommand))
+	output, err := c.OSCommand.RunCommandWithOutputFrom(fmt.Sprintf("%s config --services", composeCommand), c.SelectedComposeProject.WorkingDir)
 	if err != nil {
 		return nil, err
 	}
@@ -302,11 +322,12 @@ func (c *DockerCommand) ViewAllLogs() (*exec.Cmd, error) {
 
 // DockerComposeConfig returns the result of 'docker-compose config'
 func (c *DockerCommand) DockerComposeConfig() string {
-	output, err := c.OSCommand.RunCommandWithOutput(
+	output, err := c.OSCommand.RunCommandWithOutputFrom(
 		utils.ApplyTemplate(
 			c.OSCommand.Config.UserConfig.CommandTemplates.DockerComposeConfig,
 			c.NewCommandObject(CommandObject{}),
 		),
+		c.SelectedComposeProject.WorkingDir,
 	)
 	if err != nil {
 		output = err.Error()

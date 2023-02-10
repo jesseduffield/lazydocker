@@ -440,7 +440,7 @@ func (gui *Gui) ShouldRefresh(key string) bool {
 }
 
 func (gui *Gui) initiallyFocusedViewName() string {
-	if gui.DockerCommand.InDockerComposeProject {
+	if gui.DockerCommand.SelectedComposeProject != nil {
 		return "services"
 	}
 	return "containers"

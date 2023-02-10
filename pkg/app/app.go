@@ -2,6 +2,7 @@ package app
 
 import (
 	"io"
+	"path"
 	"strings"
 
 	"github.com/jesseduffield/lazydocker/pkg/commands"
@@ -49,6 +50,15 @@ func NewApp(config *config.AppConfig) (*App, error) {
 	}
 	app.closers = append(app.closers, app.DockerCommand)
 	app.Gui, err = gui.NewGui(app.Log, app.DockerCommand, app.OSCommand, app.Tr, config, app.ErrorChan)
+
+	currentDir := path.Base(app.Config.ProjectDir)
+	for _, project := range app.DockerCommand.GetAllComposeProjects() {
+		if project.WorkingDir == currentDir {
+			app.DockerCommand.SelectedComposeProject = &project
+			break
+		}
+	}
+
 	if err != nil {
 		return app, err
 	}

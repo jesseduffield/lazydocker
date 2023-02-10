@@ -27,7 +27,7 @@ func hideUnderScores() bool {
 
 type Views struct {
 	// side panels
-	Project    *gocui.View
+	Projects   *gocui.View
 	Services   *gocui.View
 	Containers *gocui.View
 	Images     *gocui.View
@@ -65,7 +65,7 @@ func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
 	return []viewNameMapping{
 		// first layer. Ordering within this layer does not matter because there are
 		// no overlapping views
-		{viewPtr: &gui.Views.Project, name: "project", autoPosition: true},
+		{viewPtr: &gui.Views.Projects, name: "projects", autoPosition: true},
 		{viewPtr: &gui.Views.Services, name: "services", autoPosition: true},
 		{viewPtr: &gui.Views.Containers, name: "containers", autoPosition: true},
 		{viewPtr: &gui.Views.Images, name: "images", autoPosition: true},
@@ -105,7 +105,9 @@ func (gui *Gui) createAllViews() error {
 	// when you run a docker container with the -it flags (interactive mode) it adds carriage returns for some reason. This is not docker's fault, it's an os-level default.
 	gui.Views.Main.IgnoreCarriageReturns = true
 
-	gui.Views.Project.Title = gui.Tr.ProjectTitle
+	gui.Views.Projects.Highlight = true
+	gui.Views.Projects.Title = gui.Tr.ProjectTitle
+	gui.Views.Projects.SelBgColor = selectedLineBgColor
 
 	gui.Views.Services.Highlight = true
 	gui.Views.Services.Title = gui.Tr.ServicesTitle
@@ -113,7 +115,7 @@ func (gui *Gui) createAllViews() error {
 
 	gui.Views.Containers.Highlight = true
 	gui.Views.Containers.SelBgColor = selectedLineBgColor
-	if gui.Config.UserConfig.Gui.ShowAllContainers || !gui.DockerCommand.InDockerComposeProject {
+	if gui.Config.UserConfig.Gui.ShowAllContainers || gui.DockerCommand.SelectedComposeProject == nil {
 		gui.Views.Containers.Title = gui.Tr.ContainersTitle
 	} else {
 		gui.Views.Containers.Title = gui.Tr.StandaloneContainersTitle
