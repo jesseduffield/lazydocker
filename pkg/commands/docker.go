@@ -55,6 +55,7 @@ type CommandObject struct {
 	Container     *Container
 	Image         *Image
 	Volume        *Volume
+	Network       *Network
 }
 
 // NewCommandObject takes a command object and returns a default command object with the passed command object merged in

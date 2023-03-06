@@ -81,6 +81,18 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>/</kbd>: filter list
 </pre>
 
+## Networks
+
+<pre>
+  <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
+  <kbd>d</kbd>: verwijder network
+  <kbd>b</kbd>: view bulk commands
+  <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>/</kbd>: filter list
+</pre>
+
 ## Hoofd
 
 <pre>

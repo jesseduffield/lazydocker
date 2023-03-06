@@ -81,6 +81,18 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>/</kbd>: filter list
 </pre>
 
+## Réseaux
+
+<pre>
+  <kbd>c</kbd>: executer une commande prédéfinie
+  <kbd>d</kbd>: supprimer le réseau
+  <kbd>b</kbd>: voir les commandes groupés
+  <kbd>enter</kbd>: focus paneau principal
+  <kbd>[</kbd>: onglet précédent
+  <kbd>]</kbd>: onglet suivant
+  <kbd>/</kbd>: filter list
+</pre>
+
 ## Principal
 
 <pre>
