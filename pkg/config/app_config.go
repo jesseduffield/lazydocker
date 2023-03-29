@@ -130,6 +130,10 @@ type GuiConfig struct {
 	// When true, increases vertical space used by focused side panel,
 	// creating an accordion effect
 	ExpandFocusedSidePanel bool `yaml:"expandFocusedSidePanel"`
+
+	// DetailsFormat determines in which format will be printed container stats and configs
+	// By default "json", available values "json", "yaml" ("yml")
+	DetailsFormat string `yaml:"detailsFormat,omitempty"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
@@ -362,6 +366,7 @@ func GetDefaultConfig() UserConfig {
 			SidePanelWidth:         0.3333,
 			ShowBottomLine:         true,
 			ExpandFocusedSidePanel: false,
+			DetailsFormat:          "json",
 		},
 		ConfirmOnQuit: false,
 		Logs: LogsConfig{

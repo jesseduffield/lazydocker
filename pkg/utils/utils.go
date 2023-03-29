@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
+	"github.com/jesseduffield/yaml"
 
 	"github.com/fatih/color"
 )
@@ -338,4 +340,24 @@ func IsValidHexValue(v string) bool {
 // Style used on menu items that open another menu
 func OpensMenuStyle(str string) string {
 	return ColoredString(fmt.Sprintf("%s...", str), color.FgMagenta)
+}
+
+func MarshalIntoFormat(data interface{}, format string) ([]byte, error) {
+	dataJSON, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	switch format {
+	case "json":
+		return dataJSON, err
+	case "yaml", "yml":
+		// Use Unmarshal->Marshal hack to convert vendor-locked objects to YAML with same structure as JSON
+		var dataMirror yaml.MapSlice
+		if err := yaml.Unmarshal(dataJSON, &dataMirror); err != nil {
+			return nil, err
+		}
+		return yaml.Marshal(dataMirror)
+	default:
+		return nil, errors.New(fmt.Sprintf("Unsupported detailization format: %s", format))
+	}
 }
