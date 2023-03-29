@@ -97,7 +97,7 @@ func (c *OSCommand) ExecutableFromStringContext(ctx context.Context, commandStr 
 }
 
 func (c *OSCommand) NewCommandStringWithShell(commandStr string) string {
-	quotedCommand := ""
+	var quotedCommand string
 	// Windows does not seem to like quotes around the command
 	if c.Platform.os == "windows" {
 		quotedCommand = strings.NewReplacer(
