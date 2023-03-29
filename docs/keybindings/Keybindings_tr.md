@@ -81,6 +81,18 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>/</kbd>: filter list
 </pre>
 
+## Ağları
+
+<pre>
+  <kbd>c</kbd>: önceden tanımlanmış özel komutu çalıştır
+  <kbd>d</kbd>: ağı kaldır
+  <kbd>b</kbd>: view bulk commands
+  <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
+</pre>
+
 ## Ana
 
 <pre>

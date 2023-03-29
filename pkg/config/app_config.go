@@ -286,6 +286,9 @@ type CustomCommands struct {
 
 	// Volumes contains the custom commands for volumes
 	Volumes []CustomCommand `yaml:"volumes,omitempty"`
+
+	// Networks contains the custom commands for networks
+	Networks []CustomCommand `yaml:"networks,omitempty"`
 }
 
 // Replacements contains the stuff relating to rendering a container's info

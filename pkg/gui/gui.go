@@ -56,6 +56,7 @@ type Panels struct {
 	Containers *panels.SideListPanel[*commands.Container]
 	Images     *panels.SideListPanel[*commands.Image]
 	Volumes    *panels.SideListPanel[*commands.Volume]
+	Networks   *panels.SideListPanel[*commands.Network]
 	Menu       *panels.SideListPanel[*types.MenuItem]
 }
 
@@ -273,6 +274,7 @@ func (gui *Gui) setPanels() {
 		Containers: gui.getContainersPanel(),
 		Images:     gui.getImagesPanel(),
 		Volumes:    gui.getVolumesPanel(),
+		Networks:   gui.getNetworksPanel(),
 		Menu:       gui.getMenuPanel(),
 	}
 }
@@ -294,6 +296,11 @@ func (gui *Gui) refresh() {
 	}()
 	go func() {
 		if err := gui.reloadVolumes(); err != nil {
+			gui.Log.Error(err)
+		}
+	}()
+	go func() {
+		if err := gui.reloadNetworks(); err != nil {
 			gui.Log.Error(err)
 		}
 	}()

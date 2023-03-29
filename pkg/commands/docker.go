@@ -55,6 +55,7 @@ type CommandObject struct {
 	Container     *Container
 	Image         *Image
 	Volume        *Volume
+	Network       *Network
 }
 
 type ComposeProject struct {
