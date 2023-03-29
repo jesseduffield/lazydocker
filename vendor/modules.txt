@@ -97,8 +97,8 @@ github.com/gdamore/tcell/v2/terminfo/x/xterm_termite
 # github.com/go-errors/errors v1.4.2
 ## explicit; go 1.14
 github.com/go-errors/errors
-# github.com/gogo/protobuf v1.3.1
-## explicit
+# github.com/gogo/protobuf v1.3.2
+## explicit; go 1.15
 github.com/gogo/protobuf/proto
 # github.com/gookit/color v1.5.0
 ## explicit; go 1.13
