@@ -66,7 +66,7 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) resetMainView() {
 	gui.State.Panels.Main.ObjectKey = ""
-	gui.Views.Main.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
+	gui.Views.Main.Wrap = gui.State.LogConfig.Wrap
 }
 
 // if the cursor down past the last item, move it to the last line

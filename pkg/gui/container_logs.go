@@ -24,7 +24,7 @@ func (gui *Gui) renderContainerLogsToMain(container *commands.Container) tasks.T
 		Duration: time.Millisecond * 200,
 		// TODO: see why this isn't working (when switching from Top tab to Logs tab in the services panel, the tops tab's content isn't removed)
 		Before:     func(ctx context.Context) { gui.clearMainView() },
-		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
+		Wrap:       gui.State.LogConfig.Wrap,
 		Autoscroll: true,
 	})
 }
@@ -37,7 +37,7 @@ func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, ctx 
 
 	mainView := gui.Views.Main
 
-	if err := gui.writeContainerLogs(container, ctx, mainView); err != nil {
+	if err := gui.writeContainerLogs(container, ctx, mainView, gui.State.LogConfig); err != nil {
 		gui.Log.Error(err)
 	}
 
@@ -85,7 +85,7 @@ func (gui *Gui) renderLogsToStdout(container *commands.Container) {
 		}
 	}()
 
-	if err := gui.writeContainerLogs(container, ctx, os.Stdout); err != nil {
+	if err := gui.writeContainerLogs(container, ctx, os.Stdout, gui.State.LogConfig); err != nil {
 		gui.Log.Error(err)
 		return
 	}
@@ -104,13 +104,13 @@ func (gui *Gui) promptToReturn() {
 	}
 }
 
-func (gui *Gui) writeContainerLogs(container *commands.Container, ctx context.Context, writer io.Writer) error {
+func (gui *Gui) writeContainerLogs(container *commands.Container, ctx context.Context, writer io.Writer, logConfig LogConfig) error {
 	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, container.ID, dockerTypes.ContainerLogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
-		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
-		Since:      gui.Config.UserConfig.Logs.Since,
-		Tail:       gui.Config.UserConfig.Logs.Tail,
+		Timestamps: logConfig.Timestamps,
+		Since:      logConfig.Since,
+		Tail:       logConfig.Tail,
 		Follow:     true,
 	})
 	if err != nil {

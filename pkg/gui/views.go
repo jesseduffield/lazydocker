@@ -37,6 +37,9 @@ type Views struct {
 	// main panel
 	Main *gocui.View
 
+	// shows information about what's being rendered in the main panel (e.g. `docker logs` tail arg)
+	MainInfo *gocui.View
+
 	// bottom line
 	Options     *gocui.View
 	Information *gocui.View
@@ -74,6 +77,7 @@ func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
 		{viewPtr: &gui.Views.Networks, name: "networks", autoPosition: true},
 
 		{viewPtr: &gui.Views.Main, name: "main", autoPosition: true},
+		{viewPtr: &gui.Views.MainInfo, name: "mainInfo", autoPosition: true},
 
 		// bottom line
 		{viewPtr: &gui.Views.Options, name: "options", autoPosition: true},

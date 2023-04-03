@@ -108,6 +108,10 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 	}
 
+	if err := gui.renderMainInfoView(); err != nil {
+		return err
+	}
+
 	// here is a good place log some stuff
 	// if you download humanlog and do tail -f development.log | humanlog
 	// this will let you see these branches as prettified json

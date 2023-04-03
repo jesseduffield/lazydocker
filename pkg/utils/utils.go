@@ -339,3 +339,11 @@ func IsValidHexValue(v string) bool {
 func OpensMenuStyle(str string) string {
 	return ColoredString(fmt.Sprintf("%s...", str), color.FgMagenta)
 }
+
+func Prepend[T any](slice []T, item T) []T {
+	return append([]T{item}, slice...)
+}
+
+func Append[T any](slice []T, item T) []T {
+	return append(slice, item)
+}
