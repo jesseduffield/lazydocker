@@ -132,7 +132,7 @@ type GuiConfig struct {
 	ExpandFocusedSidePanel bool `yaml:"expandFocusedSidePanel"`
 
 	// DetailsFormat determines in which format will be printed container stats and configs
-	// By default "json", available values "json", "yaml" ("yml")
+	// By default "yaml", available values "json", "yaml"
 	DetailsFormat string `yaml:"detailsFormat,omitempty"`
 }
 
@@ -366,7 +366,7 @@ func GetDefaultConfig() UserConfig {
 			SidePanelWidth:         0.3333,
 			ShowBottomLine:         true,
 			ExpandFocusedSidePanel: false,
-			DetailsFormat:          "json",
+			DetailsFormat:          "yaml",
 		},
 		ConfirmOnQuit: false,
 		Logs: LogsConfig{

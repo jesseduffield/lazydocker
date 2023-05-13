@@ -350,7 +350,7 @@ func MarshalIntoFormat(data interface{}, format string) ([]byte, error) {
 	switch format {
 	case "json":
 		return dataJSON, err
-	case "yaml", "yml":
+	case "yaml":
 		// Use Unmarshal->Marshal hack to convert vendor-locked objects to YAML with same structure as JSON
 		var dataMirror yaml.MapSlice
 		if err := yaml.Unmarshal(dataJSON, &dataMirror); err != nil {
