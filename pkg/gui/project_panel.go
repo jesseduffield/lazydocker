@@ -108,7 +108,7 @@ func (gui *Gui) creditsStr() string {
 			"Raise an Issue: https://github.com/jesseduffield/lazydocker/issues",
 			utils.ColoredString("Buy Jesse a coffee: https://github.com/sponsors/jesseduffield", color.FgMagenta), // caffeine ain't free
 			"Here's your lazydocker config when merged in with the defaults (you can open your config by pressing 'o'):",
-			configBuf.String(),
+			utils.ColoredYamlString(configBuf.String()),
 		}, "\n\n")
 }
 
@@ -145,7 +145,9 @@ func (gui *Gui) renderAllLogs(_project *commands.Project) tasks.TaskFunc {
 }
 
 func (gui *Gui) renderDockerComposeConfig(_project *commands.Project) tasks.TaskFunc {
-	return gui.NewSimpleRenderStringTask(func() string { return gui.DockerCommand.DockerComposeConfig() })
+	return gui.NewSimpleRenderStringTask(func() string {
+		return utils.ColoredYamlString(gui.DockerCommand.DockerComposeConfig())
+	})
 }
 
 func (gui *Gui) handleOpenConfig(g *gocui.Gui, v *gocui.View) error {

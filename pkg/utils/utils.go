@@ -14,9 +14,13 @@ import (
 
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/yaml"
+
+	// "github.com/jesseduffield/yaml"
 
 	"github.com/fatih/color"
+	"github.com/goccy/go-yaml"
+	"github.com/goccy/go-yaml/lexer"
+	"github.com/goccy/go-yaml/printer"
 )
 
 // SplitLines takes a multiline string and splits it on newlines
@@ -52,6 +56,45 @@ func ColoredString(str string, colorAttribute color.Attribute) string {
 	}
 	colour := color.New(colorAttribute)
 	return ColoredStringDirect(str, colour)
+}
+
+// ColoredYamlString takes an YAML formatted string and returns a colored string
+// with colors hardcoded as:
+// keys: cyan
+// Booleans: magenta
+// Numbers: yellow
+// Strings: green
+func ColoredYamlString(str string) string {
+	format := func(attr color.Attribute) string {
+		return fmt.Sprintf("%s[%dm", "\x1b", attr)
+	}
+	tokens := lexer.Tokenize(str)
+	var p printer.Printer
+	p.Bool = func() *printer.Property {
+		return &printer.Property{
+			Prefix: format(color.FgMagenta),
+			Suffix: format(color.Reset),
+		}
+	}
+	p.Number = func() *printer.Property {
+		return &printer.Property{
+			Prefix: format(color.FgYellow),
+			Suffix: format(color.Reset),
+		}
+	}
+	p.MapKey = func() *printer.Property {
+		return &printer.Property{
+			Prefix: format(color.FgCyan),
+			Suffix: format(color.Reset),
+		}
+	}
+	p.String = func() *printer.Property {
+		return &printer.Property{
+			Prefix: format(color.FgGreen),
+			Suffix: format(color.Reset),
+		}
+	}
+	return p.PrintTokens(tokens)
 }
 
 // MultiColoredString takes a string and an array of colour attributes and returns a colored

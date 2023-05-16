@@ -204,7 +204,7 @@ func (gui *Gui) containerConfigStr(container *commands.Container) string {
 		return fmt.Sprintf("Error marshalling container details: %v", err)
 	}
 
-	output += fmt.Sprintf("\nFull details:\n\n%s", string(data))
+	output += fmt.Sprintf("\nFull details:\n\n%s", utils.ColoredYamlString(string(data)))
 
 	return output
 }

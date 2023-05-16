@@ -47,7 +47,7 @@ func RenderStats(userConfig *config.UserConfig, container *commands.Container, v
 		pidsCount,
 		dataReceived,
 		dataSent,
-		string(originalStats),
+		utils.ColoredYamlString(string(originalStats)),
 	)
 
 	return contents, nil
