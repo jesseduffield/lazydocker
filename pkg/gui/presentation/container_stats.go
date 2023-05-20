@@ -37,7 +37,7 @@ func RenderStats(userConfig *config.UserConfig, container *commands.Container, v
 	dataReceived := fmt.Sprintf("Traffic received: %s", utils.FormatDecimalBytes(stats.ClientStats.Networks.Eth0.RxBytes))
 	dataSent := fmt.Sprintf("Traffic sent: %s", utils.FormatDecimalBytes(stats.ClientStats.Networks.Eth0.TxBytes))
 
-	originalStats, err := utils.MarshalIntoFormat(stats, userConfig.Gui.DetailsFormat)
+	originalStats, err := utils.MarshalIntoYaml(stats)
 	if err != nil {
 		return "", err
 	}

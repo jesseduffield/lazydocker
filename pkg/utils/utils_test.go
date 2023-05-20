@@ -270,7 +270,7 @@ func TestMarshalIntoFormat(t *testing.T) {
 	}
 
 	type scenario struct {
-		input       data
+		input       interface{}
 		format      string
 		expected    []byte
 		expectedErr error
@@ -310,7 +310,7 @@ quux:
 	}
 
 	for _, s := range scenarios {
-		output, err := MarshalIntoFormat(s.input, s.format)
+		output, err := marshalIntoFormat(s.input, s.format)
 		assert.EqualValues(t, s.expected, output)
 		if s.expectedErr != nil {
 			assert.EqualError(t, err, s.expectedErr.Error())

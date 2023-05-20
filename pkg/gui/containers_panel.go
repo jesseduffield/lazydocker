@@ -199,7 +199,7 @@ func (gui *Gui) containerConfigStr(container *commands.Container) string {
 		output += "none\n"
 	}
 
-	data, err := utils.MarshalIntoFormat(&container.Details, gui.Config.UserConfig.Gui.DetailsFormat)
+	data, err := utils.MarshalIntoYaml(&container.Details)
 	if err != nil {
 		return fmt.Sprintf("Error marshalling container details: %v", err)
 	}
