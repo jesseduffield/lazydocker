@@ -2,7 +2,6 @@ package gui
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -200,12 +199,12 @@ func (gui *Gui) containerConfigStr(container *commands.Container) string {
 		output += "none\n"
 	}
 
-	data, err := json.MarshalIndent(&container.Details, "", "  ")
+	data, err := utils.MarshalIntoYaml(&container.Details)
 	if err != nil {
 		return fmt.Sprintf("Error marshalling container details: %v", err)
 	}
 
-	output += fmt.Sprintf("\nFull details:\n\n%s", string(data))
+	output += fmt.Sprintf("\nFull details:\n\n%s", utils.ColoredYamlString(string(data)))
 
 	return output
 }

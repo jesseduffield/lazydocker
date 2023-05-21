@@ -257,3 +257,65 @@ func TestRenderTable(t *testing.T) {
 		}
 	}
 }
+
+func TestMarshalIntoFormat(t *testing.T) {
+	type innerData struct {
+		Foo int    `json:"foo"`
+		Bar string `json:"bar"`
+		Baz bool   `json:"baz"`
+	}
+	type data struct {
+		Qux  int       `json:"quz"`
+		Quux innerData `json:"quux"`
+	}
+
+	type scenario struct {
+		input       interface{}
+		format      string
+		expected    []byte
+		expectedErr error
+	}
+
+	scenarios := []scenario{
+		{
+			input:  data{1, innerData{2, "foo", true}},
+			format: "json",
+			expected: []byte(`{
+  "quz": 1,
+  "quux": {
+    "foo": 2,
+    "bar": "foo",
+    "baz": true
+  }
+}`),
+			expectedErr: nil,
+		},
+		{
+			input:  data{1, innerData{2, "foo", true}},
+			format: "yaml",
+			expected: []byte(`quz: 1
+quux:
+  bar: foo
+  baz: true
+  foo: 2
+`),
+			expectedErr: nil,
+		},
+		{
+			input:       data{1, innerData{2, "foo", true}},
+			format:      "xml",
+			expected:    nil,
+			expectedErr: errors.New("Unsupported detailization format: xml"),
+		},
+	}
+
+	for _, s := range scenarios {
+		output, err := marshalIntoFormat(s.input, s.format)
+		assert.EqualValues(t, s.expected, output)
+		if s.expectedErr != nil {
+			assert.EqualError(t, err, s.expectedErr.Error())
+		} else {
+			assert.NoError(t, err)
+		}
+	}
+}
