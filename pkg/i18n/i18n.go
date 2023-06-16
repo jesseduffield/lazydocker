@@ -14,6 +14,22 @@ type Localizer struct {
 	S   TranslationSet
 }
 
+// ISO 639-1 supported language codes.
+const (
+	// Polish
+	PL = "pl"
+	// Dutch
+	NL = "nl"
+	// German
+	DE = "de"
+	// Turkish
+	TR = "tr"
+	// English
+	EN = "en"
+	// French
+	FR = "fr"
+)
+
 func NewTranslationSetFromConfig(log *logrus.Entry, configLanguage string) (*TranslationSet, error) {
 	if configLanguage == "auto" {
 		language := detectLanguage(jibber_jabber.DetectLanguage)
@@ -25,7 +41,7 @@ func NewTranslationSetFromConfig(log *logrus.Entry, configLanguage string) (*Tra
 		return NewTranslationSet(log, configLanguage), nil
 	}
 
-	return NewTranslationSet(log, "en"), errors.New("Language not found: " + configLanguage)
+	return NewTranslationSet(log, EN), errors.New("Language not found: " + configLanguage)
 }
 
 func NewTranslationSet(log *logrus.Entry, language string) *TranslationSet {
@@ -42,12 +58,12 @@ func NewTranslationSet(log *logrus.Entry, language string) *TranslationSet {
 // GetTranslationSets gets all the translation sets, keyed by language code
 func GetTranslationSets() map[string]TranslationSet {
 	return map[string]TranslationSet{
-		"pl": polishSet(),
-		"nl": dutchSet(),
-		"de": germanSet(),
-		"tr": turkishSet(),
-		"en": englishSet(),
-		"fr": frenchSet(),
+		PL: polishSet(),
+		NL: dutchSet(),
+		DE: germanSet(),
+		TR: turkishSet(),
+		EN: englishSet(),
+		FR: frenchSet(),
 	}
 }
 
@@ -56,17 +72,17 @@ func GetTranslationSets() map[string]TranslationSet {
 // It returns an english translation set if not found.
 func getTranslationSet(languageCode string) TranslationSet {
 	switch languageCode {
-	case "pl":
+	case PL:
 		return polishSet()
-	case "nl":
+	case NL:
 		return dutchSet()
-	case "de":
+	case DE:
 		return germanSet()
-	case "tr":
+	case TR:
 		return turkishSet()
-	case "en":
+	case EN:
 		return englishSet()
-	case "fr":
+	case FR:
 		return frenchSet()
 	}
 
@@ -76,12 +92,12 @@ func getTranslationSet(languageCode string) TranslationSet {
 // getSupportedLanguages returns all the supported languages.
 func getSupportedLanguages() []string {
 	return []string{
-		"pl",
-		"nl",
-		"de",
-		"tr",
-		"en",
-		"fr",
+		PL,
+		NL,
+		DE,
+		TR,
+		EN,
+		FR,
 	}
 }
 
