@@ -1,12 +1,10 @@
 package i18n
 
 import (
-	"strings"
-
-	"github.com/imdario/mergo"
-
 	"github.com/cloudfoundry/jibber_jabber"
 	"github.com/go-errors/errors"
+	"github.com/imdario/mergo"
+	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,13 +17,12 @@ type Localizer struct {
 func NewTranslationSetFromConfig(log *logrus.Entry, configLanguage string) (*TranslationSet, error) {
 	if configLanguage == "auto" {
 		language := detectLanguage(jibber_jabber.DetectLanguage)
+
 		return NewTranslationSet(log, language), nil
 	}
 
-	for key := range GetTranslationSets() {
-		if key == configLanguage {
-			return NewTranslationSet(log, configLanguage), nil
-		}
+	if lo.Contains(getSupportedLanguages(), configLanguage) {
+		return NewTranslationSet(log, configLanguage), nil
 	}
 
 	return NewTranslationSet(log, "en"), errors.New("Language not found: " + configLanguage)
@@ -35,12 +32,9 @@ func NewTranslationSet(log *logrus.Entry, language string) *TranslationSet {
 	log.Info("language: " + language)
 
 	baseSet := englishSet()
+	otherSet := getTranslationSet(language)
 
-	for languageCode, translationSet := range GetTranslationSets() {
-		if strings.HasPrefix(language, languageCode) {
-			_ = mergo.Merge(&baseSet, translationSet, mergo.WithOverride)
-		}
-	}
+	_ = mergo.Merge(&baseSet, otherSet, mergo.WithOverride)
 
 	return &baseSet
 }
@@ -54,6 +48,40 @@ func GetTranslationSets() map[string]TranslationSet {
 		"tr": turkishSet(),
 		"en": englishSet(),
 		"fr": frenchSet(),
+	}
+}
+
+// getTranslationSet returns the translation set that matches the given language.
+//
+// It returns an english translation set if not found.
+func getTranslationSet(languageCode string) TranslationSet {
+	switch languageCode {
+	case "pl":
+		return polishSet()
+	case "nl":
+		return dutchSet()
+	case "de":
+		return germanSet()
+	case "tr":
+		return turkishSet()
+	case "en":
+		return englishSet()
+	case "fr":
+		return frenchSet()
+	}
+
+	return englishSet()
+}
+
+// getSupportedLanguages returns all the supported languages.
+func getSupportedLanguages() []string {
+	return []string{
+		"pl",
+		"nl",
+		"de",
+		"tr",
+		"en",
+		"fr",
 	}
 }
 
