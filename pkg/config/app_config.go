@@ -71,6 +71,7 @@ type UserConfig struct {
 type ThemeConfig struct {
 	ActiveBorderColor   []string `yaml:"activeBorderColor,omitempty"`
 	InactiveBorderColor []string `yaml:"inactiveBorderColor,omitempty"`
+	SelectedLineBgColor []string `yaml:"selectedLineBgColor,omitempty"`
 	OptionsTextColor    []string `yaml:"optionsTextColor,omitempty"`
 }
 
@@ -361,6 +362,7 @@ func GetDefaultConfig() UserConfig {
 			Theme: ThemeConfig{
 				ActiveBorderColor:   []string{"green", "bold"},
 				InactiveBorderColor: []string{"default"},
+				SelectedLineBgColor: []string{"blue"},
 				OptionsTextColor:    []string{"blue"},
 			},
 			ShowAllContainers:          false,

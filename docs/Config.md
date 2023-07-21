@@ -24,6 +24,8 @@ gui:
       - bold
     inactiveBorderColor:
       - white
+    selectedLineBgColor:
+      - blue
     optionsTextColor:
       - blue
   returnImmediately: false
