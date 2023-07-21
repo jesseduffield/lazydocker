@@ -74,7 +74,9 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 
 			return a.Name < b.Name
 		},
-		GetTableCells: presentation.GetServiceDisplayStrings,
+		GetTableCells: func(service *commands.Service) []string {
+			return presentation.GetServiceDisplayStrings(&gui.Config.UserConfig.Gui, service)
+		},
 		Hide: func() bool {
 			return !gui.DockerCommand.InDockerComposeProject
 		},

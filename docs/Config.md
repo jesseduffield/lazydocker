@@ -38,6 +38,10 @@ gui:
   expandFocusedSidePanel: false
   # Determines which screen mode will be used on startup
   screenMode: "normal" # one of 'normal' | 'half' | 'fullscreen'
+  # Determines the style of the container status and container health display in the
+  # containers panel. "long": full words (default), "short": one or two characters,
+  # "icon": unicode emoji.
+  containerStatusHealthStyle: "long"
 logs:
   timestamps: false
   since: '60m' # set to '' to show all logs
