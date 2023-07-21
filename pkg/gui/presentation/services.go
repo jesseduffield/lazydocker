@@ -3,13 +3,26 @@ package presentation
 import (
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
-func GetServiceDisplayStrings(service *commands.Service) []string {
+func GetServiceDisplayStrings(guiConfig *config.GuiConfig, service *commands.Service) []string {
 	if service.Container == nil {
+		var containerState string
+		switch guiConfig.ContainerStatusHealthStyle {
+		case "short":
+			containerState = "n"
+		case "icon":
+			containerState = "."
+		case "long":
+			fallthrough
+		default:
+			containerState = "none"
+		}
+
 		return []string{
-			utils.ColoredString("none", color.FgBlue),
+			utils.ColoredString(containerState, color.FgBlue),
 			"",
 			service.Name,
 			"",
@@ -20,8 +33,8 @@ func GetServiceDisplayStrings(service *commands.Service) []string {
 
 	container := service.Container
 	return []string{
-		getContainerDisplayStatus(container),
-		getContainerDisplaySubstatus(container),
+		getContainerDisplayStatus(guiConfig, container),
+		getContainerDisplaySubstatus(guiConfig, container),
 		service.Name,
 		getDisplayCPUPerc(container),
 		utils.ColoredString(displayPorts(container), color.FgYellow),

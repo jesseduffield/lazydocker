@@ -96,7 +96,9 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 
 			return true
 		},
-		GetTableCells: presentation.GetContainerDisplayStrings,
+		GetTableCells: func(container *commands.Container) []string {
+			return presentation.GetContainerDisplayStrings(&gui.Config.UserConfig.Gui, container)
+		},
 	}
 }
 

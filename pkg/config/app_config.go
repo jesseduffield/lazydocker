@@ -133,6 +133,11 @@ type GuiConfig struct {
 
 	// ScreenMode allow user to specify which screen mode will be used on startup
 	ScreenMode string `yaml:"screenMode,omitempty"`
+
+	// Determines the style of the container status and container health display in the
+	// containers panel. "long": full words (default), "short": one or two characters,
+	// "icon": unicode emoji.
+	ContainerStatusHealthStyle string `yaml:"containerStatusHealthStyle"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
@@ -358,14 +363,15 @@ func GetDefaultConfig() UserConfig {
 				InactiveBorderColor: []string{"default"},
 				OptionsTextColor:    []string{"blue"},
 			},
-			ShowAllContainers:      false,
-			ReturnImmediately:      false,
-			WrapMainPanel:          true,
-			LegacySortContainers:   false,
-			SidePanelWidth:         0.3333,
-			ShowBottomLine:         true,
-			ExpandFocusedSidePanel: false,
-			ScreenMode:             "normal",
+			ShowAllContainers:          false,
+			ReturnImmediately:          false,
+			WrapMainPanel:              true,
+			LegacySortContainers:       false,
+			SidePanelWidth:             0.3333,
+			ShowBottomLine:             true,
+			ExpandFocusedSidePanel:     false,
+			ScreenMode:                 "normal",
+			ContainerStatusHealthStyle: "long",
 		},
 		ConfirmOnQuit: false,
 		Logs: LogsConfig{

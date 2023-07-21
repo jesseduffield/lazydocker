@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
+	"github.com/mattn/go-runewidth"
 
 	// "github.com/jesseduffield/yaml"
 
@@ -41,10 +42,10 @@ func SplitLines(multilineString string) []string {
 // WithPadding pads a string as much as you want
 func WithPadding(str string, padding int) string {
 	uncoloredStr := Decolorise(str)
-	if padding < len(uncoloredStr) {
+	if padding < runewidth.StringWidth(uncoloredStr) {
 		return str
 	}
-	return str + strings.Repeat(" ", padding-len(uncoloredStr))
+	return str + strings.Repeat(" ", padding-runewidth.StringWidth(uncoloredStr))
 }
 
 // ColoredString takes a string and a colour attribute and returns a colored
@@ -143,54 +144,52 @@ func Max(x, y int) int {
 }
 
 // RenderTable takes an array of string arrays and returns a table containing the values
-func RenderTable(stringArrays [][]string) (string, error) {
-	if len(stringArrays) == 0 {
+func RenderTable(rows [][]string) (string, error) {
+	if len(rows) == 0 {
 		return "", nil
 	}
-	if !displayArraysAligned(stringArrays) {
+	if !displayArraysAligned(rows) {
 		return "", errors.New("Each item must return the same number of strings to display")
 	}
 
-	padWidths := getPadWidths(stringArrays)
-	paddedDisplayStrings := getPaddedDisplayStrings(stringArrays, padWidths)
+	columnPadWidths := getPadWidths(rows)
+	paddedDisplayRows := getPaddedDisplayStrings(rows, columnPadWidths)
 
-	return strings.Join(paddedDisplayStrings, "\n"), nil
+	return strings.Join(paddedDisplayRows, "\n"), nil
 }
 
 // Decolorise strips a string of color
 func Decolorise(str string) string {
-	re := regexp.MustCompile(`\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]`)
+	re := regexp.MustCompile(`\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mK]`)
 	return re.ReplaceAllString(str, "")
 }
 
-func getPadWidths(stringArrays [][]string) []int {
-	if len(stringArrays[0]) <= 1 {
+func getPadWidths(rows [][]string) []int {
+	if len(rows[0]) <= 1 {
 		return []int{}
 	}
-	padWidths := make([]int, len(stringArrays[0])-1)
-	for i := range padWidths {
-		for _, strings := range stringArrays {
-			uncoloredString := Decolorise(strings[i])
-			if len(uncoloredString) > padWidths[i] {
-				padWidths[i] = len(uncoloredString)
+	columnPadWidths := make([]int, len(rows[0])-1)
+	for i := range columnPadWidths {
+		for _, cells := range rows {
+			uncoloredCell := Decolorise(cells[i])
+
+			if runewidth.StringWidth(uncoloredCell) > columnPadWidths[i] {
+				columnPadWidths[i] = runewidth.StringWidth(uncoloredCell)
 			}
 		}
 	}
-	return padWidths
+	return columnPadWidths
 }
 
-func getPaddedDisplayStrings(stringArrays [][]string, padWidths []int) []string {
-	paddedDisplayStrings := make([]string, len(stringArrays))
-	for i, stringArray := range stringArrays {
-		if len(stringArray) == 0 {
-			continue
+func getPaddedDisplayStrings(rows [][]string, columnPadWidths []int) []string {
+	paddedDisplayRows := make([]string, len(rows))
+	for i, cells := range rows {
+		for j, columnPadWidth := range columnPadWidths {
+			paddedDisplayRows[i] += WithPadding(cells[j], columnPadWidth) + " "
 		}
-		for j, padWidth := range padWidths {
-			paddedDisplayStrings[i] += WithPadding(stringArray[j], padWidth) + " "
-		}
-		paddedDisplayStrings[i] += stringArray[len(padWidths)]
+		paddedDisplayRows[i] += cells[len(columnPadWidths)]
 	}
-	return paddedDisplayStrings
+	return paddedDisplayRows
 }
 
 // displayArraysAligned returns true if every string array returned from our
