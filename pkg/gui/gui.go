@@ -85,7 +85,7 @@ type guiState struct {
 	// if true, we show containers with an 'exited' status in the containers panel
 	ShowExitedContainers bool
 
-	ScreenMode WindowMaximisation
+	ScreenMode ScreenMode
 
 	// Maintains the state of manual filtering i.e. typing in a substring
 	// to filter on in the current panel.
@@ -106,10 +106,10 @@ type filterState struct {
 // as in panel, not your terminal's window). Sometimes you want a bit more space
 // to see the contents of a panel, and this keeps track of how much maximisation
 // you've set
-type WindowMaximisation int
+type ScreenMode int
 
 const (
-	SCREEN_NORMAL WindowMaximisation = iota
+	SCREEN_NORMAL ScreenMode = iota
 	SCREEN_HALF
 	SCREEN_FULL
 )
@@ -291,6 +291,8 @@ func (gui *Gui) setPanels() {
 		Networks:   gui.getNetworksPanel(),
 		Menu:       gui.getMenuPanel(),
 	}
+
+	gui.setSidePanelHeaders()
 }
 
 func (gui *Gui) updateContainerDetails() error {

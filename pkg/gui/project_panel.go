@@ -69,6 +69,7 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 		GetTableCells: presentation.GetProjectDisplayStrings,
 		// It doesn't make sense to filter a list of only one item.
 		DisableFilter: true,
+		Title:         gui.Tr.ProjectTitle,
 	}
 }
 

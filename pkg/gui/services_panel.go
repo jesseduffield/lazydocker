@@ -78,6 +78,7 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 		Hide: func() bool {
 			return !gui.DockerCommand.InDockerComposeProject
 		},
+		Title: gui.Tr.ServicesTitle,
 	}
 }
 
