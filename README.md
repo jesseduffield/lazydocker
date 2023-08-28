@@ -92,8 +92,8 @@ asdf plugin add lazydocker https://github.com/comdotlinux/asdf-lazydocker.git
 #### For Install / Upgrade
 ```sh
 asdf list all lazydocker
-asdf install lazydocker 0.12
-asdf global lazydocker 0.12
+asdf install lazydocker latest
+asdf global lazydocker latest
 ```
 
 ### Binary Release (Linux/OSX/Windows)
