@@ -1,7 +1,7 @@
 package i18n
 
 func portugueseSet() TranslationSet {
-	return TranslationSet {
+	return TranslationSet{
 		PruningStatus:              "destruindo",
 		RemovingStatus:             "removendo",
 		RestartingStatus:           "reiniciando",
@@ -19,7 +19,7 @@ func portugueseSet() TranslationSet {
 		ErrorOccurred:                     "Um erro ocorreu! Por favor, crie uma issue em https://github.com/jesseduffield/lazydocker/issues",
 		ConnectionFailed:                  "Falha na conexão com o cliente Docker. Você pode precisar reiniciar o seu cliente Docker",
 		UnattachableContainerError:        "O contêiner não suporta anexação. Você deve executar o serviço com a flag '-it' ou usar `stdin_open: true, tty: true` no arquivo docker-compose.yml",
-		WaitingForContainerInfo:    	   "Não é possível prosseguir até que o Docker forneça mais informações sobre o contêiner. Por favor, tente novamente em alguns momentos.",
+		WaitingForContainerInfo:           "Não é possível prosseguir até que o Docker forneça mais informações sobre o contêiner. Por favor, tente novamente em alguns momentos.",
 		CannotAttachStoppedContainerError: "Você não pode anexar a um contêiner parado, você precisa iniciá-lo primeiro (o que você pode fazer com a tecla 'r') (sim, sou preguiçoso demais para fazer isso automaticamente para você) (aliás, bem legal que eu posso me comunicar diretamente com você na forma de uma mensagem de erro)",
 		CannotAccessDockerSocketError:     "Não é possível acessar o sôquete docker em: unix:///var/run/docker.sock\nExecute o lazydocker como root ou leia https://docs.docker.com/install/linux/linux-postinstall/",
 		CannotKillChildError:              "Três segundos foram esperarados para que os processos filhos parassem. Pode haver um processo órfão que continua em execução em seu sistema.",
@@ -93,7 +93,7 @@ func portugueseSet() TranslationSet {
 		BulkCommandTitle:          "Comando em Massa:",
 		ErrorTitle:                "Erro",
 		LogsTitle:                 "Registros",
-		ConfigTitle:               "Config",	
+		ConfigTitle:               "Config",
 		EnvTitle:                  "Env",
 		DockerComposeConfigTitle:  "Docker-Compose Config",
 		TopTitle:                  "Topo",
