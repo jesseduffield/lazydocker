@@ -101,7 +101,7 @@ func (gui *Gui) createAllViews() error {
 		(*mapping.viewPtr).FgColor = gocui.ColorDefault
 	}
 
-        selectedLineBgColor := GetGocuiStyle(gui.Config.UserConfig.Gui.Theme.SelectedLineBgColor)
+	selectedLineBgColor := GetGocuiStyle(gui.Config.UserConfig.Gui.Theme.SelectedLineBgColor)
 
 	gui.Views.Main.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 	// when you run a docker container with the -it flags (interactive mode) it adds carriage returns for some reason. This is not docker's fault, it's an os-level default.
