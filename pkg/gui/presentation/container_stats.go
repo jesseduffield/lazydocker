@@ -1,7 +1,6 @@
 package presentation
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
@@ -38,7 +37,7 @@ func RenderStats(userConfig *config.UserConfig, container *commands.Container, v
 	dataReceived := fmt.Sprintf("Traffic received: %s", utils.FormatDecimalBytes(stats.ClientStats.Networks.Eth0.RxBytes))
 	dataSent := fmt.Sprintf("Traffic sent: %s", utils.FormatDecimalBytes(stats.ClientStats.Networks.Eth0.TxBytes))
 
-	originalJSON, err := json.MarshalIndent(stats, "", "  ")
+	originalStats, err := utils.MarshalIntoYaml(stats)
 	if err != nil {
 		return "", err
 	}
@@ -48,7 +47,7 @@ func RenderStats(userConfig *config.UserConfig, container *commands.Container, v
 		pidsCount,
 		dataReceived,
 		dataSent,
-		string(originalJSON),
+		utils.ColoredYamlString(string(originalStats)),
 	)
 
 	return contents, nil

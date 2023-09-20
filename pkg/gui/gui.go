@@ -114,6 +114,19 @@ const (
 	SCREEN_FULL
 )
 
+func getScreenMode(config *config.AppConfig) WindowMaximisation {
+	switch config.UserConfig.Gui.ScreenMode {
+	case "normal":
+		return SCREEN_NORMAL
+	case "half":
+		return SCREEN_HALF
+	case "fullscreen":
+		return SCREEN_FULL
+	default:
+		return SCREEN_NORMAL
+	}
+}
+
 // NewGui builds a new gui handler
 func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
 	initialState := guiState{
@@ -126,6 +139,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		ViewStack: []string{},
 
 		ShowExitedContainers: true,
+		ScreenMode:           getScreenMode(config),
 	}
 
 	gui := &Gui{

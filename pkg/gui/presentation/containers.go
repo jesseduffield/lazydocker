@@ -9,14 +9,15 @@ import (
 	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
 
-func GetContainerDisplayStrings(container *commands.Container) []string {
+func GetContainerDisplayStrings(guiConfig *config.GuiConfig, container *commands.Container) []string {
 	return []string{
-		getContainerDisplayStatus(container),
-		getContainerDisplaySubstatus(container),
+		getContainerDisplayStatus(guiConfig, container),
+		getContainerDisplaySubstatus(guiConfig, container),
 		container.Name,
 		getDisplayCPUPerc(container),
 		utils.ColoredString(displayPorts(container), color.FgYellow),
@@ -52,12 +53,44 @@ func displayPorts(c *commands.Container) string {
 }
 
 // getContainerDisplayStatus returns the colored status of the container
-func getContainerDisplayStatus(c *commands.Container) string {
-	return utils.ColoredString(c.Container.State, getContainerColor(c))
+func getContainerDisplayStatus(guiConfig *config.GuiConfig, c *commands.Container) string {
+	shortStatusMap := map[string]string{
+		"paused":     "P",
+		"exited":     "X",
+		"created":    "C",
+		"removing":   "RM",
+		"restarting": "RS",
+		"running":    "R",
+		"dead":       "D",
+	}
+
+	iconStatusMap := map[string]rune{
+		"paused":     '◫',
+		"exited":     '⨯',
+		"created":    '+',
+		"removing":   '−',
+		"restarting": '⟳',
+		"running":    '▶',
+		"dead":       '!',
+	}
+
+	var containerState string
+	switch guiConfig.ContainerStatusHealthStyle {
+	case "short":
+		containerState = shortStatusMap[c.Container.State]
+	case "icon":
+		containerState = string(iconStatusMap[c.Container.State])
+	case "long":
+		fallthrough
+	default:
+		containerState = c.Container.State
+	}
+
+	return utils.ColoredString(containerState, getContainerColor(c))
 }
 
 // GetDisplayStatus returns the exit code if the container has exited, and the health status if the container is running (and has a health check)
-func getContainerDisplaySubstatus(c *commands.Container) string {
+func getContainerDisplaySubstatus(guiConfig *config.GuiConfig, c *commands.Container) string {
 	if !c.DetailsLoaded() {
 		return ""
 	}
@@ -68,13 +101,13 @@ func getContainerDisplaySubstatus(c *commands.Container) string {
 			fmt.Sprintf("(%s)", strconv.Itoa(c.Details.State.ExitCode)), getContainerColor(c),
 		)
 	case "running":
-		return getHealthStatus(c)
+		return getHealthStatus(guiConfig, c)
 	default:
 		return ""
 	}
 }
 
-func getHealthStatus(c *commands.Container) string {
+func getHealthStatus(guiConfig *config.GuiConfig, c *commands.Container) string {
 	if !c.DetailsLoaded() {
 		return ""
 	}
@@ -88,8 +121,32 @@ func getHealthStatus(c *commands.Container) string {
 	if c.Details.State.Health == nil {
 		return ""
 	}
-	healthStatus := c.Details.State.Health.Status
-	if healthStatusColor, ok := healthStatusColorMap[healthStatus]; ok {
+
+	shortHealthStatusMap := map[string]string{
+		"healthy":   "H",
+		"unhealthy": "U",
+		"starting":  "S",
+	}
+
+	iconHealthStatusMap := map[string]rune{
+		"healthy":   '✔',
+		"unhealthy": '?',
+		"starting":  '…',
+	}
+
+	var healthStatus string
+	switch guiConfig.ContainerStatusHealthStyle {
+	case "short":
+		healthStatus = shortHealthStatusMap[c.Details.State.Health.Status]
+	case "icon":
+		healthStatus = string(iconHealthStatusMap[c.Details.State.Health.Status])
+	case "long":
+		fallthrough
+	default:
+		healthStatus = c.Details.State.Health.Status
+	}
+
+	if healthStatusColor, ok := healthStatusColorMap[c.Details.State.Health.Status]; ok {
 		return utils.ColoredString(fmt.Sprintf("(%s)", healthStatus), healthStatusColor)
 	}
 	return ""

@@ -71,6 +71,7 @@ type UserConfig struct {
 type ThemeConfig struct {
 	ActiveBorderColor   []string `yaml:"activeBorderColor,omitempty"`
 	InactiveBorderColor []string `yaml:"inactiveBorderColor,omitempty"`
+	SelectedLineBgColor []string `yaml:"selectedLineBgColor,omitempty"`
 	OptionsTextColor    []string `yaml:"optionsTextColor,omitempty"`
 }
 
@@ -130,6 +131,14 @@ type GuiConfig struct {
 	// When true, increases vertical space used by focused side panel,
 	// creating an accordion effect
 	ExpandFocusedSidePanel bool `yaml:"expandFocusedSidePanel"`
+
+	// ScreenMode allow user to specify which screen mode will be used on startup
+	ScreenMode string `yaml:"screenMode,omitempty"`
+
+	// Determines the style of the container status and container health display in the
+	// containers panel. "long": full words (default), "short": one or two characters,
+	// "icon": unicode emoji.
+	ContainerStatusHealthStyle string `yaml:"containerStatusHealthStyle"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
@@ -353,15 +362,18 @@ func GetDefaultConfig() UserConfig {
 			Theme: ThemeConfig{
 				ActiveBorderColor:   []string{"green", "bold"},
 				InactiveBorderColor: []string{"default"},
+				SelectedLineBgColor: []string{"blue"},
 				OptionsTextColor:    []string{"blue"},
 			},
-			ShowAllContainers:      false,
-			ReturnImmediately:      false,
-			WrapMainPanel:          true,
-			LegacySortContainers:   false,
-			SidePanelWidth:         0.3333,
-			ShowBottomLine:         true,
-			ExpandFocusedSidePanel: false,
+			ShowAllContainers:          false,
+			ReturnImmediately:          false,
+			WrapMainPanel:              true,
+			LegacySortContainers:       false,
+			SidePanelWidth:             0.3333,
+			ShowBottomLine:             true,
+			ExpandFocusedSidePanel:     false,
+			ScreenMode:                 "normal",
+			ContainerStatusHealthStyle: "long",
 		},
 		ConfirmOnQuit: false,
 		Logs: LogsConfig{

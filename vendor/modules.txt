@@ -14,7 +14,7 @@ github.com/cloudfoundry/jibber_jabber
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/docker/distribution v2.8.0+incompatible
+# github.com/docker/distribution v2.8.2+incompatible
 ## explicit
 github.com/docker/distribution/digestset
 github.com/docker/distribution/reference
@@ -47,8 +47,8 @@ github.com/docker/go-connections/tlsconfig
 # github.com/docker/go-units v0.4.0
 ## explicit
 github.com/docker/go-units
-# github.com/fatih/color v1.7.0
-## explicit
+# github.com/fatih/color v1.10.0
+## explicit; go 1.13
 github.com/fatih/color
 # github.com/gdamore/encoding v1.0.0
 ## explicit; go 1.9
@@ -97,6 +97,16 @@ github.com/gdamore/tcell/v2/terminfo/x/xterm_termite
 # github.com/go-errors/errors v1.4.2
 ## explicit; go 1.14
 github.com/go-errors/errors
+# github.com/goccy/go-yaml v1.11.0
+## explicit; go 1.18
+github.com/goccy/go-yaml
+github.com/goccy/go-yaml/ast
+github.com/goccy/go-yaml/internal/errors
+github.com/goccy/go-yaml/lexer
+github.com/goccy/go-yaml/parser
+github.com/goccy/go-yaml/printer
+github.com/goccy/go-yaml/scanner
+github.com/goccy/go-yaml/token
 # github.com/gogo/protobuf v1.3.2
 ## explicit; go 1.15
 github.com/gogo/protobuf/proto
@@ -131,10 +141,10 @@ github.com/konsorten/go-windows-terminal-sequences
 # github.com/lucasb-eyer/go-colorful v1.2.0
 ## explicit; go 1.12
 github.com/lucasb-eyer/go-colorful
-# github.com/mattn/go-colorable v0.1.4
-## explicit
+# github.com/mattn/go-colorable v0.1.8
+## explicit; go 1.13
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.11
+# github.com/mattn/go-isatty v0.0.12
 ## explicit; go 1.12
 github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.14
@@ -198,7 +208,7 @@ golang.org/x/exp/constraints
 ## explicit; go 1.11
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
-# golang.org/x/sys v0.1.0
+# golang.org/x/sys v0.6.0
 ## explicit; go 1.17
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9

@@ -18,9 +18,8 @@ func (gui *Gui) createCommandMenu(customCommands []config.CustomCommand, command
 				return command.InternalFunction()
 			}
 
-			resolvedCommand := command.Command
 			if command.Shell {
-				resolvedCommand = gui.OSCommand.NewCommandStringWithShell(command.Command)
+				resolvedCommand = gui.OSCommand.NewCommandStringWithShell(resolvedCommand)
 			}
 
 			// if we have a command for attaching, we attach and return the subprocess error
