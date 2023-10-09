@@ -27,3 +27,4 @@ linters-settings:
 
 run:
   go: '1.20'
+  timeout: 10m
