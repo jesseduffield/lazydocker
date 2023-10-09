@@ -56,6 +56,7 @@ func GetTranslationSets() map[string]TranslationSet {
 		"fr": frenchSet(),
 		"zh": chineseSet(),
 		"es": spanishSet(),
+		"pt": portugueseSet(),
 	}
 }
 
