@@ -6,7 +6,7 @@ require (
 	github.com/OpenPeeDeeP/xdg v0.2.1-0.20190312153938-4ba9e1eb294c
 	github.com/boz/go-throttle v0.0.0-20160922054636-fdc4eab740c1
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21
-	github.com/docker/docker v20.10.15+incompatible
+	github.com/docker/docker v23.0.3+incompatible
 	github.com/fatih/color v1.10.0
 	github.com/go-errors/errors v1.4.2
 	github.com/gookit/color v1.5.0
