@@ -1,6 +1,6 @@
 module github.com/jesseduffield/lazydocker
 
-go 1.18
+go 1.20
 
 require (
 	github.com/OpenPeeDeeP/xdg v0.2.1-0.20190312153938-4ba9e1eb294c
