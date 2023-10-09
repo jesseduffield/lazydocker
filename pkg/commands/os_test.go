@@ -90,7 +90,7 @@ func TestOSCommandEditFile(t *testing.T) {
 
 				assert.EqualValues(t, "nano", name)
 
-				return nil
+				return exec.Command("exit", "0")
 			},
 			func(env string) string {
 				if env == "VISUAL" {
@@ -112,7 +112,7 @@ func TestOSCommandEditFile(t *testing.T) {
 
 				assert.EqualValues(t, "emacs", name)
 
-				return nil
+				return exec.Command("exit", "0")
 			},
 			func(env string) string {
 				if env == "EDITOR" {
@@ -134,7 +134,7 @@ func TestOSCommandEditFile(t *testing.T) {
 
 				assert.EqualValues(t, "vi", name)
 
-				return nil
+				return exec.Command("exit", "0")
 			},
 			func(env string) string {
 				return ""
