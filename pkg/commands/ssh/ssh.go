@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/url"
 	"os"
@@ -37,7 +36,7 @@ func NewSSHHandler(oSCommand CmdKiller) *SSHHandler {
 			return (&net.Dialer{}).DialContext(ctx, network, addr)
 		},
 		startCmd: func(cmd *exec.Cmd) error { return cmd.Start() },
-		tempDir:  ioutil.TempDir,
+		tempDir:  os.MkdirTemp,
 		getenv:   os.Getenv,
 		setenv:   os.Setenv,
 	}

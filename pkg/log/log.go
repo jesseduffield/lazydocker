@@ -2,7 +2,7 @@ package log
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -54,7 +54,7 @@ func newDevelopmentLogger(config *config.AppConfig) *logrus.Logger {
 
 func newProductionLogger() *logrus.Logger {
 	log := logrus.New()
-	log.Out = ioutil.Discard
+	log.Out = io.Discard
 	log.SetLevel(logrus.ErrorLevel)
 	return log
 }

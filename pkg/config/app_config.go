@@ -13,7 +13,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -569,7 +568,7 @@ func loadUserConfig(configDir string, base *UserConfig) (*UserConfig, error) {
 		}
 	}
 
-	content, err := ioutil.ReadFile(fileName)
+	content, err := os.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}

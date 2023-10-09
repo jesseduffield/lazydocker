@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -240,7 +240,7 @@ func (c *OSCommand) AppendLineToFile(filename, line string) error {
 
 // CreateTempFile writes a string to a new temp file and returns the file's name
 func (c *OSCommand) CreateTempFile(filename, content string) (string, error) {
-	tmpfile, err := ioutil.TempFile("", filename)
+	tmpfile, err := os.CreateTemp("", filename)
 	if err != nil {
 		c.Log.Error(err)
 		return "", WrapError(err)
@@ -342,7 +342,7 @@ func (c *OSCommand) PipeCommands(commandStrings ...string) error {
 				c.Log.Error(err)
 			}
 
-			if b, err := ioutil.ReadAll(stderr); err == nil {
+			if b, err := io.ReadAll(stderr); err == nil {
 				if len(b) > 0 {
 					finalErrors = append(finalErrors, string(b))
 				}
