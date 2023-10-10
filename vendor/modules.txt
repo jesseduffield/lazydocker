@@ -30,7 +30,7 @@ github.com/docker/cli/cli/context/store
 ## explicit
 github.com/docker/distribution/digestset
 github.com/docker/distribution/reference
-# github.com/docker/docker v20.10.15+incompatible
+# github.com/docker/docker v20.10.27-0.20230918140811-29a0e76e6495+incompatible
 ## explicit
 github.com/docker/docker/api
 github.com/docker/docker/api/types
