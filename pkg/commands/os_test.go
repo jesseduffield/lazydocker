@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"testing"
@@ -90,7 +89,7 @@ func TestOSCommandEditFile(t *testing.T) {
 
 				assert.EqualValues(t, "nano", name)
 
-				return nil
+				return exec.Command("exit", "0")
 			},
 			func(env string) string {
 				if env == "VISUAL" {
@@ -112,7 +111,7 @@ func TestOSCommandEditFile(t *testing.T) {
 
 				assert.EqualValues(t, "emacs", name)
 
-				return nil
+				return exec.Command("exit", "0")
 			},
 			func(env string) string {
 				if env == "EDITOR" {
@@ -134,7 +133,7 @@ func TestOSCommandEditFile(t *testing.T) {
 
 				assert.EqualValues(t, "vi", name)
 
-				return nil
+				return exec.Command("exit", "0")
 			},
 			func(env string) string {
 				return ""
@@ -290,7 +289,7 @@ func TestOSCommandCreateTempFile(t *testing.T) {
 			func(path string, err error) {
 				assert.NoError(t, err)
 
-				content, err := ioutil.ReadFile(path)
+				content, err := os.ReadFile(path)
 				assert.NoError(t, err)
 
 				assert.Equal(t, "content", string(content))

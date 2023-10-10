@@ -2,7 +2,7 @@ package gui
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -65,8 +65,8 @@ func (gui *Gui) runCommand(cmd *exec.Cmd, msg string) {
 	}
 
 	cmd.Stdin = nil
-	cmd.Stdout = ioutil.Discard
-	cmd.Stderr = ioutil.Discard
+	cmd.Stdout = io.Discard
+	cmd.Stderr = io.Discard
 
 	gui.promptToReturn()
 }
