@@ -55,13 +55,19 @@ func (c *OSCommand) SetCommand(cmd func(string, ...string) *exec.Cmd) {
 	c.command = cmd
 }
 
-// RunCommandWithOutput wrapper around commands returning their output and error
-func (c *OSCommand) RunCommandWithOutput(command string) (string, error) {
+// RunCommandWithOutputFrom wrapper around commands returning their output and error
+func (c *OSCommand) RunCommandWithOutputFrom(command string, workingDir string) (string, error) {
 	cmd := c.ExecutableFromString(command)
 	before := time.Now()
+	cmd.Dir = workingDir
 	output, err := sanitisedCommandOutput(cmd.Output())
 	c.Log.Warn(fmt.Sprintf("'%s': %s", command, time.Since(before)))
 	return output, err
+}
+
+// RunCommandWithOutput wrapper around commands returning their output and error
+func (c *OSCommand) RunCommandWithOutput(command string) (string, error) {
+	return c.RunCommandWithOutputFrom(command, "")
 }
 
 // RunCommandWithOutput wrapper around commands returning their output and error
