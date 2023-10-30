@@ -4,8 +4,10 @@ import (
 	"context"
 	"net/http"
 	"path"
+	"strings"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/errdefs"
 )
 
@@ -60,6 +62,13 @@ func parsePingResponse(cli *Client, resp serverResponse) (types.Ping, error) {
 	}
 	if bv := resp.header.Get("Builder-Version"); bv != "" {
 		ping.BuilderVersion = types.BuilderVersion(bv)
+	}
+	if si := resp.header.Get("Swarm"); si != "" {
+		state, role, _ := strings.Cut(si, "/")
+		ping.SwarmStatus = &swarm.Status{
+			NodeState:        swarm.LocalNodeState(state),
+			ControlAvailable: role == "manager",
+		}
 	}
 	err := cli.checkResponseErr(resp)
 	return ping, errdefs.FromStatusCode(err, resp.statusCode)

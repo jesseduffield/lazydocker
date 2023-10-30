@@ -8,12 +8,13 @@ import (
 
 	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/api/types/swarm"
-	digest "github.com/opencontainers/go-digest"
+	"github.com/opencontainers/go-digest"
 	"github.com/pkg/errors"
 )
 
-// ServiceCreate creates a new Service.
+// ServiceCreate creates a new service.
 func (cli *Client) ServiceCreate(ctx context.Context, service swarm.ServiceSpec, options types.ServiceCreateOptions) (types.ServiceCreateResponse, error) {
 	var response types.ServiceCreateResponse
 	headers := map[string][]string{
@@ -21,7 +22,7 @@ func (cli *Client) ServiceCreate(ctx context.Context, service swarm.ServiceSpec,
 	}
 
 	if options.EncodedRegistryAuth != "" {
-		headers["X-Registry-Auth"] = []string{options.EncodedRegistryAuth}
+		headers[registry.AuthHeader] = []string{options.EncodedRegistryAuth}
 	}
 
 	// Make sure containerSpec is not nil when no runtime is set or the runtime is set to container
