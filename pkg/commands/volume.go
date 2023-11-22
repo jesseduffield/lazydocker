@@ -17,6 +17,7 @@ type Volume struct {
 	OSCommand     *OSCommand
 	Log           *logrus.Entry
 	DockerCommand LimitedDockerCommand
+	CreatedAt     string
 }
 
 // RefreshVolumes gets the volumes and stores them
@@ -38,6 +39,7 @@ func (c *DockerCommand) RefreshVolumes() ([]*Volume, error) {
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,
 			DockerCommand: c,
+			CreatedAt:     volume.CreatedAt,
 		}
 	}
 

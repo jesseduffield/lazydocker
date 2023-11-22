@@ -66,6 +66,7 @@ func (gui *Gui) volumeConfigStr(volume *commands.Volume) string {
 	output += utils.WithPadding("Mountpoint: ", padding) + volume.Volume.Mountpoint + "\n"
 	output += utils.WithPadding("Labels: ", padding) + utils.FormatMap(padding, volume.Volume.Labels) + "\n"
 	output += utils.WithPadding("Options: ", padding) + utils.FormatMap(padding, volume.Volume.Options) + "\n"
+	output += utils.WithPadding("CreatedAt: ", padding) + volume.Volume.CreatedAt + "\n"
 
 	output += utils.WithPadding("Status: ", padding)
 	if volume.Volume.Status != nil {
