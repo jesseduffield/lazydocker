@@ -7,7 +7,7 @@ require (
 	github.com/boz/go-throttle v0.0.0-20160922054636-fdc4eab740c1
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21
 	github.com/docker/cli v20.10.15+incompatible
-	github.com/docker/docker v20.10.27-0.20230918140811-29a0e76e6495+incompatible
+	github.com/docker/docker v20.10.27+incompatible
 	github.com/fatih/color v1.10.0
 	github.com/go-errors/errors v1.4.2
 	github.com/gookit/color v1.5.0
