@@ -98,6 +98,13 @@ You can install `lazydocker` using [Chocolatey](https://chocolatey.org/):
 ```sh
 choco install lazydocker
 ```
+### Winget (Windows 10 1709 or later)
+You can install `lazydocker` using [Winget](https://github.com/microsoft/winget-cli):
+
+```sh
+winget install BastianPedersen.lazydocker
+```
+See [https://github.com/jesseduffield/lazydocker/issues/380#issuecomment-1891838998 for an explanation of the package name.
 ### asdf-vm
 
 You can install [asdf-lazydocker plugin](https://github.com/comdotlinux/asdf-lazydocker) using [asdf-vm](https://asdf-vm.com/):
