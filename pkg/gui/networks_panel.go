@@ -67,7 +67,7 @@ func (gui *Gui) networkConfigStr(network *commands.Network) string {
 	if len(network.Network.Containers) > 0 {
 		output += "\n"
 		for _, v := range network.Network.Containers {
-			output += utils.FormatMapItem(padding, v.Name, v.EndpointID)
+			output += utils.FormatMapItem(padding, v.Name, v.IPv4Address)
 		}
 	} else {
 		output += "none\n"
