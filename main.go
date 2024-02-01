@@ -26,8 +26,9 @@ var (
 	date        string
 	buildSource = "unknown"
 
-	configFlag    = false
-	debuggingFlag = false
+	configFlag           = false
+	debuggingFlag        = false
+	projectName   string = ""
 	composeFiles  []string
 )
 
@@ -51,6 +52,7 @@ func main() {
 	flaggy.Bool(&configFlag, "c", "config", "Print the current default config")
 	flaggy.Bool(&debuggingFlag, "d", "debug", "a boolean")
 	flaggy.StringSlice(&composeFiles, "f", "file", "Specify alternate compose files")
+	flaggy.String(&projectName, "p", "project", "Specify a custom project name")
 	flaggy.SetVersion(info)
 
 	flaggy.Parse()
@@ -71,7 +73,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, composeFiles, projectDir)
+	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, composeFiles, projectDir, projectName)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
