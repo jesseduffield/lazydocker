@@ -78,12 +78,15 @@ func (gui *Gui) refreshProject() error {
 }
 
 func (gui *Gui) getProjectName() string {
-	projectName := path.Base(gui.Config.ProjectDir)
-	if gui.DockerCommand.InDockerComposeProject {
-		for _, service := range gui.Panels.Services.List.GetAllItems() {
-			container := service.Container
-			if container != nil && container.DetailsLoaded() {
-				return container.Details.Config.Labels["com.docker.compose.project"]
+	projectName := gui.Config.ProjectName
+	if projectName == "" {
+		projectName = path.Base(gui.Config.ProjectDir)
+		if gui.DockerCommand.InDockerComposeProject {
+			for _, service := range gui.Panels.Services.List.GetAllItems() {
+				container := service.Container
+				if container != nil && container.DetailsLoaded() {
+					return container.Details.Config.Labels["com.docker.compose.project"]
+				}
 			}
 		}
 	}

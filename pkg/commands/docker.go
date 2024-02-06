@@ -16,6 +16,7 @@ import (
 	ddocker "github.com/docker/cli/cli/context/docker"
 	ctxstore "github.com/docker/cli/cli/context/store"
 	dockerTypes "github.com/docker/docker/api/types"
+	dockerFilters "github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/imdario/mergo"
 	"github.com/jesseduffield/lazydocker/pkg/commands/ssh"
@@ -199,7 +200,11 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 	c.ContainerMutex.Lock()
 	defer c.ContainerMutex.Unlock()
 
-	containers, err := c.Client.ContainerList(context.Background(), dockerTypes.ContainerListOptions{All: true})
+	filters := dockerFilters.NewArgs()
+	if c.Config.ProjectName != "" {
+		filters.Add("label", "com.docker.compose.project="+c.Config.ProjectName)
+	}
+	containers, err := c.Client.ContainerList(context.Background(), dockerTypes.ContainerListOptions{All: true, Filters: filters})
 	if err != nil {
 		return nil, err
 	}

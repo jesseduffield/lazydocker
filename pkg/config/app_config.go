@@ -484,6 +484,7 @@ type AppConfig struct {
 	UserConfig  *UserConfig
 	ConfigDir   string
 	ProjectDir  string
+	ProjectName string
 }
 
 // NewAppConfig makes a new app config
@@ -516,6 +517,7 @@ func NewAppConfig(name, version, commit, date string, buildSource string, debugg
 		UserConfig:  userConfig,
 		ConfigDir:   configDir,
 		ProjectDir:  projectDir,
+		ProjectName: projectName,
 	}
 
 	return appConfig, nil
