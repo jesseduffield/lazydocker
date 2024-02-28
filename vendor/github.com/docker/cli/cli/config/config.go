@@ -19,7 +19,7 @@ const (
 	// ConfigFileName is the name of config file
 	ConfigFileName = "config.json"
 	configFileDir  = ".docker"
-	oldConfigfile  = ".dockercfg"
+	oldConfigfile  = ".dockercfg" // Deprecated: remove once we stop printing deprecation warning
 	contextsDir    = "contexts"
 )
 
@@ -84,16 +84,6 @@ func Path(p ...string) (string, error) {
 	return path, nil
 }
 
-// LegacyLoadFromReader is a convenience function that creates a ConfigFile object from
-// a non-nested reader
-func LegacyLoadFromReader(configData io.Reader) (*configfile.ConfigFile, error) {
-	configFile := configfile.ConfigFile{
-		AuthConfigs: make(map[string]types.AuthConfig),
-	}
-	err := configFile.LegacyLoadFromReader(configData)
-	return &configFile, err
-}
-
 // LoadFromReader is a convenience function that creates a ConfigFile object from
 // a reader
 func LoadFromReader(configData io.Reader) (*configfile.ConfigFile, error) {
@@ -140,12 +130,8 @@ func load(configDir string) (*configfile.ConfigFile, bool, error) {
 
 	// Can't find latest config file so check for the old one
 	filename = filepath.Join(getHomeDir(), oldConfigfile)
-	if file, err := os.Open(filename); err == nil {
+	if _, err := os.Stat(filename); err == nil {
 		printLegacyFileWarning = true
-		defer file.Close()
-		if err := configFile.LegacyLoadFromReader(file); err != nil {
-			return configFile, printLegacyFileWarning, errors.Wrap(err, filename)
-		}
 	}
 	return configFile, printLegacyFileWarning, nil
 }
@@ -158,7 +144,7 @@ func LoadDefaultConfigFile(stderr io.Writer) *configfile.ConfigFile {
 		fmt.Fprintf(stderr, "WARNING: Error loading config file: %v\n", err)
 	}
 	if printLegacyFileWarning {
-		_, _ = fmt.Fprintln(stderr, "WARNING: Support for the legacy ~/.dockercfg configuration file and file-format is deprecated and will be removed in an upcoming release")
+		_, _ = fmt.Fprintln(stderr, "WARNING: Support for the legacy ~/.dockercfg configuration file and file-format has been removed and the configuration file will be ignored")
 	}
 	if !configFile.ContainsAuth() {
 		configFile.CredentialsStore = credentials.DetectDefaultStore(configFile.CredentialsStore)

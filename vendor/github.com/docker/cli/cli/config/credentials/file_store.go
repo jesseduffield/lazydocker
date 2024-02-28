@@ -52,7 +52,8 @@ func (c *fileStore) GetAll() (map[string]types.AuthConfig, error) {
 
 // Store saves the given credentials in the file store.
 func (c *fileStore) Store(authConfig types.AuthConfig) error {
-	c.file.GetAuthConfigs()[authConfig.ServerAddress] = authConfig
+	authConfigs := c.file.GetAuthConfigs()
+	authConfigs[authConfig.ServerAddress] = authConfig
 	return c.file.Save()
 }
 
@@ -75,7 +76,6 @@ func ConvertToHostname(url string) string {
 		stripped = strings.TrimPrefix(url, "https://")
 	}
 
-	nameParts := strings.SplitN(stripped, "/", 2)
-
-	return nameParts[0]
+	hostName, _, _ := strings.Cut(stripped, "/")
+	return hostName
 }

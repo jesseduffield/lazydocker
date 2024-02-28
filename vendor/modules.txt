@@ -14,7 +14,7 @@ github.com/cloudfoundry/jibber_jabber
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/docker/cli v20.10.15+incompatible
+# github.com/docker/cli v23.0.10-0.20240125104041-672b1497b973+incompatible
 ## explicit
 github.com/docker/cli/cli/config
 github.com/docker/cli/cli/config/configfile
@@ -51,6 +51,8 @@ github.com/docker/docker/api/types/volume
 github.com/docker/docker/client
 github.com/docker/docker/errdefs
 github.com/docker/docker/pkg/homedir
+github.com/docker/docker/pkg/ioutils
+github.com/docker/docker/pkg/longpath
 github.com/docker/docker/pkg/stdcopy
 # github.com/docker/docker-credential-helpers v0.8.0
 ## explicit; go 1.19
