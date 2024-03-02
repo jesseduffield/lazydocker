@@ -126,7 +126,7 @@ The script installs downloaded binary to `$HOME/.local/bin` directory by default
 
 ### Go
 
-Required Go Version >= **1.16**
+Required Go Version >= **1.19**
 
 ```sh
 go install github.com/jesseduffield/lazydocker@latest
