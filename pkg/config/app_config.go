@@ -138,6 +138,10 @@ type GuiConfig struct {
 	// containers panel. "long": full words (default), "short": one or two characters,
 	// "icon": unicode emoji.
 	ContainerStatusHealthStyle string `yaml:"containerStatusHealthStyle"`
+
+	// Window border style.
+	// One of 'single' (default) | 'rounded' | 'double' | 'hidden'
+	Border string `yaml:"border"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
