@@ -33,6 +33,7 @@ to the top of your config file or via [Visual Studio Code settings.json config][
 gui:
   scrollHeight: 2
   language: 'auto' # one of 'auto' | 'en' | 'pl' | 'nl' | 'de' | 'tr'
+  border: 'single' # one of 'single' | 'rounded' | 'double' | 'hidden'
   theme:
     activeBorderColor:
       - green
