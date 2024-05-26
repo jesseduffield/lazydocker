@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	cliconfig "github.com/docker/cli/cli/config"
@@ -209,7 +210,7 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 	for i, container := range containers {
 		var newContainer *Container
 
-		// check if we already data stored against the container
+		// check if we already have data stored against the container
 		for _, existingContainer := range existingContainers {
 			if existingContainer.ID == container.ID {
 				newContainer = existingContainer
@@ -243,6 +244,8 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 
 		ownContainers[i] = newContainer
 	}
+
+	c.SetContainerDetails(ownContainers)
 
 	return ownContainers, nil
 }
@@ -278,22 +281,33 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	return services, nil
 }
 
-// UpdateContainerDetails attaches the details returned from docker inspect to each of the containers
-// this contains a bit more info than what you get from the go-docker client
-func (c *DockerCommand) UpdateContainerDetails(containers []*Container) error {
+func (c *DockerCommand) RefreshContainerDetails(containers []*Container) error {
 	c.ContainerMutex.Lock()
 	defer c.ContainerMutex.Unlock()
 
-	for _, container := range containers {
-		details, err := c.Client.ContainerInspect(context.Background(), container.ID)
-		if err != nil {
-			c.Log.Error(err)
-		} else {
-			container.Details = details
-		}
-	}
+	c.SetContainerDetails(containers)
 
 	return nil
+}
+
+// Attaches the details returned from docker inspect to each of the containers
+// this contains a bit more info than what you get from the go-docker client
+func (c *DockerCommand) SetContainerDetails(containers []*Container) {
+	wg := sync.WaitGroup{}
+	for _, container := range containers {
+		container := container
+		wg.Add(1)
+		go func() {
+			details, err := c.Client.ContainerInspect(context.Background(), container.ID)
+			if err != nil {
+				c.Log.Error(err)
+			} else {
+				container.Details = details
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 }
 
 // ViewAllLogs attaches to a subprocess viewing all the logs from docker-compose

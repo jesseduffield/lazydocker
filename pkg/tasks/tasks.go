@@ -65,9 +65,12 @@ func (t *TaskManager) NewTask(f func(ctx context.Context)) error {
 
 		t.waitingMutex.Lock()
 		defer t.waitingMutex.Unlock()
+		t.taskIDMutex.Lock()
 		if taskID < t.newTaskId {
+			t.taskIDMutex.Unlock()
 			return
 		}
+		t.taskIDMutex.Unlock()
 
 		ctx, cancel := context.WithCancel(context.Background())
 		notifyStopped := make(chan struct{})
