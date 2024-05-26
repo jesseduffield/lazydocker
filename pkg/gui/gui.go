@@ -176,11 +176,9 @@ func (gui *Gui) goEvery(interval time.Duration, function func() error) {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 		for range ticker.C {
-			if gui.PauseBackgroundThreads {
-				return
+			if !gui.PauseBackgroundThreads {
+				_ = function()
 			}
-
-			_ = function()
 		}
 	}()
 }
