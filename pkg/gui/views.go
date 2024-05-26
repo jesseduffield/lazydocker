@@ -92,12 +92,12 @@ func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
 }
 
 func (gui *Gui) createAllViews() error {
-	frameRunes := []rune{'─', '│', '┌', '┐', '└', '┘'}
+	frameRunes := []rune{'─', '│', '╭', '╮', '╰', '╯'}
 	switch gui.Config.UserConfig.Gui.Border {
+	case "single":
+		frameRunes = []rune{'─', '│', '┌', '┐', '└', '┘'}
 	case "double":
 		frameRunes = []rune{'═', '║', '╔', '╗', '╚', '╝'}
-	case "rounded":
-		frameRunes = []rune{'─', '│', '╭', '╮', '╰', '╯'}
 	case "hidden":
 		frameRunes = []rune{' ', ' ', ' ', ' ', ' ', ' '}
 	}
