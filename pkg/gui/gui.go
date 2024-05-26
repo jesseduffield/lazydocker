@@ -23,9 +23,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// OverlappingEdges determines if panel edges overlap
-var OverlappingEdges = false
-
 // Gui wraps the gocui Gui object which handles rendering and events
 type Gui struct {
 	g             *gocui.Gui
@@ -188,7 +185,10 @@ func (gui *Gui) Run() error {
 	// closing our task manager which in turn closes the current task if there is any, so we aren't leaving processes lying around after closing lazydocker
 	defer gui.taskManager.Close()
 
-	g, err := gocui.NewGui(gocui.OutputTrue, OverlappingEdges, gocui.NORMAL, false, map[rune]string{})
+	g, err := gocui.NewGui(gocui.NewGuiOpts{
+		OutputMode:       gocui.OutputTrue,
+		RuneReplacements: map[rune]string{},
+	})
 	if err != nil {
 		return err
 	}
@@ -496,7 +496,11 @@ func (gui *Gui) monitorContainerStats(ctx context.Context) {
 // and panels to exist for us to know what keybindings there are, so we invoke
 // gocui in headless mode and create them.
 func (gui *Gui) SetupFakeGui() {
-	g, err := gocui.NewGui(gocui.OutputTrue, false, gocui.NORMAL, true, map[rune]string{})
+	g, err := gocui.NewGui(gocui.NewGuiOpts{
+		OutputMode:       gocui.OutputTrue,
+		RuneReplacements: map[rune]string{},
+		Headless:         true,
+	})
 	if err != nil {
 		panic(err)
 	}

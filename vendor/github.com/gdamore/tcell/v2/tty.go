@@ -50,7 +50,7 @@ type Tty interface {
 
 	// WindowSize is called to determine the terminal dimensions.  This might be determined
 	// by an ioctl or other means.
-	WindowSize() (width int, height int, err error)
+	WindowSize() (WindowSize, error)
 
 	io.ReadWriteCloser
 }

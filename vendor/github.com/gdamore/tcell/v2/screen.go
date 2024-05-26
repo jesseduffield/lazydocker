@@ -1,4 +1,4 @@
-// Copyright 2022 The TCell Authors
+// Copyright 2023 The TCell Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use file except in compliance with the License.
@@ -14,6 +14,8 @@
 
 package tcell
 
+import "sync"
+
 // Screen represents the physical (or emulated) screen.
 // This can be a terminal window or a physical console.  Platforms implement
 // this differently.
@@ -24,12 +26,13 @@ type Screen interface {
 	// Fini finalizes the screen also releasing resources.
 	Fini()
 
-	// Clear erases the screen.  The contents of any screen buffers
-	// will also be cleared.  This has the logical effect of
-	// filling the screen with spaces, using the global default style.
+	// Clear logically erases the screen.
+	// This is effectively a short-cut for Fill(' ', StyleDefault).
 	Clear()
 
 	// Fill fills the screen with the given character and style.
+	// The effect of filling the screen is not visible until Show
+	// is called (or Sync).
 	Fill(rune, Style)
 
 	// SetCell is an older API, and will be removed.  Please use
@@ -42,7 +45,7 @@ type Screen interface {
 	// and may not actually be what is displayed, but rather are what will
 	// be displayed if Show() or Sync() is called.  The width is the width
 	// in screen cells; most often this will be 1, but some East Asian
-	// characters require two cells.
+	// characters and emoji require two cells.
 	GetContent(x, y int) (primary rune, combining []rune, style Style, width int)
 
 	// SetContent sets the contents of the given cell location.  If
@@ -54,7 +57,7 @@ type Screen interface {
 	//
 	// The results are not displayed until Show() or Sync() is called.
 	//
-	// Note that wide (East Asian full width) runes occupy two cells,
+	// Note that wide (East Asian full width and emoji) runes occupy two cells,
 	// and attempts to place character at next cell to the right will have
 	// undefined effects.  Wide runes that are printed in the
 	// last column will be replaced with a single width space on output.
@@ -137,6 +140,12 @@ type Screen interface {
 
 	// DisablePaste disables bracketed paste mode.
 	DisablePaste()
+
+	// EnableFocus enables reporting of focus events, if your terminal supports it.
+	EnableFocus()
+
+	// DisableFocus disables reporting of focus events.
+	DisableFocus()
 
 	// HasMouse returns true if the terminal (apparently) supports a
 	// mouse.  Note that the return value of true doesn't guarantee that
@@ -248,6 +257,14 @@ type Screen interface {
 	// does not support application-initiated resizing, whereas the legacy terminal does.
 	// Also, some emulators can support this but may have it disabled by default.
 	SetSize(int, int)
+
+	// LockRegion sets or unsets a lock on a region of cells. A lock on a
+	// cell prevents the cell from being redrawn.
+	LockRegion(x, y, width, height int, lock bool)
+
+	// Tty returns the underlying Tty. If the screen is not a terminal, the
+	// returned bool will be false
+	Tty() (Tty, bool)
 }
 
 // NewScreen returns a default Screen suitable for the user's terminal
@@ -286,3 +303,164 @@ const (
 	CursorStyleBlinkingBar
 	CursorStyleSteadyBar
 )
+
+// screenImpl is a subset of Screen that can be used with baseScreen to formulate
+// a complete implementation of Screen.  See Screen for doc comments about methods.
+type screenImpl interface {
+	Init() error
+	Fini()
+	SetStyle(style Style)
+	ShowCursor(x int, y int)
+	HideCursor()
+	SetCursorStyle(CursorStyle)
+	Size() (width, height int)
+	EnableMouse(...MouseFlags)
+	DisableMouse()
+	EnablePaste()
+	DisablePaste()
+	EnableFocus()
+	DisableFocus()
+	HasMouse() bool
+	Colors() int
+	Show()
+	Sync()
+	CharacterSet() string
+	RegisterRuneFallback(r rune, subst string)
+	UnregisterRuneFallback(r rune)
+	CanDisplay(r rune, checkFallbacks bool) bool
+	Resize(int, int, int, int)
+	HasKey(Key) bool
+	Suspend() error
+	Resume() error
+	Beep() error
+	SetSize(int, int)
+	Tty() (Tty, bool)
+
+	// Following methods are not part of the Screen api, but are used for interaction with
+	// the common layer code.
+
+	// Locker locks the underlying data structures so that we can access them
+	// in a thread-safe way.
+	sync.Locker
+
+	// GetCells returns a pointer to the underlying CellBuffer that the implementation uses.
+	// Various methods will write to these for performance, but will use the lock to do so.
+	GetCells() *CellBuffer
+
+	// StopQ is closed when the screen is shut down via Fini.  It remains open if the screen
+	// is merely suspended.
+	StopQ() <-chan struct{}
+
+	// EventQ delivers events.  Events are posted to this by the screen in response to
+	// key presses, resizes, etc.  Application code receives events from this via the
+	// Screen.PollEvent, Screen.ChannelEvents APIs.
+	EventQ() chan Event
+}
+
+type baseScreen struct {
+	screenImpl
+}
+
+func (b *baseScreen) SetCell(x int, y int, style Style, ch ...rune) {
+	if len(ch) > 0 {
+		b.SetContent(x, y, ch[0], ch[1:], style)
+	} else {
+		b.SetContent(x, y, ' ', nil, style)
+	}
+}
+
+func (b *baseScreen) Clear() {
+	b.Fill(' ', StyleDefault)
+}
+
+func (b *baseScreen) Fill(r rune, style Style) {
+	cb := b.GetCells()
+	b.Lock()
+	cb.Fill(r, style)
+	b.Unlock()
+}
+
+func (b *baseScreen) SetContent(x, y int, mainc rune, combc []rune, st Style) {
+
+	cells := b.GetCells()
+	b.Lock()
+	cells.SetContent(x, y, mainc, combc, st)
+	b.Unlock()
+}
+
+func (b *baseScreen) GetContent(x, y int) (rune, []rune, Style, int) {
+	var primary rune
+	var combining []rune
+	var style Style
+	var width int
+	cells := b.GetCells()
+	b.Lock()
+	primary, combining, style, width = cells.GetContent(x, y)
+	b.Unlock()
+	return primary, combining, style, width
+}
+
+func (b *baseScreen) LockRegion(x, y, width, height int, lock bool) {
+	cells := b.GetCells()
+	b.Lock()
+	for j := y; j < (y + height); j += 1 {
+		for i := x; i < (x + width); i += 1 {
+			switch lock {
+			case true:
+				cells.LockCell(i, j)
+			case false:
+				cells.UnlockCell(i, j)
+			}
+		}
+	}
+	b.Unlock()
+}
+
+func (b *baseScreen) ChannelEvents(ch chan<- Event, quit <-chan struct{}) {
+	defer close(ch)
+	for {
+		select {
+		case <-quit:
+			return
+		case <-b.StopQ():
+			return
+		case ev := <-b.EventQ():
+			select {
+			case <-quit:
+				return
+			case <-b.StopQ():
+				return
+			case ch <- ev:
+			}
+		}
+	}
+}
+
+func (b *baseScreen) PollEvent() Event {
+	select {
+	case <-b.StopQ():
+		return nil
+	case ev := <-b.EventQ():
+		return ev
+	}
+}
+
+func (b *baseScreen) HasPendingEvent() bool {
+	return len(b.EventQ()) > 0
+}
+
+func (b *baseScreen) PostEventWait(ev Event) {
+	select {
+	case b.EventQ() <- ev:
+	case <-b.StopQ():
+	}
+}
+
+func (b *baseScreen) PostEvent(ev Event) error {
+	select {
+	case b.EventQ() <- ev:
+		return nil
+	default:
+		return ErrEventQFull
+	}
+}

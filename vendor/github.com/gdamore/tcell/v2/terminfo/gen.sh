@@ -1,3 +1,4 @@
+#!/bin/bash
 while read line
 do
         case "$line" in

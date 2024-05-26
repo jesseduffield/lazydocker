@@ -7,6 +7,7 @@
 package gui
 
 import (
+	"context"
 	"strings"
 
 	"github.com/fatih/color"
@@ -81,7 +82,7 @@ func (gui *Gui) prepareConfirmationPanel(title, prompt string, hasLoader bool) e
 	}
 	confirmationView.HasLoader = hasLoader
 	if hasLoader {
-		gui.g.StartTicking()
+		gui.g.StartTicking(context.Background()) // TODO cancel this
 	}
 	confirmationView.Title = title
 	confirmationView.Visible = true
