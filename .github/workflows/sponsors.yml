@@ -14,7 +14,7 @@ jobs:
       - name: Generate Sponsors 💖
         uses: JamesIves/github-sponsors-readme-action@v1.2.2
         with:
-          token: ${{ secrets.SPONSORS_TOKEN }}
+          token: ${{ secrets.TOKEN_GITHUB }}
           file: "README.md"
         if: ${{ github.repository == 'jesseduffield/lazydocker' }}
 
