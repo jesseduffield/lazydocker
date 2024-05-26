@@ -140,7 +140,9 @@ func (c *Container) RenderTop(ctx context.Context) (string, error) {
 	return utils.RenderTable(append([][]string{result.Titles}, result.Processes...))
 }
 
-// DetailsLoaded tells us whether we have yet loaded the details for a container. Because this is an asynchronous operation, sometimes we have the container before we have its details.
+// DetailsLoaded tells us whether we have yet loaded the details for a container.
+// Sometimes it takes some time for a container to have its details loaded
+// after it starts.
 func (c *Container) DetailsLoaded() bool {
 	return c.Details.ContainerJSONBase != nil
 }

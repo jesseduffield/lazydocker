@@ -294,7 +294,7 @@ func (gui *Gui) setPanels() {
 }
 
 func (gui *Gui) updateContainerDetails() error {
-	return gui.DockerCommand.UpdateContainerDetails(gui.Panels.Containers.List.GetAllItems())
+	return gui.DockerCommand.RefreshContainerDetails(gui.Panels.Containers.List.GetAllItems())
 }
 
 func (gui *Gui) refresh() {
