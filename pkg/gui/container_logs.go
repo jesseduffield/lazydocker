@@ -119,7 +119,24 @@ func (gui *Gui) writeContainerLogs(container *commands.Container, ctx context.Co
 	}
 	defer readCloser.Close()
 
-	if container.DetailsLoaded() && container.Details.Config.Tty {
+	if !container.DetailsLoaded() {
+		// loop until the details load or context is cancelled, using timer
+		ticker := time.NewTicker(time.Millisecond * 100)
+		defer ticker.Stop()
+	outer:
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-ticker.C:
+				if container.DetailsLoaded() {
+					break outer
+				}
+			}
+		}
+	}
+
+	if container.Details.Config.Tty {
 		_, err = io.Copy(writer, readCloser)
 		if err != nil {
 			return err
