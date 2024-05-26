@@ -114,8 +114,10 @@ func (gui *Gui) writeContainerLogs(container *commands.Container, ctx context.Co
 		Follow:     true,
 	})
 	if err != nil {
+		gui.Log.Error(err)
 		return err
 	}
+	defer readCloser.Close()
 
 	if container.DetailsLoaded() && container.Details.Config.Tty {
 		_, err = io.Copy(writer, readCloser)
