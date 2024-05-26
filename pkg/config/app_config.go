@@ -140,7 +140,7 @@ type GuiConfig struct {
 	ContainerStatusHealthStyle string `yaml:"containerStatusHealthStyle"`
 
 	// Window border style.
-	// One of 'single' (default) | 'rounded' | 'double' | 'hidden'
+	// One of 'rounded' (default) | 'single' | 'double' | 'hidden'
 	Border string `yaml:"border"`
 }
 

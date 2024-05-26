@@ -5,8 +5,6 @@
 package gocui
 
 import (
-	"time"
-
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
 )
@@ -31,6 +29,12 @@ var runeReplacements = map[rune]string{
 	'╰': "+",
 	'╯': "+",
 	'─': "-",
+	'═': "-",
+	'║': "|",
+	'╔': "+",
+	'╗': "+",
+	'╚': "+",
+	'╝': "+",
 
 	// using a hyphen here actually looks weird.
 	// We see these characters when in portrait mode
@@ -77,7 +81,7 @@ func registerRuneFallbacks(s tcell.Screen, additional map[rune]string) {
 }
 
 // tcellInitSimulation initializes tcell screen for use.
-func (g *Gui) tcellInitSimulation() error {
+func (g *Gui) tcellInitSimulation(width int, height int) error {
 	s := tcell.NewSimulationScreen("")
 	if e := s.Init(); e != nil {
 		return e
@@ -86,7 +90,7 @@ func (g *Gui) tcellInitSimulation() error {
 		Screen = s
 		// setting to a larger value than the typical terminal size
 		// so that during a test we're more likely to see an item to select in a view.
-		s.SetSize(100, 100)
+		s.SetSize(width, height)
 		s.Sync()
 		return nil
 	}
@@ -146,21 +150,24 @@ func setTcellFontEffectStyle(st tcell.Style, attr Attribute) tcell.Style {
 type gocuiEventType uint8
 
 // GocuiEvent represents events like a keys, mouse actions, or window resize.
-//  The 'Mod', 'Key' and 'Ch' fields are valid if 'Type' is 'eventKey'.
-//  The 'MouseX' and 'MouseY' fields are valid if 'Type' is 'eventMouse'.
-//  The 'Width' and 'Height' fields are valid if 'Type' is 'eventResize'.
-//  The 'Err' field is valid if 'Type' is 'eventError'.
+//
+//	The 'Mod', 'Key' and 'Ch' fields are valid if 'Type' is 'eventKey'.
+//	The 'MouseX' and 'MouseY' fields are valid if 'Type' is 'eventMouse'.
+//	The 'Width' and 'Height' fields are valid if 'Type' is 'eventResize'.
+//	The 'Focused' field is valid if 'Type' is 'eventFocus'.
+//	The 'Err' field is valid if 'Type' is 'eventError'.
 type GocuiEvent struct {
-	Type   gocuiEventType
-	Mod    Modifier
-	Key    Key
-	Ch     rune
-	Width  int
-	Height int
-	Err    error
-	MouseX int
-	MouseY int
-	N      int
+	Type    gocuiEventType
+	Mod     Modifier
+	Key     Key
+	Ch      rune
+	Width   int
+	Height  int
+	Err     error
+	MouseX  int
+	MouseY  int
+	Focused bool
+	N       int
 }
 
 // Event types.
@@ -169,6 +176,7 @@ const (
 	eventKey
 	eventResize
 	eventMouse
+	eventFocus
 	eventInterrupt
 	eventError
 	eventRaw
@@ -209,6 +217,29 @@ func (wrapper TcellKeyEventWrapper) toTcellEvent() tcell.Event {
 	return tcell.NewEventKey(wrapper.Key, wrapper.Ch, wrapper.Mod)
 }
 
+type TcellMouseEventWrapper struct {
+	Timestamp  int64
+	X          int
+	Y          int
+	ButtonMask tcell.ButtonMask
+	ModMask    tcell.ModMask
+}
+
+func NewTcellMouseEventWrapper(event *tcell.EventMouse, timestamp int64) *TcellMouseEventWrapper {
+	x, y := event.Position()
+	return &TcellMouseEventWrapper{
+		Timestamp:  timestamp,
+		X:          x,
+		Y:          y,
+		ButtonMask: event.Buttons(),
+		ModMask:    event.Modifiers(),
+	}
+}
+
+func (wrapper TcellMouseEventWrapper) toTcellEvent() tcell.Event {
+	return tcell.NewEventMouse(wrapper.X, wrapper.Y, wrapper.ButtonMask, wrapper.ModMask)
+}
+
 type TcellResizeEventWrapper struct {
 	Timestamp int64
 	Width     int
@@ -229,18 +260,16 @@ func (wrapper TcellResizeEventWrapper) toTcellEvent() tcell.Event {
 	return tcell.NewEventResize(wrapper.Width, wrapper.Height)
 }
 
-func (g *Gui) timeSinceStart() int64 {
-	return time.Since(g.StartTime).Nanoseconds() / 1e6
-}
-
 // pollEvent get tcell.Event and transform it into gocuiEvent
 func (g *Gui) pollEvent() GocuiEvent {
 	var tev tcell.Event
-	if g.PlayMode == REPLAYING || g.PlayMode == REPLAYING_NEW {
+	if g.playRecording {
 		select {
 		case ev := <-g.ReplayedEvents.Keys:
 			tev = (ev).toTcellEvent()
 		case ev := <-g.ReplayedEvents.Resizes:
+			tev = (ev).toTcellEvent()
+		case ev := <-g.ReplayedEvents.MouseEvents:
 			tev = (ev).toTcellEvent()
 		}
 	} else {
@@ -251,21 +280,9 @@ func (g *Gui) pollEvent() GocuiEvent {
 	case *tcell.EventInterrupt:
 		return GocuiEvent{Type: eventInterrupt}
 	case *tcell.EventResize:
-		if g.PlayMode == RECORDING {
-			g.Recording.ResizeEvents = append(
-				g.Recording.ResizeEvents, NewTcellResizeEventWrapper(tev, g.timeSinceStart()),
-			)
-		}
-
 		w, h := tev.Size()
 		return GocuiEvent{Type: eventResize, Width: w, Height: h}
 	case *tcell.EventKey:
-		if g.PlayMode == RECORDING {
-			g.Recording.KeyEvents = append(
-				g.Recording.KeyEvents, NewTcellKeyEventWrapper(tev, g.timeSinceStart()),
-			)
-		}
-
 		k := tev.Key()
 		ch := rune(0)
 		if k == tcell.KeyRune {
@@ -283,6 +300,14 @@ func (g *Gui) pollEvent() GocuiEvent {
 			mod = 0
 			ch = rune(0)
 			k = tcell.KeyCtrlSpace
+		} else if mod == tcell.ModShift && k == tcell.KeyUp {
+			mod = 0
+			ch = rune(0)
+			k = tcell.KeyF62
+		} else if mod == tcell.ModShift && k == tcell.KeyDown {
+			mod = 0
+			ch = rune(0)
+			k = tcell.KeyF63
 		} else if mod == tcell.ModCtrl || mod == tcell.ModShift {
 			// remove Ctrl or Shift if specified
 			// - shift - will be translated to the final code of rune
@@ -378,6 +403,11 @@ func (g *Gui) pollEvent() GocuiEvent {
 			Key:    mouseKey,
 			Ch:     0,
 			Mod:    mouseMod,
+		}
+	case *tcell.EventFocus:
+		return GocuiEvent{
+			Type:    eventFocus,
+			Focused: tev.Focused,
 		}
 	default:
 		return GocuiEvent{Type: eventNone}

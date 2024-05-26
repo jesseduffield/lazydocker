@@ -1,4 +1,4 @@
-// Copyright 2020 The TCell Authors
+// Copyright 2023 The TCell Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use file except in compliance with the License.
@@ -15,6 +15,7 @@
 package tcell
 
 import (
+	"fmt"
 	ic "image/color"
 	"strconv"
 )
@@ -838,6 +839,11 @@ const (
 	// ColorReset is used to indicate that the color should use the
 	// vanilla terminal colors.  (Basically go back to the defaults.)
 	ColorReset = ColorSpecial | iota
+
+	// ColorNone indicates that we should not change the color from
+	// whatever is already displayed.  This can only be used in limited
+	// circumstances.
+	ColorNone
 )
 
 // ColorNames holds the written names of colors. Useful to present a list of
@@ -1001,15 +1007,56 @@ func (c Color) IsRGB() bool {
 	return c&(ColorValid|ColorIsRGB) == (ColorValid | ColorIsRGB)
 }
 
+// CSS returns the CSS hex string ( #ABCDEF ) if valid
+// if not a valid color returns empty string
+func (c Color) CSS() string {
+	if !c.Valid() {
+		return ""
+	}
+	return fmt.Sprintf("#%06X", c.Hex())
+}
+
+// String implements fmt.Stringer to return either the
+// W3C name if it has one or the CSS hex string '#ABCDEF'
+func (c Color) String() string {
+	if !c.Valid() {
+		switch c {
+		case ColorNone:
+			return "none"
+		case ColorDefault:
+			return "default"
+		case ColorReset:
+			return "reset"
+		}
+		return ""
+	}
+	return c.Name(true)
+}
+
+// Name returns W3C name or an empty string if no arguments
+// if passed true as an argument it will falls back to
+// the CSS hex string if no W3C name found '#ABCDEF'
+func (c Color) Name(css ...bool) string {
+	for name, hex := range ColorNames {
+		if c == hex {
+			return name
+		}
+	}
+	if len(css) > 0 && css[0] {
+		return c.CSS()
+	}
+	return ""
+}
+
 // Hex returns the color's hexadecimal RGB 24-bit value with each component
-// consisting of a single byte, ala R << 16 | G << 8 | B.  If the color
+// consisting of a single byte, R << 16 | G << 8 | B.  If the color
 // is unknown or unset, -1 is returned.
 func (c Color) Hex() int32 {
 	if !c.Valid() {
 		return -1
 	}
 	if c&ColorIsRGB != 0 {
-		return int32(c) & 0xffffff
+		return int32(c & 0xffffff)
 	}
 	if v, ok := ColorValues[c]; ok {
 		return v
@@ -1036,7 +1083,7 @@ func (c Color) TrueColor() Color {
 		return ColorDefault
 	}
 	if c&ColorIsRGB != 0 {
-		return c
+		return c | ColorValid
 	}
 	return Color(c.Hex()) | ColorIsRGB | ColorValid
 }

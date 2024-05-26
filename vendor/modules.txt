@@ -70,10 +70,10 @@ github.com/fatih/color
 # github.com/fvbommel/sortorder v1.1.0
 ## explicit; go 1.13
 github.com/fvbommel/sortorder
-# github.com/gdamore/encoding v1.0.0
+# github.com/gdamore/encoding v1.0.1
 ## explicit; go 1.9
 github.com/gdamore/encoding
-# github.com/gdamore/tcell/v2 v2.5.3
+# github.com/gdamore/tcell/v2 v2.7.4
 ## explicit; go 1.12
 github.com/gdamore/tcell/v2
 github.com/gdamore/tcell/v2/terminfo
@@ -98,7 +98,6 @@ github.com/gdamore/tcell/v2/terminfo/r/rxvt
 github.com/gdamore/tcell/v2/terminfo/s/screen
 github.com/gdamore/tcell/v2/terminfo/s/simpleterm
 github.com/gdamore/tcell/v2/terminfo/s/sun
-github.com/gdamore/tcell/v2/terminfo/t/termite
 github.com/gdamore/tcell/v2/terminfo/t/tmux
 github.com/gdamore/tcell/v2/terminfo/v/vt100
 github.com/gdamore/tcell/v2/terminfo/v/vt102
@@ -113,8 +112,7 @@ github.com/gdamore/tcell/v2/terminfo/w/wy99_ansi
 github.com/gdamore/tcell/v2/terminfo/x/xfce
 github.com/gdamore/tcell/v2/terminfo/x/xterm
 github.com/gdamore/tcell/v2/terminfo/x/xterm_kitty
-github.com/gdamore/tcell/v2/terminfo/x/xterm_termite
-# github.com/go-errors/errors v1.4.2
+# github.com/go-errors/errors v1.5.1
 ## explicit; go 1.14
 github.com/go-errors/errors
 # github.com/goccy/go-yaml v1.11.0
@@ -142,7 +140,7 @@ github.com/integrii/flaggy
 # github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee
 ## explicit
 github.com/jesseduffield/asciigraph
-# github.com/jesseduffield/gocui v0.3.1-0.20221023185936-ef06450f4fdc
+# github.com/jesseduffield/gocui v0.3.1-0.20240418080333-8cd33929c513
 ## explicit; go 1.12
 github.com/jesseduffield/gocui
 # github.com/jesseduffield/kill v0.0.0-20220618033138-bfbe04675d10
@@ -167,7 +165,7 @@ github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.12
 ## explicit; go 1.12
 github.com/mattn/go-isatty
-# github.com/mattn/go-runewidth v0.0.14
+# github.com/mattn/go-runewidth v0.0.15
 ## explicit; go 1.9
 github.com/mattn/go-runewidth
 # github.com/mcuadros/go-lookup v0.0.0-20171110082742-5650f26be767
@@ -200,7 +198,7 @@ github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
 github.com/pmezard/go-difflib/difflib
-# github.com/rivo/uniseg v0.4.2
+# github.com/rivo/uniseg v0.4.7
 ## explicit; go 1.18
 github.com/rivo/uniseg
 # github.com/samber/lo v1.31.0
@@ -228,17 +226,17 @@ golang.org/x/exp/constraints
 ## explicit; go 1.17
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
-# golang.org/x/sys v0.13.0
-## explicit; go 1.17
+# golang.org/x/sys v0.20.0
+## explicit; go 1.18
 golang.org/x/sys/execabs
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.13.0
-## explicit; go 1.17
+# golang.org/x/term v0.20.0
+## explicit; go 1.18
 golang.org/x/term
-# golang.org/x/text v0.13.0
-## explicit; go 1.17
+# golang.org/x/text v0.15.0
+## explicit; go 1.18
 golang.org/x/text/encoding
 golang.org/x/text/encoding/internal/identifier
 golang.org/x/text/transform
