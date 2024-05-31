@@ -59,7 +59,6 @@ type ContainerExecInspect struct {
 
 // ContainerListOptions holds parameters to list containers with.
 type ContainerListOptions struct {
-	Quiet   bool
 	Size    bool
 	All     bool
 	Latest  bool
@@ -113,15 +112,30 @@ type NetworkListOptions struct {
 	Filters filters.Args
 }
 
+// NewHijackedResponse intializes a HijackedResponse type
+func NewHijackedResponse(conn net.Conn, mediaType string) HijackedResponse {
+	return HijackedResponse{Conn: conn, Reader: bufio.NewReader(conn), mediaType: mediaType}
+}
+
 // HijackedResponse holds connection information for a hijacked request.
 type HijackedResponse struct {
-	Conn   net.Conn
-	Reader *bufio.Reader
+	mediaType string
+	Conn      net.Conn
+	Reader    *bufio.Reader
 }
 
 // Close closes the hijacked connection and reader.
 func (h *HijackedResponse) Close() {
 	h.Conn.Close()
+}
+
+// MediaType let client know if HijackedResponse hold a raw or multiplexed stream.
+// returns false if HTTP Content-Type is not relevant, and container must be inspected
+func (h *HijackedResponse) MediaType() (string, bool) {
+	if h.mediaType == "" {
+		return "", false
+	}
+	return h.mediaType, true
 }
 
 // CloseWriter is an interface that implements structs
@@ -236,10 +250,20 @@ type ImageImportOptions struct {
 	Platform string   // Platform is the target platform of the image
 }
 
-// ImageListOptions holds parameters to filter the list of images with.
+// ImageListOptions holds parameters to list images with.
 type ImageListOptions struct {
-	All     bool
+	// All controls whether all images in the graph are filtered, or just
+	// the heads.
+	All bool
+
+	// Filters is a JSON-encoded set of filter arguments.
 	Filters filters.Args
+
+	// SharedSize indicates whether the shared size of images should be computed.
+	SharedSize bool
+
+	// ContainerCount indicates whether container count should be computed.
+	ContainerCount bool
 }
 
 // ImageLoadResponse returns information to the client about a load process.
