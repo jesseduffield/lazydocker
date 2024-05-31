@@ -3,7 +3,7 @@ package gui
 import (
 	"bytes"
 	"context"
-	"path"
+	"github.com/samber/lo"
 	"strings"
 
 	"github.com/fatih/color"
@@ -23,7 +23,7 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 	return &panels.SideListPanel[*commands.Project]{
 		ContextState: &panels.ContextState[*commands.Project]{
 			GetMainTabs: func() []panels.MainTab[*commands.Project] {
-				if gui.DockerCommand.InDockerComposeProject {
+				if gui.DockerCommand.SelectedComposeProject != nil {
 					return []panels.MainTab[*commands.Project]{
 						{
 							Key:    "logs",
@@ -52,43 +52,39 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 				}
 			},
 			GetItemContextCacheKey: func(project *commands.Project) string {
-				return "projects-" + project.Name
+				return "projects-" + project.Compose.Name // TODO status
 			},
 		},
 
 		ListPanel: panels.ListPanel[*commands.Project]{
 			List: panels.NewFilteredList[*commands.Project](),
-			View: gui.Views.Project,
+			View: gui.Views.Projects,
 		},
 		NoItemsMessage: "",
 		Gui:            gui.intoInterface(),
 
 		Sort: func(a *commands.Project, b *commands.Project) bool {
-			return false
+			return a.Compose.Name < b.Compose.Name
 		},
 		GetTableCells: presentation.GetProjectDisplayStrings,
 		// It doesn't make sense to filter a list of only one item.
-		DisableFilter: true,
+		//DisableFilter: true,
 	}
 }
 
 func (gui *Gui) refreshProject() error {
-	gui.Panels.Projects.SetItems([]*commands.Project{{Name: gui.getProjectName()}})
+	c := gui.getProjects()
+	list := make([]*commands.Project, len(c))
+	for i, s := range lo.Values(c) {
+		list[i] = &commands.Project{Compose: s}
+	}
+
+	gui.Panels.Projects.SetItems(list)
 	return gui.Panels.Projects.RerenderList()
 }
 
-func (gui *Gui) getProjectName() string {
-	projectName := path.Base(gui.Config.ProjectDir)
-	if gui.DockerCommand.InDockerComposeProject {
-		for _, service := range gui.Panels.Services.List.GetAllItems() {
-			container := service.Container
-			if container != nil && container.DetailsLoaded() {
-				return container.Details.Config.Labels["com.docker.compose.project"]
-			}
-		}
-	}
-
-	return projectName
+func (gui *Gui) getProjects() map[string]commands.ComposeProject {
+	return gui.DockerCommand.GetAllComposeProjects()
 }
 
 func (gui *Gui) renderCredits(_project *commands.Project) tasks.TaskFunc {
@@ -125,6 +121,7 @@ func (gui *Gui) renderAllLogs(_project *commands.Project) tasks.TaskFunc {
 					gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
 				),
 			)
+			cmd.Dir = _project.Compose.WorkingDir
 
 			cmd.Stdout = gui.Views.Main
 			cmd.Stderr = gui.Views.Main
@@ -156,6 +153,20 @@ func (gui *Gui) handleOpenConfig(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) handleEditConfig(g *gocui.Gui, v *gocui.View) error {
 	return gui.editFile(gui.Config.ConfigFilename())
+}
+
+func (gui *Gui) handleComposeProjectSelect(g *gocui.Gui, v *gocui.View) error {
+	project, err := gui.Panels.Projects.GetSelectedItem()
+	if err != nil {
+		return nil
+	}
+
+	//if gui.DockerCommand.SelectedComposeProject != &project.Compose {
+	gui.DockerCommand.SelectedComposeProject = &project.Compose
+	// gui.renderServiceLogs()
+	return gui.refreshContainersAndServices()
+	//}
+	//return nil
 }
 
 func lazydockerTitle() string {
