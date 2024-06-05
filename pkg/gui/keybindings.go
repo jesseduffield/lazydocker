@@ -533,18 +533,39 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			{ViewName: viewName, Key: gocui.MouseLeft, Modifier: gocui.ModNone, Handler: wrappedHandler(onClick)},
 		}...)
 	}
-	//Handle navigation via index
-	for index, panel := range gui.allListPanels() {
-		if index > 9 {
-			break
-		}
 
-		bindings = append(bindings, &Binding{
-			Handler:     gui.handleGoTo(panel.GetView()),
-			Key:         rune(index + 49),
-			Description: "",
-		})
-	}
+	bindings = append(bindings, []*Binding{
+		{
+			Handler:     gui.handleGoTo(gui.Panels.Projects.View),
+			Key:         rune(49),
+			Description: gui.Tr.FocusProjects,
+		},
+		{
+			Handler:     gui.handleGoTo(gui.Panels.Services.View),
+			Key:         rune(50),
+			Description: gui.Tr.FocusServices,
+		},
+		{
+			Handler:     gui.handleGoTo(gui.Panels.Containers.View),
+			Key:         rune(51),
+			Description: gui.Tr.FocusContainers,
+		},
+		{
+			Handler:     gui.handleGoTo(gui.Panels.Images.View),
+			Key:         rune(52),
+			Description: gui.Tr.FocusImages,
+		},
+		{
+			Handler:     gui.handleGoTo(gui.Panels.Volumes.View),
+			Key:         rune(53),
+			Description: gui.Tr.FocusVolumes,
+		},
+		{
+			Handler:     gui.handleGoTo(gui.Panels.Networks.View),
+			Key:         rune(54),
+			Description: gui.Tr.FocusNetwork,
+		},
+	}...)
 
 	for _, panel := range gui.allListPanels() {
 		setUpDownClickBindings(panel.GetView().Name(), panel.HandlePrevLine, panel.HandleNextLine, panel.HandleClick)
