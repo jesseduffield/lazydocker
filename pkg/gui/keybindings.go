@@ -533,6 +533,18 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			{ViewName: viewName, Key: gocui.MouseLeft, Modifier: gocui.ModNone, Handler: wrappedHandler(onClick)},
 		}...)
 	}
+	//Handle navigation via index
+	for index, panel := range gui.allListPanels() {
+		if index > 9 {
+			break
+		}
+
+		bindings = append(bindings, &Binding{
+			Handler:     gui.handleGoTo(panel.GetView()),
+			Key:         rune(index + 49),
+			Description: "",
+		})
+	}
 
 	for _, panel := range gui.allListPanels() {
 		setUpDownClickBindings(panel.GetView().Name(), panel.HandlePrevLine, panel.HandleNextLine, panel.HandleClick)
