@@ -271,11 +271,11 @@ func englishSet() TranslationSet {
 		LcPrevScreenMode: "prev screen mode",
 		FilterPrompt:     "filter",
 
-		FocusProjects:   "Navigate to projects",
-		FocusServices:   "Navigate to services",
-		FocusContainers: "Navigate to containers",
-		FocusImages:     "Navigate to images",
-		FocusVolumes:    "Navigate to volumes",
-		FocusNetwork:    "Navigate to networks",
+		FocusProjects:   "focus projects panel",
+		FocusServices:   "focus services panel",
+		FocusContainers: "focus containers panel",
+		FocusImages:     "focus images panel",
+		FocusVolumes:    "focus volumes panel",
+		FocusNetwork:    "focus networks panel",
 	}
 }
