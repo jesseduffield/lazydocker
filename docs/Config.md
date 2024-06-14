@@ -102,6 +102,8 @@ stats:
 For color attributes you can choose an array of attributes (with max one color attribute)
 The available attributes are:
 
+**Colors**
+
 - default
 - black
 - red
@@ -111,9 +113,15 @@ The available attributes are:
 - magenta
 - cyan
 - white
+- '#ff00ff'
+
+**Modifiers**
+
 - bold
+- default
 - reverse # useful for high-contrast
 - underline
+- strikethrough
 
 ## Custom Commands
 
