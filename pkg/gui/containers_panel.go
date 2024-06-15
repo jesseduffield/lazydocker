@@ -342,6 +342,8 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	})
 }
 
+// TODO: do same thing for start
+// Fix UI not showing it being paused (it should say unpaused)
 func (gui *Gui) PauseContainer(container *commands.Container) error {
 	return gui.WithWaitingStatus(gui.Tr.PausingStatus, func() (err error) {
 		if container.Details.State.Paused {
@@ -367,10 +369,20 @@ func (gui *Gui) handleContainerPause(g *gocui.Gui, v *gocui.View) error {
 	return gui.PauseContainer(container)
 }
 
-func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleContainerStartStop(g *gocui.Gui, v *gocui.View) error {
 	container, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
+	}
+
+	if !(container.Container.State == "exited" || container.Container.State == "running") {
+		return gui.createErrorPanel(gui.Tr.CannotStartStop)
+	}
+
+	if container.Container.State == "exited" {
+		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
+			return container.Start()
+		})
 	}
 
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.StopContainer, func(g *gocui.Gui, v *gocui.View) error {
