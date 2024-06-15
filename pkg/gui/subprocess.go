@@ -37,7 +37,23 @@ func (gui *Gui) runSubprocessWithMessage(cmd *exec.Cmd, msg string) error {
 	return err
 }
 
-func (gui *Gui) runCommand(cmd *exec.Cmd, msg string) {
+func (gui *Gui) runCommandSilently(cmd *exec.Cmd) error {
+	stop := make(chan os.Signal, 1)
+	defer signal.Stop(stop)
+
+	go func() {
+		signal.Notify(stop, os.Interrupt)
+		<-stop
+
+		if err := gui.OSCommand.Kill(cmd); err != nil {
+			gui.Log.Error(err)
+		}
+	}()
+
+	return cmd.Run()
+}
+
+func (gui *Gui) runCommand(cmd *exec.Cmd, msg string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stdout
 	cmd.Stdin = os.Stdin
