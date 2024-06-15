@@ -461,11 +461,32 @@ func (gui *Gui) containerExecShell(container *commands.Container) error {
 	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
 		Container: container,
 	})
+	var command string
+	shell := ""
 
-	// TODO: use SDK
-	resolvedCommand := utils.ApplyTemplate("docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'", commandObject)
+	preferredExecShells := gui.Config.UserConfig.CommandTemplates.PreferredExecShells
+	if len(preferredExecShells) > 0 {
+		for _, preferredExecShell := range preferredExecShells {
+			command := utils.ApplyTemplate(fmt.Sprintf("docker exec {{ .Container.ID }} which %s", preferredExecShell), commandObject)
+
+			err := gui.runCommandSilently(gui.OSCommand.ExecutableFromString(command))
+			if err == nil {
+				shell = preferredExecShell
+				break
+			}
+		}
+	}
+
+	// TODO: Use SDK
+	// Use default implementation in case we cannot fulfill user's preference
+	if shell == "" {
+		command = utils.ApplyTemplate("docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'", commandObject)
+	} else {
+		command = utils.ApplyTemplate(fmt.Sprintf("docker exec -it {{ .Container.ID }} %s", shell), commandObject)
+	}
+
+	cmd := gui.OSCommand.ExecutableFromString(command)
 	// attach and return the subprocess error
-	cmd := gui.OSCommand.ExecutableFromString(resolvedCommand)
 	return gui.runSubprocess(cmd)
 }
 
