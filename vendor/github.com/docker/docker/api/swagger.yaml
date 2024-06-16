@@ -24,7 +24,7 @@ info:
   title: "Docker Engine API"
   version: "1.41"
   x-logo:
-    url: "https://docs.docker.com/images/logo-docker-main.png"
+    url: "https://docs.docker.com/assets/images/logo-docker-main.png"
   description: |
     The Engine API is an HTTP API served by Docker Engine. It is the API the
     Docker client uses to communicate with the Engine, so everything the Docker
@@ -1891,23 +1891,52 @@ definitions:
 
   BuildCache:
     type: "object"
+    description: |
+      BuildCache contains information about a build cache record.
     properties:
       ID:
         type: "string"
+        description: |
+          Unique ID of the build cache record.
+        example: "ndlpt0hhvkqcdfkputsk4cq9c"
       Parent:
+        description: |
+          ID of the parent build cache record.
         type: "string"
+        example: "hw53o5aio51xtltp5xjp8v7fx"
       Type:
         type: "string"
+        description: |
+          Cache record type.
+        example: "regular"
+        # see https://github.com/moby/buildkit/blob/fce4a32258dc9d9664f71a4831d5de10f0670677/client/diskusage.go#L75-L84
+        enum:
+          - "internal"
+          - "frontend"
+          - "source.local"
+          - "source.git.checkout"
+          - "exec.cachemount"
+          - "regular"
       Description:
         type: "string"
+        description: |
+          Description of the build-step that produced the build cache.
+        example: "mount / from exec /bin/sh -c echo 'Binary::apt::APT::Keep-Downloaded-Packages \"true\";' > /etc/apt/apt.conf.d/keep-cache"
       InUse:
         type: "boolean"
+        description: |
+          Indicates if the build cache is in use.
+        example: false
       Shared:
         type: "boolean"
+        description: |
+          Indicates if the build cache is shared.
+        example: true
       Size:
         description: |
           Amount of disk space used by the build cache (in bytes).
         type: "integer"
+        example: 51
       CreatedAt:
         description: |
           Date and time at which the build cache was created in
@@ -1925,6 +1954,7 @@ definitions:
         example: "2017-08-09T07:09:37.632105588Z"
       UsageCount:
         type: "integer"
+        example: 26
 
   ImageID:
     type: "object"
@@ -3347,7 +3377,7 @@ definitions:
           Limits:
             description: "Define resources limits."
             $ref: "#/definitions/Limit"
-          Reservation:
+          Reservations:
             description: "Define resources reservation."
             $ref: "#/definitions/ResourceObject"
       RestartPolicy:
@@ -5415,6 +5445,28 @@ paths:
             `/?[a-zA-Z0-9][a-zA-Z0-9_.-]+`.
           type: "string"
           pattern: "^/?[a-zA-Z0-9][a-zA-Z0-9_.-]+$"
+        - name: "platform"
+          in: "query"
+          description: |
+            Platform in the format `os[/arch[/variant]]` used for image lookup.
+
+            When specified, the daemon checks if the requested image is present
+            in the local image cache with the given OS and Architecture, and
+            otherwise returns a `404` status.
+
+            If the option is not set, the host's native OS and Architecture are
+            used to look up the image in the image cache. However, if no platform
+            is passed and the given image does exist in the local image cache,
+            but its OS or architecture does not match, the container is created
+            with the available image, and a warning is added to the `Warnings`
+            field in the response, for example;
+
+                WARNING: The requested image's platform (linux/arm64/v8) does not
+                         match the detected host platform (linux/amd64) and no
+                         specific platform was requested
+
+          type: "string"
+          default: ""
         - name: "body"
           in: "body"
           description: "Container to create"

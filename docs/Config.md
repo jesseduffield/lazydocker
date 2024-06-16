@@ -12,6 +12,21 @@ Changes to the user config will only take place after closing and re-opening laz
 - Linux: `~/.config/lazydocker/config.yml`
 - Windows: `C:\\Users\\<User>\\AppData\\Roaming\\jesseduffield\\lazydocker\\config.yml` (I think)
 
+JSON schema is available for `config.yml` so that IntelliSense in Visual Studio Code
+(completion and error checking) is automatically enabled when the [YAML Red Hat][yaml]
+extension is installed. However, note that automatic schema detection only works
+if your config file is in one of the standard paths mentioned above. If you
+override the path to the file, you can still make IntelliSense work by adding
+
+```yaml
+# yaml-language-server: $schema=https://json.schemastore.org/lazydocker.json
+```
+
+to the top of your config file or via [Visual Studio Code settings.json config][settings].
+
+[yaml]: https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml
+[settings]: https://github.com/redhat-developer/vscode-yaml#associating-a-schema-to-a-glob-pattern-via-yamlschemas
+
 ## Default:
 
 ```yml
@@ -24,6 +39,8 @@ gui:
       - bold
     inactiveBorderColor:
       - white
+    selectedLineBgColor:
+      - blue
     optionsTextColor:
       - blue
   returnImmediately: false
@@ -31,11 +48,17 @@ gui:
   # Side panel width as a ratio of the screen's width
   sidePanelWidth: 0.333
   # Determines whether we show the bottom line (the one containing keybinding
-	# info and the status of the app).
+  # info and the status of the app).
   showBottomLine: true
   # When true, increases vertical space used by focused side panel,
   # creating an accordion effect
   expandFocusedSidePanel: false
+  # Determines which screen mode will be used on startup
+  screenMode: "normal" # one of 'normal' | 'half' | 'fullscreen'
+  # Determines the style of the container status and container health display in the
+  # containers panel. "long": full words (default), "short": one or two characters,
+  # "icon": unicode emoji.
+  containerStatusHealthStyle: "long"
 logs:
   timestamps: false
   since: '60m' # set to '' to show all logs
@@ -103,6 +126,11 @@ customCommands:
       command: 'docker exec -it {{ .Container.ID }} bash'
       serviceNames: []
 ```
+
+You may use the following go templates (such as `{{ .Container.ID }}` above) in your commands:
+- `{{ .DockerCompose }}`: the docker compose command (default: `docker-compose`)
+- [`{{ .Container }}`](https://pkg.go.dev/github.com/jesseduffield/lazydocker@v0.20.0/pkg/commands#Container) and its fields. For example: `{{ .Container.Container.ImageID }}`
+- [`{{ .Service }}`](https://pkg.go.dev/github.com/jesseduffield/lazydocker@v0.20.0/pkg/commands#Service) and its fields. For example: `{{ .Service.Name }}`
 
 ## Replacements
 

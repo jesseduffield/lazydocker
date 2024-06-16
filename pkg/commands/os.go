@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -87,13 +87,19 @@ func (c *OSCommand) RunExecutable(cmd *exec.Cmd) error {
 // ExecutableFromString takes a string like `docker ps -a` and returns an executable command for it
 func (c *OSCommand) ExecutableFromString(commandStr string) *exec.Cmd {
 	splitCmd := str.ToArgv(commandStr)
-	return c.command(splitCmd[0], splitCmd[1:]...)
+	return c.NewCmd(splitCmd[0], splitCmd[1:]...)
 }
 
 // Same as ExecutableFromString but cancellable via a context
 func (c *OSCommand) ExecutableFromStringContext(ctx context.Context, commandStr string) *exec.Cmd {
 	splitCmd := str.ToArgv(commandStr)
 	return exec.CommandContext(ctx, splitCmd[0], splitCmd[1:]...)
+}
+
+func (c *OSCommand) NewCmd(cmdName string, commandArgs ...string) *exec.Cmd {
+	cmd := c.command(cmdName, commandArgs...)
+	cmd.Env = os.Environ()
+	return cmd
 }
 
 func (c *OSCommand) NewCommandStringWithShell(commandStr string) string {
@@ -187,12 +193,7 @@ func (c *OSCommand) EditFile(filename string) (*exec.Cmd, error) {
 		return nil, errors.New("No editor defined in $VISUAL or $EDITOR")
 	}
 
-	return c.PrepareSubProcess(editor, filename), nil
-}
-
-// PrepareSubProcess iniPrepareSubProcessrocess then tells the Gui to switch to it
-func (c *OSCommand) PrepareSubProcess(cmdName string, commandArgs ...string) *exec.Cmd {
-	return c.command(cmdName, commandArgs...)
+	return c.NewCmd(editor, filename), nil
 }
 
 // Quote wraps a message in platform-specific quotation marks
@@ -239,7 +240,7 @@ func (c *OSCommand) AppendLineToFile(filename, line string) error {
 
 // CreateTempFile writes a string to a new temp file and returns the file's name
 func (c *OSCommand) CreateTempFile(filename, content string) (string, error) {
-	tmpfile, err := ioutil.TempFile("", filename)
+	tmpfile, err := os.CreateTemp("", filename)
 	if err != nil {
 		c.Log.Error(err)
 		return "", WrapError(err)
@@ -301,7 +302,7 @@ func (c *OSCommand) GetLazydockerPath() string {
 
 // RunCustomCommand returns the pointer to a custom command
 func (c *OSCommand) RunCustomCommand(command string) *exec.Cmd {
-	return c.PrepareSubProcess(c.Platform.shell, c.Platform.shellArg, command)
+	return c.NewCmd(c.Platform.shell, c.Platform.shellArg, command)
 }
 
 // PipeCommands runs a heap of commands and pipes their inputs/outputs together like A | B | C
@@ -341,7 +342,7 @@ func (c *OSCommand) PipeCommands(commandStrings ...string) error {
 				c.Log.Error(err)
 			}
 
-			if b, err := ioutil.ReadAll(stderr); err == nil {
+			if b, err := io.ReadAll(stderr); err == nil {
 				if len(b) > 0 {
 					finalErrors = append(finalErrors, string(b))
 				}
