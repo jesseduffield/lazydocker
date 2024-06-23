@@ -443,7 +443,7 @@ func (gui *Gui) openFile(filename string) error {
 }
 
 func (gui *Gui) handleCustomCommand(g *gocui.Gui, v *gocui.View) error {
-	return gui.createPromptPanel(gui.Tr.CustomCommandTitle, func(g *gocui.Gui, v *gocui.View) error {
+	return gui.createPromptPanel(gui.Tr.CustomCommandTitle, "", func(g *gocui.Gui, v *gocui.View) error {
 		command := gui.trimmedContent(v)
 		return gui.runSubprocess(gui.OSCommand.RunCustomCommand(command))
 	})

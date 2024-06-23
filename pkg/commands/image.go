@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/docker/docker/api/types/image"
@@ -143,3 +144,8 @@ func (c *DockerCommand) PruneImages() error {
 	_, err := c.Client.ImagesPrune(context.Background(), filters.Args{})
 	return err
 }
+
+func (i *Image) String() string {
+    return fmt.Sprintf("%s:%s", i.Name, i.Tag)
+}
+
