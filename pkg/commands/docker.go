@@ -374,7 +374,8 @@ func determineDockerHost() (string, error) {
 		currentContext = cf.CurrentContext
 	}
 
-	if currentContext == "" {
+	// On some systems (windows) `default` is stored in the docker config as the currentContext.
+	if currentContext == "" || currentContext == "default" {
 		// If a docker context is neither specified via the "DOCKER_CONTEXT" environment variable nor via the
 		// $HOME/.docker/config file, then we fall back to connecting to the "default docker host" meant for
 		// the host operating system.
