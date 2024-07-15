@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	dockerTypes "github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/events"
 
 	"github.com/go-errors/errors"
 
@@ -336,7 +336,7 @@ func (gui *Gui) listenForEvents(ctx context.Context, refresh func()) {
 
 outer:
 	for {
-		messageChan, errChan := gui.DockerCommand.Client.Events(context.Background(), dockerTypes.EventsOptions{})
+		messageChan, errChan := gui.DockerCommand.Client.Events(context.Background(), events.ListOptions{})
 
 		if errorCount > 0 {
 			select {

@@ -1,5 +1,5 @@
 // FIXME(thaJeztah): remove once we are a module; the go:build directive prevents go from downgrading language version to go1.16:
-//go:build go1.19
+//go:build go1.21
 
 package store
 
@@ -14,7 +14,7 @@ type NamedTypeGetter struct {
 	typeGetter TypeGetter
 }
 
-// EndpointTypeGetter returns a NamedTypeGetter with the spcecified name and getter
+// EndpointTypeGetter returns a NamedTypeGetter with the specified name and getter
 func EndpointTypeGetter(name string, getter TypeGetter) NamedTypeGetter {
 	return NamedTypeGetter{
 		name:       name,

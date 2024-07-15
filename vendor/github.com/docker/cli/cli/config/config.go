@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/user"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 
 	"github.com/docker/cli/cli/config/configfile"
 	"github.com/docker/cli/cli/config/credentials"
 	"github.com/docker/cli/cli/config/types"
-	"github.com/docker/docker/pkg/homedir"
 	"github.com/pkg/errors"
 )
 
@@ -42,12 +43,38 @@ func resetConfigDir() {
 	initConfigDir = new(sync.Once)
 }
 
+// getHomeDir returns the home directory of the current user with the help of
+// environment variables depending on the target operating system.
+// Returned path should be used with "path/filepath" to form new paths.
+//
+// On non-Windows platforms, it falls back to nss lookups, if the home
+// directory cannot be obtained from environment-variables.
+//
+// If linking statically with cgo enabled against glibc, ensure the
+// osusergo build tag is used.
+//
+// If needing to do nss lookups, do not disable cgo or set osusergo.
+//
+// getHomeDir is a copy of [pkg/homedir.Get] to prevent adding docker/docker
+// as dependency for consumers that only need to read the config-file.
+//
+// [pkg/homedir.Get]: https://pkg.go.dev/github.com/docker/docker@v26.1.4+incompatible/pkg/homedir#Get
+func getHomeDir() string {
+	home, _ := os.UserHomeDir()
+	if home == "" && runtime.GOOS != "windows" {
+		if u, err := user.Current(); err == nil {
+			return u.HomeDir
+		}
+	}
+	return home
+}
+
 // Dir returns the directory the configuration file is stored in
 func Dir() string {
 	initConfigDir.Do(func() {
 		configDir = os.Getenv(EnvOverrideConfigDir)
 		if configDir == "" {
-			configDir = filepath.Join(homedir.Get(), configFileDir)
+			configDir = filepath.Join(getHomeDir(), configFileDir)
 		}
 	})
 	return configDir
@@ -75,7 +102,7 @@ func Path(p ...string) (string, error) {
 }
 
 // LoadFromReader is a convenience function that creates a ConfigFile object from
-// a reader
+// a reader. It returns an error if configData is malformed.
 func LoadFromReader(configData io.Reader) (*configfile.ConfigFile, error) {
 	configFile := configfile.ConfigFile{
 		AuthConfigs: make(map[string]types.AuthConfig),
@@ -84,8 +111,14 @@ func LoadFromReader(configData io.Reader) (*configfile.ConfigFile, error) {
 	return &configFile, err
 }
 
-// Load reads the configuration files in the given directory, and sets up
-// the auth config information and returns values.
+// Load reads the configuration file ([ConfigFileName]) from the given directory.
+// If no directory is given, it uses the default [Dir]. A [*configfile.ConfigFile]
+// is returned containing the contents of the configuration file, or a default
+// struct if no configfile exists in the given location.
+//
+// Load returns an error if a configuration file exists in the given location,
+// but cannot be read, or is malformed. Consumers must handle errors to prevent
+// overwriting an existing configuration file.
 func Load(configDir string) (*configfile.ConfigFile, error) {
 	if configDir == "" {
 		configDir = Dir()
@@ -100,29 +133,37 @@ func load(configDir string) (*configfile.ConfigFile, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
-			//
-			// if file is there but we can't stat it for any reason other
-			// than it doesn't exist then stop
+			// It is OK for no configuration file to be present, in which
+			// case we return a default struct.
 			return configFile, nil
 		}
-		// if file is there but we can't stat it for any reason other
-		// than it doesn't exist then stop
-		return configFile, nil
+		// Any other error happening when failing to read the file must be returned.
+		return configFile, errors.Wrap(err, "loading config file")
 	}
 	defer file.Close()
 	err = configFile.LoadFromReader(file)
 	if err != nil {
-		err = errors.Wrap(err, filename)
+		err = errors.Wrapf(err, "loading config file: %s: ", filename)
 	}
 	return configFile, err
 }
 
 // LoadDefaultConfigFile attempts to load the default config file and returns
-// an initialized ConfigFile struct if none is found.
+// a reference to the ConfigFile struct. If none is found or when failing to load
+// the configuration file, it initializes a default ConfigFile struct. If no
+// credentials-store is set in the configuration file, it attempts to discover
+// the default store to use for the current platform.
+//
+// Important: LoadDefaultConfigFile prints a warning to stderr when failing to
+// load the configuration file, but otherwise ignores errors. Consumers should
+// consider using [Load] (and [credentials.DetectDefaultStore]) to detect errors
+// when updating the configuration file, to prevent discarding a (malformed)
+// configuration file.
 func LoadDefaultConfigFile(stderr io.Writer) *configfile.ConfigFile {
 	configFile, err := load(Dir())
 	if err != nil {
-		_, _ = fmt.Fprintf(stderr, "WARNING: Error loading config file: %v\n", err)
+		// FIXME(thaJeztah): we should not proceed here to prevent overwriting existing (but malformed) config files; see https://github.com/docker/cli/issues/5075
+		_, _ = fmt.Fprintln(stderr, "WARNING: Error", err)
 	}
 	if !configFile.ContainsAuth() {
 		configFile.CredentialsStore = credentials.DetectDefaultStore(configFile.CredentialsStore)
