@@ -11,7 +11,7 @@ require (
 	github.com/fatih/color v1.10.0
 	github.com/go-errors/errors v1.5.1
 	github.com/gookit/color v1.5.0
-	github.com/imdario/mergo v0.3.8
+	github.com/imdario/mergo v0.3.16
 	github.com/integrii/flaggy v1.4.0
 	github.com/jesseduffield/asciigraph v0.0.0-20190605104717-6d88e39309ee
 	github.com/jesseduffield/gocui v0.3.1-0.20240418080333-8cd33929c513
@@ -61,7 +61,6 @@ require (
 	golang.org/x/term v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
-	gopkg.in/yaml.v2 v2.2.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gotest.tools/v3 v3.2.0 // indirect
 )
