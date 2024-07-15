@@ -1,5 +1,5 @@
-# github.com/Microsoft/go-winio v0.4.14
-## explicit; go 1.12
+# github.com/Microsoft/go-winio v0.5.3
+## explicit; go 1.13
 github.com/Microsoft/go-winio
 github.com/Microsoft/go-winio/pkg/guid
 # github.com/OpenPeeDeeP/xdg v0.2.1-0.20190312153938-4ba9e1eb294c

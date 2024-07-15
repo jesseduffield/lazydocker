@@ -1,3 +1,5 @@
+// +build windows
+
 // Package guid provides a GUID type. The backing structure for a GUID is
 // identical to that used by the golang.org/x/sys/windows GUID type.
 // There are two main binary encodings used for a GUID, the big-endian encoding,
@@ -12,8 +14,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"strconv"
-
-	"golang.org/x/sys/windows"
 )
 
 // Variant specifies which GUID variant (or "type") of the GUID. It determines
@@ -38,13 +38,6 @@ type Version uint8
 
 var _ = (encoding.TextMarshaler)(GUID{})
 var _ = (encoding.TextUnmarshaler)(&GUID{})
-
-// GUID represents a GUID/UUID. It has the same structure as
-// golang.org/x/sys/windows.GUID so that it can be used with functions expecting
-// that type. It is defined as its own type so that stringification and
-// marshaling can be supported. The representation matches that used by native
-// Windows code.
-type GUID windows.GUID
 
 // NewV4 returns a new version 4 (pseudorandom) GUID, as defined by RFC 4122.
 func NewV4() (GUID, error) {
