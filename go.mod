@@ -24,7 +24,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/samber/lo v1.31.0
 	github.com/sasha-s/go-deadlock v0.3.1
-	github.com/sirupsen/logrus v1.4.2
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spkg/bom v0.0.0-20160624110644-59b7046e48ad
 	github.com/stretchr/testify v1.8.0
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
@@ -42,7 +42,6 @@ require (
 	github.com/gdamore/tcell/v2 v2.7.4 // indirect
 	github.com/goccy/go-yaml v1.11.0
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
