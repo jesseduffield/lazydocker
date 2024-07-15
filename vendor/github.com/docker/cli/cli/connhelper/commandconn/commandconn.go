@@ -4,13 +4,13 @@
 // For example, to provide an http.Client that can connect to a Docker daemon
 // running in a Docker container ("DIND"):
 //
-//  httpClient := &http.Client{
-//  	Transport: &http.Transport{
-//  		DialContext: func(ctx context.Context, _network, _addr string) (net.Conn, error) {
-//  			return commandconn.New(ctx, "docker", "exec", "-it", containerID, "docker", "system", "dial-stdio")
-//  		},
-//  	},
-//  }
+//	httpClient := &http.Client{
+//		Transport: &http.Transport{
+//			DialContext: func(ctx context.Context, _network, _addr string) (net.Conn, error) {
+//				return commandconn.New(ctx, "docker", "exec", "-it", containerID, "docker", "system", "dial-stdio")
+//			},
+//		},
+//	}
 package commandconn
 
 import (
@@ -32,12 +32,12 @@ import (
 )
 
 // New returns net.Conn
-func New(ctx context.Context, cmd string, args ...string) (net.Conn, error) {
+func New(_ context.Context, cmd string, args ...string) (net.Conn, error) {
 	var (
 		c   commandConn
 		err error
 	)
-	c.cmd = exec.CommandContext(ctx, cmd, args...)
+	c.cmd = exec.Command(cmd, args...)
 	// we assume that args never contains sensitive information
 	logrus.Debugf("commandconn: starting %s with %v", cmd, args)
 	c.cmd.Env = os.Environ()
@@ -236,17 +236,21 @@ func (c *commandConn) Close() error {
 func (c *commandConn) LocalAddr() net.Addr {
 	return c.localAddr
 }
+
 func (c *commandConn) RemoteAddr() net.Addr {
 	return c.remoteAddr
 }
+
 func (c *commandConn) SetDeadline(t time.Time) error {
 	logrus.Debugf("unimplemented call: SetDeadline(%v)", t)
 	return nil
 }
+
 func (c *commandConn) SetReadDeadline(t time.Time) error {
 	logrus.Debugf("unimplemented call: SetReadDeadline(%v)", t)
 	return nil
 }
+
 func (c *commandConn) SetWriteDeadline(t time.Time) error {
 	logrus.Debugf("unimplemented call: SetWriteDeadline(%v)", t)
 	return nil

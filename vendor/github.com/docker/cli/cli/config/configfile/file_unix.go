@@ -12,7 +12,7 @@ import (
 // ignoring any error during the process.
 func copyFilePermissions(src, dst string) {
 	var (
-		mode     os.FileMode = 0600
+		mode     os.FileMode = 0o600
 		uid, gid int
 	)
 
