@@ -1,138 +1,35 @@
 package types
 
 import (
-	"github.com/docker/docker/api/types/checkpoint"
-	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/api/types/swarm"
-	"github.com/docker/docker/api/types/system"
 )
 
-// CheckpointCreateOptions holds parameters to create a checkpoint from a container.
+// ImageImportOptions holds information to import images from the client host.
 //
-// Deprecated: use [checkpoint.CreateOptions].
-type CheckpointCreateOptions = checkpoint.CreateOptions
+// Deprecated: use [image.ImportOptions].
+type ImageImportOptions = image.ImportOptions
 
-// CheckpointListOptions holds parameters to list checkpoints for a container
+// ImageCreateOptions holds information to create images.
 //
-// Deprecated: use [checkpoint.ListOptions].
-type CheckpointListOptions = checkpoint.ListOptions
+// Deprecated: use [image.CreateOptions].
+type ImageCreateOptions = image.CreateOptions
 
-// CheckpointDeleteOptions holds parameters to delete a checkpoint from a container
+// ImagePullOptions holds information to pull images.
 //
-// Deprecated: use [checkpoint.DeleteOptions].
-type CheckpointDeleteOptions = checkpoint.DeleteOptions
+// Deprecated: use [image.PullOptions].
+type ImagePullOptions = image.PullOptions
 
-// Checkpoint represents the details of a checkpoint when listing endpoints.
+// ImagePushOptions holds information to push images.
 //
-// Deprecated: use [checkpoint.Summary].
-type Checkpoint = checkpoint.Summary
+// Deprecated: use [image.PushOptions].
+type ImagePushOptions = image.PushOptions
 
-// Info contains response of Engine API:
-// GET "/info"
+// ImageListOptions holds parameters to list images with.
 //
-// Deprecated: use [system.Info].
-type Info = system.Info
+// Deprecated: use [image.ListOptions].
+type ImageListOptions = image.ListOptions
 
-// Commit holds the Git-commit (SHA1) that a binary was built from, as reported
-// in the version-string of external tools, such as containerd, or runC.
+// ImageRemoveOptions holds parameters to remove images.
 //
-// Deprecated: use [system.Commit].
-type Commit = system.Commit
-
-// PluginsInfo is a temp struct holding Plugins name
-// registered with docker daemon. It is used by [system.Info] struct
-//
-// Deprecated: use [system.PluginsInfo].
-type PluginsInfo = system.PluginsInfo
-
-// NetworkAddressPool is a temp struct used by [system.Info] struct.
-//
-// Deprecated: use [system.NetworkAddressPool].
-type NetworkAddressPool = system.NetworkAddressPool
-
-// Runtime describes an OCI runtime.
-//
-// Deprecated: use [system.Runtime].
-type Runtime = system.Runtime
-
-// SecurityOpt contains the name and options of a security option.
-//
-// Deprecated: use [system.SecurityOpt].
-type SecurityOpt = system.SecurityOpt
-
-// KeyValue holds a key/value pair.
-//
-// Deprecated: use [system.KeyValue].
-type KeyValue = system.KeyValue
-
-// ImageDeleteResponseItem image delete response item.
-//
-// Deprecated: use [image.DeleteResponse].
-type ImageDeleteResponseItem = image.DeleteResponse
-
-// ImageSummary image summary.
-//
-// Deprecated: use [image.Summary].
-type ImageSummary = image.Summary
-
-// ImageMetadata contains engine-local data about the image.
-//
-// Deprecated: use [image.Metadata].
-type ImageMetadata = image.Metadata
-
-// ServiceCreateResponse contains the information returned to a client
-// on the creation of a new service.
-//
-// Deprecated: use [swarm.ServiceCreateResponse].
-type ServiceCreateResponse = swarm.ServiceCreateResponse
-
-// ServiceUpdateResponse service update response.
-//
-// Deprecated: use [swarm.ServiceUpdateResponse].
-type ServiceUpdateResponse = swarm.ServiceUpdateResponse
-
-// ContainerStartOptions holds parameters to start containers.
-//
-// Deprecated: use [container.StartOptions].
-type ContainerStartOptions = container.StartOptions
-
-// ResizeOptions holds parameters to resize a TTY.
-// It can be used to resize container TTYs and
-// exec process TTYs too.
-//
-// Deprecated: use [container.ResizeOptions].
-type ResizeOptions = container.ResizeOptions
-
-// ContainerAttachOptions holds parameters to attach to a container.
-//
-// Deprecated: use [container.AttachOptions].
-type ContainerAttachOptions = container.AttachOptions
-
-// ContainerCommitOptions holds parameters to commit changes into a container.
-//
-// Deprecated: use [container.CommitOptions].
-type ContainerCommitOptions = container.CommitOptions
-
-// ContainerListOptions holds parameters to list containers with.
-//
-// Deprecated: use [container.ListOptions].
-type ContainerListOptions = container.ListOptions
-
-// ContainerLogsOptions holds parameters to filter logs with.
-//
-// Deprecated: use [container.LogsOptions].
-type ContainerLogsOptions = container.LogsOptions
-
-// ContainerRemoveOptions holds parameters to remove containers.
-//
-// Deprecated: use [container.RemoveOptions].
-type ContainerRemoveOptions = container.RemoveOptions
-
-// DecodeSecurityOptions decodes a security options string slice to a type safe
-// [system.SecurityOpt].
-//
-// Deprecated: use [system.DecodeSecurityOptions].
-func DecodeSecurityOptions(opts []string) ([]system.SecurityOpt, error) {
-	return system.DecodeSecurityOptions(opts)
-}
+// Deprecated: use [image.RemoveOptions].
+type ImageRemoveOptions = image.RemoveOptions
