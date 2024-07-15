@@ -3,6 +3,7 @@ package client // import "github.com/docker/docker/client"
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 	"net/url"
 
 	"github.com/docker/docker/api/types/registry"
@@ -16,13 +17,13 @@ func (cli *Client) DistributionInspect(ctx context.Context, image, encodedRegist
 		return distributionInspect, objectNotFoundError{object: "distribution", id: image}
 	}
 
-	if err := cli.NewVersionError("1.30", "distribution inspect"); err != nil {
+	if err := cli.NewVersionError(ctx, "1.30", "distribution inspect"); err != nil {
 		return distributionInspect, err
 	}
-	var headers map[string][]string
 
+	var headers http.Header
 	if encodedRegistryAuth != "" {
-		headers = map[string][]string{
+		headers = http.Header{
 			registry.AuthHeader: {encodedRegistryAuth},
 		}
 	}

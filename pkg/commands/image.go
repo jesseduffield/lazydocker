@@ -4,14 +4,13 @@ import (
 	"context"
 	"strings"
 
-	"github.com/docker/docker/api/types/image"
-	"github.com/samber/lo"
-
 	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,7 +19,7 @@ type Image struct {
 	Name          string
 	Tag           string
 	ID            string
-	Image         dockerTypes.ImageSummary
+	Image         image.Summary
 	Client        *client.Client
 	OSCommand     *OSCommand
 	Log           *logrus.Entry

@@ -15,7 +15,7 @@ import (
 type FileBasicInfo struct {
 	CreationTime, LastAccessTime, LastWriteTime, ChangeTime windows.Filetime
 	FileAttributes                                          uint32
-	pad                                                     uint32 // padding
+	_                                                       uint32 // padding
 }
 
 // alignedFileBasicInfo is a FileBasicInfo, but aligned to uint64 by containing
@@ -73,7 +73,10 @@ type FileStandardInfo struct {
 // GetFileStandardInfo retrieves ended information for the file.
 func GetFileStandardInfo(f *os.File) (*FileStandardInfo, error) {
 	si := &FileStandardInfo{}
-	if err := windows.GetFileInformationByHandleEx(windows.Handle(f.Fd()), windows.FileStandardInfo, (*byte)(unsafe.Pointer(si)), uint32(unsafe.Sizeof(*si))); err != nil {
+	if err := windows.GetFileInformationByHandleEx(windows.Handle(f.Fd()),
+		windows.FileStandardInfo,
+		(*byte)(unsafe.Pointer(si)),
+		uint32(unsafe.Sizeof(*si))); err != nil {
 		return nil, &os.PathError{Op: "GetFileInformationByHandleEx", Path: f.Name(), Err: err}
 	}
 	runtime.KeepAlive(f)
@@ -90,7 +93,12 @@ type FileIDInfo struct {
 // GetFileID retrieves the unique (volume, file ID) pair for a file.
 func GetFileID(f *os.File) (*FileIDInfo, error) {
 	fileID := &FileIDInfo{}
-	if err := windows.GetFileInformationByHandleEx(windows.Handle(f.Fd()), windows.FileIdInfo, (*byte)(unsafe.Pointer(fileID)), uint32(unsafe.Sizeof(*fileID))); err != nil {
+	if err := windows.GetFileInformationByHandleEx(
+		windows.Handle(f.Fd()),
+		windows.FileIdInfo,
+		(*byte)(unsafe.Pointer(fileID)),
+		uint32(unsafe.Sizeof(*fileID)),
+	); err != nil {
 		return nil, &os.PathError{Op: "GetFileInformationByHandleEx", Path: f.Name(), Err: err}
 	}
 	runtime.KeepAlive(f)

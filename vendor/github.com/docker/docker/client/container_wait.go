@@ -30,12 +30,21 @@ const containerWaitErrorMsgLimit = 2 * 1024 /* Max: 2KiB */
 // synchronize ContainerWait with other calls, such as specifying a
 // "next-exit" condition before issuing a ContainerStart request.
 func (cli *Client) ContainerWait(ctx context.Context, containerID string, condition container.WaitCondition) (<-chan container.WaitResponse, <-chan error) {
+	resultC := make(chan container.WaitResponse)
+	errC := make(chan error, 1)
+
+	// Make sure we negotiated (if the client is configured to do so),
+	// as code below contains API-version specific handling of options.
+	//
+	// Normally, version-negotiation (if enabled) would not happen until
+	// the API request is made.
+	if err := cli.checkVersion(ctx); err != nil {
+		errC <- err
+		return resultC, errC
+	}
 	if versions.LessThan(cli.ClientVersion(), "1.30") {
 		return cli.legacyContainerWait(ctx, containerID)
 	}
-
-	resultC := make(chan container.WaitResponse)
-	errC := make(chan error, 1)
 
 	query := url.Values{}
 	if condition != "" {
@@ -66,8 +75,12 @@ func (cli *Client) ContainerWait(ctx context.Context, containerID string, condit
 			//
 			// If there's a JSON parsing error, read the real error message
 			// off the body and send it to the client.
-			_, _ = io.ReadAll(io.LimitReader(stream, containerWaitErrorMsgLimit))
-			errC <- errors.New(responseText.String())
+			if errors.As(err, new(*json.SyntaxError)) {
+				_, _ = io.ReadAll(io.LimitReader(stream, containerWaitErrorMsgLimit))
+				errC <- errors.New(responseText.String())
+			} else {
+				errC <- err
+			}
 			return
 		}
 

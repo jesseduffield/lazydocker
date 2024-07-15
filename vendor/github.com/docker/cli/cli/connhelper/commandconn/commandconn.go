@@ -20,6 +20,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 	"sync"
@@ -29,7 +30,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	exec "golang.org/x/sys/execabs"
 )
 
 // New returns net.Conn

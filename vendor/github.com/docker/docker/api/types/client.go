@@ -11,44 +11,6 @@ import (
 	units "github.com/docker/go-units"
 )
 
-// CheckpointCreateOptions holds parameters to create a checkpoint from a container
-type CheckpointCreateOptions struct {
-	CheckpointID  string
-	CheckpointDir string
-	Exit          bool
-}
-
-// CheckpointListOptions holds parameters to list checkpoints for a container
-type CheckpointListOptions struct {
-	CheckpointDir string
-}
-
-// CheckpointDeleteOptions holds parameters to delete a checkpoint from a container
-type CheckpointDeleteOptions struct {
-	CheckpointID  string
-	CheckpointDir string
-}
-
-// ContainerAttachOptions holds parameters to attach to a container.
-type ContainerAttachOptions struct {
-	Stream     bool
-	Stdin      bool
-	Stdout     bool
-	Stderr     bool
-	DetachKeys string
-	Logs       bool
-}
-
-// ContainerCommitOptions holds parameters to commit changes into a container.
-type ContainerCommitOptions struct {
-	Reference string
-	Comment   string
-	Author    string
-	Changes   []string
-	Pause     bool
-	Config    *container.Config
-}
-
 // ContainerExecInspect holds information returned by exec inspect.
 type ContainerExecInspect struct {
 	ExecID      string `json:"ID"`
@@ -56,42 +18,6 @@ type ContainerExecInspect struct {
 	Running     bool
 	ExitCode    int
 	Pid         int
-}
-
-// ContainerListOptions holds parameters to list containers with.
-type ContainerListOptions struct {
-	Size    bool
-	All     bool
-	Latest  bool
-	Since   string
-	Before  string
-	Limit   int
-	Filters filters.Args
-}
-
-// ContainerLogsOptions holds parameters to filter logs with.
-type ContainerLogsOptions struct {
-	ShowStdout bool
-	ShowStderr bool
-	Since      string
-	Until      string
-	Timestamps bool
-	Follow     bool
-	Tail       string
-	Details    bool
-}
-
-// ContainerRemoveOptions holds parameters to remove containers.
-type ContainerRemoveOptions struct {
-	RemoveVolumes bool
-	RemoveLinks   bool
-	Force         bool
-}
-
-// ContainerStartOptions holds parameters to start containers.
-type ContainerStartOptions struct {
-	CheckpointID  string
-	CheckpointDir string
 }
 
 // CopyToContainerOptions holds information
@@ -307,14 +233,6 @@ type ImageSearchOptions struct {
 	Limit         int
 }
 
-// ResizeOptions holds parameters to resize a tty.
-// It can be used to resize container ttys and
-// exec process ttys too.
-type ResizeOptions struct {
-	Height uint
-	Width  uint
-}
-
 // NodeListOptions holds parameters to list nodes with.
 type NodeListOptions struct {
 	Filters filters.Args
@@ -338,15 +256,6 @@ type ServiceCreateOptions struct {
 	// the image digest and manifest, which in turn can be used to update
 	// platform or other information about the service.
 	QueryRegistry bool
-}
-
-// ServiceCreateResponse contains the information returned to a client
-// on the creation of a new service.
-type ServiceCreateResponse struct {
-	// ID is the ID of the created service.
-	ID string
-	// Warnings is a set of non-fatal warning messages to pass on to the user.
-	Warnings []string `json:",omitempty"`
 }
 
 // Values for RegistryAuthFrom in ServiceUpdateOptions

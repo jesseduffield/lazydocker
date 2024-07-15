@@ -1,3 +1,6 @@
+// FIXME(thaJeztah): remove once we are a module; the go:build directive prevents go from downgrading language version to go1.16:
+//go:build go1.19
+
 package store
 
 import (
@@ -70,9 +73,9 @@ type ReaderWriter interface {
 
 // Metadata contains metadata about a context and its endpoints
 type Metadata struct {
-	Name      string                 `json:",omitempty"`
-	Metadata  interface{}            `json:",omitempty"`
-	Endpoints map[string]interface{} `json:",omitempty"`
+	Name      string         `json:",omitempty"`
+	Metadata  any            `json:",omitempty"`
+	Endpoints map[string]any `json:",omitempty"`
 }
 
 // StorageInfo contains data about where a given context is stored
@@ -125,7 +128,7 @@ func Names(s Lister) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	var names []string
+	names := make([]string, 0, len(list))
 	for _, item := range list {
 		names = append(names, item.Name)
 	}
@@ -475,8 +478,8 @@ func parseMetadata(data []byte, name string) (Metadata, error) {
 	return meta, nil
 }
 
-func importEndpointTLS(tlsData *ContextTLSData, path string, data []byte) error {
-	parts := strings.SplitN(strings.TrimPrefix(path, "tls/"), "/", 2)
+func importEndpointTLS(tlsData *ContextTLSData, tlsPath string, data []byte) error {
+	parts := strings.SplitN(strings.TrimPrefix(tlsPath, "tls/"), "/", 2)
 	if len(parts) != 2 {
 		// TLS endpoints require archived file directory with 2 layers
 		// i.e. tls/{endpointName}/{fileName}

@@ -43,7 +43,7 @@ type Container struct {
 }
 
 // Remove removes the container
-func (c *Container) Remove(options dockerTypes.ContainerRemoveOptions) error {
+func (c *Container) Remove(options container.RemoveOptions) error {
 	c.Log.Warn(fmt.Sprintf("removing container %s", c.Name))
 	if err := c.Client.ContainerRemove(context.Background(), c.ID, options); err != nil {
 		if strings.Contains(err.Error(), "Stop the container before attempting removal or force remove") {

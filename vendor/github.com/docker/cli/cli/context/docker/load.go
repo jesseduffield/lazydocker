@@ -40,23 +40,23 @@ func WithTLSData(s store.Reader, contextName string, m EndpointMeta) (Endpoint, 
 }
 
 // tlsConfig extracts a context docker endpoint TLS config
-func (c *Endpoint) tlsConfig() (*tls.Config, error) {
-	if c.TLSData == nil && !c.SkipTLSVerify {
+func (ep *Endpoint) tlsConfig() (*tls.Config, error) {
+	if ep.TLSData == nil && !ep.SkipTLSVerify {
 		// there is no specific tls config
 		return nil, nil
 	}
 	var tlsOpts []func(*tls.Config)
-	if c.TLSData != nil && c.TLSData.CA != nil {
+	if ep.TLSData != nil && ep.TLSData.CA != nil {
 		certPool := x509.NewCertPool()
-		if !certPool.AppendCertsFromPEM(c.TLSData.CA) {
+		if !certPool.AppendCertsFromPEM(ep.TLSData.CA) {
 			return nil, errors.New("failed to retrieve context tls info: ca.pem seems invalid")
 		}
 		tlsOpts = append(tlsOpts, func(cfg *tls.Config) {
 			cfg.RootCAs = certPool
 		})
 	}
-	if c.TLSData != nil && c.TLSData.Key != nil && c.TLSData.Cert != nil {
-		keyBytes := c.TLSData.Key
+	if ep.TLSData != nil && ep.TLSData.Key != nil && ep.TLSData.Cert != nil {
+		keyBytes := ep.TLSData.Key
 		pemBlock, _ := pem.Decode(keyBytes)
 		if pemBlock == nil {
 			return nil, errors.New("no valid private key found")
@@ -65,7 +65,7 @@ func (c *Endpoint) tlsConfig() (*tls.Config, error) {
 			return nil, errors.New("private key is encrypted - support for encrypted private keys has been removed, see https://docs.docker.com/go/deprecated/")
 		}
 
-		x509cert, err := tls.X509KeyPair(c.TLSData.Cert, keyBytes)
+		x509cert, err := tls.X509KeyPair(ep.TLSData.Cert, keyBytes)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to retrieve context tls info")
 		}
@@ -73,7 +73,7 @@ func (c *Endpoint) tlsConfig() (*tls.Config, error) {
 			cfg.Certificates = []tls.Certificate{x509cert}
 		})
 	}
-	if c.SkipTLSVerify {
+	if ep.SkipTLSVerify {
 		tlsOpts = append(tlsOpts, func(cfg *tls.Config) {
 			cfg.InsecureSkipVerify = true
 		})
@@ -82,33 +82,30 @@ func (c *Endpoint) tlsConfig() (*tls.Config, error) {
 }
 
 // ClientOpts returns a slice of Client options to configure an API client with this endpoint
-func (c *Endpoint) ClientOpts() ([]client.Opt, error) {
+func (ep *Endpoint) ClientOpts() ([]client.Opt, error) {
 	var result []client.Opt
-	if c.Host != "" {
-		helper, err := connhelper.GetConnectionHelper(c.Host)
+	if ep.Host != "" {
+		helper, err := connhelper.GetConnectionHelper(ep.Host)
 		if err != nil {
 			return nil, err
 		}
 		if helper == nil {
-			tlsConfig, err := c.tlsConfig()
+			tlsConfig, err := ep.tlsConfig()
 			if err != nil {
 				return nil, err
 			}
 			result = append(result,
 				withHTTPClient(tlsConfig),
-				client.WithHost(c.Host),
+				client.WithHost(ep.Host),
 			)
-
 		} else {
-			httpClient := &http.Client{
-				// No tls
-				// No proxy
-				Transport: &http.Transport{
-					DialContext: helper.Dialer,
-				},
-			}
 			result = append(result,
-				client.WithHTTPClient(httpClient),
+				client.WithHTTPClient(&http.Client{
+					// No TLS, and no proxy.
+					Transport: &http.Transport{
+						DialContext: helper.Dialer,
+					},
+				}),
 				client.WithHost(helper.Host),
 				client.WithDialContext(helper.Dialer),
 			)
@@ -125,8 +122,7 @@ func withHTTPClient(tlsConfig *tls.Config) func(*client.Client) error {
 			// Use the default HTTPClient
 			return nil
 		}
-
-		httpClient := &http.Client{
+		return client.WithHTTPClient(&http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: tlsConfig,
 				DialContext: (&net.Dialer{
@@ -135,8 +131,7 @@ func withHTTPClient(tlsConfig *tls.Config) func(*client.Client) error {
 				}).DialContext,
 			},
 			CheckRedirect: client.CheckRedirect,
-		}
-		return client.WithHTTPClient(httpClient)(c)
+		})(c)
 	}
 }
 
