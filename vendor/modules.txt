@@ -173,7 +173,7 @@ github.com/mcuadros/go-lookup
 github.com/mgutz/str
 # github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6
 ## explicit; go 1.13
-# github.com/morikuni/aec v0.0.0-20170113033406-39771216ff4c
+# github.com/morikuni/aec v1.0.0
 ## explicit
 # github.com/onsi/ginkgo v1.8.0
 ## explicit
