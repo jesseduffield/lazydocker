@@ -37,7 +37,6 @@ type ConfigFile struct {
 	PruneFilters         []string                     `json:"pruneFilters,omitempty"`
 	Proxies              map[string]ProxyConfig       `json:"proxies,omitempty"`
 	Experimental         string                       `json:"experimental,omitempty"`
-	StackOrchestrator    string                       `json:"stackOrchestrator,omitempty"` // Deprecated: swarm is now the default orchestrator, and this option is ignored.
 	CurrentContext       string                       `json:"currentContext,omitempty"`
 	CLIPluginsExtraDirs  []string                     `json:"cliPluginsExtraDirs,omitempty"`
 	Plugins              map[string]map[string]string `json:"plugins,omitempty"`

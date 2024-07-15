@@ -51,7 +51,6 @@ func (c *nativeStore) Get(serverAddress string) (types.AuthConfig, error) {
 	auth.Username = creds.Username
 	auth.IdentityToken = creds.IdentityToken
 	auth.Password = creds.Password
-	auth.ServerAddress = creds.ServerAddress
 
 	return auth, nil
 }
@@ -77,9 +76,6 @@ func (c *nativeStore) GetAll() (map[string]types.AuthConfig, error) {
 		ac.Username = creds.Username
 		ac.Password = creds.Password
 		ac.IdentityToken = creds.IdentityToken
-		if ac.ServerAddress == "" {
-			ac.ServerAddress = creds.ServerAddress
-		}
 		authConfigs[registry] = ac
 	}
 

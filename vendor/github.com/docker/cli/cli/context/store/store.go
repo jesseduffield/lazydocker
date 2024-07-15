@@ -494,20 +494,6 @@ func importEndpointTLS(tlsData *ContextTLSData, path string, data []byte) error 
 	return nil
 }
 
-// IsErrContextDoesNotExist checks if the given error is a "context does not exist" condition.
-//
-// Deprecated: use github.com/docker/docker/errdefs.IsNotFound()
-func IsErrContextDoesNotExist(err error) bool {
-	return errdefs.IsNotFound(err)
-}
-
-// IsErrTLSDataDoesNotExist checks if the given error is a "context does not exist" condition
-//
-// Deprecated: use github.com/docker/docker/errdefs.IsNotFound()
-func IsErrTLSDataDoesNotExist(err error) bool {
-	return errdefs.IsNotFound(err)
-}
-
 type contextdir string
 
 func contextdirOf(name string) contextdir {

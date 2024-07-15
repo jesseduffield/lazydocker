@@ -25,12 +25,6 @@ type EndpointMeta = context.EndpointMetaBase
 type Endpoint struct {
 	EndpointMeta
 	TLSData *context.TLSData
-
-	// Deprecated: Use of encrypted TLS private keys has been deprecated, and
-	// will be removed in a future release. Golang has deprecated support for
-	// legacy PEM encryption (as specified in RFC 1423), as it is insecure by
-	// design (see https://go-review.googlesource.com/c/go/+/264159).
-	TLSPassword string
 }
 
 // WithTLSData loads TLS materials for the endpoint

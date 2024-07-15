@@ -21,7 +21,7 @@ type Volume struct {
 
 // RefreshVolumes gets the volumes and stores them
 func (c *DockerCommand) RefreshVolumes() ([]*Volume, error) {
-	result, err := c.Client.VolumeList(context.Background(), filters.Args{})
+	result, err := c.Client.VolumeList(context.Background(), volume.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

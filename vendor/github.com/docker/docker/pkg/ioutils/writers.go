@@ -1,9 +1,6 @@
 package ioutils // import "github.com/docker/docker/pkg/ioutils"
 
-import (
-	"io"
-	"sync/atomic"
-)
+import "io"
 
 // NopWriter represents a type which write operation is nop.
 type NopWriter struct{}
@@ -32,14 +29,9 @@ func (f *NopFlusher) Flush() {}
 type writeCloserWrapper struct {
 	io.Writer
 	closer func() error
-	closed atomic.Bool
 }
 
 func (r *writeCloserWrapper) Close() error {
-	if !r.closed.CompareAndSwap(false, true) {
-		subsequentCloseWarn("WriteCloserWrapper")
-		return nil
-	}
 	return r.closer()
 }
 

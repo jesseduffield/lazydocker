@@ -101,7 +101,8 @@ func (n IpcMode) IsShareable() bool {
 
 // IsContainer indicates whether the container uses another container's ipc namespace.
 func (n IpcMode) IsContainer() bool {
-	return strings.HasPrefix(string(n), string(IPCModeContainer)+":")
+	_, ok := containerID(string(n))
+	return ok
 }
 
 // IsNone indicates whether container IpcMode is set to "none".
@@ -116,15 +117,14 @@ func (n IpcMode) IsEmpty() bool {
 
 // Valid indicates whether the ipc mode is valid.
 func (n IpcMode) Valid() bool {
+	// TODO(thaJeztah): align with PidMode, and consider container-mode without a container name/ID to be invalid.
 	return n.IsEmpty() || n.IsNone() || n.IsPrivate() || n.IsHost() || n.IsShareable() || n.IsContainer()
 }
 
 // Container returns the name of the container ipc stack is going to be used.
-func (n IpcMode) Container() string {
-	if n.IsContainer() {
-		return strings.TrimPrefix(string(n), string(IPCModeContainer)+":")
-	}
-	return ""
+func (n IpcMode) Container() (idOrName string) {
+	idOrName, _ = containerID(string(n))
+	return idOrName
 }
 
 // NetworkMode represents the container network stack.
@@ -147,17 +147,14 @@ func (n NetworkMode) IsPrivate() bool {
 
 // IsContainer indicates whether container uses a container network stack.
 func (n NetworkMode) IsContainer() bool {
-	parts := strings.SplitN(string(n), ":", 2)
-	return len(parts) > 1 && parts[0] == "container"
+	_, ok := containerID(string(n))
+	return ok
 }
 
 // ConnectedContainer is the id of the container which network this container is connected to.
-func (n NetworkMode) ConnectedContainer() string {
-	parts := strings.SplitN(string(n), ":", 2)
-	if len(parts) > 1 {
-		return parts[1]
-	}
-	return ""
+func (n NetworkMode) ConnectedContainer() (idOrName string) {
+	idOrName, _ = containerID(string(n))
+	return idOrName
 }
 
 // UserDefined indicates user-created network
@@ -178,18 +175,12 @@ func (n UsernsMode) IsHost() bool {
 
 // IsPrivate indicates whether the container uses the a private userns.
 func (n UsernsMode) IsPrivate() bool {
-	return !(n.IsHost())
+	return !n.IsHost()
 }
 
 // Valid indicates whether the userns is valid.
 func (n UsernsMode) Valid() bool {
-	parts := strings.Split(string(n), ":")
-	switch mode := parts[0]; mode {
-	case "", "host":
-	default:
-		return false
-	}
-	return true
+	return n == "" || n.IsHost()
 }
 
 // CgroupSpec represents the cgroup to use for the container.
@@ -197,22 +188,20 @@ type CgroupSpec string
 
 // IsContainer indicates whether the container is using another container cgroup
 func (c CgroupSpec) IsContainer() bool {
-	parts := strings.SplitN(string(c), ":", 2)
-	return len(parts) > 1 && parts[0] == "container"
+	_, ok := containerID(string(c))
+	return ok
 }
 
 // Valid indicates whether the cgroup spec is valid.
 func (c CgroupSpec) Valid() bool {
-	return c.IsContainer() || c == ""
+	// TODO(thaJeztah): align with PidMode, and consider container-mode without a container name/ID to be invalid.
+	return c == "" || c.IsContainer()
 }
 
-// Container returns the name of the container whose cgroup will be used.
-func (c CgroupSpec) Container() string {
-	parts := strings.SplitN(string(c), ":", 2)
-	if len(parts) > 1 {
-		return parts[1]
-	}
-	return ""
+// Container returns the ID or name of the container whose cgroup will be used.
+func (c CgroupSpec) Container() (idOrName string) {
+	idOrName, _ = containerID(string(c))
+	return idOrName
 }
 
 // UTSMode represents the UTS namespace of the container.
@@ -220,7 +209,7 @@ type UTSMode string
 
 // IsPrivate indicates whether the container uses its private UTS namespace.
 func (n UTSMode) IsPrivate() bool {
-	return !(n.IsHost())
+	return !n.IsHost()
 }
 
 // IsHost indicates whether the container uses the host's UTS namespace.
@@ -230,13 +219,7 @@ func (n UTSMode) IsHost() bool {
 
 // Valid indicates whether the UTS namespace is valid.
 func (n UTSMode) Valid() bool {
-	parts := strings.Split(string(n), ":")
-	switch mode := parts[0]; mode {
-	case "", "host":
-	default:
-		return false
-	}
-	return true
+	return n == "" || n.IsHost()
 }
 
 // PidMode represents the pid namespace of the container.
@@ -254,32 +237,19 @@ func (n PidMode) IsHost() bool {
 
 // IsContainer indicates whether the container uses a container's pid namespace.
 func (n PidMode) IsContainer() bool {
-	parts := strings.SplitN(string(n), ":", 2)
-	return len(parts) > 1 && parts[0] == "container"
+	_, ok := containerID(string(n))
+	return ok
 }
 
 // Valid indicates whether the pid namespace is valid.
 func (n PidMode) Valid() bool {
-	parts := strings.Split(string(n), ":")
-	switch mode := parts[0]; mode {
-	case "", "host":
-	case "container":
-		if len(parts) != 2 || parts[1] == "" {
-			return false
-		}
-	default:
-		return false
-	}
-	return true
+	return n == "" || n.IsHost() || validContainer(string(n))
 }
 
 // Container returns the name of the container whose pid namespace is going to be used.
-func (n PidMode) Container() string {
-	parts := strings.SplitN(string(n), ":", 2)
-	if len(parts) > 1 {
-		return parts[1]
-	}
-	return ""
+func (n PidMode) Container() (idOrName string) {
+	idOrName, _ = containerID(string(n))
+	return idOrName
 }
 
 // DeviceRequest represents a request for devices from a device driver.
@@ -408,16 +378,17 @@ type UpdateConfig struct {
 // Portable information *should* appear in Config.
 type HostConfig struct {
 	// Applicable to all platforms
-	Binds           []string      // List of volume bindings for this container
-	ContainerIDFile string        // File (path) where the containerId is written
-	LogConfig       LogConfig     // Configuration of the logs for this container
-	NetworkMode     NetworkMode   // Network mode to use for the container
-	PortBindings    nat.PortMap   // Port mapping between the exposed port (container) and the host
-	RestartPolicy   RestartPolicy // Restart policy to be used for the container
-	AutoRemove      bool          // Automatically remove container when it exits
-	VolumeDriver    string        // Name of the volume driver used to mount volumes
-	VolumesFrom     []string      // List of volumes to take from other container
-	ConsoleSize     [2]uint       // Initial console size (height,width)
+	Binds           []string          // List of volume bindings for this container
+	ContainerIDFile string            // File (path) where the containerId is written
+	LogConfig       LogConfig         // Configuration of the logs for this container
+	NetworkMode     NetworkMode       // Network mode to use for the container
+	PortBindings    nat.PortMap       // Port mapping between the exposed port (container) and the host
+	RestartPolicy   RestartPolicy     // Restart policy to be used for the container
+	AutoRemove      bool              // Automatically remove container when it exits
+	VolumeDriver    string            // Name of the volume driver used to mount volumes
+	VolumesFrom     []string          // List of volumes to take from other container
+	ConsoleSize     [2]uint           // Initial console size (height,width)
+	Annotations     map[string]string `json:",omitempty"` // Arbitrary non-identifying metadata attached to container and provided to the runtime
 
 	// Applicable to UNIX platforms
 	CapAdd          strslice.StrSlice // List of kernel capabilities to add to the container
@@ -462,4 +433,24 @@ type HostConfig struct {
 
 	// Run a custom init inside the container, if null, use the daemon's configured settings
 	Init *bool `json:",omitempty"`
+}
+
+// containerID splits "container:<ID|name>" values. It returns the container
+// ID or name, and whether an ID/name was found. It returns an empty string and
+// a "false" if the value does not have a "container:" prefix. Further validation
+// of the returned, including checking if the value is empty, should be handled
+// by the caller.
+func containerID(val string) (idOrName string, ok bool) {
+	k, v, hasSep := strings.Cut(val, ":")
+	if !hasSep || k != "container" {
+		return "", false
+	}
+	return v, true
+}
+
+// validContainer checks if the given value is a "container:" mode with
+// a non-empty name/ID.
+func validContainer(val string) bool {
+	id, ok := containerID(val)
+	return ok && id != ""
 }

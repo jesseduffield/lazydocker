@@ -19,10 +19,10 @@ produces:
 consumes:
   - "application/json"
   - "text/plain"
-basePath: "/v1.42"
+basePath: "/v1.43"
 info:
   title: "Docker Engine API"
-  version: "1.42"
+  version: "1.43"
   x-logo:
     url: "https://docs.docker.com/assets/images/logo-docker-main.png"
   description: |
@@ -55,8 +55,8 @@ info:
     the URL is not supported by the daemon, a HTTP `400 Bad Request` error message
     is returned.
 
-    If you omit the version-prefix, the current version of the API (v1.42) is used.
-    For example, calling `/info` is the same as calling `/v1.42/info`. Using the
+    If you omit the version-prefix, the current version of the API (v1.43) is used.
+    For example, calling `/info` is the same as calling `/v1.43/info`. Using the
     API without a version-prefix is deprecated and will be removed in a future release.
 
     Engine releases in the near future should support this version of the API,
@@ -976,6 +976,13 @@ definitions:
             items:
               type: "integer"
               minimum: 0
+          Annotations:
+            type: "object"
+            description: |
+              Arbitrary non-identifying metadata attached to container and
+              provided to the runtime when the container is started.
+            additionalProperties:
+              type: "string"
 
           # Applicable to UNIX platforms
           CapAdd:
@@ -1122,6 +1129,7 @@ definitions:
               remapping option is enabled.
           ShmSize:
             type: "integer"
+            format: "int64"
             description: |
               Size of `/dev/shm` in bytes. If omitted, the system uses 64MB.
             minimum: 0
@@ -1610,6 +1618,34 @@ definitions:
           "WorkDir": "/var/lib/docker/overlay2/ef749362d13333e65fc95c572eb525abbe0052e16e086cb64bc3b98ae9aa6d74/work"
         }
 
+  FilesystemChange:
+    description: |
+      Change in the container's filesystem.
+    type: "object"
+    required: [Path, Kind]
+    properties:
+      Path:
+        description: |
+          Path to file or directory that has changed.
+        type: "string"
+        x-nullable: false
+      Kind:
+        $ref: "#/definitions/ChangeType"
+
+  ChangeType:
+    description: |
+      Kind of change
+
+      Can be one of:
+
+      - `0`: Modified ("C")
+      - `1`: Added ("A")
+      - `2`: Deleted ("D")
+    type: "integer"
+    format: "uint8"
+    enum: [0, 1, 2]
+    x-nullable: false
+
   ImageInspect:
     description: |
       Information about an image in the local image cache.
@@ -1746,15 +1782,14 @@ definitions:
           Total size of the image including all layers it is composed of.
 
           In versions of Docker before v1.10, this field was calculated from
-          the image itself and all of its parent images. Docker v1.10 and up
-          store images self-contained, and no longer use a parent-chain, making
-          this field an equivalent of the Size field.
+          the image itself and all of its parent images. Images are now stored
+          self-contained, and no longer use a parent-chain, making this field
+          an equivalent of the Size field.
 
-          This field is kept for backward compatibility, but may be removed in
-          a future version of the API.
+          > **Deprecated**: this field is kept for backward compatibility, but
+          > will be removed in API v1.44.
         type: "integer"
         format: "int64"
-        x-nullable: false
         example: 1239828
       GraphDriver:
         $ref: "#/definitions/GraphDriverData"
@@ -1802,7 +1837,6 @@ definitions:
       - Created
       - Size
       - SharedSize
-      - VirtualSize
       - Labels
       - Containers
     properties:
@@ -1888,19 +1922,17 @@ definitions:
         x-nullable: false
         example: 1239828
       VirtualSize:
-        description: |
+        description: |-
           Total size of the image including all layers it is composed of.
 
           In versions of Docker before v1.10, this field was calculated from
-          the image itself and all of its parent images. Docker v1.10 and up
-          store images self-contained, and no longer use a parent-chain, making
-          this field an equivalent of the Size field.
+          the image itself and all of its parent images. Images are now stored
+          self-contained, and no longer use a parent-chain, making this field
+          an equivalent of the Size field.
 
-          This field is kept for backward compatibility, but may be removed in
-          a future version of the API.
+          Deprecated: this field is kept for backward compatibility, and will be removed in API v1.44.
         type: "integer"
         format: "int64"
-        x-nullable: false
         example: 172064416
       Labels:
         description: "User-defined key/value metadata."
@@ -4652,7 +4684,8 @@ definitions:
         example: false
       OOMKilled:
         description: |
-          Whether this container has been killed because it ran out of memory.
+          Whether a process within this container has been killed because it ran
+          out of memory since the container was last started.
         type: "boolean"
         example: false
       Dead:
@@ -5035,7 +5068,7 @@ definitions:
           Go runtime (`GOOS`).
 
           Currently returned values are "linux" and "windows". A full list of
-          possible values can be found in the [Go documentation](https://golang.org/doc/install/source#environment).
+          possible values can be found in the [Go documentation](https://go.dev/doc/install/source#environment).
         type: "string"
         example: "linux"
       Architecture:
@@ -5043,7 +5076,7 @@ definitions:
           Hardware architecture of the host, as returned by the Go runtime
           (`GOARCH`).
 
-          A full list of possible values can be found in the [Go documentation](https://golang.org/doc/install/source#environment).
+          A full list of possible values can be found in the [Go documentation](https://go.dev/doc/install/source#environment).
         type: "string"
         example: "x86_64"
       NCPU:
@@ -5129,42 +5162,8 @@ definitions:
       ServerVersion:
         description: |
           Version string of the daemon.
-
-          > **Note**: the [standalone Swarm API](https://docs.docker.com/swarm/swarm-api/)
-          > returns the Swarm version instead of the daemon  version, for example
-          > `swarm/1.2.8`.
         type: "string"
-        example: "17.06.0-ce"
-      ClusterStore:
-        description: |
-          URL of the distributed storage backend.
-
-
-          The storage backend is used for multihost networking (to store
-          network and endpoint information) and by the node discovery mechanism.
-
-          <p><br /></p>
-
-          > **Deprecated**: This field is only propagated when using standalone Swarm
-          > mode, and overlay networking using an external k/v store. Overlay
-          > networks with Swarm mode enabled use the built-in raft store, and
-          > this field will be empty.
-        type: "string"
-        example: "consul://consul.corp.example.com:8600/some/path"
-      ClusterAdvertise:
-        description: |
-          The network endpoint that the Engine advertises for the purpose of
-          node discovery. ClusterAdvertise is a `host:port` combination on which
-          the daemon is reachable by other hosts.
-
-          <p><br /></p>
-
-          > **Deprecated**: This field is only propagated when using standalone Swarm
-          > mode, and overlay networking using an external k/v store. Overlay
-          > networks with Swarm mode enabled use the built-in raft store, and
-          > this field will be empty.
-        type: "string"
-        example: "node5.corp.example.com:8000"
+        example: "24.0.2"
       Runtimes:
         description: |
           List of [OCI compliant](https://github.com/opencontainers/runtime-spec)
@@ -5242,7 +5241,8 @@ definitions:
       SecurityOptions:
         description: |
           List of security features that are enabled on the daemon, such as
-          apparmor, seccomp, SELinux, user-namespaces (userns), and rootless.
+          apparmor, seccomp, SELinux, user-namespaces (userns), rootless and
+          no-new-privileges.
 
           Additional configuration options for each security feature may
           be present, and are included as a comma-separated list of key/value
@@ -6875,9 +6875,9 @@ paths:
         Returns which files in a container's filesystem have been added, deleted,
         or modified. The `Kind` of modification can be one of:
 
-        - `0`: Modified
-        - `1`: Added
-        - `2`: Deleted
+        - `0`: Modified ("C")
+        - `1`: Added ("A")
+        - `2`: Deleted ("D")
       operationId: "ContainerChanges"
       produces: ["application/json"]
       responses:
@@ -6886,22 +6886,7 @@ paths:
           schema:
             type: "array"
             items:
-              type: "object"
-              x-go-name: "ContainerChangeResponseItem"
-              title: "ContainerChangeResponseItem"
-              description: "change item in response to ContainerChanges operation"
-              required: [Path, Kind]
-              properties:
-                Path:
-                  description: "Path to file that has changed"
-                  type: "string"
-                  x-nullable: false
-                Kind:
-                  description: "Kind of change"
-                  type: "integer"
-                  format: "uint8"
-                  enum: [0, 1, 2]
-                  x-nullable: false
+              $ref: "#/definitions/FilesystemChange"
           examples:
             application/json:
               - Path: "/dev"
@@ -8228,7 +8213,7 @@ paths:
 
             Available filters:
 
-            - `until=<duration>`: duration relative to daemon's time, during which build cache was not used, in Go's duration format (e.g., '24h')
+            - `until=<timestamp>` remove cache older than `<timestamp>`. The `<timestamp>` can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. `10m`, `1h30m`) computed relative to the daemon's local time.
             - `id=<id>`
             - `parent=<id>`
             - `type=<string>`
@@ -9911,7 +9896,9 @@ paths:
               Id: "22be93d5babb089c5aab8dbc369042fad48ff791584ca2da2100db837a1c7c30"
               Warning: ""
         403:
-          description: "operation not supported for pre-defined networks"
+          description: |
+            Forbidden operation. This happens when trying to create a network named after a pre-defined network,
+            or when trying to create an overlay network on a daemon which is not part of a Swarm cluster.
           schema:
             $ref: "#/definitions/ErrorResponse"
         404:
@@ -10374,6 +10361,12 @@ paths:
             default if omitted.
           required: true
           type: "string"
+        - name: "force"
+          in: "query"
+          description: |
+            Force disable a plugin even if still in use.
+          required: false
+          type: "boolean"
       tags: ["Plugin"]
   /plugins/{name}/upgrade:
     post:
