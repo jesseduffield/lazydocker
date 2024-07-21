@@ -113,12 +113,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		Closers:                []io.Closer{tunnelCloser},
 	}
 
-	command := utils.ApplyTemplate(
-		config.UserConfig.CommandTemplates.CheckDockerComposeConfig,
-		dockerCommand.NewCommandObject(CommandObject{}),
-	)
-
-	log.Warn(command)
+	dockerCommand.setDockerComposeCommand(config)
 
 	err = osCommand.RunCommand(
 		utils.ApplyTemplate(
@@ -132,6 +127,18 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 	}
 
 	return dockerCommand, nil
+}
+
+func (c *DockerCommand) setDockerComposeCommand(config *config.AppConfig) {
+	if config.UserConfig.CommandTemplates.DockerCompose != "docker compose" {
+		return
+	}
+
+	// it's possible that a user is still using docker-compose, so we'll check if 'docker comopose' is available, and if not, we'll fall back to 'docker-compose'
+	err := c.OSCommand.RunCommand("docker compose version")
+	if err != nil {
+		config.UserConfig.CommandTemplates.DockerCompose = "docker-compose"
+	}
 }
 
 func (c *DockerCommand) Close() error {
