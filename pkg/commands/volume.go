@@ -3,8 +3,8 @@ package commands
 import (
 	"context"
 
-	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
 )
@@ -12,7 +12,7 @@ import (
 // Volume : A docker Volume
 type Volume struct {
 	Name          string
-	Volume        *dockerTypes.Volume
+	Volume        *volume.Volume
 	Client        *client.Client
 	OSCommand     *OSCommand
 	Log           *logrus.Entry
@@ -21,7 +21,7 @@ type Volume struct {
 
 // RefreshVolumes gets the volumes and stores them
 func (c *DockerCommand) RefreshVolumes() ([]*Volume, error) {
-	result, err := c.Client.VolumeList(context.Background(), filters.Args{})
+	result, err := c.Client.VolumeList(context.Background(), volume.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -30,10 +30,10 @@ func (c *DockerCommand) RefreshVolumes() ([]*Volume, error) {
 
 	ownVolumes := make([]*Volume, len(volumes))
 
-	for i, volume := range volumes {
+	for i, vol := range volumes {
 		ownVolumes[i] = &Volume{
-			Name:          volume.Name,
-			Volume:        volume,
+			Name:          vol.Name,
+			Volume:        vol,
 			Client:        c.Client,
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,

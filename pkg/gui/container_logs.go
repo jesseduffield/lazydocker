@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"time"
 
-	dockerTypes "github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
@@ -104,8 +104,8 @@ func (gui *Gui) promptToReturn() {
 	}
 }
 
-func (gui *Gui) writeContainerLogs(container *commands.Container, ctx context.Context, writer io.Writer) error {
-	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, container.ID, dockerTypes.ContainerLogsOptions{
+func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context, writer io.Writer) error {
+	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, ctr.ID, container.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
@@ -119,7 +119,7 @@ func (gui *Gui) writeContainerLogs(container *commands.Container, ctx context.Co
 	}
 	defer readCloser.Close()
 
-	if !container.DetailsLoaded() {
+	if !ctr.DetailsLoaded() {
 		// loop until the details load or context is cancelled, using timer
 		ticker := time.NewTicker(time.Millisecond * 100)
 		defer ticker.Stop()
@@ -129,14 +129,14 @@ func (gui *Gui) writeContainerLogs(container *commands.Container, ctx context.Co
 			case <-ctx.Done():
 				return nil
 			case <-ticker.C:
-				if container.DetailsLoaded() {
+				if ctr.DetailsLoaded() {
 					break outer
 				}
 			}
 		}
 	}
 
-	if container.Details.Config.Tty {
+	if ctr.Details.Config.Tty {
 		_, err = io.Copy(writer, readCloser)
 		if err != nil {
 			return err

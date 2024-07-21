@@ -16,7 +16,7 @@ import (
 	cliconfig "github.com/docker/cli/cli/config"
 	ddocker "github.com/docker/cli/cli/context/docker"
 	ctxstore "github.com/docker/cli/cli/context/store"
-	dockerTypes "github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/imdario/mergo"
 	"github.com/jesseduffield/lazydocker/pkg/commands/ssh"
@@ -200,9 +200,9 @@ func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service,
 func (c *DockerCommand) assignContainersToServices(containers []*Container, services []*Service) {
 L:
 	for _, service := range services {
-		for _, container := range containers {
-			if !container.OneOff && container.ServiceName == service.Name {
-				service.Container = container
+		for _, ctr := range containers {
+			if !ctr.OneOff && ctr.ServiceName == service.Name {
+				service.Container = ctr
 				continue L
 			}
 		}
@@ -215,19 +215,19 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 	c.ContainerMutex.Lock()
 	defer c.ContainerMutex.Unlock()
 
-	containers, err := c.Client.ContainerList(context.Background(), dockerTypes.ContainerListOptions{All: true})
+	containers, err := c.Client.ContainerList(context.Background(), container.ListOptions{All: true})
 	if err != nil {
 		return nil, err
 	}
 
 	ownContainers := make([]*Container, len(containers))
 
-	for i, container := range containers {
+	for i, ctr := range containers {
 		var newContainer *Container
 
 		// check if we already have data stored against the container
 		for _, existingContainer := range existingContainers {
-			if existingContainer.ID == container.ID {
+			if existingContainer.ID == ctr.ID {
 				newContainer = existingContainer
 				break
 			}
@@ -236,7 +236,7 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 		// initialise the container if it's completely new
 		if newContainer == nil {
 			newContainer = &Container{
-				ID:            container.ID,
+				ID:            ctr.ID,
 				Client:        c.Client,
 				OSCommand:     c.OSCommand,
 				Log:           c.Log,
@@ -245,17 +245,17 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 			}
 		}
 
-		newContainer.Container = container
+		newContainer.Container = ctr
 		// if the container is made with a name label we will use that
-		if name, ok := container.Labels["name"]; ok {
+		if name, ok := ctr.Labels["name"]; ok {
 			newContainer.Name = name
 		} else {
-			newContainer.Name = strings.TrimLeft(container.Names[0], "/")
+			newContainer.Name = strings.TrimLeft(ctr.Names[0], "/")
 		}
-		newContainer.ServiceName = container.Labels["com.docker.compose.service"]
-		newContainer.ProjectName = container.Labels["com.docker.compose.project"]
-		newContainer.ContainerNumber = container.Labels["com.docker.compose.container"]
-		newContainer.OneOff = container.Labels["com.docker.compose.oneoff"] == "True"
+		newContainer.ServiceName = ctr.Labels["com.docker.compose.service"]
+		newContainer.ProjectName = ctr.Labels["com.docker.compose.project"]
+		newContainer.ContainerNumber = ctr.Labels["com.docker.compose.container"]
+		newContainer.OneOff = ctr.Labels["com.docker.compose.oneoff"] == "True"
 
 		ownContainers[i] = newContainer
 	}
@@ -309,15 +309,15 @@ func (c *DockerCommand) RefreshContainerDetails(containers []*Container) error {
 // this contains a bit more info than what you get from the go-docker client
 func (c *DockerCommand) SetContainerDetails(containers []*Container) {
 	wg := sync.WaitGroup{}
-	for _, container := range containers {
-		container := container
+	for _, ctr := range containers {
+		ctr := ctr
 		wg.Add(1)
 		go func() {
-			details, err := c.Client.ContainerInspect(context.Background(), container.ID)
+			details, err := c.Client.ContainerInspect(context.Background(), ctr.ID)
 			if err != nil {
 				c.Log.Error(err)
 			} else {
-				container.Details = details
+				ctr.Details = details
 			}
 			wg.Done()
 		}()

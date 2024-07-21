@@ -1,9 +1,12 @@
+// FIXME(thaJeztah): remove once we are a module; the go:build directive prevents go from downgrading language version to go1.16:
+//go:build go1.21
+
 package store
 
 // TypeGetter is a func used to determine the concrete type of a context or
 // endpoint metadata by returning a pointer to an instance of the object
 // eg: for a context of type DockerContext, the corresponding TypeGetter should return new(DockerContext)
-type TypeGetter func() interface{}
+type TypeGetter func() any
 
 // NamedTypeGetter is a TypeGetter associated with a name
 type NamedTypeGetter struct {
@@ -11,7 +14,7 @@ type NamedTypeGetter struct {
 	typeGetter TypeGetter
 }
 
-// EndpointTypeGetter returns a NamedTypeGetter with the spcecified name and getter
+// EndpointTypeGetter returns a NamedTypeGetter with the specified name and getter
 func EndpointTypeGetter(name string, getter TypeGetter) NamedTypeGetter {
 	return NamedTypeGetter{
 		name:       name,
@@ -19,7 +22,7 @@ func EndpointTypeGetter(name string, getter TypeGetter) NamedTypeGetter {
 	}
 }
 
-// Config is used to configure the metadata marshaler of the context store
+// Config is used to configure the metadata marshaler of the context ContextStore
 type Config struct {
 	contextType   TypeGetter
 	endpointTypes map[string]TypeGetter

@@ -4,7 +4,7 @@ import (
 	"context"
 	"os/exec"
 
-	dockerTypes "github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -20,7 +20,7 @@ type Service struct {
 }
 
 // Remove removes the service's containers
-func (s *Service) Remove(options dockerTypes.ContainerRemoveOptions) error {
+func (s *Service) Remove(options container.RemoveOptions) error {
 	return s.Container.Remove(options)
 }
 
@@ -39,7 +39,7 @@ func (s *Service) Restart() error {
 	return s.runCommand(s.OSCommand.Config.UserConfig.CommandTemplates.RestartService)
 }
 
-// Restart starts the service
+// Start starts the service
 func (s *Service) Start() error {
 	return s.runCommand(s.OSCommand.Config.UserConfig.CommandTemplates.StartService)
 }
