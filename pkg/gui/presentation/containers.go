@@ -89,7 +89,7 @@ func getContainerDisplayStatus(guiConfig *config.GuiConfig, c *commands.Containe
 	return utils.ColoredString(containerState, getContainerColor(c))
 }
 
-// GetDisplayStatus returns the exit code if the container has exited, and the health status if the container is running (and has a health check)
+// getContainerDisplaySubstatus returns the exit code if the container has exited, and the health status if the container is running (and has a health check)
 func getContainerDisplaySubstatus(guiConfig *config.GuiConfig, c *commands.Container) string {
 	if !c.DetailsLoaded() {
 		return ""
