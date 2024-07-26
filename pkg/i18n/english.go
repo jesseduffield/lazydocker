@@ -128,6 +128,13 @@ type TranslationSet struct {
 	LcNextScreenMode string
 	LcPrevScreenMode string
 	FilterPrompt     string
+
+	FocusProjects   string
+	FocusServices   string
+	FocusContainers string
+	FocusImages     string
+	FocusVolumes    string
+	FocusNetworks   string
 }
 
 func englishSet() TranslationSet {
@@ -263,5 +270,12 @@ func englishSet() TranslationSet {
 		LcNextScreenMode: "next screen mode (normal/half/fullscreen)",
 		LcPrevScreenMode: "prev screen mode",
 		FilterPrompt:     "filter",
+
+		FocusProjects:   "focus projects panel",
+		FocusServices:   "focus services panel",
+		FocusContainers: "focus containers panel",
+		FocusImages:     "focus images panel",
+		FocusVolumes:    "focus volumes panel",
+		FocusNetworks:   "focus networks panel",
 	}
 }
