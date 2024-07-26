@@ -10,7 +10,7 @@ Changes to the user config will only take place after closing and re-opening laz
 
 - OSX: `~/Library/Application Support/jesseduffield/lazydocker/config.yml`
 - Linux: `~/.config/lazydocker/config.yml`
-- Windows: `C:\\Users\\<User>\\AppData\\Roaming\\jesseduffield\\lazydocker\\config.yml` (I think)
+- Windows: `C:\Users\<User>\AppData\Roaming\lazydocker\config.yml`
 
 JSON schema is available for `config.yml` so that IntelliSense in Visual Studio Code
 (completion and error checking) is automatically enabled when the [YAML Red Hat][yaml]
