@@ -1,6 +1,9 @@
 package credentials
 
-import "errors"
+import (
+	"errors"
+	"strings"
+)
 
 const (
 	// ErrCredentialsNotFound standardizes the not found error, so every helper returns
@@ -47,7 +50,7 @@ func IsErrCredentialsNotFound(err error) bool {
 // This function helps to check messages returned by an
 // external program via its standard output.
 func IsErrCredentialsNotFoundMessage(err string) bool {
-	return err == errCredentialsNotFoundMessage
+	return strings.TrimSpace(err) == errCredentialsNotFoundMessage
 }
 
 // errCredentialsMissingServerURL represents an error raised
@@ -104,7 +107,7 @@ func IsCredentialsMissingServerURL(err error) bool {
 // IsCredentialsMissingServerURLMessage checks for an
 // errCredentialsMissingServerURL in the error message.
 func IsCredentialsMissingServerURLMessage(err string) bool {
-	return err == errCredentialsMissingServerURLMessage
+	return strings.TrimSpace(err) == errCredentialsMissingServerURLMessage
 }
 
 // IsCredentialsMissingUsername returns true if the error
@@ -117,5 +120,5 @@ func IsCredentialsMissingUsername(err error) bool {
 // IsCredentialsMissingUsernameMessage checks for an
 // errCredentialsMissingUsername in the error message.
 func IsCredentialsMissingUsernameMessage(err string) bool {
-	return err == errCredentialsMissingUsernameMessage
+	return strings.TrimSpace(err) == errCredentialsMissingUsernameMessage
 }

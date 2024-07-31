@@ -124,6 +124,9 @@ func (s *ContextStore) List() ([]Metadata, error) {
 
 // Names return Metadata names for a Lister
 func Names(s Lister) ([]string, error) {
+	if s == nil {
+		return nil, errors.New("nil lister")
+	}
 	list, err := s.List()
 	if err != nil {
 		return nil, err
