@@ -35,7 +35,7 @@ github.com/docker/cli/cli/connhelper/ssh
 github.com/docker/cli/cli/context
 github.com/docker/cli/cli/context/docker
 github.com/docker/cli/cli/context/store
-# github.com/docker/docker v27.0.3+incompatible
+# github.com/docker/docker v27.1.1+incompatible
 ## explicit
 github.com/docker/docker/api
 github.com/docker/docker/api/types
