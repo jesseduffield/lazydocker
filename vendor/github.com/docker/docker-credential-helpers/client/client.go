@@ -16,11 +16,9 @@ func isValidCredsMessage(msg string) error {
 	if credentials.IsCredentialsMissingServerURLMessage(msg) {
 		return credentials.NewErrCredentialsMissingServerURL()
 	}
-
 	if credentials.IsCredentialsMissingUsernameMessage(msg) {
 		return credentials.NewErrCredentialsMissingUsername()
 	}
-
 	return nil
 }
 
@@ -36,13 +34,10 @@ func Store(program ProgramFunc, creds *credentials.Credentials) error {
 
 	out, err := cmd.Output()
 	if err != nil {
-		t := strings.TrimSpace(string(out))
-
-		if isValidErr := isValidCredsMessage(t); isValidErr != nil {
+		if isValidErr := isValidCredsMessage(string(out)); isValidErr != nil {
 			err = isValidErr
 		}
-
-		return fmt.Errorf("error storing credentials - err: %v, out: `%s`", err, t)
+		return fmt.Errorf("error storing credentials - err: %v, out: `%s`", err, strings.TrimSpace(string(out)))
 	}
 
 	return nil
@@ -55,17 +50,15 @@ func Get(program ProgramFunc, serverURL string) (*credentials.Credentials, error
 
 	out, err := cmd.Output()
 	if err != nil {
-		t := strings.TrimSpace(string(out))
-
-		if credentials.IsErrCredentialsNotFoundMessage(t) {
+		if credentials.IsErrCredentialsNotFoundMessage(string(out)) {
 			return nil, credentials.NewErrCredentialsNotFound()
 		}
 
-		if isValidErr := isValidCredsMessage(t); isValidErr != nil {
+		if isValidErr := isValidCredsMessage(string(out)); isValidErr != nil {
 			err = isValidErr
 		}
 
-		return nil, fmt.Errorf("error getting credentials - err: %v, out: `%s`", err, t)
+		return nil, fmt.Errorf("error getting credentials - err: %v, out: `%s`", err, strings.TrimSpace(string(out)))
 	}
 
 	resp := &credentials.Credentials{
