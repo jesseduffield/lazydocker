@@ -212,7 +212,7 @@ func englishSet() TranslationSet {
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Main",
-		ProjectTitle:              "Project",
+		ProjectTitle:              "Projects",
 		ServicesTitle:             "Services",
 		ContainersTitle:           "Containers",
 		StandaloneContainersTitle: "Standalone Containers",
