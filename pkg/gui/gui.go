@@ -459,10 +459,15 @@ func (gui *Gui) ShouldRefresh(key string) bool {
 }
 
 func (gui *Gui) initiallyFocusedViewName() string {
-	if gui.DockerCommand.InDockerComposeProject {
+	visiblePanels := gui.Config.UserConfig.Gui.SidePanelVisibility
+	
+	if gui.DockerCommand.InDockerComposeProject && visiblePanels.Services {
 		return "services"
+	} else if visiblePanels.Containers {
+		return "containers"
+	} else {
+		return "project"
 	}
-	return "containers"
 }
 
 func (gui *Gui) IgnoreStrings() []string {
