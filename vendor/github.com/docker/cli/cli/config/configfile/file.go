@@ -3,9 +3,7 @@ package configfile
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,13 +12,6 @@ import (
 	"github.com/docker/cli/cli/config/types"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-)
-
-const (
-	// This constant is only used for really old config files when the
-	// URL wasn't saved as part of the config file and it was just
-	// assumed to be this value.
-	defaultIndexServer = "https://index.docker.io/v1/"
 )
 
 // ConfigFile ~/.docker/config.json file info
@@ -46,12 +37,11 @@ type ConfigFile struct {
 	PruneFilters         []string                     `json:"pruneFilters,omitempty"`
 	Proxies              map[string]ProxyConfig       `json:"proxies,omitempty"`
 	Experimental         string                       `json:"experimental,omitempty"`
-	StackOrchestrator    string                       `json:"stackOrchestrator,omitempty"`
-	Kubernetes           *KubernetesConfig            `json:"kubernetes,omitempty"`
 	CurrentContext       string                       `json:"currentContext,omitempty"`
 	CLIPluginsExtraDirs  []string                     `json:"cliPluginsExtraDirs,omitempty"`
 	Plugins              map[string]map[string]string `json:"plugins,omitempty"`
 	Aliases              map[string]string            `json:"aliases,omitempty"`
+	Features             map[string]string            `json:"features,omitempty"`
 }
 
 // ProxyConfig contains proxy configuration settings
@@ -60,11 +50,7 @@ type ProxyConfig struct {
 	HTTPSProxy string `json:"httpsProxy,omitempty"`
 	NoProxy    string `json:"noProxy,omitempty"`
 	FTPProxy   string `json:"ftpProxy,omitempty"`
-}
-
-// KubernetesConfig contains Kubernetes orchestrator settings
-type KubernetesConfig struct {
-	AllNamespaces string `json:"allNamespaces,omitempty"`
+	AllProxy   string `json:"allProxy,omitempty"`
 }
 
 // New initializes an empty configuration file for the given filename 'fn'
@@ -76,44 +62,6 @@ func New(fn string) *ConfigFile {
 		Plugins:     make(map[string]map[string]string),
 		Aliases:     make(map[string]string),
 	}
-}
-
-// LegacyLoadFromReader reads the non-nested configuration data given and sets up the
-// auth config information with given directory and populates the receiver object
-func (configFile *ConfigFile) LegacyLoadFromReader(configData io.Reader) error {
-	b, err := ioutil.ReadAll(configData)
-	if err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal(b, &configFile.AuthConfigs); err != nil {
-		arr := strings.Split(string(b), "\n")
-		if len(arr) < 2 {
-			return errors.Errorf("The Auth config file is empty")
-		}
-		authConfig := types.AuthConfig{}
-		origAuth := strings.Split(arr[0], " = ")
-		if len(origAuth) != 2 {
-			return errors.Errorf("Invalid Auth config file")
-		}
-		authConfig.Username, authConfig.Password, err = decodeAuth(origAuth[1])
-		if err != nil {
-			return err
-		}
-		authConfig.ServerAddress = defaultIndexServer
-		configFile.AuthConfigs[defaultIndexServer] = authConfig
-	} else {
-		for k, authConfig := range configFile.AuthConfigs {
-			authConfig.Username, authConfig.Password, err = decodeAuth(authConfig.Auth)
-			if err != nil {
-				return err
-			}
-			authConfig.Auth = ""
-			authConfig.ServerAddress = k
-			configFile.AuthConfigs[k] = authConfig
-		}
-	}
-	return nil
 }
 
 // LoadFromReader reads the configuration data given and sets up the auth config
@@ -134,7 +82,7 @@ func (configFile *ConfigFile) LoadFromReader(configData io.Reader) error {
 		ac.ServerAddress = addr
 		configFile.AuthConfigs[addr] = ac
 	}
-	return checkKubernetesConfiguration(configFile.Kubernetes)
+	return nil
 }
 
 // ContainsAuth returns whether there is authentication configured
@@ -147,6 +95,9 @@ func (configFile *ConfigFile) ContainsAuth() bool {
 
 // GetAuthConfigs returns the mapping of repo to auth configuration
 func (configFile *ConfigFile) GetAuthConfigs() map[string]types.AuthConfig {
+	if configFile.AuthConfigs == nil {
+		configFile.AuthConfigs = make(map[string]types.AuthConfig)
+	}
 	return configFile.AuthConfigs
 }
 
@@ -191,10 +142,10 @@ func (configFile *ConfigFile) Save() (retErr error) {
 	}
 
 	dir := filepath.Dir(configFile.Filename)
-	if err := os.MkdirAll(dir, 0700); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
-	temp, err := ioutil.TempFile(dir, filepath.Base(configFile.Filename))
+	temp, err := os.CreateTemp(dir, filepath.Base(configFile.Filename))
 	if err != nil {
 		return err
 	}
@@ -244,6 +195,7 @@ func (configFile *ConfigFile) ParseProxyConfig(host string, runOpts map[string]*
 		"HTTPS_PROXY": &config.HTTPSProxy,
 		"NO_PROXY":    &config.NoProxy,
 		"FTP_PROXY":   &config.FTPProxy,
+		"ALL_PROXY":   &config.AllProxy,
 	}
 	m := runOpts
 	if m == nil {
@@ -292,12 +244,11 @@ func decodeAuth(authStr string) (string, string, error) {
 	if n > decLen {
 		return "", "", errors.Errorf("Something went wrong decoding auth config")
 	}
-	arr := strings.SplitN(string(decoded), ":", 2)
-	if len(arr) != 2 {
+	userName, password, ok := strings.Cut(string(decoded), ":")
+	if !ok || userName == "" {
 		return "", "", errors.Errorf("Invalid auth configuration file")
 	}
-	password := strings.Trim(arr[1], "\x00")
-	return arr[0], password, nil
+	return userName, strings.Trim(password, "\x00"), nil
 }
 
 // GetCredentialsStore returns a new credentials store from the settings in the
@@ -352,7 +303,8 @@ func (configFile *ConfigFile) GetAllCredentials() (map[string]types.AuthConfig, 
 	for registryHostname := range configFile.CredentialHelpers {
 		newAuth, err := configFile.GetAuthConfig(registryHostname)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).Warnf("Failed to get credentials for registry: %s", registryHostname)
+			continue
 		}
 		auths[registryHostname] = newAuth
 	}
@@ -398,18 +350,4 @@ func (configFile *ConfigFile) SetPluginConfig(pluginname, option, value string) 
 	if len(pluginConfig) == 0 {
 		delete(configFile.Plugins, pluginname)
 	}
-}
-
-func checkKubernetesConfiguration(kubeConfig *KubernetesConfig) error {
-	if kubeConfig == nil {
-		return nil
-	}
-	switch kubeConfig.AllNamespaces {
-	case "":
-	case "enabled":
-	case "disabled":
-	default:
-		return fmt.Errorf("invalid 'kubernetes.allNamespaces' value, should be 'enabled' or 'disabled': %s", kubeConfig.AllNamespaces)
-	}
-	return nil
 }

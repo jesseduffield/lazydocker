@@ -185,16 +185,10 @@ func (tc *termcap) setupterm(name string) error {
 func LoadTerminfo(name string) (*terminfo.Terminfo, string, error) {
 	var tc termcap
 	if err := tc.setupterm(name); err != nil {
-		if err != nil {
-			return nil, "", err
-		}
+		return nil, "", err
 	}
 	t := &terminfo.Terminfo{}
-	// If this is an alias record, then just emit the alias
 	t.Name = tc.name
-	if t.Name != name {
-		return t, "", nil
-	}
 	t.Aliases = tc.aliases
 	t.Colors = tc.getnum("colors")
 	t.Columns = tc.getnum("cols")
@@ -314,6 +308,8 @@ func LoadTerminfo(name string) (*terminfo.Terminfo, string, error) {
 	// but modern XTerm and emulators often have them.  Let's add them,
 	// if the shifted right and left arrows are defined.
 	if t.KeyShfRight == "\x1b[1;2C" && t.KeyShfLeft == "\x1b[1;2D" {
+		t.Modifiers = terminfo.ModifiersXTerm
+
 		t.KeyShfUp = "\x1b[1;2A"
 		t.KeyShfDown = "\x1b[1;2B"
 		t.KeyMetaUp = "\x1b[1;9A"

@@ -1,6 +1,6 @@
 ARG BASE_IMAGE_BUILDER=golang
-ARG ALPINE_VERSION=3.15
-ARG GO_VERSION=1.20
+ARG ALPINE_VERSION=3.20
+ARG GO_VERSION=1.21
 
 FROM ${BASE_IMAGE_BUILDER}:${GO_VERSION}-alpine${ALPINE_VERSION} AS builder
 ARG GOARCH=amd64
@@ -19,7 +19,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} GOARM=${GOARM} \
 FROM ${BASE_IMAGE_BUILDER}:${GO_VERSION}-alpine${ALPINE_VERSION} AS docker-builder
 ARG GOARCH=amd64
 ARG GOARM
-ARG DOCKER_VERSION=v20.10.13
+ARG DOCKER_VERSION=v27.0.3
 RUN apk add -U -q --progress --no-cache git bash coreutils gcc musl-dev
 WORKDIR /go/src/github.com/docker/cli
 RUN git clone --branch ${DOCKER_VERSION} --single-branch --depth 1 https://github.com/docker/cli.git . > /dev/null 2>&1
