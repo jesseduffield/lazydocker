@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build aix || darwin || dragonfly || freebsd || linux || netbsd || openbsd || solaris || zos
 // +build aix darwin dragonfly freebsd linux netbsd openbsd solaris zos
 
 package tcell
@@ -26,6 +27,7 @@ import (
 	"syscall"
 	"time"
 
+	"golang.org/x/sys/unix"
 	"golang.org/x/term"
 )
 
@@ -135,11 +137,14 @@ func (tty *devTty) Stop() error {
 	return nil
 }
 
-func (tty *devTty) WindowSize() (int, int, error) {
-	w, h, err := term.GetSize(tty.fd)
+func (tty *devTty) WindowSize() (WindowSize, error) {
+	size := WindowSize{}
+	ws, err := unix.IoctlGetWinsize(tty.fd, unix.TIOCGWINSZ)
 	if err != nil {
-		return 0, 0, err
+		return size, err
 	}
+	w := int(ws.Col)
+	h := int(ws.Row)
 	if w == 0 {
 		w, _ = strconv.Atoi(os.Getenv("COLUMNS"))
 	}
@@ -152,7 +157,11 @@ func (tty *devTty) WindowSize() (int, int, error) {
 	if h == 0 {
 		h = 25 // default
 	}
-	return w, h, nil
+	size.Width = w
+	size.Height = h
+	size.PixelWidth = int(ws.Xpixel)
+	size.PixelHeight = int(ws.Ypixel)
+	return size, nil
 }
 
 func (tty *devTty) NotifyResize(cb func()) {

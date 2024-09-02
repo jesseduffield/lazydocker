@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build aix || darwin || dragonfly || freebsd || linux || netbsd || openbsd || solaris || zos
 // +build aix darwin dragonfly freebsd linux netbsd openbsd solaris zos
 
 package tcell
@@ -26,6 +27,7 @@ import (
 	"syscall"
 	"time"
 
+	"golang.org/x/sys/unix"
 	"golang.org/x/term"
 )
 
@@ -60,7 +62,7 @@ func (tty *stdIoTty) Start() error {
 	defer tty.l.Unlock()
 
 	// We open another copy of /dev/tty.  This is a workaround for unusual behavior
-	// observed in macOS, apparently caused when a subshell (for example) closes our
+	// observed in macOS, apparently caused when a sub-shell (for example) closes our
 	// own tty device (when it exits for example).  Getting a fresh new one seems to
 	// resolve the problem.  (We believe this is a bug in the macOS tty driver that
 	// fails to account for dup() references to the same file before applying close()
@@ -132,11 +134,14 @@ func (tty *stdIoTty) Stop() error {
 	return nil
 }
 
-func (tty *stdIoTty) WindowSize() (int, int, error) {
-	w, h, err := term.GetSize(tty.fd)
+func (tty *stdIoTty) WindowSize() (WindowSize, error) {
+	size := WindowSize{}
+	ws, err := unix.IoctlGetWinsize(tty.fd, unix.TIOCGWINSZ)
 	if err != nil {
-		return 0, 0, err
+		return size, err
 	}
+	w := int(ws.Col)
+	h := int(ws.Row)
 	if w == 0 {
 		w, _ = strconv.Atoi(os.Getenv("COLUMNS"))
 	}
@@ -149,7 +154,11 @@ func (tty *stdIoTty) WindowSize() (int, int, error) {
 	if h == 0 {
 		h = 25 // default
 	}
-	return w, h, nil
+	size.Width = w
+	size.Height = h
+	size.PixelWidth = int(ws.Xpixel)
+	size.PixelHeight = int(ws.Ypixel)
+	return size, nil
 }
 
 func (tty *stdIoTty) NotifyResize(cb func()) {
@@ -162,7 +171,7 @@ func (tty *stdIoTty) NotifyResize(cb func()) {
 func NewStdIoTty() (Tty, error) {
 	tty := &stdIoTty{
 		sig: make(chan os.Signal),
-		in: os.Stdin,
+		in:  os.Stdin,
 		out: os.Stdout,
 	}
 	var err error

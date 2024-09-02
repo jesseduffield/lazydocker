@@ -15,7 +15,7 @@ func TestDockerComposeCommandNoFiles(t *testing.T) {
 	}
 
 	actual := conf.UserConfig.CommandTemplates.DockerCompose
-	expected := "docker-compose"
+	expected := "docker compose"
 	if actual != expected {
 		t.Fatalf("Expected %s but got %s", expected, actual)
 	}
@@ -29,7 +29,7 @@ func TestDockerComposeCommandSingleFile(t *testing.T) {
 	}
 
 	actual := conf.UserConfig.CommandTemplates.DockerCompose
-	expected := "docker-compose -f one.yml"
+	expected := "docker compose -f one.yml"
 	if actual != expected {
 		t.Fatalf("Expected %s but got %s", expected, actual)
 	}
@@ -43,7 +43,7 @@ func TestDockerComposeCommandMultipleFiles(t *testing.T) {
 	}
 
 	actual := conf.UserConfig.CommandTemplates.DockerCompose
-	expected := "docker-compose -f one.yml -f two.yml -f three.yml"
+	expected := "docker compose -f one.yml -f two.yml -f three.yml"
 	if actual != expected {
 		t.Fatalf("Expected %s but got %s", expected, actual)
 	}

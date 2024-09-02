@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	dockerTypes "github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/events"
 
 	"github.com/go-errors/errors"
 
@@ -22,9 +22,6 @@ import (
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 )
-
-// OverlappingEdges determines if panel edges overlap
-var OverlappingEdges = false
 
 // Gui wraps the gocui Gui object which handles rendering and events
 type Gui struct {
@@ -176,11 +173,9 @@ func (gui *Gui) goEvery(interval time.Duration, function func() error) {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 		for range ticker.C {
-			if gui.PauseBackgroundThreads {
-				return
+			if !gui.PauseBackgroundThreads {
+				_ = function()
 			}
-
-			_ = function()
 		}
 	}()
 }
@@ -190,7 +185,10 @@ func (gui *Gui) Run() error {
 	// closing our task manager which in turn closes the current task if there is any, so we aren't leaving processes lying around after closing lazydocker
 	defer gui.taskManager.Close()
 
-	g, err := gocui.NewGui(gocui.OutputTrue, OverlappingEdges, gocui.NORMAL, false, map[rune]string{})
+	g, err := gocui.NewGui(gocui.NewGuiOpts{
+		OutputMode:       gocui.OutputTrue,
+		RuneReplacements: map[rune]string{},
+	})
 	if err != nil {
 		return err
 	}
@@ -294,7 +292,7 @@ func (gui *Gui) setPanels() {
 }
 
 func (gui *Gui) updateContainerDetails() error {
-	return gui.DockerCommand.UpdateContainerDetails(gui.Panels.Containers.List.GetAllItems())
+	return gui.DockerCommand.RefreshContainerDetails(gui.Panels.Containers.List.GetAllItems())
 }
 
 func (gui *Gui) refresh() {
@@ -338,7 +336,7 @@ func (gui *Gui) listenForEvents(ctx context.Context, refresh func()) {
 
 outer:
 	for {
-		messageChan, errChan := gui.DockerCommand.Client.Events(context.Background(), dockerTypes.EventsOptions{})
+		messageChan, errChan := gui.DockerCommand.Client.Events(context.Background(), events.ListOptions{})
 
 		if errorCount > 0 {
 			select {
@@ -498,7 +496,11 @@ func (gui *Gui) monitorContainerStats(ctx context.Context) {
 // and panels to exist for us to know what keybindings there are, so we invoke
 // gocui in headless mode and create them.
 func (gui *Gui) SetupFakeGui() {
-	g, err := gocui.NewGui(gocui.OutputTrue, false, gocui.NORMAL, true, map[rune]string{})
+	g, err := gocui.NewGui(gocui.NewGuiOpts{
+		OutputMode:       gocui.OutputTrue,
+		RuneReplacements: map[rune]string{},
+		Headless:         true,
+	})
 	if err != nil {
 		panic(err)
 	}

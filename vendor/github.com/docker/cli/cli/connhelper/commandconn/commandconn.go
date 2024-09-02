@@ -4,13 +4,13 @@
 // For example, to provide an http.Client that can connect to a Docker daemon
 // running in a Docker container ("DIND"):
 //
-//  httpClient := &http.Client{
-//  	Transport: &http.Transport{
-//  		DialContext: func(ctx context.Context, _network, _addr string) (net.Conn, error) {
-//  			return commandconn.New(ctx, "docker", "exec", "-it", containerID, "docker", "system", "dial-stdio")
-//  		},
-//  	},
-//  }
+//	httpClient := &http.Client{
+//		Transport: &http.Transport{
+//			DialContext: func(ctx context.Context, _network, _addr string) (net.Conn, error) {
+//				return commandconn.New(ctx, "docker", "exec", "-it", containerID, "docker", "system", "dial-stdio")
+//			},
+//		},
+//	}
 package commandconn
 
 import (
@@ -20,24 +20,25 @@ import (
 	"io"
 	"net"
 	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	exec "golang.org/x/sys/execabs"
 )
 
 // New returns net.Conn
-func New(ctx context.Context, cmd string, args ...string) (net.Conn, error) {
+func New(_ context.Context, cmd string, args ...string) (net.Conn, error) {
 	var (
 		c   commandConn
 		err error
 	)
-	c.cmd = exec.CommandContext(ctx, cmd, args...)
+	c.cmd = exec.Command(cmd, args...)
 	// we assume that args never contains sensitive information
 	logrus.Debugf("commandconn: starting %s with %v", cmd, args)
 	c.cmd.Env = os.Environ()
@@ -64,81 +65,68 @@ func New(ctx context.Context, cmd string, args ...string) (net.Conn, error) {
 
 // commandConn implements net.Conn
 type commandConn struct {
-	cmd           *exec.Cmd
-	cmdExited     bool
-	cmdWaitErr    error
-	cmdMutex      sync.Mutex
-	stdin         io.WriteCloser
-	stdout        io.ReadCloser
-	stderrMu      sync.Mutex
-	stderr        bytes.Buffer
-	stdioClosedMu sync.Mutex // for stdinClosed and stdoutClosed
-	stdinClosed   bool
-	stdoutClosed  bool
-	localAddr     net.Addr
-	remoteAddr    net.Addr
+	cmdMutex     sync.Mutex // for cmd, cmdWaitErr
+	cmd          *exec.Cmd
+	cmdWaitErr   error
+	cmdExited    atomic.Bool
+	stdin        io.WriteCloser
+	stdout       io.ReadCloser
+	stderrMu     sync.Mutex // for stderr
+	stderr       bytes.Buffer
+	stdinClosed  atomic.Bool
+	stdoutClosed atomic.Bool
+	closing      atomic.Bool
+	localAddr    net.Addr
+	remoteAddr   net.Addr
 }
 
-// killIfStdioClosed kills the cmd if both stdin and stdout are closed.
-func (c *commandConn) killIfStdioClosed() error {
-	c.stdioClosedMu.Lock()
-	stdioClosed := c.stdoutClosed && c.stdinClosed
-	c.stdioClosedMu.Unlock()
-	if !stdioClosed {
-		return nil
+// kill terminates the process. On Windows it kills the process directly,
+// whereas on other platforms, a SIGTERM is sent, before forcefully terminating
+// the process after 3 seconds.
+func (c *commandConn) kill() {
+	if c.cmdExited.Load() {
+		return
 	}
-	return c.kill()
-}
-
-// killAndWait tries sending SIGTERM to the process before sending SIGKILL.
-func killAndWait(cmd *exec.Cmd) error {
+	c.cmdMutex.Lock()
 	var werr error
 	if runtime.GOOS != "windows" {
 		werrCh := make(chan error)
-		go func() { werrCh <- cmd.Wait() }()
-		cmd.Process.Signal(syscall.SIGTERM)
+		go func() { werrCh <- c.cmd.Wait() }()
+		_ = c.cmd.Process.Signal(syscall.SIGTERM)
 		select {
 		case werr = <-werrCh:
 		case <-time.After(3 * time.Second):
-			cmd.Process.Kill()
+			_ = c.cmd.Process.Kill()
 			werr = <-werrCh
 		}
 	} else {
-		cmd.Process.Kill()
-		werr = cmd.Wait()
+		_ = c.cmd.Process.Kill()
+		werr = c.cmd.Wait()
 	}
-	return werr
-}
-
-// kill returns nil if the command terminated, regardless to the exit status.
-func (c *commandConn) kill() error {
-	var werr error
-	c.cmdMutex.Lock()
-	if c.cmdExited {
-		werr = c.cmdWaitErr
-	} else {
-		werr = killAndWait(c.cmd)
-		c.cmdWaitErr = werr
-		c.cmdExited = true
-	}
+	c.cmdWaitErr = werr
 	c.cmdMutex.Unlock()
-	if werr == nil {
-		return nil
-	}
-	wExitErr, ok := werr.(*exec.ExitError)
-	if ok {
-		if wExitErr.ProcessState.Exited() {
-			return nil
-		}
-	}
-	return errors.Wrapf(werr, "commandconn: failed to wait")
+	c.cmdExited.Store(true)
 }
 
-func (c *commandConn) onEOF(eof error) error {
-	// when we got EOF, the command is going to be terminated
-	var werr error
+// handleEOF handles io.EOF errors while reading or writing from the underlying
+// command pipes.
+//
+// When we've received an EOF we expect that the command will
+// be terminated soon. As such, we call Wait() on the command
+// and return EOF or the error depending on whether the command
+// exited with an error.
+//
+// If Wait() does not return within 10s, an error is returned
+func (c *commandConn) handleEOF(err error) error {
+	if err != io.EOF {
+		return err
+	}
+
 	c.cmdMutex.Lock()
-	if c.cmdExited {
+	defer c.cmdMutex.Unlock()
+
+	var werr error
+	if c.cmdExited.Load() {
 		werr = c.cmdWaitErr
 	} else {
 		werrCh := make(chan error)
@@ -146,107 +134,125 @@ func (c *commandConn) onEOF(eof error) error {
 		select {
 		case werr = <-werrCh:
 			c.cmdWaitErr = werr
-			c.cmdExited = true
+			c.cmdExited.Store(true)
 		case <-time.After(10 * time.Second):
-			c.cmdMutex.Unlock()
 			c.stderrMu.Lock()
 			stderr := c.stderr.String()
 			c.stderrMu.Unlock()
-			return errors.Errorf("command %v did not exit after %v: stderr=%q", c.cmd.Args, eof, stderr)
+			return errors.Errorf("command %v did not exit after %v: stderr=%q", c.cmd.Args, err, stderr)
 		}
 	}
-	c.cmdMutex.Unlock()
+
 	if werr == nil {
-		return eof
+		return err
 	}
 	c.stderrMu.Lock()
 	stderr := c.stderr.String()
 	c.stderrMu.Unlock()
-	return errors.Errorf("command %v has exited with %v, please make sure the URL is valid, and Docker 18.09 or later is installed on the remote host: stderr=%s", c.cmd.Args, werr, stderr)
+	return errors.Errorf("command %v has exited with %v, make sure the URL is valid, and Docker 18.09 or later is installed on the remote host: stderr=%s", c.cmd.Args, werr, stderr)
 }
 
 func ignorableCloseError(err error) bool {
-	errS := err.Error()
-	ss := []string{
-		os.ErrClosed.Error(),
-	}
-	for _, s := range ss {
-		if strings.Contains(errS, s) {
-			return true
-		}
-	}
-	return false
-}
-
-func (c *commandConn) CloseRead() error {
-	// NOTE: maybe already closed here
-	if err := c.stdout.Close(); err != nil && !ignorableCloseError(err) {
-		logrus.Warnf("commandConn.CloseRead: %v", err)
-	}
-	c.stdioClosedMu.Lock()
-	c.stdoutClosed = true
-	c.stdioClosedMu.Unlock()
-	if err := c.killIfStdioClosed(); err != nil {
-		logrus.Warnf("commandConn.CloseRead: %v", err)
-	}
-	return nil
+	return strings.Contains(err.Error(), os.ErrClosed.Error())
 }
 
 func (c *commandConn) Read(p []byte) (int, error) {
 	n, err := c.stdout.Read(p)
-	if err == io.EOF {
-		err = c.onEOF(err)
+	// check after the call to Read, since
+	// it is blocking, and while waiting on it
+	// Close might get called
+	if c.closing.Load() {
+		// If we're currently closing the connection
+		// we don't want to call onEOF
+		return n, err
 	}
-	return n, err
-}
 
-func (c *commandConn) CloseWrite() error {
-	// NOTE: maybe already closed here
-	if err := c.stdin.Close(); err != nil && !ignorableCloseError(err) {
-		logrus.Warnf("commandConn.CloseWrite: %v", err)
-	}
-	c.stdioClosedMu.Lock()
-	c.stdinClosed = true
-	c.stdioClosedMu.Unlock()
-	if err := c.killIfStdioClosed(); err != nil {
-		logrus.Warnf("commandConn.CloseWrite: %v", err)
-	}
-	return nil
+	return n, c.handleEOF(err)
 }
 
 func (c *commandConn) Write(p []byte) (int, error) {
 	n, err := c.stdin.Write(p)
-	if err == io.EOF {
-		err = c.onEOF(err)
+	// check after the call to Write, since
+	// it is blocking, and while waiting on it
+	// Close might get called
+	if c.closing.Load() {
+		// If we're currently closing the connection
+		// we don't want to call onEOF
+		return n, err
 	}
-	return n, err
+
+	return n, c.handleEOF(err)
 }
 
+// CloseRead allows commandConn to implement halfCloser
+func (c *commandConn) CloseRead() error {
+	// NOTE: maybe already closed here
+	if err := c.stdout.Close(); err != nil && !ignorableCloseError(err) {
+		return err
+	}
+	c.stdoutClosed.Store(true)
+
+	if c.stdinClosed.Load() {
+		c.kill()
+	}
+
+	return nil
+}
+
+// CloseWrite allows commandConn to implement halfCloser
+func (c *commandConn) CloseWrite() error {
+	// NOTE: maybe already closed here
+	if err := c.stdin.Close(); err != nil && !ignorableCloseError(err) {
+		return err
+	}
+	c.stdinClosed.Store(true)
+
+	if c.stdoutClosed.Load() {
+		c.kill()
+	}
+	return nil
+}
+
+// Close is the net.Conn func that gets called
+// by the transport when a dial is cancelled
+// due to it's context timing out. Any blocked
+// Read or Write calls will be unblocked and
+// return errors. It will block until the underlying
+// command has terminated.
 func (c *commandConn) Close() error {
-	var err error
-	if err = c.CloseRead(); err != nil {
+	c.closing.Store(true)
+	defer c.closing.Store(false)
+
+	if err := c.CloseRead(); err != nil {
 		logrus.Warnf("commandConn.Close: CloseRead: %v", err)
+		return err
 	}
-	if err = c.CloseWrite(); err != nil {
+	if err := c.CloseWrite(); err != nil {
 		logrus.Warnf("commandConn.Close: CloseWrite: %v", err)
+		return err
 	}
-	return err
+
+	return nil
 }
 
 func (c *commandConn) LocalAddr() net.Addr {
 	return c.localAddr
 }
+
 func (c *commandConn) RemoteAddr() net.Addr {
 	return c.remoteAddr
 }
+
 func (c *commandConn) SetDeadline(t time.Time) error {
 	logrus.Debugf("unimplemented call: SetDeadline(%v)", t)
 	return nil
 }
+
 func (c *commandConn) SetReadDeadline(t time.Time) error {
 	logrus.Debugf("unimplemented call: SetReadDeadline(%v)", t)
 	return nil
 }
+
 func (c *commandConn) SetWriteDeadline(t time.Time) error {
 	logrus.Debugf("unimplemented call: SetWriteDeadline(%v)", t)
 	return nil

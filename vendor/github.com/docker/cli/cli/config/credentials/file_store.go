@@ -1,6 +1,8 @@
 package credentials
 
 import (
+	"net"
+	"net/url"
 	"strings"
 
 	"github.com/docker/cli/cli/config/types"
@@ -52,7 +54,8 @@ func (c *fileStore) GetAll() (map[string]types.AuthConfig, error) {
 
 // Store saves the given credentials in the file store.
 func (c *fileStore) Store(authConfig types.AuthConfig) error {
-	c.file.GetAuthConfigs()[authConfig.ServerAddress] = authConfig
+	authConfigs := c.file.GetAuthConfigs()
+	authConfigs[authConfig.ServerAddress] = authConfig
 	return c.file.Save()
 }
 
@@ -67,15 +70,17 @@ func (c *fileStore) IsFileStore() bool {
 // ConvertToHostname converts a registry url which has http|https prepended
 // to just an hostname.
 // Copied from github.com/docker/docker/registry.ConvertToHostname to reduce dependencies.
-func ConvertToHostname(url string) string {
-	stripped := url
-	if strings.HasPrefix(url, "http://") {
-		stripped = strings.TrimPrefix(url, "http://")
-	} else if strings.HasPrefix(url, "https://") {
-		stripped = strings.TrimPrefix(url, "https://")
+func ConvertToHostname(maybeURL string) string {
+	stripped := maybeURL
+	if strings.Contains(stripped, "://") {
+		u, err := url.Parse(stripped)
+		if err == nil && u.Hostname() != "" {
+			if u.Port() == "" {
+				return u.Hostname()
+			}
+			return net.JoinHostPort(u.Hostname(), u.Port())
+		}
 	}
-
-	nameParts := strings.SplitN(stripped, "/", 2)
-
-	return nameParts[0]
+	hostName, _, _ := strings.Cut(stripped, "/")
+	return hostName
 }

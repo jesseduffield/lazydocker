@@ -3,8 +3,8 @@ package commands
 import (
 	"context"
 
-	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
 )
@@ -12,7 +12,7 @@ import (
 // Network : A docker Network
 type Network struct {
 	Name          string
-	Network       dockerTypes.NetworkResource
+	Network       network.Inspect
 	Client        *client.Client
 	OSCommand     *OSCommand
 	Log           *logrus.Entry
@@ -21,17 +21,17 @@ type Network struct {
 
 // RefreshNetworks gets the networks and stores them
 func (c *DockerCommand) RefreshNetworks() ([]*Network, error) {
-	networks, err := c.Client.NetworkList(context.Background(), dockerTypes.NetworkListOptions{})
+	networks, err := c.Client.NetworkList(context.Background(), network.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	ownNetworks := make([]*Network, len(networks))
 
-	for i, network := range networks {
+	for i, nw := range networks {
 		ownNetworks[i] = &Network{
-			Name:          network.Name,
-			Network:       network,
+			Name:          nw.Name,
+			Network:       nw,
 			Client:        c.Client,
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,

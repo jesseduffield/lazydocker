@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	dockerTypes "github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/image"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
@@ -123,37 +123,37 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	type removeImageOption struct {
 		description   string
 		command       string
-		configOptions dockerTypes.ImageRemoveOptions
+		configOptions image.RemoveOptions
 	}
 
-	image, err := gui.Panels.Images.GetSelectedItem()
+	img, err := gui.Panels.Images.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
-	shortSha := image.ID[7:17]
+	shortSha := img.ID[7:17]
 
 	// TODO: have a way of toggling in a menu instead of showing each permutation as a separate menu item
 	options := []*removeImageOption{
 		{
 			description:   gui.Tr.Remove,
 			command:       "docker image rm " + shortSha,
-			configOptions: dockerTypes.ImageRemoveOptions{PruneChildren: true, Force: false},
+			configOptions: image.RemoveOptions{PruneChildren: true, Force: false},
 		},
 		{
 			description:   gui.Tr.RemoveWithoutPrune,
 			command:       "docker image rm --no-prune " + shortSha,
-			configOptions: dockerTypes.ImageRemoveOptions{PruneChildren: false, Force: false},
+			configOptions: image.RemoveOptions{PruneChildren: false, Force: false},
 		},
 		{
 			description:   gui.Tr.RemoveWithForce,
 			command:       "docker image rm --force " + shortSha,
-			configOptions: dockerTypes.ImageRemoveOptions{PruneChildren: true, Force: true},
+			configOptions: image.RemoveOptions{PruneChildren: true, Force: true},
 		},
 		{
 			description:   gui.Tr.RemoveWithoutPruneWithForce,
 			command:       "docker image rm --no-prune --force " + shortSha,
-			configOptions: dockerTypes.ImageRemoveOptions{PruneChildren: false, Force: true},
+			configOptions: image.RemoveOptions{PruneChildren: false, Force: true},
 		},
 	}
 
@@ -164,7 +164,7 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 				color.New(color.FgRed).Sprint(option.command),
 			},
 			OnPress: func() error {
-				if err := image.Remove(option.configOptions); err != nil {
+				if err := img.Remove(option.configOptions); err != nil {
 					return gui.createErrorPanel(err.Error())
 				}
 
@@ -192,13 +192,13 @@ func (gui *Gui) handlePruneImages() error {
 }
 
 func (gui *Gui) handleImagesCustomCommand(g *gocui.Gui, v *gocui.View) error {
-	image, err := gui.Panels.Images.GetSelectedItem()
+	img, err := gui.Panels.Images.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
 	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
-		Image: image,
+		Image: img,
 	})
 
 	customCommands := gui.Config.UserConfig.CustomCommands.Images
