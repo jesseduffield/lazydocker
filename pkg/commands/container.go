@@ -62,7 +62,7 @@ func (c *Container) Remove(options container.RemoveOptions) error {
 // Start starts the container
 func (c *Container) Start() error {
 	c.Log.Warn(fmt.Sprintf("starting container %s", c.Name))
-	return c.Client.ContainerStart(context.Background(), c.ID, dockerTypes.ContainerStartOptions{})
+	return c.Client.ContainerStart(context.Background(), c.ID, container.StartOptions{})
 }
 
 // Stop stops the container
