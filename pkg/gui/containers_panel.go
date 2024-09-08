@@ -342,6 +342,8 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	})
 }
 
+// TODO: do same thing for start
+// Fix UI not showing it being paused (it should say unpaused)
 func (gui *Gui) PauseContainer(container *commands.Container) error {
 	return gui.WithWaitingStatus(gui.Tr.PausingStatus, func() (err error) {
 		if container.Details.State.Paused {
@@ -367,10 +369,20 @@ func (gui *Gui) handleContainerPause(g *gocui.Gui, v *gocui.View) error {
 	return gui.PauseContainer(ctr)
 }
 
-func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handleContainerStartStop(g *gocui.Gui, v *gocui.View) error {
 	ctr, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
+	}
+
+	if !(ctr.Container.State == "exited" || ctr.Container.State == "running") {
+		return gui.createErrorPanel(gui.Tr.CannotStartStop)
+	}
+
+	if ctr.Container.State == "exited" {
+		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
+			return ctr.Start()
+		})
 	}
 
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.StopContainer, func(g *gocui.Gui, v *gocui.View) error {
@@ -449,11 +461,32 @@ func (gui *Gui) containerExecShell(container *commands.Container) error {
 	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
 		Container: container,
 	})
+	var command string
+	shell := ""
 
-	// TODO: use SDK
-	resolvedCommand := utils.ApplyTemplate("docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'", commandObject)
+	preferredExecShells := gui.Config.UserConfig.CommandTemplates.PreferredExecShells
+	if len(preferredExecShells) > 0 {
+		for _, preferredExecShell := range preferredExecShells {
+			command := utils.ApplyTemplate(fmt.Sprintf("docker exec {{ .Container.ID }} which %s", preferredExecShell), commandObject)
+
+			err := gui.runCommandSilently(gui.OSCommand.ExecutableFromString(command))
+			if err == nil {
+				shell = preferredExecShell
+				break
+			}
+		}
+	}
+
+	// TODO: Use SDK
+	// Use default implementation in case we cannot fulfill user's preference
+	if shell == "" {
+		command = utils.ApplyTemplate("docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'", commandObject)
+	} else {
+		command = utils.ApplyTemplate(fmt.Sprintf("docker exec -it {{ .Container.ID }} %s", shell), commandObject)
+	}
+
 	// attach and return the subprocess error
-	cmd := gui.OSCommand.ExecutableFromString(resolvedCommand)
+	cmd := gui.OSCommand.ExecutableFromString(command)
 	return gui.runSubprocess(cmd)
 }
 
