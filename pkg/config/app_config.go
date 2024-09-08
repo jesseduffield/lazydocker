@@ -138,6 +138,10 @@ type GuiConfig struct {
 	// containers panel. "long": full words (default), "short": one or two characters,
 	// "icon": unicode emoji.
 	ContainerStatusHealthStyle string `yaml:"containerStatusHealthStyle"`
+
+	// Window border style.
+	// One of 'rounded' (default) | 'single' | 'double' | 'hidden'
+	Border string `yaml:"border"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
@@ -164,7 +168,7 @@ type CommandTemplatesConfig struct {
 
 	// DockerCompose is for your docker-compose command. You may want to combine a
 	// few different docker-compose.yml files together, in which case you can set
-	// this to "docker-compose -f foo/docker-compose.yml -f
+	// this to "docker compose -f foo/docker-compose.yml -f
 	// bah/docker-compose.yml". The reason that the other docker-compose command
 	// templates all start with {{ .DockerCompose }} is so that they can make use
 	// of whatever you've set in this value rather than you having to copy and
@@ -196,7 +200,7 @@ type CommandTemplatesConfig struct {
 	// and ensure they're running before trying to run the service at hand
 	RecreateService string `yaml:"recreateService,omitempty"`
 
-	// AllLogs is for showing what you get from doing `docker-compose logs`. It
+	// AllLogs is for showing what you get from doing `docker compose logs`. It
 	// combines all the logs together
 	AllLogs string `yaml:"allLogs,omitempty"`
 
@@ -384,7 +388,7 @@ func GetDefaultConfig() UserConfig {
 			Tail:       "",
 		},
 		CommandTemplates: CommandTemplatesConfig{
-			DockerCompose:            "docker-compose",
+			DockerCompose:            "docker compose",
 			RestartService:           "{{ .DockerCompose }} restart {{ .Service.Name }}",
 			StartService:             "{{ .DockerCompose }} start {{ .Service.Name }}",
 			Up:                       "{{ .DockerCompose }} up -d",
@@ -502,7 +506,7 @@ func NewAppConfig(name, version, commit, date string, buildSource string, debugg
 		return nil, err
 	}
 
-	// Pass compose files as individual -f flags to docker-compose
+	// Pass compose files as individual -f flags to docker compose
 	if len(composeFiles) > 0 {
 		userConfig.CommandTemplates.DockerCompose += " -f " + strings.Join(composeFiles, " -f ")
 	}

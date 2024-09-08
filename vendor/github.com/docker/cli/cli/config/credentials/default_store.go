@@ -1,21 +1,22 @@
 package credentials
 
-import (
-	exec "golang.org/x/sys/execabs"
-)
+import "os/exec"
 
 // DetectDefaultStore return the default credentials store for the platform if
-// the store executable is available.
+// no user-defined store is passed, and the store executable is available.
 func DetectDefaultStore(store string) string {
-	platformDefault := defaultCredentialsStore()
-
-	// user defined or no default for platform
-	if store != "" || platformDefault == "" {
+	if store != "" {
+		// use user-defined
 		return store
 	}
 
-	if _, err := exec.LookPath(remoteCredentialsPrefix + platformDefault); err == nil {
-		return platformDefault
+	platformDefault := defaultCredentialsStore()
+	if platformDefault == "" {
+		return ""
 	}
-	return ""
+
+	if _, err := exec.LookPath(remoteCredentialsPrefix + platformDefault); err != nil {
+		return ""
+	}
+	return platformDefault
 }

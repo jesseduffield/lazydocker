@@ -121,7 +121,7 @@ func portugueseSet() TranslationSet {
 		ConfirmStopContainers:       "Tem certeza que deseja parar todos os contêineres?",
 		ConfirmRemoveContainers:     "Tem certeza que deseja remover todos os contêineres?",
 		ConfirmPruneVolumes:         "Tem certeza que deseja destruir todos os volumes não utilizados?",
-		ConfirmPruneNetworks:        "Tem certeza que deseja destruir todos as redes não utilizadas?",
+		ConfirmPruneNetworks:        "Tem certeza que deseja destruir todas as redes não utilizadas?",
 		StopService:                 "Tem certeza que deseja parar os contêineres deste serviço?",
 		StopContainer:               "Tem certeza que deseja parar este contêiner?",
 		PressEnterToReturn:          "Pressione enter para retornar ao lazydocker (este prompt pode ser desativado em sua configuração definindo `gui.returnImmediately: true`)",

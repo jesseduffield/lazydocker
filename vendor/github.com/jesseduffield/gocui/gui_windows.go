@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build windows
 // +build windows
 
 package gocui
@@ -12,10 +13,12 @@ import (
 	"unsafe"
 )
 
-type wchar uint16
-type short int16
-type dword uint32
-type word uint16
+type (
+	wchar uint16
+	short int16
+	dword uint32
+	word  uint16
+)
 
 type coord struct {
 	x short

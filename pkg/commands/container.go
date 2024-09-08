@@ -43,7 +43,7 @@ type Container struct {
 }
 
 // Remove removes the container
-func (c *Container) Remove(options dockerTypes.ContainerRemoveOptions) error {
+func (c *Container) Remove(options container.RemoveOptions) error {
 	c.Log.Warn(fmt.Sprintf("removing container %s", c.Name))
 	if err := c.Client.ContainerRemove(context.Background(), c.ID, options); err != nil {
 		if strings.Contains(err.Error(), "Stop the container before attempting removal or force remove") {
@@ -68,7 +68,7 @@ func (c *Container) Start() error {
 // Stop stops the container
 func (c *Container) Stop() error {
 	c.Log.Warn(fmt.Sprintf("stopping container %s", c.Name))
-	return c.Client.ContainerStop(context.Background(), c.ID, nil)
+	return c.Client.ContainerStop(context.Background(), c.ID, container.StopOptions{})
 }
 
 // Pause pauses the container
@@ -86,7 +86,7 @@ func (c *Container) Unpause() error {
 // Restart restarts the container
 func (c *Container) Restart() error {
 	c.Log.Warn(fmt.Sprintf("restarting container %s", c.Name))
-	return c.Client.ContainerRestart(context.Background(), c.ID, nil)
+	return c.Client.ContainerRestart(context.Background(), c.ID, container.StopOptions{})
 }
 
 // Attach attaches the container
@@ -146,7 +146,9 @@ func (c *Container) RenderTop(ctx context.Context) (string, error) {
 	return utils.RenderTable(append([][]string{result.Titles}, result.Processes...))
 }
 
-// DetailsLoaded tells us whether we have yet loaded the details for a container. Because this is an asynchronous operation, sometimes we have the container before we have its details.
+// DetailsLoaded tells us whether we have yet loaded the details for a container.
+// Sometimes it takes some time for a container to have its details loaded
+// after it starts.
 func (c *Container) DetailsLoaded() bool {
 	return c.Details.ContainerJSONBase != nil
 }

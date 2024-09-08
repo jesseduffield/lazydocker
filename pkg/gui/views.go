@@ -92,12 +92,23 @@ func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
 }
 
 func (gui *Gui) createAllViews() error {
+	frameRunes := []rune{'─', '│', '╭', '╮', '╰', '╯'}
+	switch gui.Config.UserConfig.Gui.Border {
+	case "single":
+		frameRunes = []rune{'─', '│', '┌', '┐', '└', '┘'}
+	case "double":
+		frameRunes = []rune{'═', '║', '╔', '╗', '╚', '╝'}
+	case "hidden":
+		frameRunes = []rune{' ', ' ', ' ', ' ', ' ', ' '}
+	}
+
 	var err error
 	for _, mapping := range gui.orderedViewNameMappings() {
 		*mapping.viewPtr, err = gui.prepareView(mapping.name)
 		if err != nil && err.Error() != UNKNOWN_VIEW_ERROR_MSG {
 			return err
 		}
+		(*mapping.viewPtr).FrameRunes = frameRunes
 		(*mapping.viewPtr).FgColor = gocui.ColorDefault
 	}
 

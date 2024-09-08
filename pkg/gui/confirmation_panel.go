@@ -64,7 +64,7 @@ func (gui *Gui) getConfirmationPanelDimensions(wrap bool, prompt string) (int, i
 
 func (gui *Gui) createPromptPanel(title string, handleConfirm func(*gocui.Gui, *gocui.View) error) error {
 	gui.onNewPopupPanel()
-	err := gui.prepareConfirmationPanel(title, "", false)
+	err := gui.prepareConfirmationPanel(title, "")
 	if err != nil {
 		return err
 	}
@@ -72,16 +72,12 @@ func (gui *Gui) createPromptPanel(title string, handleConfirm func(*gocui.Gui, *
 	return gui.setKeyBindings(gui.g, handleConfirm, nil)
 }
 
-func (gui *Gui) prepareConfirmationPanel(title, prompt string, hasLoader bool) error {
+func (gui *Gui) prepareConfirmationPanel(title, prompt string) error {
 	x0, y0, x1, y1 := gui.getConfirmationPanelDimensions(true, prompt)
 	confirmationView := gui.Views.Confirmation
 	_, err := gui.g.SetView("confirmation", x0, y0, x1, y1, 0)
 	if err != nil {
 		return err
-	}
-	confirmationView.HasLoader = hasLoader
-	if hasLoader {
-		gui.g.StartTicking()
 	}
 	confirmationView.Title = title
 	confirmationView.Visible = true
@@ -100,10 +96,10 @@ func (gui *Gui) onNewPopupPanel() {
 // The golangcilint unparam linter complains that handleClose is alwans nil but one day it won't be nil.
 // nolint:unparam
 func (gui *Gui) createConfirmationPanel(title, prompt string, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
-	return gui.createPopupPanel(title, prompt, false, handleConfirm, handleClose)
+	return gui.createPopupPanel(title, prompt, handleConfirm, handleClose)
 }
 
-func (gui *Gui) createPopupPanel(title, prompt string, hasLoader bool, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
+func (gui *Gui) createPopupPanel(title, prompt string, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
 	gui.onNewPopupPanel()
 	gui.g.Update(func(g *gocui.Gui) error {
 		if gui.currentViewName() == "confirmation" {
@@ -111,7 +107,7 @@ func (gui *Gui) createPopupPanel(title, prompt string, hasLoader bool, handleCon
 				gui.Log.Error(err.Error())
 			}
 		}
-		err := gui.prepareConfirmationPanel(title, prompt, hasLoader)
+		err := gui.prepareConfirmationPanel(title, prompt)
 		if err != nil {
 			return err
 		}
