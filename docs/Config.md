@@ -32,7 +32,8 @@ to the top of your config file or via [Visual Studio Code settings.json config][
 ```yml
 gui:
   scrollHeight: 2
-  language: 'auto' # one of 'auto' | 'en' | 'pl' | 'nl' | 'de' | 'tr'
+  language: "auto" # one of 'auto' | 'en' | 'pl' | 'nl' | 'de' | 'tr'
+  border: "rounded" # one of 'rounded' | 'single' | 'double' | 'hidden'
   theme:
     activeBorderColor:
       - green
@@ -64,7 +65,7 @@ logs:
   since: '60m' # set to '' to show all logs
   tail: '' # set to 200 to show last 200 lines of logs
 commandTemplates:
-  dockerCompose: docker-compose
+  dockerCompose: docker compose # Determines the Docker Compose command to run, referred to as .DockerCompose in commandTemplates
   restartService: '{{ .DockerCompose }} restart {{ .Service.Name }}'
   up:  '{{ .DockerCompose }} up -d'
   down: '{{ .DockerCompose }} down'

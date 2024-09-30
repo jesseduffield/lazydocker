@@ -4,14 +4,12 @@ import (
 	"context"
 	"strings"
 
-	"github.com/docker/docker/api/types/image"
-	"github.com/samber/lo"
-
-	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,7 +18,7 @@ type Image struct {
 	Name          string
 	Tag           string
 	ID            string
-	Image         dockerTypes.ImageSummary
+	Image         image.Summary
 	Client        *client.Client
 	OSCommand     *OSCommand
 	Log           *logrus.Entry
@@ -28,7 +26,7 @@ type Image struct {
 }
 
 // Remove removes the image
-func (i *Image) Remove(options dockerTypes.ImageRemoveOptions) error {
+func (i *Image) Remove(options image.RemoveOptions) error {
 	if _, err := i.Client.ImageRemove(context.Background(), i.ID, options); err != nil {
 		return err
 	}
@@ -94,16 +92,16 @@ func (i *Image) RenderHistory() (string, error) {
 
 // RefreshImages returns a slice of docker images
 func (c *DockerCommand) RefreshImages() ([]*Image, error) {
-	images, err := c.Client.ImageList(context.Background(), dockerTypes.ImageListOptions{})
+	images, err := c.Client.ImageList(context.Background(), image.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	ownImages := make([]*Image, len(images))
 
-	for i, image := range images {
+	for i, img := range images {
 		firstTag := ""
-		tags := image.RepoTags
+		tags := img.RepoTags
 		if len(tags) > 0 {
 			firstTag = tags[0]
 		}
@@ -124,10 +122,10 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 		}
 
 		ownImages[i] = &Image{
-			ID:            image.ID,
+			ID:            img.ID,
 			Name:          name,
 			Tag:           tag,
-			Image:         image,
+			Image:         img,
 			Client:        c.Client,
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,

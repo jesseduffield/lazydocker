@@ -125,8 +125,7 @@ func UTF16PtrToString(p *uint16) string {
 	for ptr := unsafe.Pointer(p); *(*uint16)(ptr) != 0; n++ {
 		ptr = unsafe.Pointer(uintptr(ptr) + unsafe.Sizeof(*p))
 	}
-
-	return string(utf16.Decode(unsafe.Slice(p, n)))
+	return UTF16ToString(unsafe.Slice(p, n))
 }
 
 func Getpagesize() int { return 4096 }
@@ -155,6 +154,8 @@ func NewCallbackCDecl(fn interface{}) uintptr {
 //sys	GetModuleFileName(module Handle, filename *uint16, size uint32) (n uint32, err error) = kernel32.GetModuleFileNameW
 //sys	GetModuleHandleEx(flags uint32, moduleName *uint16, module *Handle) (err error) = kernel32.GetModuleHandleExW
 //sys	SetDefaultDllDirectories(directoryFlags uint32) (err error)
+//sys	AddDllDirectory(path *uint16) (cookie uintptr, err error) = kernel32.AddDllDirectory
+//sys	RemoveDllDirectory(cookie uintptr) (err error) = kernel32.RemoveDllDirectory
 //sys	SetDllDirectory(path string) (err error) = kernel32.SetDllDirectoryW
 //sys	GetVersion() (ver uint32, err error)
 //sys	FormatMessage(flags uint32, msgsrc uintptr, msgid uint32, langid uint32, buf []uint16, args *byte) (n uint32, err error) = FormatMessageW
@@ -164,6 +165,7 @@ func NewCallbackCDecl(fn interface{}) uintptr {
 //sys	CreateFile(name *uint16, access uint32, mode uint32, sa *SecurityAttributes, createmode uint32, attrs uint32, templatefile Handle) (handle Handle, err error) [failretval==InvalidHandle] = CreateFileW
 //sys	CreateNamedPipe(name *uint16, flags uint32, pipeMode uint32, maxInstances uint32, outSize uint32, inSize uint32, defaultTimeout uint32, sa *SecurityAttributes) (handle Handle, err error)  [failretval==InvalidHandle] = CreateNamedPipeW
 //sys	ConnectNamedPipe(pipe Handle, overlapped *Overlapped) (err error)
+//sys	DisconnectNamedPipe(pipe Handle) (err error)
 //sys	GetNamedPipeInfo(pipe Handle, flags *uint32, outSize *uint32, inSize *uint32, maxInstances *uint32) (err error)
 //sys	GetNamedPipeHandleState(pipe Handle, state *uint32, curInstances *uint32, maxCollectionCount *uint32, collectDataTimeout *uint32, userName *uint16, maxUserNameSize uint32) (err error) = GetNamedPipeHandleStateW
 //sys	SetNamedPipeHandleState(pipe Handle, state *uint32, maxCollectionCount *uint32, collectDataTimeout *uint32) (err error) = SetNamedPipeHandleState
@@ -192,6 +194,7 @@ func NewCallbackCDecl(fn interface{}) uintptr {
 //sys	GetComputerName(buf *uint16, n *uint32) (err error) = GetComputerNameW
 //sys	GetComputerNameEx(nametype uint32, buf *uint16, n *uint32) (err error) = GetComputerNameExW
 //sys	SetEndOfFile(handle Handle) (err error)
+//sys	SetFileValidData(handle Handle, validDataLength int64) (err error)
 //sys	GetSystemTimeAsFileTime(time *Filetime)
 //sys	GetSystemTimePreciseAsFileTime(time *Filetime)
 //sys	GetTimeZoneInformation(tzi *Timezoneinformation) (rc uint32, err error) [failretval==0xffffffff]
@@ -233,6 +236,7 @@ func NewCallbackCDecl(fn interface{}) uintptr {
 //sys	CreateEnvironmentBlock(block **uint16, token Token, inheritExisting bool) (err error) = userenv.CreateEnvironmentBlock
 //sys	DestroyEnvironmentBlock(block *uint16) (err error) = userenv.DestroyEnvironmentBlock
 //sys	getTickCount64() (ms uint64) = kernel32.GetTickCount64
+//sys   GetFileTime(handle Handle, ctime *Filetime, atime *Filetime, wtime *Filetime) (err error)
 //sys	SetFileTime(handle Handle, ctime *Filetime, atime *Filetime, wtime *Filetime) (err error)
 //sys	GetFileAttributes(name *uint16) (attrs uint32, err error) [failretval==INVALID_FILE_ATTRIBUTES] = kernel32.GetFileAttributesW
 //sys	SetFileAttributes(name *uint16, attrs uint32) (err error) = kernel32.SetFileAttributesW
@@ -345,8 +349,19 @@ func NewCallbackCDecl(fn interface{}) uintptr {
 //sys	SetProcessPriorityBoost(process Handle, disable bool) (err error) = kernel32.SetProcessPriorityBoost
 //sys	GetProcessWorkingSetSizeEx(hProcess Handle, lpMinimumWorkingSetSize *uintptr, lpMaximumWorkingSetSize *uintptr, flags *uint32)
 //sys	SetProcessWorkingSetSizeEx(hProcess Handle, dwMinimumWorkingSetSize uintptr, dwMaximumWorkingSetSize uintptr, flags uint32) (err error)
+//sys	ClearCommBreak(handle Handle) (err error)
+//sys	ClearCommError(handle Handle, lpErrors *uint32, lpStat *ComStat) (err error)
+//sys	EscapeCommFunction(handle Handle, dwFunc uint32) (err error)
+//sys	GetCommState(handle Handle, lpDCB *DCB) (err error)
+//sys	GetCommModemStatus(handle Handle, lpModemStat *uint32) (err error)
 //sys	GetCommTimeouts(handle Handle, timeouts *CommTimeouts) (err error)
+//sys	PurgeComm(handle Handle, dwFlags uint32) (err error)
+//sys	SetCommBreak(handle Handle) (err error)
+//sys	SetCommMask(handle Handle, dwEvtMask uint32) (err error)
+//sys	SetCommState(handle Handle, lpDCB *DCB) (err error)
 //sys	SetCommTimeouts(handle Handle, timeouts *CommTimeouts) (err error)
+//sys	SetupComm(handle Handle, dwInQueue uint32, dwOutQueue uint32) (err error)
+//sys	WaitCommEvent(handle Handle, lpEvtMask *uint32, lpOverlapped *Overlapped) (err error)
 //sys	GetActiveProcessorCount(groupNumber uint16) (ret uint32)
 //sys	GetMaximumProcessorCount(groupNumber uint16) (ret uint32)
 //sys	EnumWindows(enumFunc uintptr, param unsafe.Pointer) (err error) = user32.EnumWindows
@@ -969,7 +984,8 @@ func (sa *SockaddrUnix) sockaddr() (unsafe.Pointer, int32, error) {
 	if n > 0 {
 		sl += int32(n) + 1
 	}
-	if sa.raw.Path[0] == '@' {
+	if sa.raw.Path[0] == '@' || (sa.raw.Path[0] == 0 && sl > 3) {
+		// Check sl > 3 so we don't change unnamed socket behavior.
 		sa.raw.Path[0] = 0
 		// Don't count trailing NUL for abstract address.
 		sl--
@@ -1830,3 +1846,73 @@ func ResizePseudoConsole(pconsole Handle, size Coord) error {
 	// accept arguments that can be casted to uintptr, and Coord can't.
 	return resizePseudoConsole(pconsole, *((*uint32)(unsafe.Pointer(&size))))
 }
+
+// DCB constants. See https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-dcb.
+const (
+	CBR_110    = 110
+	CBR_300    = 300
+	CBR_600    = 600
+	CBR_1200   = 1200
+	CBR_2400   = 2400
+	CBR_4800   = 4800
+	CBR_9600   = 9600
+	CBR_14400  = 14400
+	CBR_19200  = 19200
+	CBR_38400  = 38400
+	CBR_57600  = 57600
+	CBR_115200 = 115200
+	CBR_128000 = 128000
+	CBR_256000 = 256000
+
+	DTR_CONTROL_DISABLE   = 0x00000000
+	DTR_CONTROL_ENABLE    = 0x00000010
+	DTR_CONTROL_HANDSHAKE = 0x00000020
+
+	RTS_CONTROL_DISABLE   = 0x00000000
+	RTS_CONTROL_ENABLE    = 0x00001000
+	RTS_CONTROL_HANDSHAKE = 0x00002000
+	RTS_CONTROL_TOGGLE    = 0x00003000
+
+	NOPARITY    = 0
+	ODDPARITY   = 1
+	EVENPARITY  = 2
+	MARKPARITY  = 3
+	SPACEPARITY = 4
+
+	ONESTOPBIT   = 0
+	ONE5STOPBITS = 1
+	TWOSTOPBITS  = 2
+)
+
+// EscapeCommFunction constants. See https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-escapecommfunction.
+const (
+	SETXOFF  = 1
+	SETXON   = 2
+	SETRTS   = 3
+	CLRRTS   = 4
+	SETDTR   = 5
+	CLRDTR   = 6
+	SETBREAK = 8
+	CLRBREAK = 9
+)
+
+// PurgeComm constants. See https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-purgecomm.
+const (
+	PURGE_TXABORT = 0x0001
+	PURGE_RXABORT = 0x0002
+	PURGE_TXCLEAR = 0x0004
+	PURGE_RXCLEAR = 0x0008
+)
+
+// SetCommMask constants. See https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setcommmask.
+const (
+	EV_RXCHAR  = 0x0001
+	EV_RXFLAG  = 0x0002
+	EV_TXEMPTY = 0x0004
+	EV_CTS     = 0x0008
+	EV_DSR     = 0x0010
+	EV_RLSD    = 0x0020
+	EV_BREAK   = 0x0040
+	EV_ERR     = 0x0080
+	EV_RING    = 0x0100
+)
