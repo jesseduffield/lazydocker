@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"sync"
 	"time"
 
 	"github.com/jesseduffield/gocui"
@@ -15,10 +16,15 @@ type appStatus struct {
 
 type statusManager struct {
 	statuses []appStatus
+	lock     *sync.Mutex
 }
 
 func (m *statusManager) removeStatus(name string) {
 	newStatuses := []appStatus{}
+
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	for _, status := range m.statuses {
 		if status.name != name {
 			newStatuses = append(newStatuses, status)
@@ -28,9 +34,13 @@ func (m *statusManager) removeStatus(name string) {
 }
 
 func (m *statusManager) addWaitingStatus(name string) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	m.removeStatus(name)
 	newStatus := appStatus{
-		name:       name,
+		name: name,
+		//TODO: add a different enum for information statuses
 		statusType: "waiting",
 		duration:   0,
 	}
@@ -38,6 +48,9 @@ func (m *statusManager) addWaitingStatus(name string) {
 }
 
 func (m *statusManager) getStatusString() string {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	if len(m.statuses) == 0 {
 		return ""
 	}
@@ -46,6 +59,11 @@ func (m *statusManager) getStatusString() string {
 		return topStatus.name + " " + utils.Loader()
 	}
 	return topStatus.name
+}
+
+// WithStaticWaitingStatus shows a waiting status for a specific duration
+func (gui *Gui) WithStaticWaitingStatus(name string, duration time.Duration) error {
+	return gui.WithWaitingStatus(name, func() error { time.Sleep(duration); return nil })
 }
 
 // WithWaitingStatus wraps a function and shows a waiting status while the function is still executing

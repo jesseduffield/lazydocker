@@ -8,6 +8,9 @@ github.com/Microsoft/go-winio/pkg/guid
 # github.com/OpenPeeDeeP/xdg v0.2.1-0.20190312153938-4ba9e1eb294c
 ## explicit
 github.com/OpenPeeDeeP/xdg
+# github.com/atotto/clipboard v0.1.4
+## explicit
+github.com/atotto/clipboard
 # github.com/boz/go-throttle v0.0.0-20160922054636-fdc4eab740c1
 ## explicit
 github.com/boz/go-throttle
