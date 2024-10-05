@@ -67,6 +67,8 @@ type TranslationSet struct {
 	ViewLogs                    string
 	UpProject                   string
 	DownProject                 string
+	CopyContainerId             string
+	CopyContainerIdStatus       string
 	ServicesTitle               string
 	ContainersTitle             string
 	StandaloneContainersTitle   string
@@ -197,6 +199,8 @@ func englishSet() TranslationSet {
 		ViewLogs:                    "view logs",
 		UpProject:                   "up project",
 		DownProject:                 "down project",
+		CopyContainerId:             "copy container id",
+		CopyContainerIdStatus:       "Copied %s to clipboard",
 		RemoveImage:                 "remove image",
 		RemoveVolume:                "remove volume",
 		RemoveNetwork:               "remove network",

@@ -358,6 +358,20 @@ func (gui *Gui) PauseContainer(container *commands.Container) error {
 	})
 }
 
+func (gui *Gui) handleCopyContainerId(g *gocui.Gui, v *gocui.View) error {
+	ctr, err := gui.Panels.Containers.GetSelectedItem()
+	if err != nil {
+		return nil
+	}
+
+	err = gui.WithStaticWaitingStatus(fmt.Sprintf(gui.Tr.CopyContainerIdStatus, utils.TruncateWithEllipsis(ctr.ID, 10)), time.Second*2)
+	if err != nil {
+		return err
+	}
+
+	return gui.OSCommand.CopyToClipboard(ctr.ID)
+}
+
 func (gui *Gui) handleContainerPause(g *gocui.Gui, v *gocui.View) error {
 	ctr, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {

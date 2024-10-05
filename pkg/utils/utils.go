@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
@@ -409,4 +410,24 @@ func marshalIntoFormat(data interface{}, format string) ([]byte, error) {
 	default:
 		return nil, errors.New(fmt.Sprintf("Unsupported detailization format: %s", format))
 	}
+}
+
+func StringWidth(s string) int {
+	// We are intentionally not using a range loop here, because that would
+	// convert the characters to runes, which is unnecessary work in this case.
+	for i := 0; i < len(s); i++ {
+		if s[i] > unicode.MaxASCII {
+			return runewidth.StringWidth(s)
+		}
+	}
+
+	return len(s)
+}
+
+// TruncateWithEllipsis returns a string, truncated to a certain length, with an ellipsis
+func TruncateWithEllipsis(str string, limit int) string {
+	if StringWidth(str) > limit && limit <= 2 {
+		return strings.Repeat(".", limit)
+	}
+	return runewidth.Truncate(str, limit, "…")
 }
