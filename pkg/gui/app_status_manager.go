@@ -39,8 +39,7 @@ func (m *statusManager) addWaitingStatus(name string) {
 
 	m.removeStatus(name)
 	newStatus := appStatus{
-		name: name,
-		//TODO: add a different enum for information statuses
+		name:       name,
 		statusType: "waiting",
 		duration:   0,
 	}

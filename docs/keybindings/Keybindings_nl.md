@@ -16,6 +16,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 ## Containers
 
 <pre>
+  <kbd></kbd>: copy container id
   <kbd>d</kbd>: verwijder
   <kbd>e</kbd>: verberg gestopte containers
   <kbd>p</kbd>: pause
