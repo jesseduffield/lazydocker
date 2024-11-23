@@ -127,6 +127,7 @@ type TranslationSet struct {
 
 	LcNextScreenMode string
 	LcPrevScreenMode string
+	ClearMain        string
 	FilterPrompt     string
 }
 
@@ -262,6 +263,7 @@ func englishSet() TranslationSet {
 
 		LcNextScreenMode: "next screen mode (normal/half/fullscreen)",
 		LcPrevScreenMode: "prev screen mode",
+		ClearMain:        "clear main panel",
 		FilterPrompt:     "filter",
 	}
 }
