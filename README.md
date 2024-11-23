@@ -155,6 +155,15 @@ You can install lazydocker using the [AUR](https://aur.archlinux.org/packages/la
 yay -S lazydocker
 ```
 
+### x-cmd
+
+[x-cmd](https://www.x-cmd.com/) is a **toolbox for Posix Shell**, offering a lightweight package manager built using shell and awk.
+```sh
+x env use lazydocker
+```
+- Additionally, the [`x lazydocker ...`](https://www.x-cmd.com/pkg/lazydocker) command is available, which automatically download `lazydocker` without affecting the environment, such as not modifying the `PATH` variable.
+
+
 ### Docker
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
