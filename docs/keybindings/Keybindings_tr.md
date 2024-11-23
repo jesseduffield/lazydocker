@@ -16,6 +16,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 ## Konteynerler
 
 <pre>
+  <kbd></kbd>: copy container id
   <kbd>d</kbd>: kaldır
   <kbd>e</kbd>: hide/show stopped containers
   <kbd>p</kbd>: pause
