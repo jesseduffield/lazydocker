@@ -229,6 +229,13 @@ If you encounter a compatibility issue with Docker bundled binary, try rebuildin
 the image with the build argument `--build-arg DOCKER_VERSION="v$(docker -v | cut -d" " -f3 | rev | cut -c 2- | rev)"`
 so that the bundled docker binary matches your host docker binary version.
 
+### Flox
+
+You can install `lazydocker` using [Flox](https://flox.dev).
+
+```sh
+flox install lazydocker
+```
 
 ## Usage
 
