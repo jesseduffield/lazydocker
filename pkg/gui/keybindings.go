@@ -522,6 +522,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		}...)
 	}
 
+	// Mapping number keys to jump between side panels
+	for _, panel := range gui.allSidePanels() {
+		for idx := 1; idx <= len(gui.allSidePanels()); idx++ {
+			bindings = append(bindings, &Binding{ViewName: panel.GetView().Name(), Key: rune('0' + idx), Modifier: gocui.ModNone, Handler: wrappedHandlerWithKey(gui.jumpToSideView, idx)})
+		}
+	}
+
 	setUpDownClickBindings := func(viewName string, onUp func() error, onDown func() error, onClick func() error) {
 		bindings = append(bindings, []*Binding{
 			{ViewName: viewName, Key: 'k', Modifier: gocui.ModNone, Handler: wrappedHandler(onUp)},
@@ -600,5 +607,11 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
 func wrappedHandler(f func() error) func(*gocui.Gui, *gocui.View) error {
 	return func(g *gocui.Gui, v *gocui.View) error {
 		return f()
+	}
+}
+
+func wrappedHandlerWithKey(f func(g *gocui.Gui, key int) error, key int) func(*gocui.Gui, *gocui.View) error {
+	return func(g *gocui.Gui, v *gocui.View) error {
+		return f(g, key)
 	}
 }

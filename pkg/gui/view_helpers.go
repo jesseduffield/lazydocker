@@ -64,6 +64,21 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 	return gui.switchFocus(focusedView)
 }
 
+func (gui *Gui) jumpToSideView(g *gocui.Gui, idx int) error {
+	sideViewNames := gui.sideViewNames()
+	if idx < 1 || len(sideViewNames) < idx {
+		gui.Log.Info("not in list of views")
+		return nil
+	}
+	focusedViewName := sideViewNames[idx-1]
+	focusedView, err := g.View(focusedViewName)
+	if err != nil {
+		panic(err)
+	}
+	gui.resetMainView()
+	return gui.switchFocus(focusedView)
+}
+
 func (gui *Gui) resetMainView() {
 	gui.State.Panels.Main.ObjectKey = ""
 	gui.Views.Main.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
