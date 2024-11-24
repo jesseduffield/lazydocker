@@ -62,13 +62,15 @@ func (gui *Gui) getConfirmationPanelDimensions(wrap bool, prompt string) (int, i
 		height/2 + panelHeight/2
 }
 
-func (gui *Gui) createPromptPanel(title string, handleConfirm func(*gocui.Gui, *gocui.View) error) error {
+func (gui *Gui) createPromptPanel(title string, prompt string, handleConfirm func(*gocui.Gui, *gocui.View) error) error {
 	gui.onNewPopupPanel()
-	err := gui.prepareConfirmationPanel(title, "")
+	err := gui.prepareConfirmationPanel(title, prompt)
 	if err != nil {
 		return err
 	}
 	gui.Views.Confirmation.Editable = true
+	gui.Views.Confirmation.SetContent(prompt)
+	gui.Views.Confirmation.SetCursor(len(prompt), 0)
 	return gui.setKeyBindings(gui.g, handleConfirm, nil)
 }
 
