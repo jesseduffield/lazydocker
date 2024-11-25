@@ -525,7 +525,9 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	// Mapping number keys to jump between side panels
 	for _, panel := range gui.allSidePanels() {
 		for idx := 1; idx <= len(gui.allSidePanels()); idx++ {
-			bindings = append(bindings, &Binding{ViewName: panel.GetView().Name(), Key: rune('0' + idx), Modifier: gocui.ModNone, Handler: wrappedHandlerWithKey(gui.jumpToSideView, idx)})
+			bindings = append(bindings,
+				&Binding{ViewName: panel.GetView().Name(), Key: rune('0' + idx), Modifier: gocui.ModNone, Handler: wrappedHandlerWithKey(gui.jumpToSideView, idx)},
+			)
 		}
 	}
 

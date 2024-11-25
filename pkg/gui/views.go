@@ -178,15 +178,24 @@ func (gui *Gui) createAllViews() error {
 }
 
 func (gui *Gui) configureViewProperties() {
-	gui.Config.UserConfig.Gui.ShowPanelJumps = true
 	if gui.Config.UserConfig.Gui.ShowPanelJumps {
-		gui.Views.Project.TitlePrefix = "[1]"
-		// TODO service panel appear condition?
-		gui.Views.Services.TitlePrefix = "[2]"
-		gui.Views.Containers.TitlePrefix = "[3]"
-		gui.Views.Images.TitlePrefix = "[4]"
-		gui.Views.Volumes.TitlePrefix = "[5]"
-		gui.Views.Networks.TitlePrefix = "[6]"
+		// defualt use number key mapping
+		jumpLabels := []string{"[1]", "[2]", "[3]", "[4]", "[5]", "[6]"}
+		idx := 0
+		gui.Views.Project.TitlePrefix = jumpLabels[idx]
+		idx++
+		if gui.DockerCommand.InDockerComposeProject {
+			gui.Views.Services.TitlePrefix = jumpLabels[idx]
+			idx++
+		}
+		gui.Views.Containers.TitlePrefix = jumpLabels[idx]
+		idx++
+		gui.Views.Images.TitlePrefix = jumpLabels[idx]
+		idx++
+		gui.Views.Volumes.TitlePrefix = jumpLabels[idx]
+		idx++
+		gui.Views.Networks.TitlePrefix = jumpLabels[idx]
+		idx++
 	} else {
 		gui.Views.Project.TitlePrefix = ""
 		gui.Views.Services.TitlePrefix = ""
