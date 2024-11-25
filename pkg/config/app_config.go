@@ -127,6 +127,9 @@ type GuiConfig struct {
 	// info and the status of the app).
 	ShowBottomLine bool `yaml:"showBottomLine"`
 
+	// If true, show jump-to-window keybindings in window titles.
+	ShowPanelJumps bool `yaml:"showPanelJumps"`
+
 	// When true, increases vertical space used by focused side panel,
 	// creating an accordion effect
 	ExpandFocusedSidePanel bool `yaml:"expandFocusedSidePanel"`

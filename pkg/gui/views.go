@@ -112,6 +112,8 @@ func (gui *Gui) createAllViews() error {
 		(*mapping.viewPtr).FgColor = gocui.ColorDefault
 	}
 
+	gui.configureViewProperties()
+
 	selectedLineBgColor := GetGocuiStyle(gui.Config.UserConfig.Gui.Theme.SelectedLineBgColor)
 
 	gui.Views.Main.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
@@ -173,6 +175,26 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Filter.Editor = gocui.EditorFunc(gui.wrapEditor(gocui.SimpleEditor))
 
 	return nil
+}
+
+func (gui *Gui) configureViewProperties() {
+	gui.Config.UserConfig.Gui.ShowPanelJumps = true
+	if gui.Config.UserConfig.Gui.ShowPanelJumps {
+		gui.Views.Project.TitlePrefix = "[1]"
+		// TODO service panel appear condition?
+		gui.Views.Services.TitlePrefix = "[2]"
+		gui.Views.Containers.TitlePrefix = "[3]"
+		gui.Views.Images.TitlePrefix = "[4]"
+		gui.Views.Volumes.TitlePrefix = "[5]"
+		gui.Views.Networks.TitlePrefix = "[6]"
+	} else {
+		gui.Views.Project.TitlePrefix = ""
+		gui.Views.Services.TitlePrefix = ""
+		gui.Views.Containers.TitlePrefix = ""
+		gui.Views.Images.TitlePrefix = ""
+		gui.Views.Volumes.TitlePrefix = ""
+		gui.Views.Networks.TitlePrefix = ""
+	}
 }
 
 func (gui *Gui) setInitialViewContent() error {
