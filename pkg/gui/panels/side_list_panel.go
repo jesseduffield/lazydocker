@@ -57,6 +57,9 @@ type SideListPanel[T comparable] struct {
 	// set this to true if you don't want to allow manual filtering via '/'
 	DisableFilter bool
 
+	// set to true if config file wants this panel to be hidden
+	ConfigHidden bool
+
 	// This can be nil if you want to always show the panel
 	Hide func() bool
 }
@@ -263,6 +266,10 @@ func (self *SideListPanel[T]) IsFilterDisabled() bool {
 }
 
 func (self *SideListPanel[T]) IsHidden() bool {
+	if self.ConfigHidden {
+		return true
+	}
+
 	if self.Hide == nil {
 		return false
 	}

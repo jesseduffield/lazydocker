@@ -44,6 +44,7 @@ func (gui *Gui) getNetworksPanel() *panels.SideListPanel[*commands.Network] {
 			return a.Name < b.Name
 		},
 		GetTableCells: presentation.GetNetworkDisplayStrings,
+		ConfigHidden: !gui.Config.UserConfig.Gui.SidePanelVisibility.Networks,
 	}
 }
 
