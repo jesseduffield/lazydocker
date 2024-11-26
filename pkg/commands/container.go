@@ -59,6 +59,12 @@ func (c *Container) Remove(options container.RemoveOptions) error {
 	return nil
 }
 
+// Start starts the container
+func (c *Container) Start() error {
+	c.Log.Warn(fmt.Sprintf("starting container %s", c.Name))
+	return c.Client.ContainerStart(context.Background(), c.ID, container.StartOptions{})
+}
+
 // Stop stops the container
 func (c *Container) Stop() error {
 	c.Log.Warn(fmt.Sprintf("stopping container %s", c.Name))
