@@ -19,17 +19,20 @@ import (
 	"github.com/samber/lo"
 )
 
+var isStandaloneContainer = func(container *commands.Container) bool {
+	if container.OneOff || container.ServiceName == "" {
+		return true
+	}
+
+	project, _ := container.Container.Labels["com.docker.compose.project"]
+	return project == ""
+	//return !lo.SomeBy(gui.Panels.Services.List.GetAllItems(), func(service *commands.Service) bool {
+	//	return service.Name == container.ServiceName
+	//})
+}
+
 func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] {
 	// Standalone containers are containers which are either one-off containers, or whose service is not part of this docker-compose context.
-	isStandaloneContainer := func(container *commands.Container) bool {
-		if container.OneOff || container.ServiceName == "" {
-			return true
-		}
-
-		return !lo.SomeBy(gui.Panels.Services.List.GetAllItems(), func(service *commands.Service) bool {
-			return service.Name == container.ServiceName
-		})
-	}
 
 	return &panels.SideListPanel[*commands.Container]{
 		ContextState: &panels.ContextState[*commands.Container]{
@@ -255,6 +258,12 @@ func (gui *Gui) refreshContainersAndServices() error {
 	originalSelectedLineIdx := gui.Panels.Services.SelectedIdx
 	selectedService, isServiceSelected := gui.Panels.Services.List.TryGet(originalSelectedLineIdx)
 
+	services, err := gui.DockerCommand.GetServices()
+	if err != nil {
+		return err
+	}
+	gui.Panels.Services.List.SetItems(services)
+
 	containers, services, err := gui.DockerCommand.RefreshContainersAndServices(
 		gui.Panels.Services.List.GetAllItems(),
 		gui.Panels.Containers.List.GetAllItems(),
@@ -283,7 +292,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 }
 
 func (gui *Gui) renderContainersAndServices() error {
-	if gui.DockerCommand.InDockerComposeProject {
+	if gui.DockerCommand.SelectedComposeProject != nil {
 		if err := gui.Panels.Services.RerenderList(); err != nil {
 			return err
 		}
