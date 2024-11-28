@@ -491,7 +491,7 @@ type AppConfig struct {
 }
 
 // NewAppConfig makes a new app config
-func NewAppConfig(name, version, commit, date string, buildSource string, debuggingFlag bool, composeFiles []string, projectDir string) (*AppConfig, error) {
+func NewAppConfig(name, version, commit, date, buildSource string, debuggingFlag bool, composeFiles []string, projectDir string, profiles []string) (*AppConfig, error) {
 	configDir, err := findOrCreateConfigDir(name)
 	if err != nil {
 		return nil, err
@@ -505,6 +505,10 @@ func NewAppConfig(name, version, commit, date string, buildSource string, debugg
 	// Pass compose files as individual -f flags to docker compose
 	if len(composeFiles) > 0 {
 		userConfig.CommandTemplates.DockerCompose += " -f " + strings.Join(composeFiles, " -f ")
+	}
+
+	if len(profiles) > 0 {
+		userConfig.CommandTemplates.DockerCompose += " --profile " + strings.Join(profiles, " --profile ")
 	}
 
 	appConfig := &AppConfig{

@@ -23,3 +23,19 @@ services:
       dockerfile: Dockerfile
       context: .
     command: /app/print-random-stuff.sh
+
+  my-service4:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
+    profiles:
+      - foo
+
+  my-service5:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
+    profiles:
+      - bar
