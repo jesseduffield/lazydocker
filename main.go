@@ -11,11 +11,12 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
 	"github.com/integrii/flaggy"
+	"github.com/jesseduffield/yaml"
+	"github.com/samber/lo"
+
 	"github.com/jesseduffield/lazydocker/pkg/app"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
-	"github.com/jesseduffield/yaml"
-	"github.com/samber/lo"
 )
 
 const DEFAULT_VERSION = "unversioned"
@@ -29,6 +30,7 @@ var (
 	configFlag    = false
 	debuggingFlag = false
 	composeFiles  []string
+	profiles      []string
 )
 
 func main() {
@@ -51,6 +53,7 @@ func main() {
 	flaggy.Bool(&configFlag, "c", "config", "Print the current default config")
 	flaggy.Bool(&debuggingFlag, "d", "debug", "a boolean")
 	flaggy.StringSlice(&composeFiles, "f", "file", "Specify alternate compose files")
+	flaggy.StringSlice(&profiles, "p", "profile", "Specify one or more profiles to use")
 	flaggy.SetVersion(info)
 
 	flaggy.Parse()
@@ -71,7 +74,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, composeFiles, projectDir)
+	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, composeFiles, projectDir, profiles)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
