@@ -75,7 +75,6 @@ func (gui *Gui) runCommand(cmd *exec.Cmd, msg string) error {
 		fmt.Fprintf(os.Stdout, "\n%s\n\n", utils.ColoredString(msg, color.FgGreen))
 	}
 	err := cmd.Run()
-
 	if err != nil {
 		gui.Log.Error(err)
 	}

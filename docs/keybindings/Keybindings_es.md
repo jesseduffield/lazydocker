@@ -19,7 +19,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>d</kbd>: borrar
   <kbd>e</kbd>: esconder/mostrar contenedores parados
   <kbd>p</kbd>: pausa
-  <kbd>s</kbd>: parar
+  <kbd>s</kbd>: start/stop
   <kbd>r</kbd>: reiniciar
   <kbd>a</kbd>: attach
   <kbd>m</kbd>: ver logs
