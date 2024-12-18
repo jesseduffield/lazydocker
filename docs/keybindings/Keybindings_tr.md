@@ -19,7 +19,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>d</kbd>: kaldır
   <kbd>e</kbd>: hide/show stopped containers
   <kbd>p</kbd>: pause
-  <kbd>s</kbd>: durdur
+  <kbd>s</kbd>: start/stop
   <kbd>r</kbd>: yeniden başlat
   <kbd>a</kbd>: bağlan/iliştir
   <kbd>m</kbd>: kayıt defterini görüntüle

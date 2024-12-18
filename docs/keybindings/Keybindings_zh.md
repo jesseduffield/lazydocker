@@ -19,7 +19,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>d</kbd>: 移除
   <kbd>e</kbd>: 隐藏/显示已停止的容器
   <kbd>p</kbd>: 暂停
-  <kbd>s</kbd>: 停止
+  <kbd>s</kbd>: start/stop
   <kbd>r</kbd>: 重新启动
   <kbd>a</kbd>: attach
   <kbd>m</kbd>: 查看日志
