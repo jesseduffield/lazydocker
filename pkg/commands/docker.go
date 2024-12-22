@@ -259,7 +259,7 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 		} else if name, ok := ctr.Labels["name"]; ok {
 			newContainer.Name = name
 		} else {
-			newContainer.Name = "default_name"
+			newContainer.Name = "Unknown"
 		}
 		newContainer.ServiceName = ctr.Labels["com.docker.compose.service"]
 		newContainer.ProjectName = ctr.Labels["com.docker.compose.project"]
