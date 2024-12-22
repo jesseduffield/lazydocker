@@ -104,4 +104,10 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>+</kbd>: next screen mode (normal/half/fullscreen)
   <kbd>_</kbd>: prev screen mode
+  <kbd>1</kbd>: focus projects panel
+  <kbd>2</kbd>: focus services panel
+  <kbd>3</kbd>: focus containers panel
+  <kbd>4</kbd>: focus images panel
+  <kbd>5</kbd>: focus volumes panel
+  <kbd>6</kbd>: focus networks panel
 </pre>

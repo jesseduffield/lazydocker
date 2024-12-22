@@ -12,6 +12,13 @@ import (
 	"github.com/spkg/bom"
 )
 
+func (gui *Gui) handleGoTo(view *gocui.View) func(g *gocui.Gui, v *gocui.View) error {
+	return func(g *gocui.Gui, v *gocui.View) error {
+		gui.resetMainView()
+		return gui.switchFocus(view)
+	}
+}
+
 func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 	sideViewNames := gui.sideViewNames()
 	var focusedViewName string
