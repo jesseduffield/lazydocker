@@ -71,33 +71,30 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	return defaultObj
 }
 
-// NewDockerCommand it runs docker commands
+// NewDockerCommand creates a DockerCommand struct that wraps the docker client.
+// Able to run docker commands. And handles
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
 	dockerHost, err := determineDockerHost()
 	if err != nil {
 		ogLog.Printf("> could not determine host %v", err)
 	}
 
-	// NOTE: Inject the determined docker host to the environment. This allows the
-	//       `SSHHandler.HandleSSHDockerHost()` to create a local unix socket tunneled
-	//       over SSH to the specified ssh host.
-	if strings.HasPrefix(dockerHost, "ssh://") {
-		os.Setenv(dockerHostEnvKey, dockerHost)
-	}
-
-	tunnelCloser, err := ssh.NewSSHHandler(osCommand).HandleSSHDockerHost()
+	tunnelCloser, err := ssh.NewSSHHandler(osCommand).HandleSSHDockerHost(dockerHost)
 	if err != nil {
 		ogLog.Fatal(err)
 	}
 
-	// Retrieve the docker host from the environment which could have been set by
-	// the `SSHHandler.HandleSSHDockerHost()` and override `dockerHost`.
-	dockerHostFromEnv := os.Getenv(dockerHostEnvKey)
-	if dockerHostFromEnv != "" {
-		dockerHost = dockerHostFromEnv
+	clientOpts := []client.Opt{
+		client.FromEnv,
+		client.WithVersion(APIVersion),
+	}
+	// For an ssh connection the DOCKER_HOST env variable has been overridden.
+	// Discard the previously determined dockerHost
+	if !strings.HasPrefix(dockerHost, "ssh://") {
+		clientOpts = append(clientOpts, client.WithHost(dockerHost))
 	}
 
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithVersion(APIVersion), client.WithHost(dockerHost))
+	cli, err := client.NewClientWithOpts(clientOpts...)
 	if err != nil {
 		ogLog.Fatal(err)
 	}
