@@ -119,9 +119,11 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Main.IgnoreCarriageReturns = true
 
 	gui.Views.Project.Title = gui.Tr.ProjectTitle
+	gui.Views.Project.TitlePrefix = "[1]"
 
 	gui.Views.Services.Highlight = true
 	gui.Views.Services.Title = gui.Tr.ServicesTitle
+	gui.Views.Services.TitlePrefix = "[2]"
 	gui.Views.Services.SelBgColor = selectedLineBgColor
 
 	gui.Views.Containers.Highlight = true
@@ -131,17 +133,21 @@ func (gui *Gui) createAllViews() error {
 	} else {
 		gui.Views.Containers.Title = gui.Tr.StandaloneContainersTitle
 	}
+	gui.Views.Containers.TitlePrefix = "[3]"
 
 	gui.Views.Images.Highlight = true
 	gui.Views.Images.Title = gui.Tr.ImagesTitle
 	gui.Views.Images.SelBgColor = selectedLineBgColor
+	gui.Views.Images.TitlePrefix = "[4]"
 
 	gui.Views.Volumes.Highlight = true
 	gui.Views.Volumes.Title = gui.Tr.VolumesTitle
+	gui.Views.Volumes.TitlePrefix = "[5]"
 	gui.Views.Volumes.SelBgColor = selectedLineBgColor
 
 	gui.Views.Networks.Highlight = true
 	gui.Views.Networks.Title = gui.Tr.NetworksTitle
+	gui.Views.Networks.TitlePrefix = "[6]"
 	gui.Views.Networks.SelBgColor = selectedLineBgColor
 
 	gui.Views.Options.Frame = false
