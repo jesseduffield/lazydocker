@@ -4,13 +4,17 @@
 
 The location of the user config will differ depending on your OS. You can open it via lazydocker by opening the application, clicking on the 'project' panel at the top left and pressing 'o' (or pressing 'e' if your files open in vim).
 
-Changes to the user config will only take place after closing and re-opening lazydocker
+Changes to the user config will only take place after closing and re-opening lazydocker.
 
 ### Locations:
 
-- OSX: `~/Library/Application Support/jesseduffield/lazydocker/config.yml`
-- Linux: `~/.config/lazydocker/config.yml`
+Lazydocker follows the [XDG base directory specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) meaning that the config will be placed in `XDG_CONFIG_HOME` if the variable is found.
+
+- UNIX(if `XDG_CONFIG_HOME` environment variable is found): `$XDG_CONFIG_HOME/lazydocker/config.yml`
+- OSX(if `XDG_CONFIG_HOME` environment variable is **not** found): `~/Library/Application Support/jesseduffield/lazydocker/config.yml`
+- Linux(if `XDG_CONFIG_HOME` environment variable is **not** found): `~/.config/lazydocker/config.yml`
 - Windows: `C:\\Users\\<User>\\AppData\\Roaming\\jesseduffield\\lazydocker\\config.yml` (I think)
+
 
 JSON schema is available for `config.yml` so that IntelliSense in Visual Studio Code
 (completion and error checking) is automatically enabled when the [YAML Red Hat][yaml]
