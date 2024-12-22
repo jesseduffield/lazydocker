@@ -229,6 +229,17 @@ If you encounter a compatibility issue with Docker bundled binary, try rebuildin
 the image with the build argument `--build-arg DOCKER_VERSION="v$(docker -v | cut -d" " -f3 | rev | cut -c 2- | rev)"`
 so that the bundled docker binary matches your host docker binary version.
 
+### Manual
+
+You'll need to [install Go](https://golang.org/doc/install)
+
+```
+git clone https://github.com/jesseduffield/lazydocker.git
+cd lazydocker
+go install
+```
+
+You can also use `go run main.go` to compile and run in one go (pun definitely intended)
 
 ## Usage
 
