@@ -55,7 +55,7 @@ func (self *SSHHandler) HandleSSHDockerHost() (io.Closer, error) {
 
 	// if the docker host scheme is "ssh", forward the docker socket before creating the client
 	if u.Scheme == "ssh" {
-		tunnel, err := self.createDockerHostTunnel(ctx, u.Host)
+		tunnel, err := self.createDockerHostTunnel(ctx, u.User.String() + "@" + u.Host)
 		if err != nil {
 			return noopCloser{}, fmt.Errorf("tunnel ssh docker host: %w", err)
 		}
