@@ -107,6 +107,25 @@ You can install `lazydocker` using [Chocolatey](https://chocolatey.org/):
 ```sh
 choco install lazydocker
 ```
+
+### conda-forge (Linux/MacOS/Windows)
+
+You can find [lazydocker](https://anaconda.org/conda-forge/lazydocker) in [conda-forge](https://conda-forge.org/) channel.
+
+The package can be installed using following conda package compatible package managers.
+
+#### Pixi
+
+[Pixi](https://prefix.dev) install packages from conda-forge channel(a kind of package repository used in Conda ecosystem) by default but it is capable of global installation.
+
+Run `pixi global install lazydocker` after installing Pixi.
+
+#### Conda/Mamba/Micromamba
+
+- [Conda](https://docs.conda.io/projects/conda/en/stable/): run `conda install -c conda-forge lazydocker` after activating the environment.
+- [Mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html): run `mamba install -c conda-forge lazydocker` after activating the environment.
+- [Micromamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html): run `micromamba install -c conda-forge lazydocker` after activating the environment.
+
 ### asdf-vm
 
 You can install [asdf-lazydocker plugin](https://github.com/comdotlinux/asdf-lazydocker) using [asdf-vm](https://asdf-vm.com/):
