@@ -3,6 +3,9 @@
 # allow specifying different destination directory
 DIR="${DIR:-"$HOME/.local/bin"}"
 
+# ensure the directory exists
+mkdir -p "$DIR"
+
 # map different architecture variations to the available binaries
 ARCH=$(uname -m)
 case $ARCH in
