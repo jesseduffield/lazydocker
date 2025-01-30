@@ -135,6 +135,8 @@ The script installs downloaded binary to `$HOME/.local/bin` directory by default
 
 ### Go
 
+Go >= 1.21 is required for lazydocker >= v0.24.0
+
 Required Go Version >= **1.19**
 
 ```sh
