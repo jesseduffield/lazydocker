@@ -155,6 +155,18 @@ You can install lazydocker using the [AUR](https://aur.archlinux.org/packages/la
 yay -S lazydocker
 ```
 
+### Debian
+
+You can install lazydocker using the [Unofficial repository](https://debian.griffo.io) by running:
+
+```sh
+curl -sS https://debian.griffo.io/3B9335DF576D3D58059C6AA50B56A1A69762E9FF.asc | sudo gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/debian.griffo.io.gpg
+echo "deb https://debian.griffo.io/apt $(lsb_release -sc 2>/dev/null) main" | sudo tee /etc/apt/sources.list.d/debian.griffo.io.list
+apt install -y lazydocker
+```
+Package built at [lazydocker-debian](https://github.com/dariogriffo/lazydocker-debian)
+
+
 ### Docker
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
