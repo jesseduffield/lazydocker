@@ -18,6 +18,7 @@ import (
 	ctxstore "github.com/docker/cli/cli/context/store"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
+	"github.com/goccy/go-yaml"
 	"github.com/imdario/mergo"
 	"github.com/jesseduffield/lazydocker/pkg/commands/ssh"
 	"github.com/jesseduffield/lazydocker/pkg/config"
@@ -40,6 +41,7 @@ type DockerCommand struct {
 	Config                 *config.AppConfig
 	Client                 *client.Client
 	InDockerComposeProject bool
+	ProjectName            string
 	ErrorChan              chan error
 	ContainerMutex         deadlock.Mutex
 	ServiceMutex           deadlock.Mutex
@@ -124,6 +126,17 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 	if err != nil {
 		dockerCommand.InDockerComposeProject = false
 		log.Warn(err.Error())
+	} else {
+		composeCommand := config.UserConfig.CommandTemplates.DockerCompose
+		yamlDockerComposeConfig, err := osCommand.RunCommandWithOutput(fmt.Sprintf("%s config --format=yaml", composeCommand))
+
+		if err == nil {
+			dockerCommand.ProjectName, err = determineProjectName(yamlDockerComposeConfig)
+		}
+
+		if err != nil {
+			log.Warn(err.Error())
+		}
 	}
 
 	return dockerCommand, nil
@@ -208,7 +221,7 @@ func (c *DockerCommand) assignContainersToServices(containers []*Container, serv
 L:
 	for _, service := range services {
 		for _, ctr := range containers {
-			if !ctr.OneOff && ctr.ServiceName == service.Name {
+			if !ctr.OneOff && ctr.ServiceName == service.Name && (c.ProjectName == "" || ctr.ProjectName == c.ProjectName) {
 				service.Container = ctr
 				continue L
 			}
@@ -358,6 +371,24 @@ func (c *DockerCommand) DockerComposeConfig() string {
 		output = err.Error()
 	}
 	return output
+}
+
+// determineProjectName tries to the determine the docker compose project name
+func determineProjectName(yamlDockerComposeConfig string) (string, error) {
+	var projectName string
+	var config map[string]any
+
+	err := yaml.Unmarshal([]byte(yamlDockerComposeConfig), &config)
+	if err != nil {
+		return projectName, err
+	}
+
+	projectName, ok := config["name"].(string)
+	if !ok {
+		return projectName, fmt.Errorf("Incorrect value of docker compose project name in config: %s", config["name"])
+	}
+
+	return projectName, nil
 }
 
 // determineDockerHost tries to the determine the docker host that we should connect to
