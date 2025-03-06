@@ -205,15 +205,18 @@ func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service,
 }
 
 func (c *DockerCommand) assignContainersToServices(containers []*Container, services []*Service) {
-L:
+	serviceMap := make(map[string]*Service)
 	for _, service := range services {
-		for _, ctr := range containers {
-			if !ctr.OneOff && ctr.ServiceName == service.Name {
-				service.Container = ctr
-				continue L
-			}
+		serviceMap[service.ID] = service
+	}
+	for _, ctr := range containers {
+		// We use the container short id here because when listing the services
+		// Docker provides us a shortened version. It's still guaranteed to be unique
+		containerShortId := ctr.ID[:12]
+		if !ctr.OneOff && serviceMap[containerShortId] != nil {
+			service := serviceMap[containerShortId]
+			service.Container = ctr
 		}
-		service.Container = nil
 	}
 }
 
@@ -279,21 +282,22 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	}
 
 	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
-	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --services", composeCommand))
+	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s ps --format '{{.ID}} {{.Service}}'", composeCommand))
+
 	if err != nil {
 		return nil, err
 	}
 
-	// output looks like:
-	// service1
-	// service2
-
 	lines := utils.SplitLines(output)
 	services := make([]*Service, len(lines))
 	for i, str := range lines {
+		if str == "" {
+			continue
+		}
+		serviceParams := strings.Split(str, " ")
 		services[i] = &Service{
-			Name:          str,
-			ID:            str,
+			Name:          serviceParams[1],
+			ID:            serviceParams[0],
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,
 			DockerCommand: c,
