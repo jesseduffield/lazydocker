@@ -282,7 +282,7 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	}
 
 	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
-	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s ps --format '{{.ID}} {{.Service}}'", composeCommand))
+	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s ps -a --format '{{.ID}} {{.Service}}'", composeCommand))
 
 	if err != nil {
 		return nil, err
