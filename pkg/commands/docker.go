@@ -190,13 +190,9 @@ func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service,
 
 	var services []*Service
 	// we only need to get these services once because they won't change in the runtime of the program
-	if currentServices != nil {
-		services = currentServices
-	} else {
-		services, err = c.GetServices()
-		if err != nil {
-			return nil, nil, err
-		}
+	services, err = c.GetServices()
+	if err != nil {
+		return nil, nil, err
 	}
 
 	c.assignContainersToServices(containers, services)
