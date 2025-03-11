@@ -32,6 +32,11 @@ const (
 	dockerHostEnvKey = "DOCKER_HOST"
 )
 
+var (
+	declaredServicesMap = make(map[string]string)
+	declaredServicesMu  sync.Mutex
+)
+
 // DockerCommand is our main docker interface
 type DockerCommand struct {
 	Log                    *logrus.Entry
@@ -189,7 +194,7 @@ func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service,
 	}
 
 	var services []*Service
-	// we only need to get these services once because they won't change in the runtime of the program
+
 	services, err = c.GetServices()
 	if err != nil {
 		return nil, nil, err
@@ -271,6 +276,29 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 	return ownContainers, nil
 }
 
+func (c *DockerCommand) getDeclaredServices(composeCommand string) map[string]string {
+	declaredServicesMu.Lock()
+	defer declaredServicesMu.Unlock()
+
+	if len(declaredServicesMap) > 0 {
+		// We only need to fetch the declared services once
+		return declaredServicesMap
+	}
+
+	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --services", composeCommand))
+	if err != nil {
+		c.Log.Error(fmt.Sprintf("Error fetching declared services: %v", err))
+		return declaredServicesMap
+	}
+
+	for _, line := range utils.SplitLines(output) {
+		declaredServicesMap[line] = line
+	}
+
+	return declaredServicesMap
+
+}
+
 // GetServices gets services
 func (c *DockerCommand) GetServices() ([]*Service, error) {
 	if !c.InDockerComposeProject {
@@ -278,26 +306,41 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	}
 
 	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
-	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s ps -a --format '{{.ID}} {{.Service}}'", composeCommand))
+
+	psServices, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s ps -a --format '{{.ID}} {{.Service}}'", composeCommand))
 
 	if err != nil {
 		return nil, err
 	}
 
-	lines := utils.SplitLines(output)
-	services := make([]*Service, len(lines))
-	for i, str := range lines {
-		if str == "" {
-			continue
-		}
-		serviceParams := strings.Split(str, " ")
+	c.getDeclaredServices(composeCommand)
+
+	psServicesMap := make(map[string]string)
+	for _, line := range utils.SplitLines(psServices) {
+		serviceParams := strings.Split(line, " ")
+		psServicesMap[serviceParams[1]] = serviceParams[0]
+	}
+
+	merged := make(map[string]string)
+	for k, v := range declaredServicesMap {
+		merged[k] = v
+	}
+	for k, v := range psServicesMap {
+		// Overrides if we have access to the id
+		merged[k] = v
+	}
+
+	services := make([]*Service, len(merged))
+	i := 0
+	for id, service := range merged {
 		services[i] = &Service{
-			Name:          serviceParams[1],
-			ID:            serviceParams[0],
+			Name:          id,
+			ID:            service,
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,
 			DockerCommand: c,
 		}
+		i++
 	}
 
 	return services, nil
