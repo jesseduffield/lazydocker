@@ -157,7 +157,7 @@ yay -S lazydocker
 
 ### Debian / Ubuntu
 
-You can install lazydocker using the [Unofficial repository](https://debian.griffo.io) maintained by [Dario Griffo](https://github.com/dariogriffo) by running:
+You can install lazydocker using the [Unofficial repository](https://debian.griffo.io) by running:
 
 In debian:
 
@@ -175,8 +175,7 @@ apt install -y lazydocker
 ```
 
 
-Package built at [lazydocker-debian](https://github.com/dariogriffo/lazydocker-debian)
-
+Package built at [lazydocker-debian](https://github.com/dariogriffo/lazydocker-debian) maintained by [Dario Griffo](https://github.com/dariogriffo) 
 
 ### Docker
 
