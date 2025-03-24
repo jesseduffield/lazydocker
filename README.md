@@ -155,6 +155,21 @@ You can install lazydocker using the [AUR](https://aur.archlinux.org/packages/la
 yay -S lazydocker
 ```
 
+### Ubuntu
+
+```sh
+LAZYDOCKER_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazydocker/releases/latest" | \grep -Po '"tag_name": *"v\K[^"]*')
+curl -Lo lazydocker.tar.gz "https://github.com/jesseduffield/lazydocker/releases/download/v${LAZYDOCKER_VERSION}/lazydocker_${LAZYDOCKER_VERSION}_Linux_x86_64.tar.gz"
+tar xf lazydocker.tar.gz lazydocker
+sudo install lazydocker -D -t /usr/local/bin/
+```
+
+Verify the correct installation of lazydocker:
+
+```sh
+lazydocker --version
+```
+
 ### Docker
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
