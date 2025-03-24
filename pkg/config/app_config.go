@@ -166,6 +166,9 @@ type CommandTemplatesConfig struct {
 	// downs and removes volumes
 	DownWithVolumes string `yaml:"downWithVolumes,omitempty"`
 
+	// Restarts everything
+	Restart string `yaml:"restart,omitempty"`
+
 	// DockerCompose is for your docker-compose command. You may want to combine a
 	// few different docker-compose.yml files together, in which case you can set
 	// this to "docker compose -f foo/docker-compose.yml -f
@@ -202,7 +205,8 @@ type CommandTemplatesConfig struct {
 
 	// AllLogs is for showing what you get from doing `docker compose logs`. It
 	// combines all the logs together
-	AllLogs string `yaml:"allLogs,omitempty"`
+	AllLogs        string `yaml:"allLogs,omitempty"`
+	AllLogsProfile string `yaml:"allLogsProfile,omitempty"`
 
 	// ViewAllLogs is the command we use when you want to see all logs in a subprocess with no filtering
 	ViewAllLogs string `yaml:"viewAlLogs,omitempty"`
@@ -210,7 +214,8 @@ type CommandTemplatesConfig struct {
 	// DockerComposeConfig is the command for viewing the config of your docker
 	// compose. It basically prints out the yaml from your docker-compose.yml
 	// file(s)
-	DockerComposeConfig string `yaml:"dockerComposeConfig,omitempty"`
+	DockerComposeConfig        string `yaml:"dockerComposeConfig,omitempty"`
+	DockerComposeProfileConfig string `yaml:"dockerComposeProfileConfig,omitempty"`
 
 	// CheckDockerComposeConfig is what we use to check whether we are in a
 	// docker-compose context. If the command returns an error then we clearly
@@ -218,8 +223,22 @@ type CommandTemplatesConfig struct {
 	// and only show containers
 	CheckDockerComposeConfig string `yaml:"checkDockerComposeConfig,omitempty"`
 
+	// CheckDockerComposeProfiles is what we use to check whether we are in a
+	// docker-compose context with profiles.
+	CheckDockerComposeProfiles string `yaml:"checkDockerComposeProfiles,omitempty"`
+
 	// ServiceTop is the command for viewing the processes under a given service
 	ServiceTop string `yaml:"serviceTop,omitempty"`
+
+	// UpProfile is the command for starting a project
+	UpProfile string `yaml:"upProfile,omitempty"`
+
+	// DownProfile is the command for stopping a project with a given profile
+	DownProfile            string `yaml:"downProfile,omitempty"`
+	DownProfileWithVolumes string `yaml:"downProfileWithVolumes,omitempty"`
+
+	// RestartProfile is the command for restarting a project with a given profile
+	RestartProfile string `yaml:"restartProfile,omitempty"`
 }
 
 // OSConfig contains config on the level of the os
@@ -385,23 +404,31 @@ func GetDefaultConfig() UserConfig {
 			Tail:       "",
 		},
 		CommandTemplates: CommandTemplatesConfig{
-			DockerCompose:            "docker compose",
-			RestartService:           "{{ .DockerCompose }} restart {{ .Service.Name }}",
-			StartService:             "{{ .DockerCompose }} start {{ .Service.Name }}",
-			Up:                       "{{ .DockerCompose }} up -d",
-			Down:                     "{{ .DockerCompose }} down",
-			DownWithVolumes:          "{{ .DockerCompose }} down --volumes",
-			UpService:                "{{ .DockerCompose }} up -d {{ .Service.Name }}",
-			RebuildService:           "{{ .DockerCompose }} up -d --build {{ .Service.Name }}",
-			RecreateService:          "{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}",
-			StopService:              "{{ .DockerCompose }} stop {{ .Service.Name }}",
-			ServiceLogs:              "{{ .DockerCompose }} logs --since=60m --follow {{ .Service.Name }}",
-			ViewServiceLogs:          "{{ .DockerCompose }} logs --follow {{ .Service.Name }}",
-			AllLogs:                  "{{ .DockerCompose }} logs --tail=300 --follow",
-			ViewAllLogs:              "{{ .DockerCompose }} logs",
-			DockerComposeConfig:      "{{ .DockerCompose }} config",
-			CheckDockerComposeConfig: "{{ .DockerCompose }} config --quiet",
-			ServiceTop:               "{{ .DockerCompose }} top {{ .Service.Name }}",
+			DockerCompose:              "docker compose",
+			RestartService:             "{{ .DockerCompose }} restart {{ .Service.Name }}",
+			StartService:               "{{ .DockerCompose }} start {{ .Service.Name }}",
+			Up:                         "{{ .DockerCompose }} up -d",
+			Down:                       "{{ .DockerCompose }} down",
+			DownWithVolumes:            "{{ .DockerCompose }} down --volumes",
+			UpService:                  "{{ .DockerCompose }} up -d {{ .Service.Name }}",
+			UpProfile:                  "{{ .DockerCompose }} --profile {{ .Profile }} up -d",
+			DownProfile:                "{{ .DockerCompose }} --profile {{ .Profile }} down",
+			DownProfileWithVolumes:     "{{ .DockerCompose }} --profile {{ .Profile }} down --volumes",
+			Restart:                    "{{ .DockerCompose }} restart",
+			RestartProfile:             "{{ .DockerCompose }} --profile {{ .Profile }} restart",
+			RebuildService:             "{{ .DockerCompose }} up -d --build {{ .Service.Name }}",
+			RecreateService:            "{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}",
+			StopService:                "{{ .DockerCompose }} stop {{ .Service.Name }}",
+			ServiceLogs:                "{{ .DockerCompose }} logs --since=60m --follow {{ .Service.Name }}",
+			ViewServiceLogs:            "{{ .DockerCompose }} logs --follow {{ .Service.Name }}",
+			AllLogs:                    "{{ .DockerCompose }} logs --tail=300 --follow",
+			AllLogsProfile:             "{{ .DockerCompose }} --profile {{ .Profile }} logs --tail=300 --follow",
+			ViewAllLogs:                "{{ .DockerCompose }} logs",
+			DockerComposeConfig:        "{{ .DockerCompose }} config",
+			DockerComposeProfileConfig: "{{ .DockerCompose }} --profile {{ .Profile }} config",
+			CheckDockerComposeConfig:   "{{ .DockerCompose }} config --quiet",
+			CheckDockerComposeProfiles: "{{ .DockerCompose }} config --profiles --quiet | grep -q '[^[:space:]]'; echo $?",
+			ServiceTop:                 "{{ .DockerCompose }} top {{ .Service.Name }}",
 		},
 		CustomCommands: CustomCommands{
 			Containers: []CustomCommand{},
