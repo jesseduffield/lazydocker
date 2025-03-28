@@ -56,7 +56,6 @@ func chineseSet() TranslationSet {
 		Recreate:          "重新创建",
 		PreviousContext:   "上一个选项卡",
 		NextContext:       "下一个选项卡",
-		// Attach: "连接/附加",
 		ViewLogs:                    "查看日志",
 		UpProject:                   "创建并启动容器",
 		DownProject:                 "停止并移除容器",
@@ -79,6 +78,16 @@ func chineseSet() TranslationSet {
 		FilterList:                  "过滤列表",
 		OpenInBrowser:               "在浏览器中打开(第一个端口为http)",
 		SortContainersByState:       "按状态排序容器",
+
+		Attach:                      "附加",
+		RestartProject:              "重新启动项目",
+		UpProfile:                   "启动配置文件",
+		DownProfile:                 "关闭配置文件",
+		DownProfileWithVolumes:      "关闭包括卷的配置文件",
+		RestartProfile:              "重新启动配置文件",
+		UpAllProfiles:               "启动所有配置文件",
+		DownAllProfiles:             "关闭所有配置文件",
+		DownAllProfilesWithVolumes:  "关闭包括卷的所有配置文件",
 
 		GlobalTitle:               "全局",
 		MainTitle:                 "主要",
@@ -132,5 +141,14 @@ func chineseSet() TranslationSet {
 		LcNextScreenMode: "下一个屏幕模式（正常/半屏/全屏）",
 		LcPrevScreenMode: "上一个屏幕模式",
 		FilterPrompt:     "筛选",
+
+		DetachFromContainerShortCut: "默认情况下，按 ctrl-p 然后 ctrl-q 从容器分离",
+
+		FocusProjects:   "聚焦项目面板",
+		FocusServices:   "聚焦服务面板",
+		FocusContainers: "聚焦容器面板",
+		FocusImages:     "聚焦镜像面板",
+		FocusVolumes:    "聚焦卷面板",
+		FocusNetworks:   "聚焦网络面板",
 	}
 }

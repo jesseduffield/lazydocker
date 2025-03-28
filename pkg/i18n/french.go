@@ -69,6 +69,7 @@ func frenchSet() TranslationSet {
 		ViewBulkCommands:            "voir les commandes groupées",
 		OpenInBrowser:               "ouvrir dans le navigateur (le premier port est http)",
 		SortContainersByState:       "ordonner les conteneurs par état",
+		FilterList:                  "filtrer la liste",
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Principal",
@@ -99,6 +100,8 @@ func frenchSet() TranslationSet {
 		NoImages:     "Aucune image",
 		NoVolumes:    "Aucun volume",
 		NoNetworks:   "Aucun réseau",
+		NoServices:   "Aucun service",
+		NoContainerForService: "Aucun journal à afficher ; le service n'est pas associé à un conteneur",
 
 		ConfirmQuit:                 "Êtes-vous certain de vouloir quitter ?",
 		MustForceToRemoveContainer:  "Vous ne pouvez pas supprimer un conteneur qui tourne sans le forcer. Voulez-vous le forcer ?",
@@ -116,5 +119,37 @@ func frenchSet() TranslationSet {
 
 		No:  "non",
 		Yes: "oui",
+
+		LcNextScreenMode: "mode d'écran suivant (normal/demi/plein écran)",
+		LcPrevScreenMode: "mode d'écran précédent",
+		FilterPrompt:     "filtrer",
+
+		FocusProjects:   "focus sur le panneau des projets",
+		FocusServices:   "focus sur le panneau des services",
+		FocusContainers: "focus sur le panneau des conteneurs",
+		FocusImages:     "focus sur le panneau des images",
+		FocusVolumes:    "focus sur le panneau des volumes",
+		FocusNetworks:   "focus sur le panneau des réseaux",
+
+		UpProject:                   "monter le projet",
+		DownProject:                 "descendre le projet",
+		RestartProject:              "redémarrer le projet",
+		UpProfile:                   "monter le profil",
+		DownProfile:                 "descendre le profil",
+		DownProfileWithVolumes:      "descendre le profil avec les volumes",
+		RestartProfile:              "redémarrer le profil",
+		UpAllProfiles:               "monter tous les profils",
+		DownAllProfiles:             "descendre tous les profils",
+		DownAllProfilesWithVolumes:  "descendre tous les profils avec les volumes",
+
+		Quit:                        "quitter",
+		ConfirmUpProject:            "Êtes-vous certain de vouloir monter votre projet docker-compose ?",
+		LcFilter:                    "filtrer la liste",
+		UppingProjectStatus:         "montée du projet",
+		UppingServiceStatus:         "montée du service",
+		DowningStatus:               "descente",
+		UpService:                   "monter le service",
+		Down:                        "descendre le projet",
+		DownWithVolumes:             "descendre le projet avec les volumes",
 	}
 }
