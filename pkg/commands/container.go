@@ -2,7 +2,6 @@ package commands
 
 import (
 	"context"
-	"fmt"
 	"os/exec"
 	"strings"
 
@@ -44,7 +43,7 @@ type Container struct {
 
 // Remove removes the container
 func (c *Container) Remove(options container.RemoveOptions) error {
-	c.Log.Warn(fmt.Sprintf("removing container %s", c.Name))
+	c.Log.Warnf("removing container %s", c.Name)
 	if err := c.Client.ContainerRemove(context.Background(), c.ID, options); err != nil {
 		if strings.Contains(err.Error(), "Stop the container before attempting removal or force remove") {
 			return ComplexError{
@@ -61,25 +60,25 @@ func (c *Container) Remove(options container.RemoveOptions) error {
 
 // Stop stops the container
 func (c *Container) Stop() error {
-	c.Log.Warn(fmt.Sprintf("stopping container %s", c.Name))
+	c.Log.Warnf("stopping container %s", c.Name)
 	return c.Client.ContainerStop(context.Background(), c.ID, container.StopOptions{})
 }
 
 // Pause pauses the container
 func (c *Container) Pause() error {
-	c.Log.Warn(fmt.Sprintf("pausing container %s", c.Name))
+	c.Log.Warnf("pausing container %s", c.Name)
 	return c.Client.ContainerPause(context.Background(), c.ID)
 }
 
 // Unpause unpauses the container
 func (c *Container) Unpause() error {
-	c.Log.Warn(fmt.Sprintf("unpausing container %s", c.Name))
+	c.Log.Warnf("unpausing container %s", c.Name)
 	return c.Client.ContainerUnpause(context.Background(), c.ID)
 }
 
 // Restart restarts the container
 func (c *Container) Restart() error {
-	c.Log.Warn(fmt.Sprintf("restarting container %s", c.Name))
+	c.Log.Warnf("restarting container %s", c.Name)
 	return c.Client.ContainerRestart(context.Background(), c.ID, container.StopOptions{})
 }
 
@@ -98,7 +97,7 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 		return nil, errors.New(c.Tr.CannotAttachStoppedContainerError)
 	}
 
-	c.Log.Warn(fmt.Sprintf("attaching to container %s", c.Name))
+	c.Log.Warnf("attaching to container %s", c.Name)
 	// TODO: use SDK
 	cmd := c.OSCommand.NewCmd("docker", "attach", "--sig-proxy=false", c.ID)
 	return cmd, nil
