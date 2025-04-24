@@ -32,6 +32,16 @@ builds:
       - 386
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.buildSource=snap
+  - id: deb
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+      - 386
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.buildSource=deb
 
 archives:
   - builds:
@@ -45,6 +55,9 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+  - builds:
+      - deb
+    format: deb
 
 checksum:
   name_template: "checksums.txt"
@@ -72,61 +85,40 @@ brews:
     # Your app's description.
     # Default is empty.
     description: "A simple terminal UI for docker, written in Go"
-#snapcrafts:
-#  - builds:
-#      - snap
-#
-#    replacements:
-#      linux: Linux
-#      386: x86
-#      amd64: x86_64
-#
-#    # Wether to publish the snap to the snapcraft store.
-#    # Remember you need to `snapcraft login` first.
-#    # Defaults to false.
-#    publish: false
-#
-#    # Single-line elevator pitch for your amazing snap.
-#    # 79 char long at most.
-#    summary: The lazier way to manage everything docker
-#
-#    # This the description of your snap. You have a paragraph or two to tell the
-#    # most important story about your snap. Keep it under 100 words though,
-#    # we live in tweetspace and your description wants to look good in the snap
-#    # store.
-#    description: 'A simple terminal UI for docker, written in Go'
-#
-#    # A guardrail to prevent you from releasing a snap to all your users before
-#    # it is ready.
-#    # `devel` will let you release only to the `edge` and `beta` channels in the
-#    # store. `stable` will let you release also to the `candidate` and `stable`
-#    # channels. More info about channels here:
-#    # https://snapcraft.io/docs/reference/channels
-#    # TODO: reset to `stable` when we've been manually reviewed: https://forum.snapcraft.io/t/request-for-classic-confinement-for-lazydocker/12155
-#    grade: devel
-#
-#    # Snaps can be setup to follow three different confinement policies:
-#    # `strict`, `devmode` and `classic`. A strict confinement where the snap
-#    # can only read and write in its own namespace is recommended. Extra
-#    # permissions for strict snaps can be declared as `plugs` for the app, which
-#    # are explained later. More info about confinement here:
-#    # https://snapcraft.io/docs/reference/confinement
-#    confinement: classic
-#
-#    # Your app's license, based on SPDX license expressions: https://spdx.org/licenses
-#    # Default is empty.
-#    license: MIT
-#
-#    # # Each binary built by GoReleaser is an app inside the snap. In this section
-#    # # you can declare extra details for those binaries. It is optional.
-#    # apps:
-#
-#    #   # The name of the app must be the same name as the binary built or the snapcraft name.
-#    #   lazydocker:
-#
-#    #     # If your app requires extra permissions to work outside of its default
-#    #     # confined space, declare them here.
-#    #     # You can read the documentation about the available plugs and the
-#    #     # things they allow:
-#    #     # https://snapcraft.io/docs/reference/interfaces.
-#    #     plugs: []
+
+nfpms:
+  - id: deb
+    package_name: lazydocker
+    license: MIT
+    maintainer: "Jesse Duffield <jesse@duffield.com>"
+    vendor: "Jesse Duffield"
+    homepage: "https://github.com/jesseduffield/lazydocker"
+    description: "A simple terminal UI for docker, written in Go"
+    formats:
+      - deb
+    dependencies:
+      - docker
+      - docker-compose
+
+snapcrafts:
+  - name: lazydocker
+    summary: A simple terminal UI for docker, written in Go
+    description: A simple terminal UI for docker, written in Go
+    confinement: strict
+    grade: stable
+    apps:
+      lazydocker:
+        command: lazydocker
+        plugs:
+          - network
+          - network-bind
+          - docker
+    parts:
+      lazydocker:
+        source: .
+        plugin: go
+        go-importpath: github.com/jesseduffield/lazydocker
+        build-snaps:
+          - go
+        build-packages:
+          - git
