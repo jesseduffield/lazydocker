@@ -93,5 +93,20 @@ func germanSet() TranslationSet {
 		StopContainer:               "Bist du dir sicher, dass du den Container anhalten möchtest?",
 		PressEnterToReturn:          "Drücke Eingabe um zu lazydocker zurückzukehren. (Diese Nachfrage kann in Deiner Konfiguration deaktiviert werden, indem du folgenden Wert setzt: `gui.returnImmediately: true`)",
 		DetachFromContainerShortCut: "Um sich vom Container zu trennen, drücken Sie standardmäßig ctrl-p ​​und dann ctrl-q",
+		ViewBulkCommands:            "zeige Bulk Kommandos",
+		ExecShell:                   "Shell ausführen",
+		OpenInBrowser:               "Im Browser öffnen (Erster Port ist HTTP)",
+		LcFilter:                    "Liste filtern",
+		HideStopped:                 "zeige/verstecke gestoppte Container",
+		UpService:                   "Service starten",
+		UpProject:                   "Projekt starten",
+		DownProject:                 "Projekt runterfahren",
+
+		FocusProjects:   "Fokus Projekt Panel",
+		FocusServices:   "Fokus Service Panel",
+		FocusContainers: "Fokus Container Panel",
+		FocusImages:     "Fokus Images Panel",
+		FocusVolumes:    "Fokus Volumes Panel",
+		FocusNetworks:   "Fokus Network Panel",
 	}
 }
