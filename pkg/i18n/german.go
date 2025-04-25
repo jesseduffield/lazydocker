@@ -8,7 +8,7 @@ func germanSet() TranslationSet {
 		StoppingStatus:             "anhalten",
 		RunningCustomCommandStatus: "führt benutzerdefinierten Befehl aus",
 
-		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
+		NoViewMachingNewLineFocusedSwitchStatement: "Keine Anzeige passt zu newLineFocused switch statement",
 
 		ErrorOccurred:                     "Es ist ein Fehler aufgetreten! Bitte erstelle ein Issue hier: https://github.com/jesseduffield/lazydocker/issues",
 		ConnectionFailed:                  "Verbindung zum Docker Client fehlgeschlagen. Du musst ggf. den Docker Client neustarten.",
@@ -73,8 +73,8 @@ func germanSet() TranslationSet {
 		CreditsTitle:              "Über Uns",
 		ContainerConfigTitle:      "Container Konfiguration",
 		ContainerEnvTitle:         "Container Env",
-		NothingToDisplay:          "Nothing to display",
-		CannotDisplayEnvVariables: "Something went wrong while displaying environment variables",
+		NothingToDisplay:          "Nichts anzuzeigen",
+		CannotDisplayEnvVariables: "Etwas ging schief beim Anzeigen der Umgebungsvariable",
 
 		NoContainers: "Keine Container",
 		NoContainer:  "Kein Container",
