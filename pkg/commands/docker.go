@@ -72,7 +72,7 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 }
 
 // NewDockerCommand creates a DockerCommand struct that wraps the docker client.
-// Able to run docker commands. And handles
+// Able to run docker commands. And handles SSH docker hosts
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
 	dockerHost, err := determineDockerHost()
 	if err != nil {
