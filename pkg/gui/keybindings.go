@@ -187,7 +187,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "containers",
-			Key:         gocui.KeyCtrlO,
+			Key:         'y',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleCopyContainerId,
 			Description: gui.Tr.CopyContainerId,

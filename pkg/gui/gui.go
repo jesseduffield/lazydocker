@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/docker/docker/api/types/events"
@@ -147,11 +146,9 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		State:         initialState,
 		Config:        config,
 		Tr:            tr,
-		statusManager: &statusManager{
-			lock: &sync.Mutex{},
-		},
-		taskManager: tasks.NewTaskManager(log, tr),
-		ErrorChan:   errorChan,
+		statusManager: &statusManager{},
+		taskManager:   tasks.NewTaskManager(log, tr),
+		ErrorChan:     errorChan,
 	}
 
 	deadlock.Opts.Disable = !gui.Config.Debug

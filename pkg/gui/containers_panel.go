@@ -252,8 +252,10 @@ func (gui *Gui) refreshContainersAndServices() error {
 	}
 
 	// keep track of current service selected so that we can reposition our cursor if it moves position in the list
+	gui.DockerCommand.ServiceMutex.Lock()
 	originalSelectedLineIdx := gui.Panels.Services.SelectedIdx
 	selectedService, isServiceSelected := gui.Panels.Services.List.TryGet(originalSelectedLineIdx)
+	gui.DockerCommand.ServiceMutex.Unlock()
 
 	containers, services, err := gui.DockerCommand.RefreshContainersAndServices(
 		gui.Panels.Services.List.GetAllItems(),
@@ -364,10 +366,8 @@ func (gui *Gui) handleCopyContainerId(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	err = gui.WithStaticWaitingStatus(fmt.Sprintf(gui.Tr.CopyContainerIdStatus, utils.TruncateWithEllipsis(ctr.ID, 10)), time.Second*2)
-	if err != nil {
-		return err
-	}
+	formattedStatusText := fmt.Sprintf("Copied %s to clipboard", utils.TruncateWithEllipsis(ctr.ID, 10))
+	go gui.Notify(formattedStatusText, "info", 3)()
 
 	return gui.OSCommand.CopyToClipboard(ctr.ID)
 }

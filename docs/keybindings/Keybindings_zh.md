@@ -16,7 +16,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 ## 容器
 
 <pre>
-  <kbd></kbd>: copy container id
+  <kbd>y</kbd>: copy container ID
   <kbd>d</kbd>: 移除
   <kbd>e</kbd>: 隐藏/显示已停止的容器
   <kbd>p</kbd>: 暂停

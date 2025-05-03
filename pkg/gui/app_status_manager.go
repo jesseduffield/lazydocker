@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"sync"
 	"time"
 
 	"github.com/jesseduffield/gocui"
@@ -16,15 +15,14 @@ type appStatus struct {
 
 type statusManager struct {
 	statuses []appStatus
-	lock     *sync.Mutex
 }
+
+const (
+	TickIntervalMs = 50
+)
 
 func (m *statusManager) removeStatus(name string) {
 	newStatuses := []appStatus{}
-
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
 	for _, status := range m.statuses {
 		if status.name != name {
 			newStatuses = append(newStatuses, status)
@@ -33,59 +31,38 @@ func (m *statusManager) removeStatus(name string) {
 	m.statuses = newStatuses
 }
 
-func (m *statusManager) addWaitingStatus(name string) {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
+func (m *statusManager) addStatus(name string, statusType string, duration int) {
 	m.removeStatus(name)
 	newStatus := appStatus{
 		name:       name,
-		statusType: "waiting",
-		duration:   0,
+		statusType: statusType,
+		duration:   duration,
 	}
 	m.statuses = append([]appStatus{newStatus}, m.statuses...)
 }
 
 func (m *statusManager) getStatusString() string {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
 	if len(m.statuses) == 0 {
 		return ""
 	}
+
 	topStatus := m.statuses[0]
 	if topStatus.statusType == "waiting" {
 		return topStatus.name + " " + utils.Loader()
+	} else if topStatus.statusType == "info" {
+		return topStatus.name
 	}
-	return topStatus.name
-}
 
-// WithStaticWaitingStatus shows a waiting status for a specific duration
-func (gui *Gui) WithStaticWaitingStatus(name string, duration time.Duration) error {
-	return gui.WithWaitingStatus(name, func() error { time.Sleep(duration); return nil })
+	return topStatus.name
 }
 
 // WithWaitingStatus wraps a function and shows a waiting status while the function is still executing
 func (gui *Gui) WithWaitingStatus(name string, f func() error) error {
 	go func() {
-		gui.statusManager.addWaitingStatus(name)
+		go gui.Notify(name, "waiting", 0)()
 
 		defer func() {
 			gui.statusManager.removeStatus(name)
-		}()
-
-		go func() {
-			ticker := time.NewTicker(time.Millisecond * 50)
-			defer ticker.Stop()
-			for range ticker.C {
-				appStatus := gui.statusManager.getStatusString()
-				if appStatus == "" {
-					return
-				}
-				if err := gui.renderString(gui.g, "appStatus", appStatus); err != nil {
-					gui.Log.Warn(err)
-				}
-			}
 		}()
 
 		if err := f(); err != nil {
@@ -96,4 +73,38 @@ func (gui *Gui) WithWaitingStatus(name string, f func() error) error {
 	}()
 
 	return nil
+}
+
+// Notify sends static notification to the user.
+// duration of 0 will disable the self-cleaning of the notification
+func (gui *Gui) Notify(name string, statusType string, duration int) func() {
+	return func() {
+		gui.statusManager.addStatus(name, statusType, duration)
+
+		defer func() {
+			gui.statusManager.removeStatus(name)
+		}()
+
+		ticker := time.NewTicker(time.Millisecond * TickIntervalMs)
+		tickCount := 0
+		endTick := duration * 1000 / TickIntervalMs
+
+		defer ticker.Stop()
+		for range ticker.C {
+			tickCount++
+			// If no duration, don't terminate early
+			if duration > 0 && tickCount >= endTick {
+				return
+			}
+
+			appStatus := gui.statusManager.getStatusString()
+			if appStatus == "" {
+				return
+			}
+
+			if err := gui.renderString(gui.g, "appStatus", appStatus); err != nil {
+				gui.Log.Warn(err)
+			}
+		}
+	}
 }

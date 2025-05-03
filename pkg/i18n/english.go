@@ -67,8 +67,6 @@ type TranslationSet struct {
 	ViewLogs                    string
 	UpProject                   string
 	DownProject                 string
-	CopyContainerId             string
-	CopyContainerIdStatus       string
 	ServicesTitle               string
 	ContainersTitle             string
 	StandaloneContainersTitle   string
@@ -111,6 +109,7 @@ type TranslationSet struct {
 	FilterList                  string
 	OpenInBrowser               string
 	SortContainersByState       string
+	CopyContainerId             string
 
 	LogsTitle                 string
 	ConfigTitle               string
@@ -199,8 +198,6 @@ func englishSet() TranslationSet {
 		ViewLogs:                    "view logs",
 		UpProject:                   "up project",
 		DownProject:                 "down project",
-		CopyContainerId:             "copy container id",
-		CopyContainerIdStatus:       "Copied %s to clipboard",
 		RemoveImage:                 "remove image",
 		RemoveVolume:                "remove volume",
 		RemoveNetwork:               "remove network",
@@ -220,6 +217,7 @@ func englishSet() TranslationSet {
 		FilterList:                  "filter list",
 		OpenInBrowser:               "open in browser (first port is http)",
 		SortContainersByState:       "sort containers by state",
+		CopyContainerId:             "copy container ID",
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Main",

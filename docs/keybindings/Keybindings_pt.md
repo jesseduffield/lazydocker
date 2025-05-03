@@ -16,7 +16,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 ## Contêineres
 
 <pre>
-  <kbd></kbd>: copy container id
+  <kbd>y</kbd>: copy container ID
   <kbd>d</kbd>: remover
   <kbd>e</kbd>: ocultar/mostrar contêineres parados
   <kbd>p</kbd>: pausar
