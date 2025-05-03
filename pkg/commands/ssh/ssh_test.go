@@ -51,7 +51,7 @@ func TestSSHHandlerHandleSSHDockerHost(t *testing.T) {
 
 			tempDir := func(dir string, pattern string) (string, error) {
 				assert.Equal(t, "/tmp", dir)
-				assert.Equal(t, "lazydocker-sshtunnel-", pattern)
+				assert.Equal(t, "lazydocker-ssh-tunnel-", pattern)
 
 				return "/tmp/lazydocker-ssh-tunnel-12345", nil
 			}
