@@ -72,26 +72,26 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 }
 
 // NewDockerCommand creates a DockerCommand struct that wraps the docker client.
-// Able to run docker commands. And handles SSH docker hosts
+// Able to run docker commands and handles SSH docker hosts
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
 	dockerHost, err := determineDockerHost()
 	if err != nil {
 		ogLog.Printf("> could not determine host %v", err)
 	}
 
-	tunnelCloser, err := ssh.NewSSHHandler(osCommand).HandleSSHDockerHost(dockerHost)
+	tunnelResult, err := ssh.NewSSHHandler(osCommand).HandleSSHDockerHost(dockerHost)
 	if err != nil {
 		ogLog.Fatal(err)
 	}
+	// If we created a tunnel to the remote ssh host, we then override the dockerhost to point to the tunnel
+	if tunnelResult.Created {
+		dockerHost = tunnelResult.SocketPath
+	}
 
 	clientOpts := []client.Opt{
-		client.FromEnv,
+		client.WithTLSClientConfigFromEnv(),
 		client.WithVersion(APIVersion),
-	}
-	// For an ssh connection the DOCKER_HOST env variable has been overridden.
-	// Discard the previously determined dockerHost
-	if !strings.HasPrefix(dockerHost, "ssh://") {
-		clientOpts = append(clientOpts, client.WithHost(dockerHost))
+		client.WithHost(dockerHost),
 	}
 
 	cli, err := client.NewClientWithOpts(clientOpts...)
@@ -107,7 +107,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		Client:                 cli,
 		ErrorChan:              errorChan,
 		InDockerComposeProject: true,
-		Closers:                []io.Closer{tunnelCloser},
+		Closers:                []io.Closer{tunnelResult.Closer},
 	}
 
 	dockerCommand.setDockerComposeCommand(config)
