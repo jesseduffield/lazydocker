@@ -87,7 +87,14 @@ type guiState struct {
 	// Maintains the state of manual filtering i.e. typing in a substring
 	// to filter on in the current panel.
 	Filter filterState
+
+	// Project used for navigation in projects
+	Project *commands.Project
 }
+
+//type projectState struct {
+//	name string
+//}
 
 type filterState struct {
 	// If true then we're either currently inside the filter view
@@ -297,7 +304,7 @@ func (gui *Gui) updateContainerDetails() error {
 
 func (gui *Gui) refresh() {
 	go func() {
-		if err := gui.refreshProject(); err != nil {
+		if err := gui.refreshProjects(); err != nil {
 			gui.Log.Error(err)
 		}
 	}()

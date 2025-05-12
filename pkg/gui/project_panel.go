@@ -3,6 +3,9 @@ package gui
 import (
 	"bytes"
 	"context"
+	"github.com/docker/docker/api/types/container"
+	"github.com/jesseduffield/lazydocker/pkg/gui/types"
+	"log"
 	"path"
 	"strings"
 
@@ -60,35 +63,51 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 			List: panels.NewFilteredList[*commands.Project](),
 			View: gui.Views.Project,
 		},
-		NoItemsMessage: "",
+		NoItemsMessage: "No docker compose projects found.",
 		Gui:            gui.intoInterface(),
 
 		Sort: func(a *commands.Project, b *commands.Project) bool {
-			return false
+			return (gui.State.Project != nil && gui.State.Project.Name == a.Name) || a.Name < b.Name
 		},
 		GetTableCells: presentation.GetProjectDisplayStrings,
-		// It doesn't make sense to filter a list of only one item.
-		DisableFilter: true,
 	}
 }
 
-func (gui *Gui) refreshProject() error {
-	gui.Panels.Projects.SetItems([]*commands.Project{{Name: gui.getProjectName()}})
-	return gui.Panels.Projects.RerenderList()
-}
+func (gui *Gui) refreshProjects() error {
+	containers, err := gui.DockerCommand.Client.ContainerList(context.Background(), container.ListOptions{All: true})
+	if err != nil {
+		return err
+	}
 
-func (gui *Gui) getProjectName() string {
-	projectName := path.Base(gui.Config.ProjectDir)
-	if gui.DockerCommand.InDockerComposeProject {
-		for _, service := range gui.Panels.Services.List.GetAllItems() {
-			container := service.Container
-			if container != nil && container.DetailsLoaded() {
-				return container.Details.Config.Labels["com.docker.compose.project"]
-			}
+	projectsMap := make(map[string]*commands.Project)
+
+	for _, container := range containers {
+		if projectName, exists := container.Labels["com.docker.compose.project"]; exists && projectName != "" {
+			projectsMap[projectName] = &commands.Project{Name: projectName}
 		}
 	}
 
-	return projectName
+	projectsList := make([]*commands.Project, 0, len(projectsMap))
+	for _, project := range projectsMap {
+		projectsList = append(projectsList, project)
+	}
+
+	// Add current's folder project if exists
+	if gui.DockerCommand.InDockerComposeProject {
+		projectsList = append(projectsList, &commands.Project{Name: gui.GetProjectName()})
+	}
+	gui.Panels.Projects.SetItems(projectsList)
+
+	return gui.Panels.Projects.RerenderList()
+}
+
+func (gui *Gui) GetProjectName() string {
+	if gui.State.Project != nil {
+		return gui.State.Project.Name
+	}
+
+	// Default to the command line argument
+	return path.Base(gui.Config.ProjectDir)
 }
 
 func (gui *Gui) renderCredits(_project *commands.Project) tasks.TaskFunc {
@@ -179,4 +198,26 @@ func (gui *Gui) handleViewAllLogs(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	return gui.runSubprocess(c)
+}
+
+func (gui *Gui) handleCreateProjectMenu(g *gocui.Gui, v *gocui.View) error {
+	if gui.isPopupPanel(v.Name()) {
+		return nil
+	}
+
+	testMenuItem := &types.MenuItem{
+		LabelColumns: []string{"t", "test"},
+		OnPress: func() error {
+			log.Println("tested")
+			return nil
+		},
+	}
+
+	menuItems := []*types.MenuItem{testMenuItem}
+
+	return gui.Menu(CreateMenuOptions{
+		Title:      gui.Tr.MenuTitle,
+		Items:      menuItems,
+		HideCancel: true,
+	})
 }

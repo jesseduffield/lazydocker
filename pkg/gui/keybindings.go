@@ -137,6 +137,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "project",
+			Key:         gocui.KeyCtrlP,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleCreateProjectMenu,
+			Description: gui.Tr.SwitchProject,
+		},
+		{
+			ViewName:    "project",
 			Key:         'o',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleOpenConfig,

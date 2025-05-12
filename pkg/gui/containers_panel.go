@@ -258,6 +258,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 	containers, services, err := gui.DockerCommand.RefreshContainersAndServices(
 		gui.Panels.Services.List.GetAllItems(),
 		gui.Panels.Containers.List.GetAllItems(),
+		gui.State.Project,
 	)
 	if err != nil {
 		return err

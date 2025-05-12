@@ -34,15 +34,16 @@ const (
 
 // DockerCommand is our main docker interface
 type DockerCommand struct {
-	Log                    *logrus.Entry
-	OSCommand              *OSCommand
-	Tr                     *i18n.TranslationSet
-	Config                 *config.AppConfig
-	Client                 *client.Client
-	InDockerComposeProject bool
-	ErrorChan              chan error
-	ContainerMutex         deadlock.Mutex
-	ServiceMutex           deadlock.Mutex
+	Log                         *logrus.Entry
+	OSCommand                   *OSCommand
+	Tr                          *i18n.TranslationSet
+	Config                      *config.AppConfig
+	Client                      *client.Client
+	InDockerComposeProject      bool
+	CurrentDockerComposeProject string
+	ErrorChan                   chan error
+	ContainerMutex              deadlock.Mutex
+	ServiceMutex                deadlock.Mutex
 
 	Closers []io.Closer
 }
@@ -112,17 +113,6 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 
 	dockerCommand.setDockerComposeCommand(config)
 
-	err = osCommand.RunCommand(
-		utils.ApplyTemplate(
-			config.UserConfig.CommandTemplates.CheckDockerComposeConfig,
-			dockerCommand.NewCommandObject(CommandObject{}),
-		),
-	)
-	if err != nil {
-		dockerCommand.InDockerComposeProject = false
-		log.Warn(err.Error())
-	}
-
 	return dockerCommand, nil
 }
 
@@ -176,7 +166,7 @@ func (c *DockerCommand) CreateClientStatMonitor(container *Container) {
 	container.MonitoringStats = false
 }
 
-func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service, currentContainers []*Container) ([]*Container, []*Service, error) {
+func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service, currentContainers []*Container, currentProject *Project) ([]*Container, []*Service, error) {
 	c.ServiceMutex.Lock()
 	defer c.ServiceMutex.Unlock()
 
@@ -186,17 +176,15 @@ func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service,
 	}
 
 	var services []*Service
-	// we only need to get these services once because they won't change in the runtime of the program
-	if currentServices != nil {
-		services = currentServices
-	} else {
-		services, err = c.GetServices()
+	if currentProject != nil {
+		services, err = c.GetServicesFromContainers(containers, currentProject)
 		if err != nil {
 			return nil, nil, err
 		}
-	}
 
-	c.assignContainersToServices(containers, services)
+		c.assignContainersToServices(containers, services)
+		//c.assignContainersToProjects(containers)
+	}
 
 	return containers, services, nil
 }
@@ -212,6 +200,11 @@ L:
 		}
 		service.Container = nil
 	}
+}
+
+// GetDockerProjects
+func (c *DockerCommand) GetDockerProjects() ([]*Project, error) {
+	return []*Project{}, nil
 }
 
 // GetContainers gets the docker containers
@@ -269,6 +262,42 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 	return ownContainers, nil
 }
 
+// GetServicesFromContainers gets services
+func (c *DockerCommand) GetServicesFromContainers(containers []*Container, currentProject *Project) ([]*Service, error) {
+	var services []*Service
+
+	if currentProject.Name == "" {
+		return services, nil
+	}
+
+	for _, cont := range containers {
+		if cont.ProjectName != currentProject.Name {
+			continue
+		}
+
+		service := &Service{
+			Name:          cont.Name,
+			ID:            cont.ID,
+			OSCommand:     c.OSCommand,
+			Log:           c.Log,
+			DockerCommand: c,
+		}
+		services = append(services, service)
+	}
+
+	//TODO: Should be run once every time the project changes
+	if len(services) == 0 {
+		//If no services are found in running containers fetch services from dockerCompose
+		var err error
+		services, err = c.GetServices()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return services, nil
+}
+
 // GetServices gets services
 func (c *DockerCommand) GetServices() ([]*Service, error) {
 	if !c.InDockerComposeProject {
@@ -276,6 +305,7 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	}
 
 	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
+	// TODO: Handle remote docker compose files
 	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --services", composeCommand))
 	if err != nil {
 		return nil, err
