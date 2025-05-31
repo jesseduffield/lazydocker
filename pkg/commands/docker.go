@@ -97,7 +97,22 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		dockerHost = dockerHostFromEnv
 	}
 
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithVersion(APIVersion), client.WithHost(dockerHost))
+	opts := []client.Opt{
+		client.FromEnv,
+		client.WithVersion(APIVersion),
+		client.WithHost(dockerHost),
+	}
+
+	if config.UserConfig.TLS.Enable {
+		tlsOpts := client.WithTLSClientConfig(
+			config.UserConfig.TLS.CACertPath,
+			config.UserConfig.TLS.CertPath,
+			config.UserConfig.TLS.KeyPath,
+		)
+		opts = append(opts, tlsOpts)
+	}
+
+	cli, err := client.NewClientWithOpts(opts...)
 	if err != nil {
 		ogLog.Fatal(err)
 	}

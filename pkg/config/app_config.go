@@ -32,6 +32,9 @@ type UserConfig struct {
 	// hit esc or q when no confirmation panels are open
 	ConfirmOnQuit bool `yaml:"confirmOnQuit,omitempty"`
 
+	// TLS configuration for connecting to Docker daemon
+	TLS TLSConfig `yaml:"tls,omitempty"`
+
 	// Logs determines how we render/filter a container's logs
 	Logs LogsConfig `yaml:"logs,omitempty"`
 
@@ -346,6 +349,14 @@ type LogsConfig struct {
 	Tail       string `yaml:"tail,omitempty"`
 }
 
+// TLSConfig holds TLS configuration for connecting to Docker daemon
+type TLSConfig struct {
+	Enable     bool   `yaml:"enable,omitempty"`
+	CACertPath string `yaml:"caCertPath,omitempty"`
+	CertPath   string `yaml:"certPath,omitempty"`
+	KeyPath    string `yaml:"keyPath,omitempty"`
+}
+
 // GetDefaultConfig returns the application default configuration NOTE (to
 // contributors, not users): do not default a boolean to true, because false is
 // the boolean zero value and this will be ignored when parsing the user's
@@ -473,6 +484,12 @@ func GetDefaultConfig() UserConfig {
 		},
 		Replacements: Replacements{
 			ImageNamePrefixes: map[string]string{},
+		},
+		TLS: TLSConfig{
+			Enable:     false,
+			CACertPath: "",
+			CertPath:   "",
+			KeyPath:    "",
 		},
 	}
 }

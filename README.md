@@ -77,6 +77,18 @@ Memorising docker commands is hard. Memorising aliases is slightly less hard. Ke
 - Docker >= **1.13** (API >= **1.25**)
 - Docker-Compose >= **1.23.2** (optional)
 
+## TLS Configuration
+
+Lazydocker supports secure connections to Docker daemon using TLS. To enable TLS, you can configure it in your config.yml:
+
+```yaml
+tls:
+  enable: true
+  caCertPath: "/path/to/ca.pem"
+  certPath: "/path/to/cert.pem"
+  keyPath: "/path/to/key.pem"
+```
+
 ## Installation
 
 ### Homebrew
