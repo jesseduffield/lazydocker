@@ -577,8 +577,26 @@ func loadUserConfig(configDir string, base *UserConfig) (*UserConfig, error) {
 		return nil, err
 	}
 
-	if err := yaml.Unmarshal(content, base); err != nil {
+	tempConfig := &UserConfig{}
+	if err := yaml.Unmarshal(content, tempConfig); err != nil {
 		return nil, err
+	}
+
+	// Merge bulk commands instead of replacing them
+	if len(tempConfig.BulkCommands.Services) > 0 {
+		base.BulkCommands.Services = append(base.BulkCommands.Services, tempConfig.BulkCommands.Services...)
+	}
+	if len(tempConfig.BulkCommands.Containers) > 0 {
+		base.BulkCommands.Containers = append(base.BulkCommands.Containers, tempConfig.BulkCommands.Containers...)
+	}
+	if len(tempConfig.BulkCommands.Images) > 0 {
+		base.BulkCommands.Images = append(base.BulkCommands.Images, tempConfig.BulkCommands.Images...)
+	}
+	if len(tempConfig.BulkCommands.Volumes) > 0 {
+		base.BulkCommands.Volumes = append(base.BulkCommands.Volumes, tempConfig.BulkCommands.Volumes...)
+	}
+	if len(tempConfig.BulkCommands.Networks) > 0 {
+		base.BulkCommands.Networks = append(base.BulkCommands.Networks, tempConfig.BulkCommands.Networks...)
 	}
 
 	return base, nil
