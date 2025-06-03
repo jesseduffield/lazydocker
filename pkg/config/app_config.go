@@ -351,10 +351,31 @@ type LogsConfig struct {
 
 // TLSConfig holds TLS configuration for connecting to Docker daemon
 type TLSConfig struct {
-	Enable     bool   `yaml:"enable,omitempty"`
+	// Enable TLS connections to Docker daemon
+	Enable bool `yaml:"enable,omitempty"`
+
+	// CACertPath is the path to the Certificate Authority (CA) certificate file
+	// used to verify the Docker daemon's server certificate
 	CACertPath string `yaml:"caCertPath,omitempty"`
-	CertPath   string `yaml:"certPath,omitempty"`
-	KeyPath    string `yaml:"keyPath,omitempty"`
+
+	// CertPath is the path to the client certificate file for mutual TLS authentication
+	CertPath string `yaml:"certPath,omitempty"`
+
+	// KeyPath is the path to the client private key file corresponding to the client certificate
+	KeyPath string `yaml:"keyPath,omitempty"`
+
+	// InsecureSkipVerify controls whether a client verifies the server's certificate chain
+	// and host name. If InsecureSkipVerify is true, TLS accepts any certificate presented
+	// by the server and any host name in that certificate. This should only be used for
+	// testing purposes as it makes TLS susceptible to man-in-the-middle attacks.
+	InsecureSkipVerify bool `yaml:"insecureSkipVerify,omitempty"`
+
+	// Host specifies the hostname or IP address expected on the Docker daemon's certificate.
+	// This value is used for Server Name Indication (SNI) and certificate validation.
+	// It must match either the Common Name (CN) or one of the Subject Alternative Names (SANs)
+	// in the server's certificate. Do not include protocol (tcp://) or port - just the hostname/IP.
+	// Example: "docker.example.com" or "192.168.1.100"
+	Host string `yaml:"host,omitempty"`
 }
 
 // GetDefaultConfig returns the application default configuration NOTE (to
@@ -486,10 +507,12 @@ func GetDefaultConfig() UserConfig {
 			ImageNamePrefixes: map[string]string{},
 		},
 		TLS: TLSConfig{
-			Enable:     false,
-			CACertPath: "",
-			CertPath:   "",
-			KeyPath:    "",
+			Enable:             false,
+			CACertPath:         "",
+			CertPath:           "",
+			KeyPath:            "",
+			InsecureSkipVerify: false,
+			Host:               "",
 		},
 	}
 }
