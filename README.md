@@ -155,6 +155,13 @@ You can install lazydocker using the [AUR](https://aur.archlinux.org/packages/la
 yay -S lazydocker
 ```
 
+### Install Automatic
+    chmod +x install_lazydocker.sh
+    ./install_lazydocker.sh
+    source ~/.bashrc
+    lazydocker
+    
+
 ### Docker
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
