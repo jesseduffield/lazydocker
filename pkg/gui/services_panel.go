@@ -21,33 +21,20 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 	return &panels.SideListPanel[*commands.Service]{
 		ContextState: &panels.ContextState[*commands.Service]{
 			GetMainTabs: func() []panels.MainTab[*commands.Service] {
-				return []panels.MainTab[*commands.Service]{
-					{
-						Key:    "logs",
-						Title:  gui.Tr.LogsTitle,
-						Render: gui.renderServiceLogs,
-					},
-					{
-						Key:    "stats",
-						Title:  gui.Tr.StatsTitle,
-						Render: gui.renderServiceStats,
-					},
-					{
-						Key:    "container-env",
-						Title:  gui.Tr.ContainerEnvTitle,
-						Render: gui.renderServiceContainerEnv,
-					},
-					{
-						Key:    "container-config",
-						Title:  gui.Tr.ContainerConfigTitle,
-						Render: gui.renderServiceContainerConfig,
-					},
-					{
-						Key:    "top",
-						Title:  gui.Tr.TopTitle,
-						Render: gui.renderServiceTop,
-					},
+				tabs := []panels.MainTab[*commands.Service]{
+					{Key: "logs", Title: gui.Tr.LogsTitle, Render: gui.renderServiceLogs},
 				}
+				if gui.ContainerCommand.Supports(commands.FeatureStats) {
+					tabs = append(tabs, panels.MainTab[*commands.Service]{Key: "stats", Title: gui.Tr.StatsTitle, Render: gui.renderServiceStats})
+				}
+				tabs = append(tabs,
+					panels.MainTab[*commands.Service]{Key: "container-env", Title: gui.Tr.ContainerEnvTitle, Render: gui.renderServiceContainerEnv},
+					panels.MainTab[*commands.Service]{Key: "container-config", Title: gui.Tr.ContainerConfigTitle, Render: gui.renderServiceContainerConfig},
+				)
+				if gui.ContainerCommand.Supports(commands.FeatureContainerTop) {
+					tabs = append(tabs, panels.MainTab[*commands.Service]{Key: "top", Title: gui.Tr.TopTitle, Render: gui.renderServiceTop})
+				}
+				return tabs
 			},
 			GetItemContextCacheKey: func(service *commands.Service) string {
 				if service.Container == nil {
@@ -78,7 +65,7 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 			return presentation.GetServiceDisplayStrings(&gui.Config.UserConfig.Gui, service)
 		},
 		Hide: func() bool {
-			return !gui.DockerCommand.InDockerComposeProject
+			return !gui.ContainerCommand.InDockerComposeProject()
 		},
 	}
 }
@@ -292,7 +279,7 @@ func (gui *Gui) handleProjectUp(g *gocui.Gui, v *gocui.View) error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmUpProject, func(g *gocui.Gui, v *gocui.View) error {
 		cmdStr := utils.ApplyTemplate(
 			gui.Config.UserConfig.CommandTemplates.Up,
-			gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+			gui.ContainerCommand.NewCommandObject(commands.CommandObject{}),
 		)
 
 		return gui.WithWaitingStatus(gui.Tr.UppingProjectStatus, func() error {
@@ -307,12 +294,12 @@ func (gui *Gui) handleProjectUp(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) handleProjectDown(g *gocui.Gui, v *gocui.View) error {
 	downCommand := utils.ApplyTemplate(
 		gui.Config.UserConfig.CommandTemplates.Down,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+		gui.ContainerCommand.NewCommandObject(commands.CommandObject{}),
 	)
 
 	downWithVolumesCommand := utils.ApplyTemplate(
 		gui.Config.UserConfig.CommandTemplates.DownWithVolumes,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+		gui.ContainerCommand.NewCommandObject(commands.CommandObject{}),
 	)
 
 	options := []*commandOption{
@@ -363,12 +350,12 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 
 	rebuildCommand := utils.ApplyTemplate(
 		gui.Config.UserConfig.CommandTemplates.RebuildService,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+		gui.ContainerCommand.NewCommandObject(commands.CommandObject{Service: service}),
 	)
 
 	recreateCommand := utils.ApplyTemplate(
 		gui.Config.UserConfig.CommandTemplates.RecreateService,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+		gui.ContainerCommand.NewCommandObject(commands.CommandObject{Service: service}),
 	)
 
 	options := []*commandOption{
@@ -376,7 +363,7 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 			description: gui.Tr.Restart,
 			command: utils.ApplyTemplate(
 				gui.Config.UserConfig.CommandTemplates.RestartService,
-				gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+				gui.ContainerCommand.NewCommandObject(commands.CommandObject{Service: service}),
 			),
 			onPress: func() error {
 				return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
@@ -391,7 +378,7 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 			description: gui.Tr.Recreate,
 			command: utils.ApplyTemplate(
 				gui.Config.UserConfig.CommandTemplates.RecreateService,
-				gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+				gui.ContainerCommand.NewCommandObject(commands.CommandObject{Service: service}),
 			),
 			onPress: func() error {
 				return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
@@ -406,7 +393,7 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 			description: gui.Tr.Rebuild,
 			command: utils.ApplyTemplate(
 				gui.Config.UserConfig.CommandTemplates.RebuildService,
-				gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+				gui.ContainerCommand.NewCommandObject(commands.CommandObject{Service: service}),
 			),
 			onPress: func() error {
 				return gui.runSubprocess(gui.OSCommand.RunCustomCommand(rebuildCommand))
@@ -433,7 +420,7 @@ func (gui *Gui) handleServicesCustomCommand(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{
 		Service:   service,
 		Container: service.Container,
 	})
@@ -466,7 +453,7 @@ L:
 
 func (gui *Gui) handleServicesBulkCommand(g *gocui.Gui, v *gocui.View) error {
 	bulkCommands := gui.Config.UserConfig.BulkCommands.Services
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }

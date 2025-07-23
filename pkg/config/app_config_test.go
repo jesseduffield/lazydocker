@@ -9,7 +9,7 @@ import (
 
 func TestDockerComposeCommandNoFiles(t *testing.T) {
 	composeFiles := []string{}
-	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir", "docker")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -23,7 +23,7 @@ func TestDockerComposeCommandNoFiles(t *testing.T) {
 
 func TestDockerComposeCommandSingleFile(t *testing.T) {
 	composeFiles := []string{"one.yml"}
-	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir", "docker")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -37,7 +37,7 @@ func TestDockerComposeCommandSingleFile(t *testing.T) {
 
 func TestDockerComposeCommandMultipleFiles(t *testing.T) {
 	composeFiles := []string{"one.yml", "two.yml", "three.yml"}
-	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir", "docker")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -52,7 +52,7 @@ func TestDockerComposeCommandMultipleFiles(t *testing.T) {
 func TestWritingToConfigFile(t *testing.T) {
 	// init the AppConfig
 	emptyComposeFiles := []string{}
-	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, emptyComposeFiles, "projectDir")
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, emptyComposeFiles, "projectDir", "docker")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -95,4 +95,77 @@ func TestWritingToConfigFile(t *testing.T) {
 
 	// modifying an existing file that already has 'ConfirmOnQuit'
 	testFn(t, conf, false)
+}
+
+// Test runtime parameter validation and configuration
+func TestRuntimeValidation(t *testing.T) {
+	composeFiles := []string{}
+
+	// Test valid docker runtime
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir", "docker")
+	if err != nil {
+		t.Fatalf("Unexpected error for docker runtime: %s", err)
+	}
+	if conf.Runtime != "docker" {
+		t.Fatalf("Expected runtime 'docker' but got '%s'", conf.Runtime)
+	}
+
+	// Test valid apple runtime
+	conf, err = NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir", "apple")
+	if err != nil {
+		t.Fatalf("Unexpected error for apple runtime: %s", err)
+	}
+	if conf.Runtime != "apple" {
+		t.Fatalf("Expected runtime 'apple' but got '%s'", conf.Runtime)
+	}
+
+	// Test invalid runtime
+	_, err = NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir", "invalid")
+	if err == nil {
+		t.Fatalf("Expected error for invalid runtime but got none")
+	}
+	expectedError := "unsupported runtime 'invalid'. Supported runtimes: docker, apple"
+	if err.Error() != expectedError {
+		t.Fatalf("Expected error '%s' but got '%s'", expectedError, err.Error())
+	}
+}
+
+func TestRuntimeConfigurationDefaults(t *testing.T) {
+	composeFiles := []string{}
+
+	// Test docker runtime gets correct defaults
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir", "docker")
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	// Docker runtime should have normal docker-compose command
+	expected := "docker compose"
+	actual := conf.UserConfig.CommandTemplates.DockerCompose
+	if actual != expected {
+		t.Fatalf("Expected DockerCompose command '%s' but got '%s'", expected, actual)
+	}
+}
+
+func TestRuntimeFieldInAppConfig(t *testing.T) {
+	composeFiles := []string{}
+
+	testCases := []struct {
+		runtime  string
+		expected string
+	}{
+		{"docker", "docker"},
+		{"apple", "apple"},
+	}
+
+	for _, tc := range testCases {
+		conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir", tc.runtime)
+		if err != nil {
+			t.Fatalf("Unexpected error for runtime '%s': %s", tc.runtime, err)
+		}
+
+		if conf.Runtime != tc.expected {
+			t.Fatalf("Expected Runtime field '%s' but got '%s'", tc.expected, conf.Runtime)
+		}
+	}
 }

@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
@@ -17,6 +18,10 @@ import (
 
 func (gui *Gui) getVolumesPanel() *panels.SideListPanel[*commands.Volume] {
 	return &panels.SideListPanel[*commands.Volume]{
+		Hide: func() bool {
+			// Show volumes panel for both Docker and Apple runtime
+			return false
+		},
 		ContextState: &panels.ContextState[*commands.Volume]{
 			GetMainTabs: func() []panels.MainTab[*commands.Volume] {
 				return []panels.MainTab[*commands.Volume]{
@@ -94,7 +99,7 @@ func (gui *Gui) reloadVolumes() error {
 }
 
 func (gui *Gui) refreshStateVolumes() error {
-	volumes, err := gui.DockerCommand.RefreshVolumes()
+	volumes, err := gui.ContainerCommand.RefreshVolumes()
 	if err != nil {
 		return err
 	}
@@ -116,15 +121,23 @@ func (gui *Gui) handleVolumesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		force       bool
 	}
 
+	runtimeName := gui.ContainerCommand.GetRuntimeName()
+	rmCmd := utils.WithShortSha("docker volume rm " + volume.Name)
+	rmForceCmd := utils.WithShortSha("docker volume rm --force " + volume.Name)
+	if runtimeName == "apple" {
+		rmCmd = utils.WithShortSha("container volume rm " + volume.Name)
+		rmForceCmd = utils.WithShortSha("container volume rm --force " + volume.Name)
+	}
+
 	options := []*removeVolumeOption{
 		{
 			description: gui.Tr.Remove,
-			command:     utils.WithShortSha("docker volume rm " + volume.Name),
+			command:     rmCmd,
 			force:       false,
 		},
 		{
 			description: gui.Tr.ForceRemove,
-			command:     utils.WithShortSha("docker volume rm --force " + volume.Name),
+			command:     rmForceCmd,
 			force:       true,
 		},
 	}
@@ -150,9 +163,12 @@ func (gui *Gui) handleVolumesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handlePruneVolumes() error {
+	if gui.ContainerCommand != nil && !gui.ContainerCommand.Supports(commands.FeatureVolumePrune) {
+		return gui.createErrorPanel("Volume pruning is not supported by the current container runtime.")
+	}
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneVolumes, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
-			err := gui.DockerCommand.PruneVolumes()
+			err := gui.ContainerCommand.PruneVolumes()
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -161,13 +177,45 @@ func (gui *Gui) handlePruneVolumes() error {
 	}, nil)
 }
 
+func (gui *Gui) handleCreateVolume(g *gocui.Gui, v *gocui.View) error {
+	if gui.ContainerCommand != nil && !gui.ContainerCommand.Supports(commands.FeatureVolumeCreate) {
+		return gui.createErrorPanel("Volume create is not supported by the current container runtime.")
+	}
+	prompt := "Enter: name [opt=value opt2=value2]"
+	return gui.createPromptPanel("Create Volume", func(g *gocui.Gui, v *gocui.View) error {
+		input := strings.TrimSpace(v.Buffer())
+		_ = gui.closeConfirmationPrompt()
+		if input == "" {
+			return nil
+		}
+		fields := strings.Fields(input)
+		name := fields[0]
+		opts := map[string]string{}
+		for _, tok := range fields[1:] {
+			if kv := strings.SplitN(tok, "=", 2); len(kv) == 2 {
+				opts[kv[0]] = kv[1]
+			} else if tok != "" {
+				opts[tok] = ""
+			}
+		}
+		if err := gui.ContainerCommand.CreateVolume(name, opts); err != nil {
+			return gui.createErrorPanel(err.Error())
+		}
+		return gui.reloadVolumes()
+	})
+	// write prompt after view appears
+	// we can't write synchronously because the view becomes editable after creation
+	_ = prompt
+	return nil
+}
+
 func (gui *Gui) handleVolumesCustomCommand(g *gocui.Gui, v *gocui.View) error {
 	volume, err := gui.Panels.Volumes.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{
 		Volume: volume,
 	})
 
@@ -177,15 +225,16 @@ func (gui *Gui) handleVolumesCustomCommand(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleVolumesBulkCommand(g *gocui.Gui, v *gocui.View) error {
-	baseBulkCommands := []config.CustomCommand{
-		{
+	baseBulkCommands := []config.CustomCommand{}
+	if gui.ContainerCommand == nil || gui.ContainerCommand.Supports(commands.FeatureVolumePrune) {
+		baseBulkCommands = append(baseBulkCommands, config.CustomCommand{
 			Name:             gui.Tr.PruneVolumes,
 			InternalFunction: gui.handlePruneVolumes,
-		},
+		})
 	}
 
 	bulkCommands := append(baseBulkCommands, gui.Config.UserConfig.BulkCommands.Volumes...)
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }

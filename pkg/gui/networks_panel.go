@@ -89,7 +89,7 @@ func (gui *Gui) reloadNetworks() error {
 }
 
 func (gui *Gui) refreshStateNetworks() error {
-	networks, err := gui.DockerCommand.RefreshNetworks()
+	networks, err := gui.ContainerCommand.RefreshNetworks()
 	if err != nil {
 		return err
 	}
@@ -110,10 +110,16 @@ func (gui *Gui) handleNetworksRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		command     string
 	}
 
+	runtimeName := gui.ContainerCommand.GetRuntimeName()
+	rmCmd := utils.WithShortSha("docker network rm " + network.Name)
+	if runtimeName == "apple" {
+		rmCmd = utils.WithShortSha("container network rm " + network.Name)
+	}
+
 	options := []*removeNetworkOption{
 		{
 			description: gui.Tr.Remove,
-			command:     utils.WithShortSha("docker network rm " + network.Name),
+			command:     rmCmd,
 		},
 	}
 
@@ -138,9 +144,12 @@ func (gui *Gui) handleNetworksRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handlePruneNetworks() error {
+	if gui.ContainerCommand != nil && !gui.ContainerCommand.Supports(commands.FeatureNetworkPrune) {
+		return gui.createErrorPanel("Network pruning is not supported by the current container runtime.")
+	}
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneNetworks, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
-			err := gui.DockerCommand.PruneNetworks()
+			err := gui.ContainerCommand.PruneNetworks()
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -155,7 +164,7 @@ func (gui *Gui) handleNetworksCustomCommand(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{
 		Network: network,
 	})
 
@@ -165,15 +174,16 @@ func (gui *Gui) handleNetworksCustomCommand(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleNetworksBulkCommand(g *gocui.Gui, v *gocui.View) error {
-	baseBulkCommands := []config.CustomCommand{
-		{
+	baseBulkCommands := []config.CustomCommand{}
+	if gui.ContainerCommand == nil || gui.ContainerCommand.Supports(commands.FeatureNetworkPrune) {
+		baseBulkCommands = append(baseBulkCommands, config.CustomCommand{
 			Name:             gui.Tr.PruneNetworks,
 			InternalFunction: gui.handlePruneNetworks,
-		},
+		})
 	}
 
 	bulkCommands := append(baseBulkCommands, gui.Config.UserConfig.BulkCommands.Networks...)
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }
