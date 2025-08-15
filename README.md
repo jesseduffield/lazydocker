@@ -133,6 +133,12 @@ curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/i
 ```
 The script installs downloaded binary to `$HOME/.local/bin` directory by default, but it can be changed by setting `DIR` environment variable.
 
+Or if you are using [gah](https://github.com/marverix/gah/):
+
+```sh
+gah install lazydocker
+```
+
 ### Go
 
 Required Go Version >= **1.19**
