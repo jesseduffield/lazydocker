@@ -58,7 +58,8 @@ func plotGraph(container *commands.Container, spec config.GraphConfig, width int
 	container.StatsMutex.Lock()
 	defer container.StatsMutex.Unlock()
 
-	data := make([]float64, len(container.StatHistory))
+	dataLength := len(container.StatHistory)
+	data := make([]float64, dataLength)
 
 	for i, stats := range container.StatHistory {
 		value, err := lookup.LookupString(stats, spec.StatPath)
@@ -88,12 +89,27 @@ func plotGraph(container *commands.Container, spec config.GraphConfig, width int
 		height = spec.Height
 	}
 
-	caption := fmt.Sprintf(
-		"%s: %0.2f (%v)",
-		spec.Caption,
-		data[len(data)-1],
-		time.Since(container.StatHistory[0].RecordedAt).Round(time.Second),
-	)
+	memoryUsed := utils.FormatDecimalBytes(container.StatHistory[dataLength-1].DerivedStats.MemoryUsed)
+	memoryLimit := utils.FormatDecimalBytes(int(container.StatHistory[dataLength-1].DerivedStats.MemoryLimit))
+	var caption string
+	switch spec.Caption {
+	case "CPU (%)":
+		caption = fmt.Sprintf(
+			"%s: %0.2f (%v)",
+			spec.Caption,
+			data[dataLength-1],
+			time.Since(container.StatHistory[0].RecordedAt).Round(time.Second),
+		)
+	case "Memory (%)":
+		caption = fmt.Sprintf(
+			"%s: %s / %s (%0.2f) (%v)",
+			spec.Caption,
+			memoryUsed,
+			memoryLimit,
+			data[dataLength-1],
+			time.Since(container.StatHistory[0].RecordedAt).Round(time.Second),
+		)
+	}
 
 	return asciigraph.Plot(
 		data,
