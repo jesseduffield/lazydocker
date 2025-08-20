@@ -93,14 +93,14 @@ func plotGraph(container *commands.Container, spec config.GraphConfig, width int
 	memoryLimit := utils.FormatDecimalBytes(int(container.StatHistory[dataLength-1].DerivedStats.MemoryLimit))
 	var caption string
 	switch spec.Caption {
-	case "CPU (%)":
+	case config.CPUCaption:
 		caption = fmt.Sprintf(
 			"%s: %0.2f (%v)",
 			spec.Caption,
 			data[dataLength-1],
 			time.Since(container.StatHistory[0].RecordedAt).Round(time.Second),
 		)
-	case "Memory (%)":
+	case config.MemoryCaption:
 		caption = fmt.Sprintf(
 			"%s: %s / %s (%0.2f) (%v)",
 			spec.Caption,
