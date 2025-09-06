@@ -169,6 +169,8 @@ func (c *DockerCommand) CreateClientStatMonitor(container *Container) {
 			DerivedStats: DerivedStats{
 				CPUPercentage:    stats.CalculateContainerCPUPercentage(),
 				MemoryPercentage: stats.CalculateContainerMemoryUsage(),
+				MemoryUsed:       stats.MemoryStats.Usage,
+				MemoryLimit:      stats.MemoryStats.Limit,
 			},
 			RecordedAt: time.Now(),
 		}
