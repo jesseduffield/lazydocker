@@ -4,20 +4,32 @@
 <br>
 <a href="https://www.warp.dev/?utm_source=github&utm_medium=referral&utm_campaign=lazydocker_20231023">
   <div>
-    <img src="./assets/warp.png" width="230" alt="Warp">
+    <img src="assets/warp.png" width="330" alt="Warp">
   </div>
-  <b>Warp is a modern, Rust-based terminal with AI built in so you and your team can build great software, faster.</b>
+  <b>Warp, the intelligent terminal</b>
+  <br>
+  <b>Available for MacOS and Linux</b>
+  <br>
   <div>
     <sup>Visit warp.dev to learn more.</sup>
   </div>
 </a>
 <br>
 <hr>
+<a href="https://tuple.app/lazydocker">
+  <div>
+    <img src="assets/tuple.png" width="330" alt="Tuple">
+  </div>
+  <b>Tuple, the premier screen sharing app for developers on macOS and Windows.</b>
+</a>
+<br>
+<hr>
+<br>
 <a href="https://www.subble.com">
   <div>
     <img src="https://subble-marketing-portal-media-storage.s3.amazonaws.com/images/subble-black-name-logo.svg" width="230" alt="Subble">
   </div>
-  <b>I (Jesse) co-founded Subble to save your company time and money by helping you manage its software subscriptions. Check it out!</b>
+  <b>I (Jesse) co-founded Subble to save your company time and money by finding unused and over-provisioned SaaS licences. Check it out!</b>
 </a>
 <br>
 
