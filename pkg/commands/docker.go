@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	ogLog "log"
+	"net/http"
 	"os"
 	"os/exec"
 	"strings"
@@ -18,6 +19,7 @@ import (
 	ctxstore "github.com/docker/cli/cli/context/store"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
+	"github.com/docker/go-connections/tlsconfig"
 	"github.com/imdario/mergo"
 	"github.com/jesseduffield/lazydocker/pkg/commands/ssh"
 	"github.com/jesseduffield/lazydocker/pkg/config"
@@ -97,7 +99,38 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		dockerHost = dockerHostFromEnv
 	}
 
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithVersion(APIVersion), client.WithHost(dockerHost))
+	opts := []client.Opt{
+		client.FromEnv,
+		client.WithVersion(APIVersion),
+		client.WithHost(dockerHost),
+	}
+
+	if config.UserConfig.TLS.Enable {
+		tlsConfigOpts := tlsconfig.Options{
+			CAFile:             config.UserConfig.TLS.CACertPath,
+			CertFile:           config.UserConfig.TLS.CertPath,
+			KeyFile:            config.UserConfig.TLS.KeyPath,
+			InsecureSkipVerify: config.UserConfig.TLS.InsecureSkipVerify,
+			ExclusiveRootPools: true,
+		}
+		customTLSConfig, err := tlsconfig.Client(tlsConfigOpts)
+		if err != nil {
+			ogLog.Fatalf("Failed to create custom TLS config: %v", err)
+		}
+
+		if config.UserConfig.TLS.Host != "" {
+			customTLSConfig.ServerName = config.UserConfig.TLS.Host
+		}
+		httpClient := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: customTLSConfig,
+			},
+			CheckRedirect: client.CheckRedirect,
+		}
+		opts = append(opts, client.WithHTTPClient(httpClient))
+	}
+
+	cli, err := client.NewClientWithOpts(opts...)
 	if err != nil {
 		ogLog.Fatal(err)
 	}

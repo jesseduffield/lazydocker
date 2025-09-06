@@ -89,6 +89,79 @@ Memorising docker commands is hard. Memorising aliases is slightly less hard. Ke
 - Docker >= **1.13** (API >= **1.25**)
 - Docker-Compose >= **1.23.2** (optional)
 
+## TLS Configuration
+
+Lazydocker supports secure connections to Docker daemon using TLS. To enable TLS, you can configure it in your config.yml:
+
+### Basic TLS Configuration
+
+```yaml
+tls:
+  enable: true
+  caCertPath: "/path/to/ca.pem"
+  certPath: "/path/to/cert.pem"
+  keyPath: "/path/to/key.pem"
+```
+
+### Complete TLS Configuration
+
+```yaml
+tls:
+  enable: true                    # Enable TLS connections to Docker daemon
+  caCertPath: "/path/to/ca.pem"   # Path to Certificate Authority (CA) certificate
+  certPath: "/path/to/cert.pem"   # Path to client certificate
+  keyPath: "/path/to/key.pem"     # Path to client private key
+  host: "docker.example.com"      # Hostname or IP for certificate validation (ServerName)
+  insecureSkipVerify: false       # Skip TLS certificate verification (NOT recommended for production)
+```
+
+### TLS Configuration Options
+
+- **`enable`**: Set to `true` to enable TLS connections to the Docker daemon
+- **`caCertPath`**: Path to the Certificate Authority (CA) certificate file used to verify the Docker daemon's certificate
+- **`certPath`**: Path to the client certificate file for mutual TLS authentication
+- **`keyPath`**: Path to the client private key file corresponding to the client certificate
+- **`host`**: The hostname or IP address expected on the Docker daemon's certificate. This must match the Common Name (CN) or a Subject Alternative Name (SAN) in the server's certificate
+- **`insecureSkipVerify`**: When set to `true`, skips certificate verification (useful for testing, but insecure for production use)
+
+### Important Notes
+
+1. **Two Different "Hosts"**: Don't confuse the `tls.host` config field with the `DOCKER_HOST` environment variable:
+   - `DOCKER_HOST` environment variable: Tells Lazydocker **where to connect** (e.g., `tcp://192.168.1.100:2376`)
+   - `tls.host` in config.yml: Tells Lazydocker **what name to expect on the certificate** (e.g., `docker.example.com` or `192.168.1.100`)
+
+2. **Certificate Validation**: The `host` field must match a name in your Docker daemon's certificate:
+   - Common Name (CN) in the certificate's Subject field
+   - Or one of the Subject Alternative Names (SANs) in the certificate
+
+3. **Security**: Always use `insecureSkipVerify: false` in production environments. Only set it to `true` for testing purposes.
+
+### Example for Remote Docker Daemon
+
+When connecting to a Docker daemon running on a remote machine with TLS:
+
+1. Set the connection endpoint:
+   ```bash
+   export DOCKER_HOST=tcp://docker.example.com:2376
+   ```
+
+2. Configure TLS in `config.yml`:
+   ```yaml
+   tls:
+     enable: true
+     caCertPath: "/home/user/.docker/ca.pem"
+     certPath: "/home/user/.docker/cert.pem"
+     keyPath: "/home/user/.docker/key.pem"
+     host: "docker.example.com"  # Must match the name on the server's certificate
+     insecureSkipVerify: false
+   ```
+
+### Troubleshooting TLS Issues
+
+- **"x509: certificate is valid for ..., not ..."**: The `host` field doesn't match any name on the server's certificate. Check your server certificate's CN and SANs.
+- **"certificate signed by unknown authority"**: The CA certificate path is incorrect or the server's certificate wasn't signed by the specified CA.
+- **"no such host"**: This is a network connectivity issue with `DOCKER_HOST`, not a TLS configuration problem.
+
 ## Installation
 
 ### Homebrew
