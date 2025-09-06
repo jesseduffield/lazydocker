@@ -143,7 +143,7 @@ Automated install/update, don't forget to always verify what you're piping into 
 ```sh
 curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
 ```
-The script installs downloaded binary to `$HOME/.local/bin` directory by default, but it can be changed by setting `DIR` environment variable.
+The script installs downloaded binary to `/usr/local/bin` directory by default, but it can be changed by setting `DIR` environment variable.
 
 ### Go
 
@@ -256,6 +256,12 @@ You can also use `go run main.go` to compile and run in one go (pun definitely i
 ## Usage
 
 Call `lazydocker` in your terminal. I personally use this a lot so I've made an alias for it like so:
+
+```
+echo "alias lzd='lazydocker'" >> ~/.bashrc
+```
+
+Or zsh:
 
 ```
 echo "alias lzd='lazydocker'" >> ~/.zshrc
