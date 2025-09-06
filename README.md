@@ -27,7 +27,7 @@
 <br>
 <a href="https://www.subble.com">
   <div>
-    <img src="https://subble-marketing-portal-media-storage.s3.amazonaws.com/images/subble-black-name-logo.svg" width="230" alt="Subble">
+    <img src="assets/subble.webp" width="330" alt="Subble">
   </div>
   <b>I (Jesse) co-founded Subble to save your company time and money by finding unused and over-provisioned SaaS licences. Check it out!</b>
 </a>
