@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jesseduffield/gocui"
+	"github.com/jesseduffield/lazydocker/pkg/commands"
 )
 
 // Binding - a keybinding mapping a key and modifier to a handler. The keypress
@@ -220,13 +221,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:     gui.handleContainerRestart,
 			Description: gui.Tr.Restart,
 		},
-		{
-			ViewName:    "containers",
-			Key:         'a',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleContainerAttach,
-			Description: gui.Tr.Attach,
-		},
+		// container attach: added conditionally below based on runtime support
 		{
 			ViewName:    "containers",
 			Key:         'm',
@@ -304,13 +299,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:     gui.handleServiceStart,
 			Description: gui.Tr.Start,
 		},
-		{
-			ViewName:    "services",
-			Key:         'a',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServiceAttach,
-			Description: gui.Tr.Attach,
-		},
+		// service attach: added conditionally below based on runtime support
 		{
 			ViewName:    "services",
 			Key:         'm',
@@ -395,6 +384,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:     gui.handleVolumesCustomCommand,
 			Description: gui.Tr.RunCustomCommand,
 		},
+		// Create volume binding will be added conditionally below based on capability
 		{
 			ViewName:    "volumes",
 			Key:         'd',
@@ -509,6 +499,21 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:     wrappedHandler(gui.prevScreenMode),
 			Description: gui.Tr.LcPrevScreenMode,
 		},
+	}
+
+	// Conditionally add attach bindings if supported by runtime
+	if gui.ContainerCommand == nil || gui.ContainerCommand.Supports(commands.FeatureContainerAttach) {
+		bindings = append(bindings,
+			&Binding{ViewName: "containers", Key: 'a', Modifier: gocui.ModNone, Handler: gui.handleContainerAttach, Description: gui.Tr.Attach},
+			&Binding{ViewName: "services", Key: 'a', Modifier: gocui.ModNone, Handler: gui.handleServiceAttach, Description: gui.Tr.Attach},
+		)
+	}
+
+	// Conditionally add create-volume binding if supported
+	if gui.ContainerCommand == nil || gui.ContainerCommand.Supports(commands.FeatureVolumeCreate) {
+		bindings = append(bindings,
+			&Binding{ViewName: "volumes", Key: 'n', Modifier: gocui.ModNone, Handler: gui.handleCreateVolume, Description: "Create Volume"},
+		)
 	}
 
 	for _, panel := range gui.allSidePanels() {

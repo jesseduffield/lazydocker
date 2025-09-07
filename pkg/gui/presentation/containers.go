@@ -14,15 +14,24 @@ import (
 	"github.com/samber/lo"
 )
 
-func GetContainerDisplayStrings(guiConfig *config.GuiConfig, container *commands.Container) []string {
-	return []string{
+func GetContainerDisplayStrings(guiConfig *config.GuiConfig, container *commands.Container, runtime string) []string {
+	cols := []string{
 		getContainerDisplayStatus(guiConfig, container),
 		getContainerDisplaySubstatus(guiConfig, container),
 		container.Name,
 		getDisplayCPUPerc(container),
+	}
+	// Show ADDR for Apple runtime if available
+	if runtime == "apple" && container.Addr != "" {
+		cols = append(cols, utils.ColoredString(container.Addr, color.FgCyan))
+	} else {
+		cols = append(cols, "")
+	}
+	cols = append(cols,
 		utils.ColoredString(displayPorts(container), color.FgYellow),
 		utils.ColoredString(displayContainerImage(container), color.FgMagenta),
-	}
+	)
+	return cols
 }
 
 func displayContainerImage(container *commands.Container) string {

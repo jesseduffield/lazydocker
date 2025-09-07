@@ -12,12 +12,14 @@ import (
 // Style a 16 color style. can add: fg color, bg color, color options
 //
 // Example:
-// 	color.Style{color.FgGreen}.Print("message")
+//
+//	color.Style{color.FgGreen}.Print("message")
 type Style []Color
 
 // New create a custom style
 //
 // Usage:
+//
 //	color.New(color.FgGreen).Print("message")
 //	equals to:
 //	color.Style{color.FgGreen}.Print("message")
@@ -37,8 +39,9 @@ func (s *Style) Add(cs ...Color) {
 
 // Render render text
 // Usage:
-//  color.New(color.FgGreen).Render("text")
-//  color.New(color.FgGreen, color.BgBlack, color.OpBold).Render("text")
+//
+//	color.New(color.FgGreen).Render("text")
+//	color.New(color.FgGreen, color.BgBlack, color.OpBold).Render("text")
 func (s Style) Render(a ...interface{}) string {
 	return RenderCode(s.String(), a...)
 }
@@ -46,8 +49,9 @@ func (s Style) Render(a ...interface{}) string {
 // Renderln render text line.
 // like Println, will add spaces for each argument
 // Usage:
-//  color.New(color.FgGreen).Renderln("text", "more")
-//  color.New(color.FgGreen, color.BgBlack, color.OpBold).Render("text", "more")
+//
+//	color.New(color.FgGreen).Renderln("text", "more")
+//	color.New(color.FgGreen, color.BgBlack, color.OpBold).Render("text", "more")
 func (s Style) Renderln(a ...interface{}) string {
 	return RenderWithSpaces(s.String(), a...)
 }
@@ -140,10 +144,11 @@ func (t *Theme) Block(format string, a ...interface{}) {
 
 // internal themes(like bootstrap style)
 // Usage:
-// 	color.Info.Print("message")
-// 	color.Info.Printf("a %s message", "test")
-// 	color.Warn.Println("message")
-// 	color.Error.Println("message")
+//
+//	color.Info.Print("message")
+//	color.Info.Printf("a %s message", "test")
+//	color.Warn.Println("message")
+//	color.Error.Println("message")
 var (
 	// Info color style
 	Info = &Theme{"info", Style{OpReset, FgGreen}}
@@ -175,7 +180,8 @@ var (
 
 // Themes internal defined themes.
 // Usage:
-// 	color.Themes["info"].Println("message")
+//
+//	color.Themes["info"].Println("message")
 var Themes = map[string]*Theme{
 	"info":  Info,
 	"note":  Note,
@@ -211,7 +217,8 @@ func GetTheme(name string) *Theme {
 
 // Styles internal defined styles, like bootstrap styles.
 // Usage:
-// 	color.Styles["info"].Println("message")
+//
+//	color.Styles["info"].Println("message")
 var Styles = map[string]Style{
 	"info":  {OpReset, FgGreen},
 	"note":  {OpBold, FgLightCyan},

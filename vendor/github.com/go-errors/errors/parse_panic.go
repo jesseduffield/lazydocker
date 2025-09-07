@@ -75,8 +75,8 @@ func ParsePanic(text string) (*Error, error) {
 
 // The lines we're passing look like this:
 //
-//     main.(*foo).destruct(0xc208067e98)
-//             /0/go/src/github.com/bugsnag/bugsnag-go/pan/main.go:22 +0x151
+//	main.(*foo).destruct(0xc208067e98)
+//	        /0/go/src/github.com/bugsnag/bugsnag-go/pan/main.go:22 +0x151
 func parsePanicFrame(name string, line string, createdBy bool) (*StackFrame, error) {
 	idx := strings.LastIndex(name, "(")
 	if idx == -1 && !createdBy {

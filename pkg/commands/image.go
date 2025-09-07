@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/docker/docker/api/types/filters"
@@ -73,9 +74,32 @@ func getHistoryResponseItemDisplayStrings(layer image.HistoryResponseItem) []str
 	}
 }
 
+// safeImageHistory wraps the Docker client's ImageHistory call to guard
+// against panics originating from the Docker SDK when certain runtimes
+// or daemons do not support the endpoint as expected. In the event of a
+// panic, we convert it to an error so the TUI does not crash.
+func (i *Image) safeImageHistory(ctx context.Context, imageID string) (items []image.HistoryResponseItem, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			// Avoid crashing the whole app when the Docker SDK panics.
+			if i != nil && i.Log != nil {
+				i.Log.Errorf("panic in ImageHistory: %v", r)
+			}
+			err = fmt.Errorf("failed to fetch image history: %v", r)
+		}
+	}()
+
+	// Guard against a nil client just in case.
+	if i == nil || i.Client == nil {
+		return nil, fmt.Errorf("docker client is not initialized")
+	}
+
+	return i.Client.ImageHistory(ctx, imageID)
+}
+
 // RenderHistory renders the history of the image
 func (i *Image) RenderHistory() (string, error) {
-	history, err := i.Client.ImageHistory(context.Background(), i.ID)
+	history, err := i.safeImageHistory(context.Background(), i.ID)
 	if err != nil {
 		return "", err
 	}

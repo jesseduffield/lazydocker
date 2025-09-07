@@ -29,6 +29,7 @@ var (
 	configFlag    = false
 	debuggingFlag = false
 	composeFiles  []string
+	runtimeFlag   = "docker"
 )
 
 func main() {
@@ -51,6 +52,7 @@ func main() {
 	flaggy.Bool(&configFlag, "c", "config", "Print the current default config")
 	flaggy.Bool(&debuggingFlag, "d", "debug", "a boolean")
 	flaggy.StringSlice(&composeFiles, "f", "file", "Specify alternate compose files")
+	flaggy.String(&runtimeFlag, "r", "runtime", "Container runtime to use (docker, apple)")
 	flaggy.SetVersion(info)
 
 	flaggy.Parse()
@@ -71,7 +73,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, composeFiles, projectDir)
+	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, composeFiles, projectDir, runtimeFlag)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

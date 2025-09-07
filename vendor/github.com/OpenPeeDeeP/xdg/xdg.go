@@ -24,7 +24,7 @@ type xdgDefaulter interface {
 type osDefaulter struct {
 }
 
-//This method is used in the testing suit
+// This method is used in the testing suit
 // nolint: deadcode
 func setDefaulter(def xdgDefaulter) {
 	defaulter = def

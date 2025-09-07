@@ -40,11 +40,23 @@ type Container struct {
 	Tr              *i18n.TranslationSet
 
 	StatsMutex deadlock.Mutex
+
+	// Addr is a runtime-specific address string (e.g., IP or hostname) used by
+	// alternative runtimes like Apple's container CLI. It may be empty.
+	Addr string
 }
 
 // Remove removes the container
 func (c *Container) Remove(options container.RemoveOptions) error {
 	c.Log.Warn(fmt.Sprintf("removing container %s", c.Name))
+
+	// For Apple containers, use the AppleContainerCommand
+	if c.Client == nil && c.DockerCommand != nil {
+		if appleCmd, ok := c.DockerCommand.(*AppleContainerCommand); ok {
+			return appleCmd.RemoveContainer(c.ID, options.Force)
+		}
+	}
+
 	if err := c.Client.ContainerRemove(context.Background(), c.ID, options); err != nil {
 		if strings.Contains(err.Error(), "Stop the container before attempting removal or force remove") {
 			return ComplexError{
@@ -62,6 +74,14 @@ func (c *Container) Remove(options container.RemoveOptions) error {
 // Stop stops the container
 func (c *Container) Stop() error {
 	c.Log.Warn(fmt.Sprintf("stopping container %s", c.Name))
+
+	// For Apple containers, use the AppleContainerCommand
+	if c.Client == nil && c.DockerCommand != nil {
+		if appleCmd, ok := c.DockerCommand.(*AppleContainerCommand); ok {
+			return appleCmd.StopContainer(c.ID)
+		}
+	}
+
 	return c.Client.ContainerStop(context.Background(), c.ID, container.StopOptions{})
 }
 
@@ -80,6 +100,17 @@ func (c *Container) Unpause() error {
 // Restart restarts the container
 func (c *Container) Restart() error {
 	c.Log.Warn(fmt.Sprintf("restarting container %s", c.Name))
+
+	// For Apple containers, stop and start
+	if c.Client == nil && c.DockerCommand != nil {
+		if appleCmd, ok := c.DockerCommand.(*AppleContainerCommand); ok {
+			if err := appleCmd.StopContainer(c.ID); err != nil {
+				return err
+			}
+			return appleCmd.StartContainer(c.ID)
+		}
+	}
+
 	return c.Client.ContainerRestart(context.Background(), c.ID, container.StopOptions{})
 }
 
@@ -98,6 +129,11 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 		return nil, errors.New(c.Tr.CannotAttachStoppedContainerError)
 	}
 
+	// Apple Container runtime does not support docker attach
+	if c.Client == nil {
+		return nil, errors.New("attach not available for Apple Container runtime")
+	}
+
 	c.Log.Warn(fmt.Sprintf("attaching to container %s", c.Name))
 	// TODO: use SDK
 	cmd := c.OSCommand.NewCmd("docker", "attach", "--sig-proxy=false", c.ID)
@@ -106,6 +142,16 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 
 // Top returns process information
 func (c *Container) Top(ctx context.Context) (container.ContainerTopOKBody, error) {
+	// For Apple containers, this feature is not available
+	if c.Client == nil {
+		return container.ContainerTopOKBody{
+			Titles: []string{"PID", "USER", "TIME", "COMMAND"},
+			Processes: [][]string{
+				{"N/A", "N/A", "N/A", "Process information not available for Apple Container runtime"},
+			},
+		}, nil
+	}
+
 	detail, err := c.Inspect()
 	if err != nil {
 		return container.ContainerTopOKBody{}, err
@@ -127,6 +173,23 @@ func (c *DockerCommand) PruneContainers() error {
 
 // Inspect returns details about the container
 func (c *Container) Inspect() (dockerTypes.ContainerJSON, error) {
+	// For Apple containers, we don't have a Docker client
+	if c.Client == nil {
+		// Return a minimal ContainerJSON with just the state information we have
+		return dockerTypes.ContainerJSON{
+			ContainerJSONBase: &dockerTypes.ContainerJSONBase{
+				ID:   c.ID,
+				Name: c.Name,
+				State: &dockerTypes.ContainerState{
+					Status:  c.Container.State,
+					Running: c.Container.State == "running",
+				},
+			},
+			Config: &container.Config{
+				Image: c.Container.Image,
+			},
+		}, nil
+	}
 	return c.Client.ContainerInspect(context.Background(), c.ID)
 }
 

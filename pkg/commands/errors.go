@@ -1,9 +1,10 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/go-errors/errors"
+	goErrors "github.com/go-errors/errors"
 	"golang.org/x/xerrors"
 )
 
@@ -20,7 +21,7 @@ func WrapError(err error) error {
 		return err
 	}
 
-	return errors.Wrap(err, 0)
+	return goErrors.Wrap(err, 0)
 }
 
 // ComplexError an error which carries a code so that calling code has an easier job to do
@@ -55,3 +56,11 @@ func HasErrorCode(err error, code int) bool {
 	}
 	return false
 }
+
+// Runtime-specific errors
+var (
+	ErrDockerCommandNotAvailable         = errors.New("docker command not available")
+	ErrAppleContainerCommandNotAvailable = errors.New("apple container command not available")
+	ErrUnsupportedRuntime                = errors.New("unsupported runtime")
+	ErrOperationNotSupported             = errors.New("operation not supported by this runtime")
+)

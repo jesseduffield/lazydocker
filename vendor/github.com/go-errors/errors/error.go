@@ -9,36 +9,36 @@
 //
 // For example:
 //
-//  package crashy
+//	package crashy
 //
-//  import "github.com/go-errors/errors"
+//	import "github.com/go-errors/errors"
 //
-//  var Crashed = errors.Errorf("oh dear")
+//	var Crashed = errors.Errorf("oh dear")
 //
-//  func Crash() error {
-//      return errors.New(Crashed)
-//  }
+//	func Crash() error {
+//	    return errors.New(Crashed)
+//	}
 //
 // This can be called as follows:
 //
-//  package main
+//	package main
 //
-//  import (
-//      "crashy"
-//      "fmt"
-//      "github.com/go-errors/errors"
-//  )
+//	import (
+//	    "crashy"
+//	    "fmt"
+//	    "github.com/go-errors/errors"
+//	)
 //
-//  func main() {
-//      err := crashy.Crash()
-//      if err != nil {
-//          if errors.Is(err, crashy.Crashed) {
-//              fmt.Println(err.(*errors.Error).ErrorStack())
-//          } else {
-//              panic(err)
-//          }
-//      }
-//  }
+//	func main() {
+//	    err := crashy.Crash()
+//	    if err != nil {
+//	        if errors.Is(err, crashy.Crashed) {
+//	            fmt.Println(err.(*errors.Error).ErrorStack())
+//	        } else {
+//	            panic(err)
+//	        }
+//	    }
+//	}
 //
 // This package was original written to allow reporting to Bugsnag,
 // but after I found similar packages by Facebook and Dropbox, it

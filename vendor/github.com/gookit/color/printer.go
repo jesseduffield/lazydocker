@@ -19,8 +19,9 @@ type PrinterFace interface {
 // Printer a generic color message printer.
 //
 // Usage:
-// 	p := &Printer{Code: "32;45;3"}
-// 	p.Print("message")
+//
+//	p := &Printer{Code: "32;45;3"}
+//	p.Print("message")
 type Printer struct {
 	// NoColor disable color.
 	NoColor bool

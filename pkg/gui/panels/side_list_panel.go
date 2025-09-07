@@ -29,7 +29,7 @@ type ISideListPanel interface {
 
 // list panel at the side of the screen that renders content to the main panel
 type SideListPanel[T comparable] struct {
-	ContextState *ContextState[T]
+    ContextState *ContextState[T]
 
 	ListPanel[T]
 
@@ -47,9 +47,14 @@ type SideListPanel[T comparable] struct {
 	// a callback to invoke when the item is clicked
 	OnClick func(T) error
 
-	// returns the cells that we render to the view in a table format. The cells will
-	// be rendered with padding.
-	GetTableCells func(T) []string
+    // returns the cells that we render to the view in a table format. The cells will
+    // be rendered with padding.
+    GetTableCells func(T) []string
+
+    // optional: returns a header row to render above the list. If nil, no header
+    // row is rendered. When provided, the returned slice length must match
+    // GetTableCells(T) length.
+    GetTableHeaders func() []string
 
 	// function to be called after re-rendering list. Can be nil
 	OnRerender func() error
@@ -222,18 +227,26 @@ func (self *SideListPanel[T]) FilterAndSort() {
 }
 
 func (self *SideListPanel[T]) RerenderList() error {
-	self.FilterAndSort()
+    self.FilterAndSort()
 
-	self.Gui.Update(func() error {
-		self.View.Clear()
-		table := lo.Map(self.List.GetItems(), func(item T, index int) []string {
-			return self.GetTableCells(item)
-		})
-		renderedTable, err := utils.RenderTable(table)
-		if err != nil {
-			return err
-		}
-		fmt.Fprint(self.View, renderedTable)
+    self.Gui.Update(func() error {
+        self.View.Clear()
+        var table [][]string
+        if self.GetTableHeaders != nil {
+            headers := self.GetTableHeaders()
+            if headers != nil && len(headers) > 0 {
+                table = append(table, headers)
+            }
+        }
+        body := lo.Map(self.List.GetItems(), func(item T, index int) []string {
+            return self.GetTableCells(item)
+        })
+        table = append(table, body...)
+        renderedTable, err := utils.RenderTable(table)
+        if err != nil {
+            return err
+        }
+        fmt.Fprint(self.View, renderedTable)
 
 		if self.OnRerender != nil {
 			if err := self.OnRerender(); err != nil {

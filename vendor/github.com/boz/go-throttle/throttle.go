@@ -11,18 +11,18 @@
 //
 // Example with period = time.Second and trailing = false:
 //
-//		Whole seconds after first trigger...|0|0|0|0|1|1|1|1|
-//		Trigger() gets called...............|X| |X| | |X| | |
-//		Throttled code gets called..........|X| | | | |X| | |
+//	Whole seconds after first trigger...|0|0|0|0|1|1|1|1|
+//	Trigger() gets called...............|X| |X| | |X| | |
+//	Throttled code gets called..........|X| | | | |X| | |
 //
 // Note that the second trigger had no effect.  The third Trigger() caused immediate execution of the
 // throttled code.
 //
 // Example with period = time.Second and trailing = true:
 //
-//		Whole seconds after first trigger...|0|0|0|0|1|1|1|1|
-//		Trigger() gets called...............|X| |X| | |X| | |
-//		Throttled code gets called..........|X| | | |X| | | |
+//	Whole seconds after first trigger...|0|0|0|0|1|1|1|1|
+//	Trigger() gets called...............|X| |X| | |X| | |
+//	Throttled code gets called..........|X| | | |X| | | |
 //
 // Note that the second Trigger() causes the throttled code to get called once the first period is over.
 // The third Trigger() will do the same.

@@ -1,3 +1,4 @@
+//go:build freebsd || openbsd || netbsd
 // +build freebsd openbsd netbsd
 
 // Copyright (c) 2017, OpenPeeDeeP. All rights reserved.

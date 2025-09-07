@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
@@ -105,7 +106,16 @@ func (gui *Gui) promptToReturn() {
 }
 
 func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context, writer io.Writer) error {
-	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, ctr.ID, container.LogsOptions{
+	clientInterface := gui.ContainerCommand.GetClient()
+	if clientInterface == nil {
+		// Handle Apple Container logs
+		if gui.ContainerCommand.GetRuntimeName() == "apple" {
+			return gui.writeAppleContainerLogs(ctr, ctx, writer)
+		}
+		return fmt.Errorf("container logs not supported for %s runtime", gui.ContainerCommand.GetRuntimeName())
+	}
+	dockerClient := clientInterface.(*client.Client)
+	readCloser, err := dockerClient.ContainerLogs(ctx, ctr.ID, container.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
@@ -149,4 +159,41 @@ func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context,
 	}
 
 	return nil
+}
+
+func (gui *Gui) writeAppleContainerLogs(ctr *commands.Container, ctx context.Context, writer io.Writer) error {
+	// Get the AppleContainerCommand from the DockerCommand interface
+	appleCmd, ok := ctr.DockerCommand.(*commands.AppleContainerCommand)
+	if !ok {
+		return fmt.Errorf("invalid container command type for Apple runtime")
+	}
+
+	// Get the logs command
+	cmd := appleCmd.GetContainerLogs(ctr.ID, true, gui.Config.UserConfig.Logs.Tail)
+
+	// Set up the command with proper context
+	cmd.Stdout = writer
+	cmd.Stderr = writer
+
+	// Start the command
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	// Wait for context cancellation or command completion
+	done := make(chan error, 1)
+	go func() {
+		done <- cmd.Wait()
+	}()
+
+	select {
+	case <-ctx.Done():
+		// Context cancelled, kill the process
+		if cmd.Process != nil {
+			cmd.Process.Kill()
+		}
+		return ctx.Err()
+	case err := <-done:
+		return err
+	}
 }

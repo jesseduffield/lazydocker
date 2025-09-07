@@ -234,23 +234,30 @@ func ReplaceTag(str string) string {
 // ParseCodeFromAttr parse color attributes.
 //
 // attr format:
-// 	// VALUE please see var: FgColors, BgColors, AllOptions
-// 	"fg=VALUE;bg=VALUE;op=VALUE"
+//
+//	// VALUE please see var: FgColors, BgColors, AllOptions
+//	"fg=VALUE;bg=VALUE;op=VALUE"
+//
 // 16 color:
-// 	"fg=yellow"
-// 	"bg=red"
-// 	"op=bold,underscore" option is allow multi value
-// 	"fg=white;bg=blue;op=bold"
-// 	"fg=white;op=bold,underscore"
+//
+//	"fg=yellow"
+//	"bg=red"
+//	"op=bold,underscore" option is allow multi value
+//	"fg=white;bg=blue;op=bold"
+//	"fg=white;op=bold,underscore"
+//
 // 256 color:
+//
 //	"fg=167"
 //	"fg=167;bg=23"
 //	"fg=167;bg=23;op=bold"
+//
 // true color:
-// 	// hex
+//
+//	// hex
 //	"fg=fc1cac"
 //	"fg=fc1cac;bg=c2c3c4"
-// 	// r,g,b
+//	// r,g,b
 //	"fg=23,45,214"
 //	"fg=23,45,214;bg=109,99,88"
 func ParseCodeFromAttr(attr string) (code string) {
@@ -371,7 +378,8 @@ func IsDefinedTag(name string) bool {
 
 // Tag value is a defined style name
 // Usage:
-// 	Tag("info").Println("message")
+//
+//	Tag("info").Println("message")
 type Tag string
 
 // Print messages

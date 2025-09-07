@@ -128,7 +128,7 @@ func (gui *Gui) createAllViews() error {
 
 	gui.Views.Containers.Highlight = true
 	gui.Views.Containers.SelBgColor = selectedLineBgColor
-	if gui.Config.UserConfig.Gui.ShowAllContainers || !gui.DockerCommand.InDockerComposeProject {
+	if gui.Config.UserConfig.Gui.ShowAllContainers || !gui.ContainerCommand.InDockerComposeProject() {
 		gui.Views.Containers.Title = gui.Tr.ContainersTitle
 	} else {
 		gui.Views.Containers.Title = gui.Tr.StandaloneContainersTitle
@@ -142,12 +142,13 @@ func (gui *Gui) createAllViews() error {
 
 	gui.Views.Volumes.Highlight = true
 	gui.Views.Volumes.Title = gui.Tr.VolumesTitle
-	gui.Views.Volumes.TitlePrefix = "[5]"
 	gui.Views.Volumes.SelBgColor = selectedLineBgColor
+
+	gui.Views.Volumes.TitlePrefix = "[5]"
+	gui.Views.Networks.TitlePrefix = "[6]"
 
 	gui.Views.Networks.Highlight = true
 	gui.Views.Networks.Title = gui.Tr.NetworksTitle
-	gui.Views.Networks.TitlePrefix = "[6]"
 	gui.Views.Networks.SelBgColor = selectedLineBgColor
 
 	gui.Views.Options.Frame = false

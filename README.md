@@ -40,7 +40,7 @@
   <img src="https://user-images.githubusercontent.com/8456633/59972109-8e9c8480-95cc-11e9-8350-38f7f86ba76d.png">
 </p>
 
-A simple terminal UI for both docker and docker-compose, written in Go with the [gocui](https://github.com/jroimartin/gocui 'gocui') library.
+A simple terminal UI for both docker and docker-compose, written in Go with the [gocui](https://github.com/jroimartin/gocui 'gocui') library. Now with experimental Apple Container support!
 
 ![CI](https://github.com/jesseduffield/lazygit/workflows/Continuous%20Integration/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jesseduffield/lazydocker)](https://goreportcard.com/report/github.com/jesseduffield/lazydocker)
@@ -86,8 +86,14 @@ Memorising docker commands is hard. Memorising aliases is slightly less hard. Ke
 
 ## Requirements
 
+### Docker Runtime (Default)
 - Docker >= **1.13** (API >= **1.25**)
 - Docker-Compose >= **1.23.2** (optional)
+
+### Apple Container Runtime (Experimental)
+- macOS 26 beta or later
+- Apple Silicon Mac
+- Apple Container CLI (`container` command available in PATH)
 
 ## Installation
 
@@ -255,13 +261,38 @@ You can also use `go run main.go` to compile and run in one go (pun definitely i
 
 ## Usage
 
+### Basic Usage
+
 Call `lazydocker` in your terminal. I personally use this a lot so I've made an alias for it like so:
 
-```
+```bash
 echo "alias lzd='lazydocker'" >> ~/.zshrc
 ```
 
 (you can substitute .zshrc for whatever rc file you're using)
+
+### Container Runtime Selection
+
+By default, lazydocker uses Docker. You can specify a different container runtime using the `--runtime` flag:
+
+```bash
+# Use Docker (default)
+lazydocker
+lazydocker --runtime docker
+
+# Use Apple Container (requires macOS 26 beta and Apple Silicon)
+lazydocker --runtime apple
+```
+
+### Available Flags
+
+```bash
+lazydocker --help
+  -c --config    Print the current default config
+  -d --debug     Enable debug mode
+  -f --file      Specify alternate compose files
+  -r --runtime   Container runtime to use (docker, apple)
+```
 
 - Basic video tutorial [here](https://youtu.be/NICqQPxwJWw).
 - List of keybindings

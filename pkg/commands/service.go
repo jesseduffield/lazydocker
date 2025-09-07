@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	"os/exec"
 
 	"github.com/docker/docker/api/types/container"
@@ -26,6 +27,7 @@ func (s *Service) Remove(options container.RemoveOptions) error {
 
 // Stop stops the service's containers
 func (s *Service) Stop() error {
+	s.Log.Warn(fmt.Sprintf("stopping service %s", s.Name))
 	return s.runCommand(s.OSCommand.Config.UserConfig.CommandTemplates.StopService)
 }
 
@@ -49,7 +51,12 @@ func (s *Service) runCommand(templateCmdStr string) error {
 		templateCmdStr,
 		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
 	)
-	return s.OSCommand.RunCommand(command)
+	s.Log.Warn(fmt.Sprintf("executing command: %s", command))
+	err := s.OSCommand.RunCommand(command)
+	if err != nil {
+		s.Log.Error(fmt.Sprintf("command failed: %s, error: %v", command, err))
+	}
+	return err
 }
 
 // Attach attaches to the service

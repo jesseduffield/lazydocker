@@ -19,16 +19,19 @@ from wikipedia, 256 color:
 // tpl for 8 bit 256 color(`2^8`)
 //
 // format:
-// 	ESC[ … 38;5;<n> … m // 选择前景色
-//  ESC[ … 48;5;<n> … m // 选择背景色
+//
+//		ESC[ … 38;5;<n> … m // 选择前景色
+//	 ESC[ … 48;5;<n> … m // 选择背景色
 //
 // example:
-//  fg "\x1b[38;5;242m"
-//  bg "\x1b[48;5;208m"
-//  both "\x1b[38;5;242;48;5;208m"
+//
+//	fg "\x1b[38;5;242m"
+//	bg "\x1b[48;5;208m"
+//	both "\x1b[38;5;242;48;5;208m"
 //
 // links:
-// 	https://zh.wikipedia.org/wiki/ANSI%E8%BD%AC%E4%B9%89%E5%BA%8F%E5%88%97#8位
+//
+//	https://zh.wikipedia.org/wiki/ANSI%E8%BD%AC%E4%B9%89%E5%BA%8F%E5%88%97#8位
 const (
 	TplFg256 = "38;5;%d"
 	TplBg256 = "48;5;%d"
@@ -45,12 +48,14 @@ const (
 // 颜色值使用10进制和16进制都可 0x98 = 152
 //
 // The color consists of two uint8:
-// 	0: color value
-// 	1: color type; Fg=0, Bg=1, >1: unset value
+//
+//	0: color value
+//	1: color type; Fg=0, Bg=1, >1: unset value
 //
 // example:
-// 	fg color: [152, 0]
-//  bg color: [152, 1]
+//
+//		fg color: [152, 0]
+//	 bg color: [152, 1]
 //
 // NOTICE: now support 256 color on windows CMD, PowerShell
 // lint warn - Name starts with package name
@@ -210,9 +215,10 @@ type Style256 struct {
 
 // S256 create a color256 style
 // Usage:
-// 	s := color.S256()
-// 	s := color.S256(132) // fg
-// 	s := color.S256(132, 203) // fg and bg
+//
+//	s := color.S256()
+//	s := color.S256(132) // fg
+//	s := color.S256(132, 203) // fg and bg
 func S256(fgAndBg ...uint8) *Style256 {
 	s := &Style256{}
 	vl := len(fgAndBg)

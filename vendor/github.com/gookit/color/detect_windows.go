@@ -1,10 +1,12 @@
+//go:build windows
 // +build windows
 
 // Display color on windows
 // refer:
-//  golang.org/x/sys/windows
-// 	golang.org/x/crypto/ssh/terminal
-// 	https://docs.microsoft.com/en-us/windows/console
+//
+//	 golang.org/x/sys/windows
+//		golang.org/x/crypto/ssh/terminal
+//		https://docs.microsoft.com/en-us/windows/console
 package color
 
 import (
@@ -111,8 +113,10 @@ var (
 )
 
 // refer
-//  https://github.com/Delta456/box-cli-maker/blob/7b5a1ad8a016ce181e7d8b05e24b54ff60b4b38a/detect_windows.go#L30-L57
-//  https://github.com/gookit/color/issues/25#issuecomment-738727917
+//
+//	https://github.com/Delta456/box-cli-maker/blob/7b5a1ad8a016ce181e7d8b05e24b54ff60b4b38a/detect_windows.go#L30-L57
+//	https://github.com/gookit/color/issues/25#issuecomment-738727917
+//
 // detects the Color Level Supported on windows: cmd, powerShell
 func detectSpecialTermColor(termVal string) (tl terminfo.ColorLevel, needVTP bool) {
 	if os.Getenv("ConEmuANSI") == "ON" {
@@ -166,9 +170,10 @@ const (
 // doc https://docs.microsoft.com/zh-cn/windows/console/console-virtual-terminal-sequences#samples
 //
 // Usage:
-// 	err := EnableVirtualTerminalProcessing(syscall.Stdout, true)
-// 	// support print color text
-// 	err = EnableVirtualTerminalProcessing(syscall.Stdout, false)
+//
+//	err := EnableVirtualTerminalProcessing(syscall.Stdout, true)
+//	// support print color text
+//	err = EnableVirtualTerminalProcessing(syscall.Stdout, false)
 func EnableVirtualTerminalProcessing(stream syscall.Handle, enable bool) error {
 	var mode uint32
 	// Check if it is currently in the terminal
@@ -231,9 +236,10 @@ func IsTty(fd uintptr) bool {
 // IsTerminal returns true if the given file descriptor is a terminal.
 //
 // Usage:
-// 	fd := os.Stdout.Fd()
-// 	fd := uintptr(syscall.Stdout) // for windows
-// 	IsTerminal(fd)
+//
+//	fd := os.Stdout.Fd()
+//	fd := uintptr(syscall.Stdout) // for windows
+//	IsTerminal(fd)
 func IsTerminal(fd uintptr) bool {
 	initKernel32Proc()
 

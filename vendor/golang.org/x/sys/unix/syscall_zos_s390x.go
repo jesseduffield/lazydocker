@@ -816,10 +816,10 @@ func Lstat(path string, stat *Stat_t) (err error) {
 // for checking symlinks begins with $VERSION/ $SYSNAME/ $SYSSYMR/ $SYSSYMA/
 func isSpecialPath(path []byte) (v bool) {
 	var special = [4][8]byte{
-		[8]byte{'V', 'E', 'R', 'S', 'I', 'O', 'N', '/'},
-		[8]byte{'S', 'Y', 'S', 'N', 'A', 'M', 'E', '/'},
-		[8]byte{'S', 'Y', 'S', 'S', 'Y', 'M', 'R', '/'},
-		[8]byte{'S', 'Y', 'S', 'S', 'Y', 'M', 'A', '/'}}
+		{'V', 'E', 'R', 'S', 'I', 'O', 'N', '/'},
+		{'S', 'Y', 'S', 'N', 'A', 'M', 'E', '/'},
+		{'S', 'Y', 'S', 'S', 'Y', 'M', 'R', '/'},
+		{'S', 'Y', 'S', 'S', 'Y', 'M', 'A', '/'}}
 
 	var i, j int
 	for i = 0; i < len(special); i++ {

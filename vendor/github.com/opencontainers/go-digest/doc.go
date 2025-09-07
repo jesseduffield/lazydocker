@@ -19,16 +19,16 @@
 // More importantly, it provides tools and wrappers to work with
 // hash.Hash-based digests with little effort.
 //
-// Basics
+// # Basics
 //
 // The format of a digest is simply a string with two parts, dubbed the
 // "algorithm" and the "digest", separated by a colon:
 //
-// 	<algorithm>:<digest>
+//	<algorithm>:<digest>
 //
 // An example of a sha256 digest representation follows:
 //
-// 	sha256:7173b809ca12ec5dee4506cd86be934c4596dd234ee82c0662eac04a8c2c71dc
+//	sha256:7173b809ca12ec5dee4506cd86be934c4596dd234ee82c0662eac04a8c2c71dc
 //
 // The "algorithm" portion defines both the hashing algorithm used to calculate
 // the digest and the encoding of the resulting digest, which defaults to "hex"
@@ -42,7 +42,7 @@
 // obtained, comparisons are cheap, quick and simple to express with the
 // standard equality operator.
 //
-// Verification
+// # Verification
 //
 // The main benefit of using the Digest type is simple verification against a
 // given digest. The Verifier interface, modeled after the stdlib hash.Hash
@@ -50,7 +50,7 @@
 // writing is complete, calling the Verifier.Verified method will indicate
 // whether or not the stream of bytes matches the target digest.
 //
-// Missing Features
+// # Missing Features
 //
 // In addition to the above, we intend to add the following features to this
 // package:
@@ -58,5 +58,4 @@
 // 1. A Digester type that supports write sink digest calculation.
 //
 // 2. Suspend and resume of ongoing digest calculations to support efficient digest verification in the registry.
-//
 package digest
