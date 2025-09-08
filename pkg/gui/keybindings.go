@@ -32,6 +32,8 @@ func (b *Binding) GetKey() string {
 	switch key {
 	case 27:
 		return "esc"
+	case 12:
+		return "Ctrl+L"
 	case 13:
 		return "enter"
 	case 32:
@@ -187,6 +189,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "containers",
+			Key:         gocui.KeyCtrlL,
+			Modifier:    gocui.ModNone,
+			Handler:     wrappedHandler(gui.handleClearMain),
+			Description: gui.Tr.ClearMain,
+		},
+		{
+			ViewName:    "containers",
 			Key:         'd',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersRemoveMenu,
@@ -261,6 +270,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersOpenInBrowserCommand,
 			Description: gui.Tr.OpenInBrowser,
+		},
+		{
+			ViewName:    "services",
+			Key:         gocui.KeyCtrlL,
+			Modifier:    gocui.ModNone,
+			Handler:     wrappedHandler(gui.handleClearMain),
+			Description: gui.Tr.ClearMain,
 		},
 		{
 			ViewName:    "services",
@@ -448,6 +464,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Key:      gocui.KeyArrowRight,
 			Modifier: gocui.ModNone,
 			Handler:  gui.scrollRightMain,
+		},
+		{
+			ViewName:    "main",
+			Key:         gocui.KeyCtrlL,
+			Modifier:    gocui.ModNone,
+			Handler:     wrappedHandler(gui.handleClearMain),
+			Description: gui.Tr.ClearMain,
 		},
 		{
 			ViewName: "main",
