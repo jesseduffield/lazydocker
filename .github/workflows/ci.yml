@@ -23,13 +23,13 @@ jobs:
       GOFLAGS: -mod=vendor
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v4
         with:
           go-version: 1.21.x
       - name: Cache build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/go-build
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-test
@@ -45,13 +45,13 @@ jobs:
       GOARCH: amd64
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v4
         with:
           go-version: 1.21.x
       - name: Cache build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/go-build
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-build
@@ -73,13 +73,13 @@ jobs:
       GOARCH: amd64
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v4
         with:
           go-version: 1.21.x
       - name: Cache build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build
@@ -100,13 +100,13 @@ jobs:
       GOFLAGS: -mod=vendor
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v4
         with:
           go-version: 1.21.x
       - name: Cache build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/go-build
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-test
