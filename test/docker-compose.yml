@@ -1,4 +1,3 @@
-version: "3.5"
 services:
   my-service:
     build:
@@ -23,3 +22,54 @@ services:
       dockerfile: Dockerfile
       context: .
     command: /app/print-random-stuff.sh
+
+  my-service4-prof1:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
+    profiles:
+      - prof1
+
+  my-service5-prof1:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
+    profiles:
+      - prof1
+
+  my-service6-prof2:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
+    profiles:
+      - prof2
+
+  my-service7-prof3:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
+    profiles:
+      - prof3      
+
+  my-service8-prof12:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
+    profiles:
+      - prof1
+      - prof2      
+
+  my-service9-prof123:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
+    profiles:
+      - prof1
+      - prof2
+      - prof3      

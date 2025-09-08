@@ -60,6 +60,14 @@ func portugueseSet() TranslationSet {
 		ViewLogs:                    "ver logs",
 		UpProject:                   "subir projeto",
 		DownProject:                 "derrubar projeto",
+		RestartProject:              "reiniciar projeto",
+		UpProfile:                   "subir perfil",
+		DownProfile:                 "derrubar perfil",
+		DownProfileWithVolumes:      "derrubar perfil com volumes",
+		RestartProfile:              "reiniciar perfil",
+		UpAllProfiles:               "subir todos os perfis",
+		DownAllProfiles:             "derrubar todos os perfis",
+		DownAllProfilesWithVolumes:  "derrubar todos os perfis com volumes",
 		RemoveImage:                 "remover imagem",
 		RemoveVolume:                "remover volume",
 		RemoveNetwork:               "remover rede",
@@ -133,5 +141,12 @@ func portugueseSet() TranslationSet {
 		LcNextScreenMode: "modo de tela seguinte (normal/meia/tela cheia)",
 		LcPrevScreenMode: "modo de tela anterior",
 		FilterPrompt:     "filtro",
+
+		FocusProjects:   "focar no painel de projetos",
+		FocusServices:   "focar no painel de serviços",
+		FocusContainers: "focar no painel de contêineres",
+		FocusImages:     "focar no painel de imagens",
+		FocusVolumes:    "focar no painel de volumes",
+		FocusNetworks:   "focar no painel de redes",
 	}
 }
