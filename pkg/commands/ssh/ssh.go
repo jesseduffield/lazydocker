@@ -42,31 +42,36 @@ func NewSSHHandler(oSCommand CmdKiller) *SSHHandler {
 	}
 }
 
+type TunnelResult struct {
+	Closer     io.Closer
+	SocketPath string
+	Created    bool
+}
+
 // HandleSSHDockerHost overrides the DOCKER_HOST environment variable
 // to point towards a local unix socket tunneled over SSH to the specified ssh host.
-func (self *SSHHandler) HandleSSHDockerHost() (io.Closer, error) {
-	const key = "DOCKER_HOST"
-	ctx := context.Background()
-	u, err := url.Parse(self.getenv(key))
+func (self *SSHHandler) HandleSSHDockerHost(dockerHost string) (TunnelResult, error) {
+	u, err := url.Parse(dockerHost)
 	if err != nil {
 		// if no or an invalid docker host is specified, continue nominally
-		return noopCloser{}, nil
+		return TunnelResult{Closer: noopCloser{}}, nil
 	}
 
 	// if the docker host scheme is "ssh", forward the docker socket before creating the client
 	if u.Scheme == "ssh" {
-		tunnel, err := self.createDockerHostTunnel(ctx, u.Host)
+		ctx := context.Background()
+		tunnel, err := self.createDockerHostTunnel(ctx, u.String())
 		if err != nil {
-			return noopCloser{}, fmt.Errorf("tunnel ssh docker host: %w", err)
-		}
-		err = self.setenv(key, tunnel.socketPath)
-		if err != nil {
-			return noopCloser{}, fmt.Errorf("override DOCKER_HOST to tunneled socket: %w", err)
+			return TunnelResult{Closer: noopCloser{}}, fmt.Errorf("tunnel ssh docker host: %w", err)
 		}
 
-		return tunnel, nil
+		return TunnelResult{
+			Closer:     tunnel,
+			SocketPath: tunnel.socketPath,
+			Created:    true,
+		}, nil
 	}
-	return noopCloser{}, nil
+	return TunnelResult{Closer: noopCloser{}}, nil
 }
 
 type noopCloser struct{}
@@ -86,7 +91,7 @@ func (t *tunneledDockerHost) Close() error {
 }
 
 func (self *SSHHandler) createDockerHostTunnel(ctx context.Context, remoteHost string) (*tunneledDockerHost, error) {
-	socketDir, err := self.tempDir("/tmp", "lazydocker-sshtunnel-")
+	socketDir, err := self.tempDir("/tmp", "lazydocker-ssh-tunnel-")
 	if err != nil {
 		return nil, fmt.Errorf("create ssh tunnel tmp file: %w", err)
 	}

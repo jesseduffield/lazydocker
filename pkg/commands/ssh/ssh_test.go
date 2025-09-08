@@ -51,7 +51,7 @@ func TestSSHHandlerHandleSSHDockerHost(t *testing.T) {
 
 			tempDir := func(dir string, pattern string) (string, error) {
 				assert.Equal(t, "/tmp", dir)
-				assert.Equal(t, "lazydocker-sshtunnel-", pattern)
+				assert.Equal(t, "lazydocker-ssh-tunnel-", pattern)
 
 				return "/tmp/lazydocker-ssh-tunnel-12345", nil
 			}
@@ -64,7 +64,7 @@ func TestSSHHandlerHandleSSHDockerHost(t *testing.T) {
 
 			startCmdCount := 0
 			startCmd := func(cmd *exec.Cmd) error {
-				assert.EqualValues(t, []string{"ssh", "-L", "/tmp/lazydocker-ssh-tunnel-12345/dockerhost.sock:/var/run/docker.sock", "192.168.5.178", "-N"}, cmd.Args)
+				assert.EqualValues(t, []string{"ssh", "-L", "/tmp/lazydocker-ssh-tunnel-12345/dockerhost.sock:/var/run/docker.sock", s.envVarValue, "-N"}, cmd.Args)
 
 				startCmdCount++
 
@@ -91,7 +91,7 @@ func TestSSHHandlerHandleSSHDockerHost(t *testing.T) {
 				setenv:      setenv,
 			}
 
-			_, err := handler.HandleSSHDockerHost()
+			_, err := handler.HandleSSHDockerHost(s.envVarValue)
 			assert.NoError(t, err)
 
 			assert.Equal(t, s.expectedDialContextCount, dialContextCount)

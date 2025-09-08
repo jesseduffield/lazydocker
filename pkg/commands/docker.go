@@ -71,33 +71,30 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	return defaultObj
 }
 
-// NewDockerCommand it runs docker commands
+// NewDockerCommand creates a DockerCommand struct that wraps the docker client.
+// Able to run docker commands and handles SSH docker hosts
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
 	dockerHost, err := determineDockerHost()
 	if err != nil {
 		ogLog.Printf("> could not determine host %v", err)
 	}
 
-	// NOTE: Inject the determined docker host to the environment. This allows the
-	//       `SSHHandler.HandleSSHDockerHost()` to create a local unix socket tunneled
-	//       over SSH to the specified ssh host.
-	if strings.HasPrefix(dockerHost, "ssh://") {
-		os.Setenv(dockerHostEnvKey, dockerHost)
-	}
-
-	tunnelCloser, err := ssh.NewSSHHandler(osCommand).HandleSSHDockerHost()
+	tunnelResult, err := ssh.NewSSHHandler(osCommand).HandleSSHDockerHost(dockerHost)
 	if err != nil {
 		ogLog.Fatal(err)
 	}
-
-	// Retrieve the docker host from the environment which could have been set by
-	// the `SSHHandler.HandleSSHDockerHost()` and override `dockerHost`.
-	dockerHostFromEnv := os.Getenv(dockerHostEnvKey)
-	if dockerHostFromEnv != "" {
-		dockerHost = dockerHostFromEnv
+	// If we created a tunnel to the remote ssh host, we then override the dockerhost to point to the tunnel
+	if tunnelResult.Created {
+		dockerHost = tunnelResult.SocketPath
 	}
 
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithVersion(APIVersion), client.WithHost(dockerHost))
+	clientOpts := []client.Opt{
+		client.WithTLSClientConfigFromEnv(),
+		client.WithVersion(APIVersion),
+		client.WithHost(dockerHost),
+	}
+
+	cli, err := client.NewClientWithOpts(clientOpts...)
 	if err != nil {
 		ogLog.Fatal(err)
 	}
@@ -110,7 +107,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		Client:                 cli,
 		ErrorChan:              errorChan,
 		InDockerComposeProject: true,
-		Closers:                []io.Closer{tunnelCloser},
+		Closers:                []io.Closer{tunnelResult.Closer},
 	}
 
 	dockerCommand.setDockerComposeCommand(config)
