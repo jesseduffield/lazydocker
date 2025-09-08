@@ -109,6 +109,7 @@ type TranslationSet struct {
 	FilterList                  string
 	OpenInBrowser               string
 	SortContainersByState       string
+	CopyContainerId             string
 
 	LogsTitle                 string
 	ConfigTitle               string
@@ -216,6 +217,7 @@ func englishSet() TranslationSet {
 		FilterList:                  "filter list",
 		OpenInBrowser:               "open in browser (first port is http)",
 		SortContainersByState:       "sort containers by state",
+		CopyContainerId:             "copy container ID",
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Main",

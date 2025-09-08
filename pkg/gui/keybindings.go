@@ -187,6 +187,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "containers",
+			Key:         'y',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleCopyContainerId,
+			Description: gui.Tr.CopyContainerId,
+		},
+		{
+			ViewName:    "containers",
 			Key:         'd',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersRemoveMenu,

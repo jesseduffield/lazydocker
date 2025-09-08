@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-errors/errors"
 
+	"github.com/atotto/clipboard"
 	"github.com/jesseduffield/kill"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
@@ -372,4 +373,21 @@ func (c *OSCommand) Kill(cmd *exec.Cmd) error {
 // PrepareForChildren sets Setpgid to true on the cmd, so that when we run it as a subprocess, we can kill its group rather than the process itself. This is because some commands, like `docker-compose logs` spawn multiple children processes, and killing the parent process isn't sufficient for killing those child processes. We set the group id here, and then in subprocess.go we check if the group id is set and if so, we kill the whole group rather than just the one process.
 func (c *OSCommand) PrepareForChildren(cmd *exec.Cmd) {
 	kill.PrepareForChildren(cmd)
+}
+
+func (c *OSCommand) CopyToClipboard(str string) error {
+	escaped := strings.Replace(str, "\n", "\\n", -1)
+	truncated := utils.TruncateWithEllipsis(escaped, 40)
+
+	c.Log.Debug(utils.ResolvePlaceholderString("Copying '{{str}}' to clipboard", map[string]string{"str": truncated}))
+
+	// Not needed yet
+	//if c.UserConfig().OS.CopyToClipboardCmd != "" {
+	//	cmdStr := utils.ResolvePlaceholderString(c.UserConfig().OS.CopyToClipboardCmd, map[string]string{
+	//		"text": c.Cmd.Quote(str),
+	//	})
+	//	return c.Cmd.NewShell(cmdStr).Run()
+	//}
+
+	return clipboard.WriteAll(str)
 }
