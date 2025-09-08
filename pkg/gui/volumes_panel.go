@@ -50,6 +50,7 @@ func (gui *Gui) getVolumesPanel() *panels.SideListPanel[*commands.Volume] {
 			return a.Name < b.Name
 		},
 		GetTableCells: presentation.GetVolumeDisplayStrings,
+		ConfigHidden: !gui.Config.UserConfig.Gui.SidePanelVisibility.Volumes,
 	}
 }
 

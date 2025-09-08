@@ -74,6 +74,15 @@ type ThemeConfig struct {
 	OptionsTextColor    []string `yaml:"optionsTextColor,omitempty"`
 }
 
+// SidePanelVisibilityConfig is for toggling visiblity of side panels.
+type SidePanelVisibilityConfig struct {
+	Services   bool `yaml:"services,omitempty"`
+	Containers bool `yaml:"containers,omitempty"`
+	Images 	   bool `yaml:"images,omitempty"`
+	Volumes    bool `yaml:"volumes,omitempty"`
+	Networks   bool `yaml:"networks,omitempty"`
+}
+
 // GuiConfig is for configuring visual things like colors and whether we show or
 // hide things
 type GuiConfig struct {
@@ -122,6 +131,9 @@ type GuiConfig struct {
 
 	// If 0.333, then the side panels will be 1/3 of the screen's width
 	SidePanelWidth float64 `yaml:"sidePanelWidth"`
+
+	// Determines which side panels to show. Each panel defaults to `true` (visible).
+	SidePanelVisibility SidePanelVisibilityConfig `yaml:"sidePanelVisibility,omitempty"`
 
 	// Determines whether we show the bottom line (the one containing keybinding
 	// info and the status of the app).
@@ -373,6 +385,13 @@ func GetDefaultConfig() UserConfig {
 			WrapMainPanel:              true,
 			LegacySortContainers:       false,
 			SidePanelWidth:             0.3333,
+			SidePanelVisibility: SidePanelVisibilityConfig{
+				Services:   true,
+				Containers: true,
+				Images:     true,
+				Volumes:    true,
+				Networks:   true,
+			},
 			ShowBottomLine:             true,
 			ExpandFocusedSidePanel:     false,
 			ScreenMode:                 "normal",
