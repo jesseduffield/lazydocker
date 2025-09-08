@@ -32,6 +32,16 @@ builds:
       - 386
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.buildSource=snap
+  - id: deb
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+      - 386
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.buildSource=deb
 
 archives:
   - builds:
@@ -45,6 +55,9 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+  - builds:
+      - deb
+    format: deb
 
 checksum:
   name_template: "checksums.txt"
@@ -72,6 +85,21 @@ brews:
     # Your app's description.
     # Default is empty.
     description: "A simple terminal UI for docker, written in Go"
+
+nfpms:
+  - id: deb
+    package_name: lazydocker
+    license: MIT
+    maintainer: "Jesse Duffield <jesse@duffield.com>"
+    vendor: "Jesse Duffield"
+    homepage: "https://github.com/jesseduffield/lazydocker"
+    description: "A simple terminal UI for docker, written in Go"
+    formats:
+      - deb
+    dependencies:
+      - docker
+      - docker-compose
+
 #snapcrafts:
 #  - builds:
 #      - snap
