@@ -90,7 +90,7 @@ type GuiConfig struct {
 
 	// IgnoreMouseEvents is for when you do not want to use your mouse to interact
 	// with anything
-	IgnoreMouseEvents bool `yaml:"mouseEvents,omitempty"`
+	IgnoreMouseEvents bool `yaml:"ignoreMouseEvents,omitempty"`
 
 	// Theme determines what colors and color attributes your panel borders have.
 	// I always set inactiveBorderColor to black because in my terminal it's more
