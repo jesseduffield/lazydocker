@@ -205,7 +205,7 @@ type CommandTemplatesConfig struct {
 	AllLogs string `yaml:"allLogs,omitempty"`
 
 	// ViewAllLogs is the command we use when you want to see all logs in a subprocess with no filtering
-	ViewAllLogs string `yaml:"viewAlLogs,omitempty"`
+	ViewAllLogs string `yaml:"viewAllLogs,omitempty"`
 
 	// DockerComposeConfig is the command for viewing the config of your docker
 	// compose. It basically prints out the yaml from your docker-compose.yml
