@@ -78,7 +78,8 @@ func formatBinding(binding *gui.Binding) string {
 func getBindingSections(mApp *app.App) []*bindingSection {
 	bindingSections := []*bindingSection{}
 
-	for _, binding := range mApp.Gui.GetInitialKeybindings() {
+	opts := mApp.Gui.KeybindingOpts()
+	for _, binding := range mApp.Gui.GetInitialKeybindings(opts) {
 		if binding.Description == "" {
 			continue
 		}

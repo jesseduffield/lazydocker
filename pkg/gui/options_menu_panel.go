@@ -10,7 +10,8 @@ import (
 func (gui *Gui) getBindings(v *gocui.View) []*Binding {
 	var bindingsGlobal, bindingsPanel []*Binding
 
-	bindings := gui.GetInitialKeybindings()
+	opts := gui.KeybindingOpts()
+	bindings := gui.GetInitialKeybindings(opts)
 
 	for _, binding := range bindings {
 		if binding.GetKey() != "" && binding.Description != "" {

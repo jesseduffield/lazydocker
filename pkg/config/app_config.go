@@ -64,6 +64,9 @@ type UserConfig struct {
 	// will be filtered out and not displayed.
 	// Not documented because it's subject to change
 	Ignore []string `yaml:"ignore,omitempty"`
+
+	// Keybinding configuration allows users to customize all keybindings
+	Keybinding KeybindingConfig `yaml:"keybinding,omitempty"`
 }
 
 // ThemeConfig is for setting the colors of panels and some text.
@@ -474,6 +477,7 @@ func GetDefaultConfig() UserConfig {
 		Replacements: Replacements{
 			ImageNamePrefixes: map[string]string{},
 		},
+		Keybinding: GetDefaultKeybindings(),
 	}
 }
 
@@ -492,12 +496,12 @@ type AppConfig struct {
 
 // NewAppConfig makes a new app config
 func NewAppConfig(name, version, commit, date string, buildSource string, debuggingFlag bool, composeFiles []string, projectDir string) (*AppConfig, error) {
-	configDir, err := findOrCreateConfigDir(name)
+	configDir, err := FindOrCreateConfigDir(name)
 	if err != nil {
 		return nil, err
 	}
 
-	userConfig, err := loadUserConfigWithDefaults(configDir)
+	userConfig, err := LoadUserConfigWithDefaults(configDir)
 	if err != nil {
 		return nil, err
 	}
@@ -540,7 +544,8 @@ func configDir(projectName string) string {
 	return configDirectory
 }
 
-func findOrCreateConfigDir(projectName string) (string, error) {
+// FindOrCreateConfigDir finds or creates the configuration directory for the given project
+func FindOrCreateConfigDir(projectName string) (string, error) {
 	folder := configDir(projectName)
 
 	err := os.MkdirAll(folder, 0o755)
@@ -551,10 +556,20 @@ func findOrCreateConfigDir(projectName string) (string, error) {
 	return folder, nil
 }
 
-func loadUserConfigWithDefaults(configDir string) (*UserConfig, error) {
+// LoadUserConfigWithDefaults loads the user config and merges it with defaults
+func LoadUserConfigWithDefaults(configDir string) (*UserConfig, error) {
 	config := GetDefaultConfig()
 
-	return loadUserConfig(configDir, &config)
+	userConfig, err := loadUserConfig(configDir, &config)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := userConfig.Validate(); err != nil {
+		return nil, err
+	}
+
+	return userConfig, nil
 }
 
 func loadUserConfig(configDir string, base *UserConfig) (*UserConfig, error) {

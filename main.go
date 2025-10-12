@@ -56,9 +56,20 @@ func main() {
 	flaggy.Parse()
 
 	if configFlag {
+		// Load user config with defaults merged (not just defaults!)
+		configDir, err := config.FindOrCreateConfigDir("lazydocker")
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		userConfig, err := config.LoadUserConfigWithDefaults(configDir)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
 		var buf bytes.Buffer
 		encoder := yaml.NewEncoder(&buf)
-		err := encoder.Encode(config.GetDefaultConfig())
+		err = encoder.Encode(userConfig)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
