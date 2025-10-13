@@ -14,6 +14,19 @@ func (gui *Gui) scrollUpMain() error {
 	return mainView.SetOrigin(ox, newOy)
 }
 
+func (gui *Gui) scrollUpPageMain() error {
+	mainView := gui.Views.Main
+	mainView.Autoscroll = false
+	ox, oy := mainView.Origin()
+
+	// Scroll up by half a page, capping at the top
+	_, sizeY := mainView.Size()
+	deltaY := sizeY / 2
+	newOy := max(0, oy-deltaY)
+
+	return mainView.SetOrigin(ox, newOy)
+}
+
 func (gui *Gui) scrollDownMain() error {
 	mainView := gui.Views.Main
 	mainView.Autoscroll = false
@@ -31,6 +44,29 @@ func (gui *Gui) scrollDownMain() error {
 	}
 
 	return mainView.SetOrigin(ox, oy+gui.Config.UserConfig.Gui.ScrollHeight)
+}
+
+func (gui *Gui) scrollDownPageMain() error {
+	mainView := gui.Views.Main
+	mainView.Autoscroll = false
+	ox, oy := mainView.Origin()
+
+	// Scroll down by half a page
+	_, sizeY := mainView.Size()
+	totalLines := mainView.ViewLinesHeight()
+	deltaY := sizeY / 2
+
+	reservedLines := 0
+	if !gui.Config.UserConfig.Gui.ScrollPastBottom {
+		_, sizeY := mainView.Size()
+		reservedLines = sizeY
+	}
+
+	// Clamp to maximum scroll position if we'd scroll too far
+	maxScroll := totalLines - reservedLines
+	newOy := min(oy+deltaY, maxScroll)
+
+	return mainView.SetOrigin(ox, newOy)
 }
 
 func (gui *Gui) scrollLeftMain(g *gocui.Gui, v *gocui.View) error {
