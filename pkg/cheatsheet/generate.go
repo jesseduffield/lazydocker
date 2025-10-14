@@ -79,7 +79,12 @@ func getBindingSections(mApp *app.App) []*bindingSection {
 	bindingSections := []*bindingSection{}
 
 	opts := mApp.Gui.KeybindingOpts()
-	for _, binding := range mApp.Gui.GetInitialKeybindings(opts) {
+	bindings, err := mApp.Gui.GetInitialKeybindings(opts)
+	if err != nil {
+		log.Fatalf("Error getting initial keybindings: %v", err)
+	}
+
+	for _, binding := range bindings {
 		if binding.Description == "" {
 			continue
 		}

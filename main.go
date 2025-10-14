@@ -56,15 +56,26 @@ func main() {
 	flaggy.Parse()
 
 	if configFlag {
-		// Load user config with defaults merged (not just defaults!)
-		configDir, err := config.FindOrCreateConfigDir("lazydocker")
-		if err != nil {
-			log.Fatal(err.Error())
-		}
+		// Read-only operation: find config dir without creating it
+		configDir := config.FindConfigDir("lazydocker")
 
-		userConfig, err := config.LoadUserConfigWithDefaults(configDir)
-		if err != nil {
-			log.Fatal(err.Error())
+		var userConfig *config.UserConfig
+		var err error
+
+		if configDir != "" {
+			// Config directory exists, try to load it
+			userConfig, err = config.LoadUserConfigWithDefaults(configDir)
+			if err != nil {
+				// On error loading config, fall back to defaults with warning
+				log.Printf("Warning: Could not load config from %s: %v\n", configDir, err)
+				log.Println("Showing defaults instead...")
+				defaultConfig := config.GetDefaultConfig()
+				userConfig = &defaultConfig
+			}
+		} else {
+			// No config directory exists, show pure defaults
+			defaultConfig := config.GetDefaultConfig()
+			userConfig = &defaultConfig
 		}
 
 		var buf bytes.Buffer

@@ -82,15 +82,24 @@ var KeyByLabel = lo.Invert(LabelByKey)
 
 // IsValidKeybindingKey checks if a keybinding key string is valid
 func IsValidKeybindingKey(key string) bool {
-	runeCount := utf8.RuneCountInString(key)
+	// Reject empty strings explicitly
+	if key == "" {
+		return false
+	}
+
+	// Special tokens
 	if key == "<disabled>" {
 		return true
 	}
 
+	runeCount := utf8.RuneCountInString(key)
+
+	// Multi-character keys must be in KeyByLabel map
 	if runeCount > 1 {
 		_, ok := KeyByLabel[strings.ToLower(key)]
 		return ok
 	}
 
-	return true
+	// Single character keys are valid
+	return runeCount == 1
 }

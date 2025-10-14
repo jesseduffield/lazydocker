@@ -1,5 +1,6 @@
 package config
 
+
 // KeybindingConfig contains all keybinding configurations for lazydocker
 type KeybindingConfig struct {
 	Universal  KeybindingUniversalConfig  `yaml:"universal"`
@@ -255,3 +256,4 @@ func GetDefaultKeybindings() KeybindingConfig {
 		},
 	}
 }
+

@@ -11,6 +11,12 @@ func (config *UserConfig) Validate() error {
 	if err := validateKeybindings(config.Keybinding); err != nil {
 		return err
 	}
+
+	// Note: We don't validate for duplicate keys across different contexts
+	// because it's intentional to reuse keys (e.g., 'd' for remove in containers, images, volumes).
+	// This follows lazygit's approach. Within a context, duplicate keys use last-wins behavior
+	// which is standard YAML behavior.
+
 	return nil
 }
 

@@ -556,6 +556,19 @@ func FindOrCreateConfigDir(projectName string) (string, error) {
 	return folder, nil
 }
 
+// FindConfigDir finds the config directory without creating it.
+// Returns empty string if directory doesn't exist.
+func FindConfigDir(projectName string) string {
+	folder := configDir(projectName)
+
+	// Check if directory exists
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		return "" // Not found, don't create
+	}
+
+	return folder
+}
+
 // LoadUserConfigWithDefaults loads the user config and merges it with defaults
 func LoadUserConfigWithDefaults(configDir string) (*UserConfig, error) {
 	config := GetDefaultConfig()
@@ -565,6 +578,7 @@ func LoadUserConfigWithDefaults(configDir string) (*UserConfig, error) {
 		return nil, err
 	}
 
+	
 	if err := userConfig.Validate(); err != nil {
 		return nil, err
 	}
@@ -577,11 +591,9 @@ func loadUserConfig(configDir string, base *UserConfig) (*UserConfig, error) {
 
 	if _, err := os.Stat(fileName); err != nil {
 		if os.IsNotExist(err) {
-			file, err := os.Create(fileName)
-			if err != nil {
-				return nil, err
-			}
-			file.Close()
+			// File doesn't exist - return defaults without creating file
+			// File will be created later when user actually saves config
+			return base, nil
 		} else {
 			return nil, err
 		}

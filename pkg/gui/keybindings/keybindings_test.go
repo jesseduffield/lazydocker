@@ -1,6 +1,7 @@
 package keybindings
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/jesseduffield/gocui"
@@ -23,7 +24,10 @@ func TestGetKeySingleChar(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := GetKey(tt.input)
+			result, err := GetKey(tt.input)
+			if err != nil {
+				t.Fatalf("GetKey(%q) unexpected error: %v", tt.input, err)
+			}
 			if result == nil {
 				t.Fatalf("GetKey(%q) returned nil", tt.input)
 			}
@@ -71,7 +75,10 @@ func TestGetKeySpecialKeys(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := GetKey(tt.input)
+			result, err := GetKey(tt.input)
+			if err != nil {
+				t.Fatalf("GetKey(%q) unexpected error: %v", tt.input, err)
+			}
 			if result == nil {
 				t.Fatalf("GetKey(%q) returned nil", tt.input)
 			}
@@ -105,8 +112,15 @@ func TestGetKeyCaseInsensitive(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.lowercase, func(t *testing.T) {
-			lowerResult := GetKey(tt.lowercase)
-			upperResult := GetKey(tt.uppercase)
+			lowerResult, lowerErr := GetKey(tt.lowercase)
+			upperResult, upperErr := GetKey(tt.uppercase)
+
+			if lowerErr != nil {
+				t.Fatalf("GetKey(%q) unexpected error: %v", tt.lowercase, lowerErr)
+			}
+			if upperErr != nil {
+				t.Fatalf("GetKey(%q) unexpected error: %v", tt.uppercase, upperErr)
+			}
 
 			if lowerResult == nil || upperResult == nil {
 				t.Fatalf("GetKey returned nil for %q or %q", tt.lowercase, tt.uppercase)
@@ -132,16 +146,97 @@ func TestGetKeyCaseInsensitive(t *testing.T) {
 }
 
 func TestGetKeyDisabled(t *testing.T) {
-	result := GetKey("<disabled>")
+	result, err := GetKey("<disabled>")
+	if err != nil {
+		t.Fatalf("GetKey('<disabled>') unexpected error: %v", err)
+	}
 	if result != nil {
 		t.Errorf("GetKey('<disabled>') = %v, want nil", result)
 	}
 }
 
 func TestGetKeyEmptyString(t *testing.T) {
-	result := GetKey("")
+	result, err := GetKey("")
+	if err == nil {
+		t.Fatalf("GetKey('') expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "empty string") {
+		t.Errorf("GetKey('') error = %v, want substring %q", err, "empty string")
+	}
 	if result != nil {
 		t.Errorf("GetKey('') = %v, want nil", result)
+	}
+}
+
+func TestGetKeyErrors(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       string
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name:        "invalid special key",
+			input:       "<invalid>",
+			expectError: true,
+			errorMsg:    "unrecognized key",
+		},
+		{
+			name:        "unknown key",
+			input:       "<foo-bar>",
+			expectError: true,
+			errorMsg:    "unrecognized key",
+		},
+		{
+			name:        "empty string",
+			input:       "",
+			expectError: true,
+			errorMsg:    "empty string",
+		},
+		{
+			name:        "valid single char",
+			input:       "a",
+			expectError: false,
+		},
+		{
+			name:        "valid special key",
+			input:       "<esc>",
+			expectError: false,
+		},
+		{
+			name:        "disabled",
+			input:       "<disabled>",
+			expectError: false,
+		},
+		{
+			name:        "default token",
+			input:       "<default>",
+			expectError: true,
+			errorMsg:    "was not resolved",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := GetKey(tt.input)
+
+			if tt.expectError {
+				if err == nil {
+					t.Fatalf("GetKey(%q) expected error, got nil", tt.input)
+				}
+				if !strings.Contains(err.Error(), tt.errorMsg) {
+					t.Errorf("GetKey(%q) error = %v, want substring %q",
+						tt.input, err, tt.errorMsg)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("GetKey(%q) unexpected error: %v", tt.input, err)
+				}
+				if tt.input != "<disabled>" && result == nil {
+					t.Errorf("GetKey(%q) returned nil without error", tt.input)
+				}
+			}
+		})
 	}
 }
 
@@ -219,7 +314,10 @@ func TestGetKeyRoundTrip(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt, func(t *testing.T) {
-			key := GetKey(tt)
+			key, err := GetKey(tt)
+			if err != nil {
+				t.Fatalf("GetKey(%q) unexpected error: %v", tt, err)
+			}
 			if key == nil {
 				// Skip disabled keys
 				if tt != "<disabled>" {
@@ -278,7 +376,10 @@ func TestAllControlKeys(t *testing.T) {
 
 	for label, expectedKey := range controlKeys {
 		t.Run(label, func(t *testing.T) {
-			result := GetKey(label)
+			result, err := GetKey(label)
+			if err != nil {
+				t.Fatalf("GetKey(%q) unexpected error: %v", label, err)
+			}
 			if result == nil {
 				t.Fatalf("GetKey(%q) returned nil", label)
 			}
@@ -320,7 +421,10 @@ func TestAllFunctionKeys(t *testing.T) {
 
 	for label, expectedKey := range functionKeys {
 		t.Run(label, func(t *testing.T) {
-			result := GetKey(label)
+			result, err := GetKey(label)
+			if err != nil {
+				t.Fatalf("GetKey(%q) unexpected error: %v", label, err)
+			}
 			if result == nil {
 				t.Fatalf("GetKey(%q) returned nil", label)
 			}
@@ -347,25 +451,37 @@ func TestGetKeyReturnsCorrectTypes(t *testing.T) {
 	// Verify that GetKey returns the correct Go types
 
 	// Single char -> rune
-	singleCharResult := GetKey("a")
+	singleCharResult, err := GetKey("a")
+	if err != nil {
+		t.Fatalf("GetKey('a') unexpected error: %v", err)
+	}
 	if _, ok := singleCharResult.(rune); !ok {
 		t.Errorf("GetKey('a') should return rune, got %T", singleCharResult)
 	}
 
 	// Special key -> gocui.Key
-	specialKeyResult := GetKey("<esc>")
+	specialKeyResult, err := GetKey("<esc>")
+	if err != nil {
+		t.Fatalf("GetKey('<esc>') unexpected error: %v", err)
+	}
 	if _, ok := specialKeyResult.(gocui.Key); !ok {
 		t.Errorf("GetKey('<esc>') should return gocui.Key, got %T", specialKeyResult)
 	}
 
 	// Disabled -> nil
-	disabledResult := GetKey("<disabled>")
+	disabledResult, err := GetKey("<disabled>")
+	if err != nil {
+		t.Fatalf("GetKey('<disabled>') unexpected error: %v", err)
+	}
 	if disabledResult != nil {
 		t.Errorf("GetKey('<disabled>') should return nil, got %v", disabledResult)
 	}
 
-	// Empty -> nil
-	emptyResult := GetKey("")
+	// Empty -> error
+	emptyResult, err := GetKey("")
+	if err == nil {
+		t.Fatalf("GetKey('') expected error, got nil")
+	}
 	if emptyResult != nil {
 		t.Errorf("GetKey('') should return nil, got %v", emptyResult)
 	}
