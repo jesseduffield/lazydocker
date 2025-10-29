@@ -64,6 +64,13 @@ logs:
   timestamps: false
   since: '60m' # set to '' to show all logs
   tail: '' # set to 200 to show last 200 lines of logs
+tls:
+  enable: false # Set to true to enable TLS connections to Docker daemon
+  caCertPath: "" # Path to Certificate Authority (CA) certificate file
+  certPath: "" # Path to client certificate file for mutual TLS authentication
+  keyPath: "" # Path to client private key file
+  host: "" # Hostname or IP for certificate validation (must match server certificate)
+  insecureSkipVerify: false # Skip certificate verification (NOT recommended for production)
 commandTemplates:
   dockerCompose: docker compose # Determines the Docker Compose command to run, referred to as .DockerCompose in commandTemplates
   restartService: '{{ .DockerCompose }} restart {{ .Service.Name }}'
@@ -96,6 +103,87 @@ stats:
 ```
 
 ## To see what all of the config options mean, and what other options you can set, see [here](https://godoc.org/github.com/jesseduffield/lazydocker/pkg/config)
+
+## TLS Configuration
+
+Lazydocker supports secure connections to Docker daemon using TLS (Transport Layer Security). This is essential when connecting to remote Docker daemons or when your Docker daemon requires client certificate authentication.
+
+### Configuration Options
+
+The `tls` section in your config supports the following options:
+
+- **`enable`**: Boolean flag to enable/disable TLS connections
+- **`caCertPath`**: Path to the Certificate Authority (CA) certificate file used to verify the Docker daemon's certificate
+- **`certPath`**: Path to the client certificate file for mutual TLS authentication
+- **`keyPath`**: Path to the client private key file corresponding to the client certificate
+- **`host`**: The hostname or IP address expected on the Docker daemon's certificate. This must match the Common Name (CN) or a Subject Alternative Name (SAN) in the server's certificate
+- **`insecureSkipVerify`**: When set to `true`, skips certificate verification. **Only use this for testing - it's insecure for production!**
+
+### Basic Example
+
+```yaml
+tls:
+  enable: true
+  caCertPath: "/home/user/.docker/ca.pem"
+  certPath: "/home/user/.docker/cert.pem"
+  keyPath: "/home/user/.docker/key.pem"
+  host: "docker.example.com"
+  insecureSkipVerify: false
+```
+
+### Remote Docker Daemon Setup
+
+When connecting to a remote Docker daemon with TLS:
+
+1. **Set the Docker Host**: Use the `DOCKER_HOST` environment variable to specify where to connect:
+   ```bash
+   export DOCKER_HOST=tcp://docker.example.com:2376
+   ```
+
+2. **Configure TLS**: Update your `config.yml`:
+   ```yaml
+   tls:
+     enable: true
+     caCertPath: "/path/to/ca.pem"
+     certPath: "/path/to/cert.pem"
+     keyPath: "/path/to/key.pem"
+     host: "docker.example.com"  # Must match certificate
+     insecureSkipVerify: false
+   ```
+
+### Important Notes
+
+1. **Don't confuse two different "hosts"**:
+   - `DOCKER_HOST` environment variable: **WHERE** to connect (e.g., `tcp://192.168.1.100:2376`)
+   - `tls.host` config field: **WHAT NAME** to expect on the certificate (e.g., `docker.example.com`)
+
+2. **Certificate Validation**: The `host` field must match a name in your Docker daemon's certificate. You can check your certificate's valid names with:
+   ```bash
+   openssl x509 -in server-cert.pem -noout -text
+   ```
+
+3. **Certificate Paths**: Ensure all certificate files are readable by the user running Lazydocker
+
+### Testing TLS Configuration
+
+For testing purposes only, you can skip certificate verification:
+
+```yaml
+tls:
+  enable: true
+  caCertPath: "/path/to/ca.pem"
+  certPath: "/path/to/cert.pem" 
+  keyPath: "/path/to/key.pem"
+  host: "any-name-here"  # Ignored when insecureSkipVerify is true
+  insecureSkipVerify: true  # INSECURE - only for testing!
+```
+
+### Common TLS Errors
+
+- **"x509: certificate is valid for X, not Y"**: The `host` field doesn't match any name on the server's certificate
+- **"certificate signed by unknown authority"**: The `caCertPath` is incorrect or the server's certificate wasn't signed by the specified CA
+- **"no such host"**: Network connectivity issue with `DOCKER_HOST` (not a TLS config problem)
+- **"tls: failed to verify certificate"**: General certificate validation failure - check all certificate paths and the `host` field
 
 ## Color Attributes:
 
