@@ -25,11 +25,11 @@
 <br>
 <hr>
 <br>
-<a href="https://www.subble.com">
+<a href="https://www.subble.com/jobs/engineer">
   <div>
-    <img src="assets/subble.webp" width="400" alt="Subble">
+    <img src="assets/subble-job-ad.jpg" width="400" alt="Subble">
   </div>
-  <b>I (Jesse) co-founded Subble to save your company time and money by finding unused and over-provisioned SaaS licences. Check it out!</b>
+  <b>Click here to learn more</b>
 </a>
 <br>
 
