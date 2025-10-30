@@ -133,6 +133,20 @@ You may use the following go templates (such as `{{ .Container.ID }}` above) in 
 - [`{{ .Container }}`](https://pkg.go.dev/github.com/jesseduffield/lazydocker@v0.20.0/pkg/commands#Container) and its fields. For example: `{{ .Container.Container.ImageID }}`
 - [`{{ .Service }}`](https://pkg.go.dev/github.com/jesseduffield/lazydocker@v0.20.0/pkg/commands#Service) and its fields. For example: `{{ .Service.Name }}`
 
+## Container Runtime
+
+Lazydocker supports multiple container runtimes. By default it uses Docker, but you can switch to Apple Container (on macOS 26+ with Apple Silicon) using the `--runtime` flag:
+
+```bash
+# Use Docker (default)
+lazydocker
+
+# Use Apple Container
+lazydocker --runtime apple
+```
+
+Note: The runtime cannot be changed from within the application. You must restart lazydocker with the appropriate flag.
+
 ## Replacements
 
 You can add replacements like so:

@@ -80,11 +80,20 @@ func (gui *Gui) imageConfigStr(image *commands.Image) string {
 	output += utils.WithPadding("ID: ", padding) + image.Image.ID + "\n"
 	output += utils.WithPadding("Tags: ", padding) + utils.ColoredString(strings.Join(image.Image.RepoTags, ", "), color.FgGreen) + "\n"
 	output += utils.WithPadding("Size: ", padding) + utils.FormatDecimalBytes(int(image.Image.Size)) + "\n"
-	output += utils.WithPadding("Created: ", padding) + fmt.Sprintf("%v", time.Unix(image.Image.Created, 0).Format(time.RFC1123)) + "\n"
+	created := "n/a"
+	if image.Image.Created != 0 {
+		created = fmt.Sprintf("%v", time.Unix(image.Image.Created, 0).Format(time.RFC1123))
+	}
+	output += utils.WithPadding("Created: ", padding) + created + "\n"
 
 	history, err := image.RenderHistory()
 	if err != nil {
 		gui.Log.Error(err)
+		if gui.ContainerCommand != nil && !gui.ContainerCommand.Supports(commands.FeatureImageHistory) {
+			history = "History not available for Apple Container runtime"
+		} else {
+			history = "History unavailable: " + err.Error()
+		}
 	}
 
 	output += "\n\n" + history
@@ -101,7 +110,7 @@ func (gui *Gui) reloadImages() error {
 }
 
 func (gui *Gui) refreshStateImages() error {
-	images, err := gui.DockerCommand.RefreshImages()
+	images, err := gui.ContainerCommand.RefreshImages()
 	if err != nil {
 		return err
 	}
@@ -129,6 +138,11 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	img, err := gui.Panels.Images.GetSelectedItem()
 	if err != nil {
 		return nil
+	}
+
+	// Apple Container runtime: image removal not yet supported via our adapter
+	if gui.ContainerCommand != nil && !gui.ContainerCommand.Supports(commands.FeatureImageRemove) {
+		return gui.createErrorPanel("Image removal is not available in the Apple Container runtime from LazyDocker yet.")
 	}
 
 	shortSha := img.ID[7:17]
@@ -180,9 +194,12 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handlePruneImages() error {
+	if gui.ContainerCommand != nil && !gui.ContainerCommand.Supports(commands.FeatureImagePrune) {
+		return gui.createErrorPanel("Image pruning is not supported by the current container runtime.")
+	}
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneImages, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
-			err := gui.DockerCommand.PruneImages()
+			err := gui.ContainerCommand.PruneImages()
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -197,7 +214,7 @@ func (gui *Gui) handleImagesCustomCommand(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{
 		Image: img,
 	})
 
@@ -207,15 +224,16 @@ func (gui *Gui) handleImagesCustomCommand(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleImagesBulkCommand(g *gocui.Gui, v *gocui.View) error {
-	baseBulkCommands := []config.CustomCommand{
-		{
+	baseBulkCommands := []config.CustomCommand{}
+	if gui.ContainerCommand == nil || gui.ContainerCommand.Supports(commands.FeatureImagePrune) {
+		baseBulkCommands = append(baseBulkCommands, config.CustomCommand{
 			Name:             gui.Tr.PruneImages,
 			InternalFunction: gui.handlePruneImages,
-		},
+		})
 	}
 
 	bulkCommands := append(baseBulkCommands, gui.Config.UserConfig.BulkCommands.Images...)
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }

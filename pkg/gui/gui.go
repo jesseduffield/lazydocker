@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types/events"
+	"github.com/docker/docker/client"
 
 	"github.com/go-errors/errors"
 
@@ -25,17 +26,18 @@ import (
 
 // Gui wraps the gocui Gui object which handles rendering and events
 type Gui struct {
-	g             *gocui.Gui
-	Log           *logrus.Entry
-	DockerCommand *commands.DockerCommand
-	OSCommand     *commands.OSCommand
-	State         guiState
-	Config        *config.AppConfig
-	Tr            *i18n.TranslationSet
-	statusManager *statusManager
-	taskManager   *tasks.TaskManager
-	ErrorChan     chan error
-	Views         Views
+	g                *gocui.Gui
+	Log              *logrus.Entry
+	DockerCommand    *commands.DockerCommand
+	ContainerCommand *commands.GuiContainerCommand
+	OSCommand        *commands.OSCommand
+	State            guiState
+	Config           *config.AppConfig
+	Tr               *i18n.TranslationSet
+	statusManager    *statusManager
+	taskManager      *tasks.TaskManager
+	ErrorChan        chan error
+	Views            Views
 
 	// if we've suspended the gui (e.g. because we've switched to a subprocess)
 	// we typically want to pause some things that are running like background
@@ -125,7 +127,7 @@ func getScreenMode(config *config.AppConfig) WindowMaximisation {
 }
 
 // NewGui builds a new gui handler
-func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
+func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, containerCommand *commands.GuiContainerCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
 	initialState := guiState{
 		Platform: *oSCommand.Platform,
 		Panels: &panelStates{
@@ -140,15 +142,16 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 	}
 
 	gui := &Gui{
-		Log:           log,
-		DockerCommand: dockerCommand,
-		OSCommand:     oSCommand,
-		State:         initialState,
-		Config:        config,
-		Tr:            tr,
-		statusManager: &statusManager{},
-		taskManager:   tasks.NewTaskManager(log, tr),
-		ErrorChan:     errorChan,
+		Log:              log,
+		DockerCommand:    dockerCommand,
+		ContainerCommand: containerCommand,
+		OSCommand:        oSCommand,
+		State:            initialState,
+		Config:           config,
+		Tr:               tr,
+		statusManager:    &statusManager{},
+		taskManager:      tasks.NewTaskManager(log, tr),
+		ErrorChan:        errorChan,
 	}
 
 	deadlock.Opts.Disable = !gui.Config.Debug
@@ -292,7 +295,9 @@ func (gui *Gui) setPanels() {
 }
 
 func (gui *Gui) updateContainerDetails() error {
-	return gui.DockerCommand.RefreshContainerDetails(gui.Panels.Containers.List.GetAllItems())
+	containers := gui.Panels.Containers.List.GetAllItems()
+	_, _, err := gui.ContainerCommand.RefreshContainersAndServices(gui.Panels.Services.List.GetAllItems(), containers)
+	return err
 }
 
 func (gui *Gui) refresh() {
@@ -336,7 +341,18 @@ func (gui *Gui) listenForEvents(ctx context.Context, refresh func()) {
 
 outer:
 	for {
-		messageChan, errChan := gui.DockerCommand.Client.Events(context.Background(), events.ListOptions{})
+		// Event monitoring is runtime-dependent
+		if !gui.ContainerCommand.Supports(commands.FeatureEventsStream) {
+			// No event stream for this runtime; exit listener
+			return
+		}
+
+		clientInterface := gui.ContainerCommand.GetClient()
+		if clientInterface == nil {
+			return
+		}
+		dockerClient := clientInterface.(*client.Client)
+		messageChan, errChan := dockerClient.Events(context.Background(), events.ListOptions{})
 
 		if errorCount > 0 {
 			select {
@@ -459,7 +475,7 @@ func (gui *Gui) ShouldRefresh(key string) bool {
 }
 
 func (gui *Gui) initiallyFocusedViewName() string {
-	if gui.DockerCommand.InDockerComposeProject {
+	if gui.ContainerCommand.InDockerComposeProject() {
 		return "services"
 	}
 	return "containers"
@@ -485,7 +501,7 @@ func (gui *Gui) monitorContainerStats(ctx context.Context) {
 		case <-ticker.C:
 			for _, container := range gui.Panels.Containers.List.GetAllItems() {
 				if !container.MonitoringStats {
-					go gui.DockerCommand.CreateClientStatMonitor(container)
+					go gui.ContainerCommand.CreateClientStatMonitor(container)
 				}
 			}
 		}

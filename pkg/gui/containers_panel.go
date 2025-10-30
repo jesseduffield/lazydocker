@@ -34,33 +34,55 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 	return &panels.SideListPanel[*commands.Container]{
 		ContextState: &panels.ContextState[*commands.Container]{
 			GetMainTabs: func() []panels.MainTab[*commands.Container] {
-				return []panels.MainTab[*commands.Container]{
+				tabs := []panels.MainTab[*commands.Container]{
 					{
 						Key:    "logs",
 						Title:  gui.Tr.LogsTitle,
 						Render: gui.renderContainerLogsToMain,
 					},
-					{
+				}
+
+				// Add runtime-specific tabs
+				if !gui.ContainerCommand.Supports(commands.FeatureStats) {
+					// When stats are not supported (e.g. Apple), show a Volumes tab instead
+					tabs = append(tabs, panels.MainTab[*commands.Container]{
+						Key:    "volumes",
+						Title:  "Volumes",
+						Render: gui.renderContainerVolumesToMain,
+					})
+				} else {
+					// Runtime supports live stats (Docker)
+					tabs = append(tabs, panels.MainTab[*commands.Container]{
 						Key:    "stats",
 						Title:  gui.Tr.StatsTitle,
 						Render: gui.renderContainerStats,
-					},
-					{
+					})
+				}
+
+				// Common tabs for all runtimes
+				tabs = append(tabs,
+					panels.MainTab[*commands.Container]{
 						Key:    "env",
 						Title:  gui.Tr.EnvTitle,
 						Render: gui.renderContainerEnv,
 					},
-					{
+					panels.MainTab[*commands.Container]{
 						Key:    "config",
 						Title:  gui.Tr.ConfigTitle,
 						Render: gui.renderContainerConfig,
 					},
-					{
+				)
+
+				// Only add Top tab if supported by runtime
+				if gui.ContainerCommand.Supports(commands.FeatureContainerTop) {
+					tabs = append(tabs, panels.MainTab[*commands.Container]{
 						Key:    "top",
 						Title:  gui.Tr.TopTitle,
 						Render: gui.renderContainerTop,
-					},
+					})
 				}
+
+				return tabs
 			},
 			GetItemContextCacheKey: func(container *commands.Container) string {
 				// Including the container state in the cache key so that if the container
@@ -97,7 +119,17 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 			return true
 		},
 		GetTableCells: func(container *commands.Container) []string {
-			return presentation.GetContainerDisplayStrings(&gui.Config.UserConfig.Gui, container)
+			runtime := gui.ContainerCommand.GetRuntimeName()
+			return presentation.GetContainerDisplayStrings(&gui.Config.UserConfig.Gui, container, runtime)
+		},
+		GetTableHeaders: func() []string {
+			runtime := gui.ContainerCommand.GetRuntimeName()
+			// Columns: STATUS, SUB, NAME, CPU, ADDR (apple only), PORTS, IMAGE
+			addr := ""
+			if runtime == "apple" {
+				addr = "ADDR"
+			}
+			return []string{"STATUS", "", "NAME", "CPU", addr, "PORTS", "IMAGE"}
 		},
 	}
 }
@@ -255,7 +287,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 	originalSelectedLineIdx := gui.Panels.Services.SelectedIdx
 	selectedService, isServiceSelected := gui.Panels.Services.List.TryGet(originalSelectedLineIdx)
 
-	containers, services, err := gui.DockerCommand.RefreshContainersAndServices(
+	containers, services, err := gui.ContainerCommand.RefreshContainersAndServices(
 		gui.Panels.Services.List.GetAllItems(),
 		gui.Panels.Containers.List.GetAllItems(),
 	)
@@ -283,7 +315,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 }
 
 func (gui *Gui) renderContainersAndServices() error {
-	if gui.DockerCommand.InDockerComposeProject {
+	if gui.ContainerCommand.InDockerComposeProject() {
 		if err := gui.Panels.Services.RerenderList(); err != nil {
 			return err
 		}
@@ -325,13 +357,21 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		})
 	}
 
+	runtimeName := gui.ContainerCommand.GetRuntimeName()
+	rmCmd := "docker rm " + ctr.ID[1:10]
+	rmVolCmd := "docker rm --volumes " + ctr.ID[1:10]
+	if runtimeName == "apple" {
+		rmCmd = "container rm " + ctr.ID
+		rmVolCmd = "container rm --force " + ctr.ID // Apple CLI may not support --volumes; show force
+	}
+
 	menuItems := []*types.MenuItem{
 		{
-			LabelColumns: []string{gui.Tr.Remove, "docker rm " + ctr.ID[1:10]},
+			LabelColumns: []string{gui.Tr.Remove, rmCmd},
 			OnPress:      func() error { return handleMenuPress(container.RemoveOptions{}) },
 		},
 		{
-			LabelColumns: []string{gui.Tr.RemoveWithVolumes, "docker rm --volumes " + ctr.ID[1:10]},
+			LabelColumns: []string{gui.Tr.RemoveWithVolumes, rmVolCmd},
 			OnPress:      func() error { return handleMenuPress(container.RemoveOptions{RemoveVolumes: true}) },
 		},
 	}
@@ -414,9 +454,12 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handlePruneContainers() error {
+	if gui.ContainerCommand != nil && !gui.ContainerCommand.Supports(commands.FeatureContainerPrune) {
+		return gui.createErrorPanel("Container pruning is not supported by the current container runtime.")
+	}
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
-			err := gui.DockerCommand.PruneContainers()
+			err := gui.ContainerCommand.PruneContainers()
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -446,13 +489,24 @@ func (gui *Gui) handleContainersExecShell(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) containerExecShell(container *commands.Container) error {
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	// Use appropriate exec based on runtime capability
+	if gui.ContainerCommand.Supports(commands.FeatureContainerExec) && gui.ContainerCommand.GetRuntimeName() == "apple" {
+		// Prefer a simple interactive shell for Apple Container
+		resolved := fmt.Sprintf("container exec -it %s /bin/sh", container.ID)
+		// Optionally forward SSH agent when supported and enabled
+		if gui.Config.UserConfig.Apple != nil && gui.Config.UserConfig.Apple.ForwardSSHAgent && gui.ContainerCommand.Supports(commands.FeatureSSHAgentForward) {
+			resolved = fmt.Sprintf("container exec --ssh -it %s /bin/sh", container.ID)
+		}
+		cmd := gui.OSCommand.ExecutableFromString(resolved)
+		return gui.runSubprocess(cmd)
+	}
+
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{
 		Container: container,
 	})
 
-	// TODO: use SDK
+	// Docker runtime
 	resolvedCommand := utils.ApplyTemplate("docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'", commandObject)
-	// attach and return the subprocess error
 	cmd := gui.OSCommand.ExecutableFromString(resolvedCommand)
 	return gui.runSubprocess(cmd)
 }
@@ -463,7 +517,7 @@ func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{
 		Container: ctr,
 	})
 
@@ -502,22 +556,18 @@ func (gui *Gui) handleRemoveContainers() error {
 
 func (gui *Gui) handleContainersBulkCommand(g *gocui.Gui, v *gocui.View) error {
 	baseBulkCommands := []config.CustomCommand{
-		{
-			Name:             gui.Tr.StopAllContainers,
-			InternalFunction: gui.handleStopContainers,
-		},
-		{
-			Name:             gui.Tr.RemoveAllContainers,
-			InternalFunction: gui.handleRemoveContainers,
-		},
-		{
+		{Name: gui.Tr.StopAllContainers, InternalFunction: gui.handleStopContainers},
+		{Name: gui.Tr.RemoveAllContainers, InternalFunction: gui.handleRemoveContainers},
+	}
+	if gui.ContainerCommand == nil || gui.ContainerCommand.Supports(commands.FeatureContainerPrune) {
+		baseBulkCommands = append(baseBulkCommands, config.CustomCommand{ // show only if supported
 			Name:             gui.Tr.PruneContainers,
 			InternalFunction: gui.handlePruneContainers,
-		},
+		})
 	}
 
 	bulkCommands := append(baseBulkCommands, gui.Config.UserConfig.BulkCommands.Containers...)
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }
@@ -548,4 +598,30 @@ func (gui *Gui) openContainerInBrowser(ctr *commands.Container) error {
 	}
 	link := fmt.Sprintf("http://%s:%d/", ip, port.PublicPort)
 	return gui.OSCommand.OpenLink(link)
+}
+
+// renderContainerVolumesToMain renders the container's volume/mount information for Apple runtime
+func (gui *Gui) renderContainerVolumesToMain(container *commands.Container) tasks.TaskFunc {
+	return gui.NewTickerTask(TickerTaskOpts{
+		Func: func(ctx context.Context, notifyStopped chan struct{}) {
+			// Get the container's mount information from Apple Container
+			if container.DockerCommand != nil {
+				if appleCmd, ok := container.DockerCommand.(*commands.AppleContainerCommand); ok {
+					mountInfo, err := appleCmd.GetContainerMounts(container.ID)
+					if err != nil {
+						gui.reRenderStringMain(fmt.Sprintf("Error getting mount information: %v", err))
+						return
+					}
+					gui.reRenderStringMain(mountInfo)
+					return
+				}
+			}
+
+			gui.reRenderStringMain("Volume information not available")
+		},
+		Duration:   time.Hour, // Don't refresh automatically since mounts don't change
+		Before:     func(ctx context.Context) { gui.clearMainView() },
+		Wrap:       false,
+		Autoscroll: false,
+	})
 }

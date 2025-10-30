@@ -10,7 +10,6 @@ import (
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/jesseduffield/yaml"
@@ -23,7 +22,7 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 	return &panels.SideListPanel[*commands.Project]{
 		ContextState: &panels.ContextState[*commands.Project]{
 			GetMainTabs: func() []panels.MainTab[*commands.Project] {
-				if gui.DockerCommand.InDockerComposeProject {
+				if gui.ContainerCommand.InDockerComposeProject() {
 					return []panels.MainTab[*commands.Project]{
 						{
 							Key:    "logs",
@@ -34,6 +33,16 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 							Key:    "config",
 							Title:  gui.Tr.DockerComposeConfigTitle,
 							Render: gui.renderDockerComposeConfig,
+						},
+						{
+							Key:    "runtime",
+							Title:  "Runtime Info",
+							Render: gui.renderRuntimeInfo,
+						},
+						{
+							Key:    "system",
+							Title:  "System Status",
+							Render: gui.renderSystemStatus,
 						},
 						{
 							Key:    "credits",
@@ -48,6 +57,16 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 						Key:    "credits",
 						Title:  gui.Tr.CreditsTitle,
 						Render: gui.renderCredits,
+					},
+					{
+						Key:    "runtime",
+						Title:  "Runtime Info",
+						Render: gui.renderRuntimeInfo,
+					},
+					{
+						Key:    "system",
+						Title:  "System Status",
+						Render: gui.renderSystemStatus,
 					},
 				}
 			},
@@ -66,7 +85,15 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 		Sort: func(a *commands.Project, b *commands.Project) bool {
 			return false
 		},
-		GetTableCells: presentation.GetProjectDisplayStrings,
+		GetTableCells: func(project *commands.Project) []string {
+			runtimeIndicator := ""
+			if gui.Config.Runtime == "apple" {
+				runtimeIndicator = " 🍎"
+			} else if gui.Config.Runtime == "docker" {
+				runtimeIndicator = " 🐳"
+			}
+			return []string{project.Name + runtimeIndicator}
+		},
 		// It doesn't make sense to filter a list of only one item.
 		DisableFilter: true,
 	}
@@ -79,7 +106,7 @@ func (gui *Gui) refreshProject() error {
 
 func (gui *Gui) getProjectName() string {
 	projectName := path.Base(gui.Config.ProjectDir)
-	if gui.DockerCommand.InDockerComposeProject {
+	if gui.ContainerCommand.InDockerComposeProject() {
 		for _, service := range gui.Panels.Services.List.GetAllItems() {
 			container := service.Container
 			if container != nil && container.DetailsLoaded() {
@@ -122,7 +149,7 @@ func (gui *Gui) renderAllLogs(_project *commands.Project) tasks.TaskFunc {
 			cmd := gui.OSCommand.RunCustomCommand(
 				utils.ApplyTemplate(
 					gui.Config.UserConfig.CommandTemplates.AllLogs,
-					gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+					gui.ContainerCommand.NewCommandObject(commands.CommandObject{}),
 				),
 			)
 
@@ -146,8 +173,74 @@ func (gui *Gui) renderAllLogs(_project *commands.Project) tasks.TaskFunc {
 
 func (gui *Gui) renderDockerComposeConfig(_project *commands.Project) tasks.TaskFunc {
 	return gui.NewSimpleRenderStringTask(func() string {
-		return utils.ColoredYamlString(gui.DockerCommand.DockerComposeConfig())
+		return utils.ColoredYamlString(gui.ContainerCommand.DockerComposeConfig())
 	})
+}
+
+// renderRuntimeInfo shows the current runtime and detected capabilities
+func (gui *Gui) renderRuntimeInfo(_project *commands.Project) tasks.TaskFunc {
+	return gui.NewSimpleRenderStringTask(func() string { return gui.runtimeInfoStr() })
+}
+
+// renderSystemStatus shows runtime-specific system status (Apple runtime)
+func (gui *Gui) renderSystemStatus(_project *commands.Project) tasks.TaskFunc {
+	return gui.NewSimpleRenderStringTask(func() string {
+		status, err := gui.ContainerCommand.SystemStatus()
+		if err != nil {
+			return utils.ColoredString("System status unavailable: "+err.Error(), color.FgRed)
+		}
+		if len(status) == 0 {
+			return "No system status available for this runtime"
+		}
+		var buf bytes.Buffer
+		_ = yaml.NewEncoder(&buf, yaml.IncludeOmitted).Encode(status)
+		return utils.ColoredYamlString(buf.String())
+	})
+}
+
+func (gui *Gui) runtimeInfoStr() string {
+	var b strings.Builder
+	runtimeName := gui.ContainerCommand.GetRuntimeName()
+	runtimeVersion := gui.ContainerCommand.GetRuntimeVersion()
+
+	b.WriteString("Runtime\n=======\n\n")
+	b.WriteString("Name:  " + runtimeName + "\n")
+	b.WriteString("Info:  " + runtimeVersion + "\n\n")
+
+	// Capabilities table
+	b.WriteString("Capabilities\n============\n\n")
+	rows := [][]string{{"Feature", "Supported"}}
+	feature := func(label string, f commands.Feature) {
+		ok := gui.ContainerCommand.Supports(f)
+		status := color.New(color.FgGreen).Sprint("yes")
+		if !ok {
+			status = color.New(color.FgRed).Sprint("no")
+		}
+		rows = append(rows, []string{label, status})
+	}
+
+	feature("Image History", commands.FeatureImageHistory)
+	feature("Image Remove", commands.FeatureImageRemove)
+	feature("Image Prune", commands.FeatureImagePrune)
+	feature("Container Attach", commands.FeatureContainerAttach)
+	feature("Container Exec", commands.FeatureContainerExec)
+	feature("Container Top", commands.FeatureContainerTop)
+	feature("Container Prune", commands.FeatureContainerPrune)
+	feature("Volume Prune", commands.FeatureVolumePrune)
+	feature("Network Prune", commands.FeatureNetworkPrune)
+	feature("Services/Compose", commands.FeatureServices)
+	feature("Events Stream", commands.FeatureEventsStream)
+	feature("Live Stats", commands.FeatureStats)
+
+	table, _ := utils.RenderTable(rows)
+	b.WriteString(table)
+	b.WriteString("\n")
+
+	b.WriteString("Notes\n=====\n")
+	b.WriteString("- Capabilities are detected from your local CLI (help output).\n")
+	b.WriteString("- If a feature appears unsupported but your CLI gained it, restart LazyDocker.\n")
+
+	return b.String()
 }
 
 func (gui *Gui) handleOpenConfig(g *gocui.Gui, v *gocui.View) error {
@@ -173,7 +266,7 @@ func lazydockerTitle() string {
 
 // handleViewAllLogs switches to a subprocess viewing all the logs from docker-compose
 func (gui *Gui) handleViewAllLogs(g *gocui.Gui, v *gocui.View) error {
-	c, err := gui.DockerCommand.ViewAllLogs()
+	c, err := gui.ContainerCommand.ViewAllLogs()
 	if err != nil {
 		return gui.createErrorPanel(err.Error())
 	}

@@ -29,7 +29,8 @@ const (
 
 // color render templates
 // ESC 操作的表示:
-// 	"\033"(Octal 8进制) = "\x1b"(Hexadecimal 16进制) = 27 (10进制)
+//
+//	"\033"(Octal 8进制) = "\x1b"(Hexadecimal 16进制) = 27 (10进制)
 const (
 	SettingTpl   = "\x1b[%sm"
 	FullColorTpl = "\x1b[%sm%s\x1b[0m"
@@ -179,7 +180,8 @@ func InnerErrs() []error {
 
 // RenderCode render message by color code.
 // Usage:
-// 	msg := RenderCode("3;32;45", "some", "message")
+//
+//	msg := RenderCode("3;32;45", "some", "message")
 func RenderCode(code string, args ...interface{}) string {
 	var message string
 	if ln := len(args); ln == 0 {
@@ -217,7 +219,8 @@ func RenderWithSpaces(code string, args ...interface{}) string {
 
 // RenderString render a string with color code.
 // Usage:
-// 	msg := RenderString("3;32;45", "a message")
+//
+//	msg := RenderString("3;32;45", "a message")
 func RenderString(code string, str string) string {
 	if len(code) == 0 || str == "" {
 		return str

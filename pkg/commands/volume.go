@@ -52,5 +52,12 @@ func (c *DockerCommand) PruneVolumes() error {
 
 // Remove removes the volume
 func (v *Volume) Remove(force bool) error {
+	// For Apple containers, use the AppleContainerCommand
+	if v.Client == nil && v.DockerCommand != nil {
+		if appleCmd, ok := v.DockerCommand.(*AppleContainerCommand); ok {
+			return appleCmd.RemoveVolume(v.Name, force)
+		}
+	}
+
 	return v.Client.VolumeRemove(context.Background(), v.Name, force)
 }

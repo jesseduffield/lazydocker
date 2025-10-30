@@ -17,13 +17,15 @@ import (
 type App struct {
 	closers []io.Closer
 
-	Config        *config.AppConfig
-	Log           *logrus.Entry
-	OSCommand     *commands.OSCommand
-	DockerCommand *commands.DockerCommand
-	Gui           *gui.Gui
-	Tr            *i18n.TranslationSet
-	ErrorChan     chan error
+	Config                *config.AppConfig
+	Log                   *logrus.Entry
+	OSCommand             *commands.OSCommand
+	DockerCommand         *commands.DockerCommand
+	AppleContainerCommand *commands.AppleContainerCommand
+	ContainerRuntime      *commands.ContainerRuntimeAdapter
+	Gui                   *gui.Gui
+	Tr                    *i18n.TranslationSet
+	ErrorChan             chan error
 }
 
 // NewApp bootstrap a new application
@@ -41,14 +43,29 @@ func NewApp(config *config.AppConfig) (*App, error) {
 	}
 	app.OSCommand = commands.NewOSCommand(app.Log, config)
 
-	// here is the place to make use of the docker-compose.yml file in the current directory
-
-	app.DockerCommand, err = commands.NewDockerCommand(app.Log, app.OSCommand, app.Tr, app.Config, app.ErrorChan)
-	if err != nil {
-		return app, err
+	// Initialize the appropriate container runtime based on config
+	switch config.Runtime {
+	case "docker":
+		// here is the place to make use of the docker-compose.yml file in the current directory
+		app.DockerCommand, err = commands.NewDockerCommand(app.Log, app.OSCommand, app.Tr, app.Config, app.ErrorChan)
+		if err != nil {
+			return app, err
+		}
+		app.closers = append(app.closers, app.DockerCommand)
+		app.ContainerRuntime = commands.NewContainerRuntimeAdapter(app.DockerCommand, nil, "docker")
+		containerCommand := commands.NewGuiContainerCommand(app.ContainerRuntime, app.DockerCommand, app.Config)
+		app.Gui, err = gui.NewGui(app.Log, app.DockerCommand, containerCommand, app.OSCommand, app.Tr, config, app.ErrorChan)
+	case "apple":
+		app.AppleContainerCommand, err = commands.NewAppleContainerCommand(app.Log, app.OSCommand, app.Tr, app.Config, app.ErrorChan)
+		if err != nil {
+			return app, err
+		}
+		app.ContainerRuntime = commands.NewContainerRuntimeAdapter(nil, app.AppleContainerCommand, "apple")
+		containerCommand := commands.NewGuiContainerCommand(app.ContainerRuntime, nil, app.Config)
+		app.Gui, err = gui.NewGui(app.Log, nil, containerCommand, app.OSCommand, app.Tr, config, app.ErrorChan)
+	default:
+		return app, err // This should be caught by config validation, but just in case
 	}
-	app.closers = append(app.closers, app.DockerCommand)
-	app.Gui, err = gui.NewGui(app.Log, app.DockerCommand, app.OSCommand, app.Tr, config, app.ErrorChan)
 	if err != nil {
 		return app, err
 	}
@@ -76,6 +93,18 @@ func (app *App) KnownError(err error) (string, bool) {
 		{
 			originalError: "Got permission denied while trying to connect to the Docker daemon socket",
 			newError:      app.Tr.CannotAccessDockerSocketError,
+		},
+		{
+			originalError: "Apple Container CLI not found",
+			newError:      "Apple Container CLI not found. Please ensure the 'container' command is installed and available in your PATH.",
+		},
+		{
+			originalError: "failed to get containers",
+			newError:      "Failed to retrieve containers. Please check if the container runtime is running.",
+		},
+		{
+			originalError: "failed to get images",
+			newError:      "Failed to retrieve images. Please check if the container runtime is running.",
 		},
 	}
 
