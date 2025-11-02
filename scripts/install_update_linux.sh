@@ -22,3 +22,14 @@ curl -L -o lazydocker.tar.gz $GITHUB_URL
 tar xzvf lazydocker.tar.gz lazydocker
 install -Dm 755 lazydocker -t "$DIR"
 rm lazydocker lazydocker.tar.gz
+
+# remind user to add to PATH if necessary
+if [[ ":$PATH:" != *":$DIR:"* ]]; then
+    echo
+    echo "To finish installing lazydocker, please ensure $DIR is in your PATH."
+    echo
+    echo "Consider running:"
+    echo "    echo 'export PATH=\$PATH:$DIR' >> ~/.bashrc"
+    echo "    source ~/.bashrc"
+    echo "(If you are using a shell other than bash, modify the appropriate configuration file accordingly.)"
+fi
