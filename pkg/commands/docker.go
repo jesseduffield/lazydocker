@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	APIVersion       = "1.25"
+	APIVersion       = "1.44"
 	dockerHostEnvKey = "DOCKER_HOST"
 )
 
