@@ -1,4 +1,4 @@
-package client // import "github.com/docker/docker/client"
+package client
 
 import (
 	"context"
@@ -9,11 +9,16 @@ import (
 
 // ContainerStart sends a request to the docker daemon to start a container.
 func (cli *Client) ContainerStart(ctx context.Context, containerID string, options container.StartOptions) error {
+	containerID, err := trimID("container", containerID)
+	if err != nil {
+		return err
+	}
+
 	query := url.Values{}
-	if len(options.CheckpointID) != 0 {
+	if options.CheckpointID != "" {
 		query.Set("checkpoint", options.CheckpointID)
 	}
-	if len(options.CheckpointDir) != 0 {
+	if options.CheckpointDir != "" {
 		query.Set("checkpoint-dir", options.CheckpointDir)
 	}
 

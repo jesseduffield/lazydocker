@@ -38,7 +38,7 @@ type PullOptions struct {
 	// authentication header value in base64 encoded format, or an error if the
 	// privilege request fails.
 	//
-	// Also see [github.com/docker/docker/api/types.RequestPrivilegeFunc].
+	// For details, refer to [github.com/docker/docker/api/types/registry.RequestAuthConfig].
 	PrivilegeFunc func(context.Context) (string, error)
 	Platform      string
 }
@@ -53,7 +53,7 @@ type PushOptions struct {
 	// authentication header value in base64 encoded format, or an error if the
 	// privilege request fails.
 	//
-	// Also see [github.com/docker/docker/api/types.RequestPrivilegeFunc].
+	// For details, refer to [github.com/docker/docker/api/types/registry.RequestAuthConfig].
 	PrivilegeFunc func(context.Context) (string, error)
 
 	// Platform is an optional field that selects a specific platform to push
@@ -75,11 +75,50 @@ type ListOptions struct {
 	SharedSize bool
 
 	// ContainerCount indicates whether container count should be computed.
+	//
+	// Deprecated: This field has been unused and is no longer required and will be removed in a future version.
 	ContainerCount bool
+
+	// Manifests indicates whether the image manifests should be returned.
+	Manifests bool
 }
 
 // RemoveOptions holds parameters to remove images.
 type RemoveOptions struct {
+	Platforms     []ocispec.Platform
 	Force         bool
 	PruneChildren bool
+}
+
+// HistoryOptions holds parameters to get image history.
+type HistoryOptions struct {
+	// Platform from the manifest list to use for history.
+	Platform *ocispec.Platform
+}
+
+// LoadOptions holds parameters to load images.
+type LoadOptions struct {
+	// Quiet suppresses progress output
+	Quiet bool
+
+	// Platforms selects the platforms to load if the image is a
+	// multi-platform image and has multiple variants.
+	Platforms []ocispec.Platform
+}
+
+type InspectOptions struct {
+	// Manifests returns the image manifests.
+	Manifests bool
+
+	// Platform selects the specific platform of a multi-platform image to inspect.
+	//
+	// This option is only available for API version 1.49 and up.
+	Platform *ocispec.Platform
+}
+
+// SaveOptions holds parameters to save images.
+type SaveOptions struct {
+	// Platforms selects the platforms to save if the image is a
+	// multi-platform image and has multiple variants.
+	Platforms []ocispec.Platform
 }

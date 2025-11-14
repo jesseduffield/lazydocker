@@ -28,7 +28,6 @@ import (
 )
 
 const (
-	APIVersion       = "1.25"
 	dockerHostEnvKey = "DOCKER_HOST"
 )
 
@@ -97,7 +96,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		dockerHost = dockerHostFromEnv
 	}
 
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithVersion(APIVersion), client.WithHost(dockerHost))
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation(), client.WithHost(dockerHost))
 	if err != nil {
 		ogLog.Fatal(err)
 	}

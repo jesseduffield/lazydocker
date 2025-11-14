@@ -1,4 +1,4 @@
-package client // import "github.com/docker/docker/client"
+package client
 
 import (
 	"context"
@@ -9,6 +9,11 @@ import (
 
 // CheckpointDelete deletes the checkpoint with the given name from the given container
 func (cli *Client) CheckpointDelete(ctx context.Context, containerID string, options checkpoint.DeleteOptions) error {
+	containerID, err := trimID("container", containerID)
+	if err != nil {
+		return err
+	}
+
 	query := url.Values{}
 	if options.CheckpointDir != "" {
 		query.Set("dir", options.CheckpointDir)
