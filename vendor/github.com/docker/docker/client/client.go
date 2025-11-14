@@ -2,7 +2,7 @@
 Package client is a Go client for the Docker Engine API.
 
 For more information about the Engine API, see the documentation:
-https://docs.docker.com/engine/api/
+https://docs.docker.com/reference/api/engine/
 
 # Usage
 
@@ -39,7 +39,7 @@ For example, to list running containers (the equivalent of "docker ps"):
 		}
 	}
 */
-package client // import "github.com/docker/docker/client"
+package client
 
 import (
 	"context"
@@ -59,7 +59,6 @@ import (
 	"github.com/docker/go-connections/sockets"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // DummyHost is a hostname used for local communication.
@@ -98,6 +97,9 @@ const DummyHost = "api.moby.localhost"
 // included in the API response), we assume the API server uses the most
 // recent version before negotiation was introduced.
 const fallbackAPIVersion = "1.24"
+
+// Ensure that Client always implements APIClient.
+var _ APIClient = &Client{}
 
 // Client is the API client that performs all operations
 // against a docker server.
@@ -138,7 +140,7 @@ type Client struct {
 	// negotiateLock is used to single-flight the version negotiation process
 	negotiateLock sync.Mutex
 
-	tp trace.TracerProvider
+	traceOpts []otelhttp.Option
 
 	// When the client transport is an *http.Transport (default) we need to do some extra things (like closing idle connections).
 	// Store the original transport as the http.Client transport will be wrapped with tracing libs.
@@ -200,6 +202,12 @@ func NewClientWithOpts(ops ...Opt) (*Client, error) {
 		client:  client,
 		proto:   hostURL.Scheme,
 		addr:    hostURL.Host,
+
+		traceOpts: []otelhttp.Option{
+			otelhttp.WithSpanNameFormatter(func(_ string, req *http.Request) string {
+				return req.Method + " " + req.URL.Path
+			}),
+		},
 	}
 
 	for _, op := range ops {
@@ -227,13 +235,7 @@ func NewClientWithOpts(ops ...Opt) (*Client, error) {
 		}
 	}
 
-	c.client.Transport = otelhttp.NewTransport(
-		c.client.Transport,
-		otelhttp.WithTracerProvider(c.tp),
-		otelhttp.WithSpanNameFormatter(func(_ string, req *http.Request) string {
-			return req.Method + " " + req.URL.Path
-		}),
-	)
+	c.client.Transport = otelhttp.NewTransport(c.client.Transport, c.traceOpts...)
 
 	return c, nil
 }
@@ -247,6 +249,14 @@ func (cli *Client) tlsConfig() *tls.Config {
 
 func defaultHTTPClient(hostURL *url.URL) (*http.Client, error) {
 	transport := &http.Transport{}
+	// Necessary to prevent long-lived processes using the
+	// client from leaking connections due to idle connections
+	// not being released.
+	// TODO: see if we can also address this from the server side,
+	// or in go-connections.
+	// see: https://github.com/moby/moby/issues/45539
+	transport.MaxIdleConns = 6
+	transport.IdleConnTimeout = 30 * time.Second
 	err := sockets.ConfigureTransport(transport, hostURL.Scheme, hostURL.Host)
 	if err != nil {
 		return nil, err
@@ -296,8 +306,7 @@ func (cli *Client) getAPIPath(ctx context.Context, p string, query url.Values) s
 	var apiPath string
 	_ = cli.checkVersion(ctx)
 	if cli.version != "" {
-		v := strings.TrimPrefix(cli.version, "v")
-		apiPath = path.Join(cli.basePath, "/v"+v, p)
+		apiPath = path.Join(cli.basePath, "/v"+strings.TrimPrefix(cli.version, "v"), p)
 	} else {
 		apiPath = path.Join(cli.basePath, p)
 	}
@@ -442,6 +451,10 @@ func (cli *Client) dialerFromTransport() func(context.Context, string, string) (
 //
 // ["docker dial-stdio"]: https://github.com/docker/cli/pull/1014
 func (cli *Client) Dialer() func(context.Context) (net.Conn, error) {
+	return cli.dialer()
+}
+
+func (cli *Client) dialer() func(context.Context) (net.Conn, error) {
 	return func(ctx context.Context) (net.Conn, error) {
 		if dialFn := cli.dialerFromTransport(); dialFn != nil {
 			return dialFn(ctx, cli.proto, cli.addr)
@@ -450,7 +463,9 @@ func (cli *Client) Dialer() func(context.Context) (net.Conn, error) {
 		case "unix":
 			return net.Dial(cli.proto, cli.addr)
 		case "npipe":
-			return sockets.DialPipe(cli.addr, 32*time.Second)
+			ctx, cancel := context.WithTimeout(ctx, 32*time.Second)
+			defer cancel()
+			return dialPipeContext(ctx, cli.addr)
 		default:
 			if tlsConfig := cli.tlsConfig(); tlsConfig != nil {
 				return tls.Dial(cli.proto, cli.addr, tlsConfig)
