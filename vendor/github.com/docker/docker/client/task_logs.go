@@ -1,4 +1,4 @@
-package client // import "github.com/docker/docker/client"
+package client
 
 import (
 	"context"
@@ -47,5 +47,5 @@ func (cli *Client) TaskLogs(ctx context.Context, taskID string, options containe
 	if err != nil {
 		return nil, err
 	}
-	return resp.body, nil
+	return resp.Body, nil
 }

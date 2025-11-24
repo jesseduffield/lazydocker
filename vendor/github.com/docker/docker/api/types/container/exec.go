@@ -1,5 +1,13 @@
 package container
 
+import "github.com/docker/docker/api/types/common"
+
+// ExecCreateResponse is the response for a successful exec-create request.
+// It holds the ID of the exec that was created.
+//
+// TODO(thaJeztah): make this a distinct type.
+type ExecCreateResponse = common.IDResponse
+
 // ExecOptions is a small subset of the Config struct that holds the configuration
 // for the exec feature of docker.
 type ExecOptions struct {
@@ -10,11 +18,13 @@ type ExecOptions struct {
 	AttachStdin  bool     // Attach the standard input, makes possible user interaction
 	AttachStderr bool     // Attach the standard error
 	AttachStdout bool     // Attach the standard output
-	Detach       bool     // Execute in detach mode
 	DetachKeys   string   // Escape keys for detach
 	Env          []string // Environment variables
 	WorkingDir   string   // Working directory
 	Cmd          []string // Execution commands and args
+
+	// Deprecated: the Detach field is not used, and will be removed in a future release.
+	Detach bool
 }
 
 // ExecStartOptions is a temp struct used by execStart

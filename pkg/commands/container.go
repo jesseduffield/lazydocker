@@ -7,14 +7,12 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types/container"
-	"github.com/sasha-s/go-deadlock"
-
-	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 )
@@ -29,12 +27,12 @@ type Container struct {
 	OneOff          bool
 	ProjectName     string
 	ID              string
-	Container       dockerTypes.Container
+	Container       container.Summary
 	Client          *client.Client
 	OSCommand       *OSCommand
 	Log             *logrus.Entry
 	StatHistory     []*RecordedStats
-	Details         dockerTypes.ContainerJSON
+	Details         container.InspectResponse
 	MonitoringStats bool
 	DockerCommand   LimitedDockerCommand
 	Tr              *i18n.TranslationSet
@@ -105,15 +103,15 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 }
 
 // Top returns process information
-func (c *Container) Top(ctx context.Context) (container.ContainerTopOKBody, error) {
+func (c *Container) Top(ctx context.Context) (container.TopResponse, error) {
 	detail, err := c.Inspect()
 	if err != nil {
-		return container.ContainerTopOKBody{}, err
+		return container.TopResponse{}, err
 	}
 
 	// check container status
 	if !detail.State.Running {
-		return container.ContainerTopOKBody{}, errors.New("container is not running")
+		return container.TopResponse{}, errors.New("container is not running")
 	}
 
 	return c.Client.ContainerTop(ctx, c.ID, []string{})
@@ -126,7 +124,7 @@ func (c *DockerCommand) PruneContainers() error {
 }
 
 // Inspect returns details about the container
-func (c *Container) Inspect() (dockerTypes.ContainerJSON, error) {
+func (c *Container) Inspect() (container.InspectResponse, error) {
 	return c.Client.ContainerInspect(context.Background(), c.ID)
 }
 

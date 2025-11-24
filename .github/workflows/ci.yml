@@ -29,7 +29,7 @@ jobs:
         with:
           go-version: 1.21.x
       - name: Cache build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/go-build
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-test
@@ -51,7 +51,7 @@ jobs:
         with:
           go-version: 1.21.x
       - name: Cache build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/go-build
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-build
@@ -79,7 +79,7 @@ jobs:
         with:
           go-version: 1.21.x
       - name: Cache build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build
@@ -106,7 +106,7 @@ jobs:
         with:
           go-version: 1.21.x
       - name: Cache build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/go-build
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-test
