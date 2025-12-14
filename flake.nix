@@ -2,137 +2,98 @@
   description = "The lazier way to manage everything docker";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
-    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    systems.url = "github:nix-systems/default";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
   outputs =
-    {
+    inputs@{
       self,
-      nixpkgs,
-      flake-utils,
+      flake-parts,
+      systems,
+      ...
     }:
-    let
-      supportedSystems = [
-        "x86_64-linux"
-        "aarch64-linux"
-        "x86_64-darwin"
-        "aarch64-darwin"
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = import systems;
+      imports = [
+        inputs.treefmt-nix.flakeModule
       ];
 
-      gitCommit = self.rev or self.dirtyRev or "dev";
-      version = "0.24.1";
+      perSystem =
+        {
+          self',
+          pkgs,
+          system,
+          ...
+        }:
+        let
+          lazydocker = pkgs.buildGoModule rec {
+            pname = "lazydocker";
+            version = "dev";
 
-    in
-    flake-utils.lib.eachSystem supportedSystems (
-      system:
-      let
-        pkgs = import nixpkgs { inherit system; };
+            gitCommit = inputs.self.rev or inputs.self.dirtyRev or "dev";
 
-        lazydocker = pkgs.buildGoModule rec {
-          pname = "lazydocker";
-          inherit version;
+            src = ./.;
+            vendorHash = null;
 
-          src = ./.;
+            # Disable integration tests that require specific environment
+            doCheck = false;
 
-          vendorHash = null;
+            ldflags = [
+              "-s"
+              "-w"
+              "-X main.commit=${gitCommit}"
+              "-X main.version=${version}"
+              "-X main.buildSource=nix"
+            ];
 
-          # Disable integration tests that require specific environment
-          doCheck = false;
-
-          nativeBuildInputs = with pkgs; [ git ];
-
-          buildInputs = with pkgs; [ git ];
-
-          ldflags = [
-            "-s"
-            "-w"
-            "-X main.commit=${gitCommit}"
-            "-X main.version=${version}"
-            "-X main.buildSource=nix"
-          ];
-
-          meta = with pkgs.lib; {
-            description = "The lazier way to manage everything docker";
-            homepage = "https://github.com/jesseduffield/lazydocker";
-            license = licenses.mit;
-            maintainers = [ "jesseduffield" ];
-            platforms = platforms.unix;
-            mainProgram = "lazydocker";
+            meta = {
+              description = "The lazier way to manage everything docker";
+              homepage = "https://github.com/jesseduffield/lazydocker";
+              license = pkgs.lib.licenses.mit;
+              maintainers = [ "jesseduffield" ];
+              platforms = pkgs.lib.platforms.unix;
+              mainProgram = "lazydocker";
+            };
           };
-        };
-
-      in
-      {
-        packages = {
-          default = lazydocker;
-          inherit lazydocker;
-        };
-
-        apps = {
-          default = flake-utils.lib.mkApp {
-            drv = lazydocker;
-            name = "lazydocker";
+        in
+        {
+          packages = {
+            default = lazydocker;
+            inherit lazydocker;
           };
-          lazydocker = flake-utils.lib.mkApp {
-            drv = lazydocker;
-            name = "lazydocker";
+
+          devShells.default = pkgs.mkShell {
+            name = "lazydocker-dev";
+
+            buildInputs = with pkgs; [
+              # Go toolchain
+              go
+              gotools
+
+              gnumake
+            ];
+
+            # Environment variables for development
+            CGO_ENABLED = "0";
           };
+
+          treefmt = {
+            programs.nixfmt.enable = pkgs.lib.meta.availableOn pkgs.stdenv.buildPlatform pkgs.nixfmt-rfc-style.compiler;
+            programs.nixfmt.package = pkgs.nixfmt-rfc-style;
+            programs.gofmt.enable = true;
+          };
+
+          checks.build = lazydocker;
         };
 
-        devShells.default = pkgs.mkShell {
-          name = "lazydocker-dev";
-
-          buildInputs = with pkgs; [
-            # Go toolchain
-            go_1_24
-            gotools
-            golangci-lint
-
-            # Development tools
-            git
-            gnumake
-          ];
-
-          shellHook = ''
-            echo "Lazydocker development environment"
-            echo "Go version: $(go version)"
-            echo "Git version: $(git --version)"
-            echo ""
-          '';
-
-          # Environment variables for development
-          CGO_ENABLED = "0";
+      flake = {
+        overlays.default = final: prev: {
+          lazydocker = inputs.self.packages.${final.system}.lazydocker;
         };
-
-        # Formatting check
-        formatter = pkgs.nixpkgs-fmt;
-
-        # Development checks
-        checks = {
-          # Ensure the package builds
-          build = lazydocker;
-
-          # Format check
-          format =
-            pkgs.runCommand "check-format"
-              {
-                buildInputs = [ pkgs.nixpkgs-fmt ];
-              }
-              ''
-                nixpkgs-fmt --check ${./.}
-                touch $out
-              '';
-        };
-      }
-    )
-    // {
-      # Global overlay for other flakes to use
-      overlays.default = final: prev: {
-        lazydocker = self.packages.${final.system}.lazydocker;
       };
-
-      # CI/CD support
-      hydraJobs = self.packages;
     };
 }
