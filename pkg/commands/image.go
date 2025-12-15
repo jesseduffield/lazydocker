@@ -46,7 +46,7 @@ func getHistoryResponseItemDisplayStrings(layer image.HistoryResponseItem) []str
 	}
 	idColor := color.FgWhite
 	if id == "<missing>" {
-		idColor = color.FgBlue
+		idColor = color.FgCyan
 	}
 
 	dockerFileCommandPrefix := "/bin/sh -c #(nop) "
@@ -62,7 +62,7 @@ func getHistoryResponseItemDisplayStrings(layer image.HistoryResponseItem) []str
 	size := utils.FormatBinaryBytes(int(layer.Size))
 	sizeColor := color.FgWhite
 	if size == "0B" {
-		sizeColor = color.FgBlue
+		sizeColor = color.FgCyan
 	}
 
 	return []string{

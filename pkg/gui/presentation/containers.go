@@ -193,7 +193,7 @@ func getContainerColor(c *commands.Container) color.Attribute {
 	case "dead":
 		return color.FgRed
 	case "restarting":
-		return color.FgBlue
+		return color.FgCyan
 	case "removing":
 		return color.FgMagenta
 	default:
