@@ -96,7 +96,16 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		dockerHost = dockerHostFromEnv
 	}
 
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation(), client.WithHost(dockerHost))
+	// We avoid using client.FromEnv because it includes WithVersionFromEnv() which
+	// sets manualOverride=true when DOCKER_API_VERSION is set, preventing API version
+	// negotiation even when WithAPIVersionNegotiation() is specified.
+	// Instead, we manually configure TLS and host from environment, but always enable
+	// API version negotiation to support older Docker daemons.
+	cli, err := client.NewClientWithOpts(
+		client.WithTLSClientConfigFromEnv(),
+		client.WithAPIVersionNegotiation(),
+		client.WithHost(dockerHost),
+	)
 	if err != nil {
 		ogLog.Fatal(err)
 	}
