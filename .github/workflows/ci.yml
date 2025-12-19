@@ -1,7 +1,7 @@
 name: Continuous Integration
 
 env:
-  GO_VERSION: 1.21
+  GO_VERSION: 1.22
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.21.x
+          go-version: 1.22.x
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -49,7 +49,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.21.x
+          go-version: 1.22.x
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -77,7 +77,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.21.x
+          go-version: 1.22.x
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -104,7 +104,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.21.x
+          go-version: 1.22.x
       - name: Cache build
         uses: actions/cache@v4
         with:
