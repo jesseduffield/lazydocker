@@ -483,7 +483,7 @@ type AppConfig struct {
 	Version     string `long:"version" env:"VERSION" default:"unversioned"`
 	Commit      string `long:"commit" env:"COMMIT"`
 	BuildDate   string `long:"build-date" env:"BUILD_DATE"`
-	Name        string `long:"name" env:"NAME" default:"lazydocker"`
+	Name        string `long:"name" env:"NAME" default:"lazydocker-ng"`
 	BuildSource string `long:"build-source" env:"BUILD_SOURCE" default:""`
 	UserConfig  *UserConfig
 	ConfigDir   string
@@ -532,10 +532,19 @@ func configDirForVendor(vendor string, projectName string) string {
 }
 
 func configDir(projectName string) string {
-	legacyConfigDirectory := configDirForVendor("jesseduffield", projectName)
-	if _, err := os.Stat(legacyConfigDirectory); !os.IsNotExist(err) {
-		return legacyConfigDirectory
+	// Check for very old config (jesseduffield/lazydocker)
+	veryOldConfigDirectory := configDirForVendor("jesseduffield", "lazydocker")
+	if _, err := os.Stat(veryOldConfigDirectory); !os.IsNotExist(err) {
+		return veryOldConfigDirectory
 	}
+
+	// Check for old config (lazydocker)
+	oldConfigDirectory := configDirForVendor("", "lazydocker")
+	if _, err := os.Stat(oldConfigDirectory); !os.IsNotExist(err) {
+		return oldConfigDirectory
+	}
+
+	// Use new config directory (lazydocker-ng)
 	configDirectory := configDirForVendor("", projectName)
 	return configDirectory
 }

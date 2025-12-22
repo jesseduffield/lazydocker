@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/peauc/lazydocker-ng/pkg/gui/panels"
+	"github.com/peauc/lazydocker-ng/pkg/utils"
 	"github.com/samber/lo"
 	"github.com/spkg/bom"
 )

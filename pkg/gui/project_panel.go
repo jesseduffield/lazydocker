@@ -4,18 +4,18 @@ import (
 	"bytes"
 	"context"
 	"github.com/docker/docker/api/types/container"
-	"github.com/jesseduffield/lazydocker/pkg/gui/types"
+	"github.com/peauc/lazydocker-ng/pkg/gui/types"
 	"log"
 	"path"
 	"strings"
 
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
-	"github.com/jesseduffield/lazydocker/pkg/tasks"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/peauc/lazydocker-ng/pkg/commands"
+	"github.com/peauc/lazydocker-ng/pkg/gui/panels"
+	"github.com/peauc/lazydocker-ng/pkg/gui/presentation"
+	"github.com/peauc/lazydocker-ng/pkg/tasks"
+	"github.com/peauc/lazydocker-ng/pkg/utils"
 	"github.com/jesseduffield/yaml"
 )
 
@@ -122,9 +122,9 @@ func (gui *Gui) creditsStr() string {
 		[]string{
 			lazydockerTitle(),
 			"Copyright (c) 2019 Jesse Duffield",
-			"Keybindings: https://github.com/jesseduffield/lazydocker/blob/master/docs/keybindings",
-			"Config Options: https://github.com/jesseduffield/lazydocker/blob/master/docs/Config.md",
-			"Raise an Issue: https://github.com/jesseduffield/lazydocker/issues",
+			"Keybindings: https://github.com/peauc/lazydocker-ng/blob/master/docs/keybindings",
+			"Config Options: https://github.com/peauc/lazydocker-ng/blob/master/docs/Config.md",
+			"Raise an Issue: https://github.com/peauc/lazydocker-ng/issues",
 			utils.ColoredString("Buy Jesse a coffee: https://github.com/sponsors/jesseduffield", color.FgMagenta), // caffeine ain't free
 			"Here's your lazydocker config when merged in with the defaults (you can open your config by pressing 'o'):",
 			utils.ColoredYamlString(configBuf.String()),

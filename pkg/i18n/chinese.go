@@ -16,7 +16,7 @@ func chineseSet() TranslationSet {
 
 		NoViewMachingNewLineFocusedSwitchStatement: "没有匹配 newLineFocused switch 语句的视图",
 
-		ErrorOccurred:                     "发生错误！请在 https://github.com/jesseduffield/lazydocker/issues 上创建一个问题",
+		ErrorOccurred:                     "发生错误！请在 https://github.com/peauc/lazydocker-ng/issues 上创建一个问题",
 		ConnectionFailed:                  "无法连接到 Docker 客户端。您可能需要重新启动 Docker 客户端",
 		UnattachableContainerError:        "容器不支持 attaching。您必须使用“-it”标志运行服务，或者在docker-compose.yml文件中使用`stdin_open: true，tty: true`",
 		WaitingForContainerInfo:           "在 Docker 给我们更多关于容器的信息之前，无法继续。请几分钟后重试。",

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	dockerTypes "github.com/docker/docker/api/types"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/peauc/lazydocker-ng/pkg/commands"
 	"github.com/stretchr/testify/assert"
 )
 

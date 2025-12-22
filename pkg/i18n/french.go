@@ -13,7 +13,7 @@ func frenchSet() TranslationSet {
 
 		NoViewMachingNewLineFocusedSwitchStatement: "Aucune vue correspondant au switch newLineFocused",
 
-		ErrorOccurred:              "Une erreur s'est produite ! Veuillez créer un rapport d'erreur sur https://github.com/jesseduffield/lazydocker/issues",
+		ErrorOccurred:              "Une erreur s'est produite ! Veuillez créer un rapport d'erreur sur https://github.com/peauc/lazydocker-ng/issues",
 		ConnectionFailed:           "Erreur lors de la connexion au client Docker. Essayez de redémarrer votre client Docker",
 		UnattachableContainerError: "Le conteneur ne peut pas être attaché. Vous devez exécuter le service avec le drapeau 'it' ou bien utiliser `stdin_open: true, tty: true` dans votre fichier docker-compose.yml",
 		WaitingForContainerInfo:    "Le processus ne peut pas continuer avant que Docker ne fournisse plus d'informations. Veuillez réessayer dans quelques instants.",

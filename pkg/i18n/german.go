@@ -10,7 +10,7 @@ func germanSet() TranslationSet {
 
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
 
-		ErrorOccurred:                     "Es ist ein Fehler aufgetreten! Bitte erstelle ein Issue hier: https://github.com/jesseduffield/lazydocker/issues",
+		ErrorOccurred:                     "Es ist ein Fehler aufgetreten! Bitte erstelle ein Issue hier: https://github.com/peauc/lazydocker-ng/issues",
 		ConnectionFailed:                  "Verbindung zum Docker Client fehlgeschlagen. Du musst ggf. den Docker Client neustarten.",
 		UnattachableContainerError:        "Der Container bietet keine Unterstützung für das Anbinden. Du musst den Dienst entweder mit der '-it' Flagge benutzen oder `stdin_open: true, tty: true` in der docker-compose.yml Datei setzen.",
 		CannotAttachStoppedContainerError: "Du kannst keinen angehaltenen Container anbinden. Du musst ihn erst starten (was du tun kannst, indem du 'r' drückst), (ja, ich bin zu faul um das zu automatisieren) (aber ist schon cool, dass ich so eine Konversation durch eine Fehlermeldung mit dir führen kann)",

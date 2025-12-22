@@ -2,8 +2,8 @@ package gui
 
 import (
 	"github.com/jesseduffield/lazycore/pkg/boxlayout"
-	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/peauc/lazydocker-ng/pkg/gui/panels"
+	"github.com/peauc/lazydocker-ng/pkg/utils"
 	"github.com/mattn/go-runewidth"
 	"github.com/samber/lo"
 )

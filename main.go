@@ -11,9 +11,9 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
 	"github.com/integrii/flaggy"
-	"github.com/jesseduffield/lazydocker/pkg/app"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/peauc/lazydocker-ng/pkg/app"
+	"github.com/peauc/lazydocker-ng/pkg/config"
+	"github.com/peauc/lazydocker-ng/pkg/utils"
 	"github.com/jesseduffield/yaml"
 	"github.com/samber/lo"
 )
@@ -44,9 +44,9 @@ func main() {
 		runtime.GOARCH,
 	)
 
-	flaggy.SetName("lazydocker")
+	flaggy.SetName("lazydocker-ng")
 	flaggy.SetDescription("The lazier way to manage everything docker")
-	flaggy.DefaultParser.AdditionalHelpPrepend = "https://github.com/jesseduffield/lazydocker"
+	flaggy.DefaultParser.AdditionalHelpPrepend = "https://github.com/peauc/lazydocker-ng"
 
 	flaggy.Bool(&configFlag, "c", "config", "Print the current default config")
 	flaggy.Bool(&debuggingFlag, "d", "debug", "a boolean")
@@ -71,7 +71,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, composeFiles, projectDir)
+	appConfig, err := config.NewAppConfig("lazydocker-ng", version, commit, date, buildSource, debuggingFlag, composeFiles, projectDir)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

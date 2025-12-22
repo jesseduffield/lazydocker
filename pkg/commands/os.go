@@ -14,8 +14,8 @@ import (
 	"github.com/go-errors/errors"
 
 	"github.com/jesseduffield/kill"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/peauc/lazydocker-ng/pkg/config"
+	"github.com/peauc/lazydocker-ng/pkg/utils"
 	"github.com/mgutz/str"
 	"github.com/sirupsen/logrus"
 )
