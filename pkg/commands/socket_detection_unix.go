@@ -14,15 +14,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	statFunc = os.Stat
+)
+
 const (
 	DockerSocketSchema = "unix://"
 	DockerSocketPath   = "/var/run/docker.sock"
 
 	defaultDockerHost = DockerSocketSchema + DockerSocketPath
-)
-
-var (
-	ErrNoDockerSocket = errors.New("no working Docker/Podman socket found")
 )
 
 // SocketCandidate represents a potential socket to try
@@ -107,6 +107,12 @@ func getSocketCandidates() []SocketCandidate {
 	// 14. Rootful Podman: /run/podman/podman.sock
 	addCandidate("/run/podman/podman.sock", RuntimePodman)
 
+	// 15. Podman on macOS (default machine)
+	if home != "" {
+		addCandidate(filepath.Join(home, ".local", "share", "containers", "podman", "machine", "podman-machine-default", "podman.sock"), RuntimePodman)
+		addCandidate(filepath.Join(home, ".local", "share", "containers", "podman", "machine", "qemu", "podman.sock"), RuntimePodman)
+	}
+
 	return candidates
 }
 
@@ -118,21 +124,24 @@ func detectPlatformCandidates(log *logrus.Entry) (string, ContainerRuntime, erro
 		socketPath := strings.TrimPrefix(candidate.Path, DockerSocketSchema)
 
 		// Fast path: check if socket file exists
-		if _, err := os.Stat(socketPath); err != nil {
+		if _, err := statFunc(socketPath); err != nil {
 			continue
 		}
 
 		// Validate by actually connecting
 		ctx, cancel := context.WithTimeout(context.Background(), socketValidationTimeout)
-		err := validateSocket(ctx, candidate.Path, false)
-		cancel()
+		err := func() error {
+			defer cancel()
+			return validateSocketFunc(ctx, candidate.Path, false)
+		}()
 
 		if err != nil {
 			log.Debugf("Socket %s exists but validation failed: %v", candidate.Path, err)
-			if strings.Contains(err.Error(), "permission denied") {
+			errStr := strings.ToLower(err.Error())
+			if strings.Contains(errStr, "permission denied") || strings.Contains(errStr, "eacces") {
 				lastErr = fmt.Errorf("%s: permission denied (are you in the docker group?)", candidate.Path)
 			} else {
-				lastErr = fmt.Errorf("%s: %w", candidate.Path, err)
+				lastErr = fmt.Errorf("%s: %v", candidate.Path, err)
 			}
 			continue
 		}

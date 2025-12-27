@@ -15,8 +15,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	ErrNoDockerSocket = fmt.Errorf("no working Docker/Podman socket found")
+)
+
 // Timeout for validating socket connectivity
 const socketValidationTimeout = 3 * time.Second
+
+var (
+	validateSocketFunc = validateSocket
+)
 
 // Runtime type detection
 type ContainerRuntime string
@@ -31,27 +39,54 @@ const (
 var (
 	cachedDockerHost string
 	cachedRuntime    ContainerRuntime
-	dockerHostOnce   sync.Once
-	dockerHostErr    error
+	dockerHostMu     sync.Mutex
 )
 
 // DetectDockerHost finds a working Docker/Podman socket
 // Results are cached after first successful detection
 func DetectDockerHost(log *logrus.Entry) (string, ContainerRuntime, error) {
-	dockerHostOnce.Do(func() {
-		cachedDockerHost, cachedRuntime, dockerHostErr = detectDockerHostInternal(log)
-	})
-	return cachedDockerHost, cachedRuntime, dockerHostErr
+	dockerHostMu.Lock()
+	defer dockerHostMu.Unlock()
+
+	if cachedDockerHost != "" {
+		return cachedDockerHost, cachedRuntime, nil
+	}
+
+	host, runtime, err := detectDockerHostInternal(log)
+	if err != nil {
+		return "", RuntimeUnknown, err
+	}
+
+	cachedDockerHost = host
+	cachedRuntime = runtime
+	return host, runtime, nil
+}
+
+// ResetDockerHostCache resets the cached docker host. Used for testing.
+func ResetDockerHostCache() {
+	dockerHostMu.Lock()
+	defer dockerHostMu.Unlock()
+	cachedDockerHost = ""
+	cachedRuntime = ""
 }
 
 func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, error) {
 	// Priority 1: Explicit DOCKER_HOST environment variable
 	if dockerHost := os.Getenv("DOCKER_HOST"); dockerHost != "" {
 		log.Debugf("Using DOCKER_HOST from environment: %s", dockerHost)
+
+		// Handle plain paths without schema
+		if !strings.Contains(dockerHost, "://") {
+			if _, err := os.Stat(dockerHost); err == nil {
+				log.Debugf("DOCKER_HOST is a plain path, assuming unix://")
+				dockerHost = "unix://" + dockerHost
+			}
+		}
+
 		if !strings.HasPrefix(dockerHost, "ssh://") {
 			ctx, cancel := context.WithTimeout(context.Background(), socketValidationTimeout)
 			defer cancel()
-			if err := validateSocket(ctx, dockerHost, true); err != nil {
+			if err := validateSocketFunc(ctx, dockerHost, true); err != nil {
 				log.Warnf("DOCKER_HOST=%s is set but not accessible: %v", dockerHost, err)
 			}
 		}
@@ -71,7 +106,7 @@ func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, erro
 		if !strings.HasPrefix(contextHost, "ssh://") {
 			ctx, cancel := context.WithTimeout(context.Background(), socketValidationTimeout)
 			defer cancel()
-			if err := validateSocket(ctx, contextHost, false); err != nil {
+			if err := validateSocketFunc(ctx, contextHost, false); err != nil {
 				log.Warnf("Context host %s is not accessible: %v", contextHost, err)
 			}
 		}

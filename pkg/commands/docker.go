@@ -72,8 +72,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 	// Use new detection with caching and validation
 	dockerHost, runtime, err := DetectDockerHost(log)
 	if err != nil {
-		// Provide user-friendly error
-		return nil, fmt.Errorf("cannot connect to container runtime: %w; Troubleshooting: Docker - ensure Docker daemon is running; Podman - run 'systemctl --user enable --now podman.socket'; or set DOCKER_HOST environment variable explicitly", err)
+		return nil, fmt.Errorf("cannot connect to container runtime: %w", err)
 	}
 
 	log.Infof("Detected %s runtime at %s", runtime, dockerHost)
