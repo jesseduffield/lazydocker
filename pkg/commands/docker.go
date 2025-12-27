@@ -13,9 +13,6 @@ import (
 	"sync"
 	"time"
 
-	cliconfig "github.com/docker/cli/cli/config"
-	ddocker "github.com/docker/cli/cli/context/docker"
-	ctxstore "github.com/docker/cli/cli/context/store"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/imdario/mergo"
@@ -72,10 +69,14 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 
 // NewDockerCommand it runs docker commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
-	dockerHost, err := determineDockerHost()
+	// Use new detection with caching and validation
+	dockerHost, runtime, err := DetectDockerHost(log)
 	if err != nil {
-		ogLog.Printf("> could not determine host %v", err)
+		// Provide user-friendly error
+		return nil, fmt.Errorf("cannot connect to container runtime: %w; Troubleshooting: Docker - ensure Docker daemon is running; Podman - run 'systemctl --user enable --now podman.socket'; or set DOCKER_HOST environment variable explicitly", err)
 	}
+
+	log.Infof("Detected %s runtime at %s", runtime, dockerHost)
 
 	// NOTE: Inject the determined docker host to the environment. This allows the
 	//       `SSHHandler.HandleSSHDockerHost()` to create a local unix socket tunneled
@@ -361,65 +362,4 @@ func (c *DockerCommand) DockerComposeConfig() string {
 		output = err.Error()
 	}
 	return output
-}
-
-// determineDockerHost tries to the determine the docker host that we should connect to
-// in the following order of decreasing precedence:
-//   - value of "DOCKER_HOST" environment variable
-//   - host retrieved from the current context (specified via DOCKER_CONTEXT)
-//   - "default docker host" for the host operating system, otherwise
-func determineDockerHost() (string, error) {
-	// If the docker host is explicitly set via the "DOCKER_HOST" environment variable,
-	// then its a no-brainer :shrug:
-	if os.Getenv("DOCKER_HOST") != "" {
-		return os.Getenv("DOCKER_HOST"), nil
-	}
-
-	currentContext := os.Getenv("DOCKER_CONTEXT")
-	if currentContext == "" {
-		cf, err := cliconfig.Load(cliconfig.Dir())
-		if err != nil {
-			return "", err
-		}
-		currentContext = cf.CurrentContext
-	}
-
-	// On some systems (windows) `default` is stored in the docker config as the currentContext.
-	if currentContext == "" || currentContext == "default" {
-		// If a docker context is neither specified via the "DOCKER_CONTEXT" environment variable nor via the
-		// $HOME/.docker/config file, then we fall back to connecting to the "default docker host" meant for
-		// the host operating system.
-		return defaultDockerHost, nil
-	}
-
-	storeConfig := ctxstore.NewConfig(
-		func() interface{} { return &ddocker.EndpointMeta{} },
-		ctxstore.EndpointTypeGetter(ddocker.DockerEndpoint, func() interface{} { return &ddocker.EndpointMeta{} }),
-	)
-
-	st := ctxstore.New(cliconfig.ContextStoreDir(), storeConfig)
-	md, err := st.GetMetadata(currentContext)
-	if err != nil {
-		return "", err
-	}
-	dockerEP, ok := md.Endpoints[ddocker.DockerEndpoint]
-	if !ok {
-		return "", err
-	}
-	dockerEPMeta, ok := dockerEP.(ddocker.EndpointMeta)
-	if !ok {
-		return "", fmt.Errorf("expected docker.EndpointMeta, got %T", dockerEP)
-	}
-
-	if dockerEPMeta.Host != "" {
-		return dockerEPMeta.Host, nil
-	}
-
-	// We might end up here, if the context was created with the `host` set to an empty value (i.e. '').
-	// For example:
-	// ```sh
-	// docker context create foo --docker "host="
-	// ```
-	// In such scenario, we mimic the `docker` cli and try to connect to the "default docker host".
-	return defaultDockerHost, nil
 }
