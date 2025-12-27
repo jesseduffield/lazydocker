@@ -23,7 +23,13 @@ var (
 const socketValidationTimeout = 3 * time.Second
 
 var (
-	validateSocketFunc = validateSocket
+	validateSocketFunc           = validateSocket
+	getHostFromContextFunc       = getHostFromContext
+	detectPlatformCandidatesFunc = detectPlatformCandidates
+
+	// For testing getHostFromContext
+	cliconfigLoadFunc = cliconfig.Load
+	ctxstoreNewFunc   = ctxstore.New
 )
 
 // Runtime type detection
@@ -67,7 +73,7 @@ func ResetDockerHostCache() {
 	dockerHostMu.Lock()
 	defer dockerHostMu.Unlock()
 	cachedDockerHost = ""
-	cachedRuntime = ""
+	cachedRuntime = RuntimeUnknown
 }
 
 func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, error) {
@@ -78,8 +84,8 @@ func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, erro
 		// Handle plain paths without schema
 		if !strings.Contains(dockerHost, "://") {
 			if _, err := os.Stat(dockerHost); err == nil {
-				log.Debugf("DOCKER_HOST is a plain path, assuming unix://")
-				dockerHost = "unix://" + dockerHost
+				log.Debugf("DOCKER_HOST is a plain path, assuming %s", DockerSocketSchema)
+				dockerHost = DockerSocketSchema + dockerHost
 			}
 		}
 
@@ -87,14 +93,14 @@ func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, erro
 			ctx, cancel := context.WithTimeout(context.Background(), socketValidationTimeout)
 			defer cancel()
 			if err := validateSocketFunc(ctx, dockerHost, true); err != nil {
-				log.Warnf("DOCKER_HOST=%s is set but not accessible: %v", dockerHost, err)
+				return "", RuntimeUnknown, fmt.Errorf("DOCKER_HOST=%s is set but not accessible: %w", dockerHost, err)
 			}
 		}
-		return dockerHost, RuntimeUnknown, nil
+		return dockerHost, RuntimeDocker, nil
 	}
 
 	// Priority 2: Docker Context
-	contextHost, err := getHostFromContext()
+	contextHost, err := getHostFromContextFunc()
 	if err != nil {
 		// If DOCKER_CONTEXT was explicitly set, we should fail
 		if os.Getenv("DOCKER_CONTEXT") != "" {
@@ -103,25 +109,33 @@ func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, erro
 		log.Debugf("Failed to get host from default context: %v", err)
 	} else if contextHost != "" {
 		log.Debugf("Using host from Docker context: %s", contextHost)
+		isValid := true
 		if !strings.HasPrefix(contextHost, "ssh://") {
 			ctx, cancel := context.WithTimeout(context.Background(), socketValidationTimeout)
 			defer cancel()
 			if err := validateSocketFunc(ctx, contextHost, false); err != nil {
+				if os.Getenv("DOCKER_CONTEXT") != "" {
+					return "", RuntimeUnknown, fmt.Errorf("DOCKER_CONTEXT host %s is not accessible: %w", contextHost, err)
+				}
 				log.Warnf("Context host %s is not accessible: %v", contextHost, err)
+				isValid = false
 			}
 		}
-		return contextHost, RuntimeUnknown, nil
+
+		if isValid {
+			return contextHost, RuntimeDocker, nil
+		}
 	}
 
 	// Priority 3: Platform-specific candidates
-	return detectPlatformCandidates(log)
+	return detectPlatformCandidatesFunc(log)
 }
 
 // getHostFromContext retrieves the host from the current Docker context
 func getHostFromContext() (string, error) {
 	currentContext := os.Getenv("DOCKER_CONTEXT")
 	if currentContext == "" {
-		cf, err := cliconfig.Load(cliconfig.Dir())
+		cf, err := cliconfigLoadFunc(cliconfig.Dir())
 		if err != nil {
 			return "", err
 		}
@@ -137,7 +151,7 @@ func getHostFromContext() (string, error) {
 		ctxstore.EndpointTypeGetter(ddocker.DockerEndpoint, func() interface{} { return &ddocker.EndpointMeta{} }),
 	)
 
-	st := ctxstore.New(cliconfig.ContextStoreDir(), storeConfig)
+	st := ctxstoreNewFunc(cliconfig.ContextStoreDir(), storeConfig)
 	md, err := st.GetMetadata(currentContext)
 	if err != nil {
 		return "", err

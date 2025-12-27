@@ -15,7 +15,10 @@ import (
 )
 
 var (
-	statFunc = os.Stat
+	statFunc        = os.Stat
+	getuidFunc      = os.Getuid
+	getenvFunc      = os.Getenv
+	userHomeDirFunc = os.UserHomeDir
 )
 
 const (
@@ -48,9 +51,9 @@ func getSocketCandidates() []SocketCandidate {
 	// 1. Standard Docker daemon socket
 	addCandidate(DockerSocketPath, RuntimeDocker)
 
-	xdgRuntime := os.Getenv("XDG_RUNTIME_DIR")
-	home, _ := os.UserHomeDir()
-	uid := os.Getuid()
+	xdgRuntime := getenvFunc("XDG_RUNTIME_DIR")
+	home, _ := userHomeDirFunc()
+	uid := getuidFunc()
 
 	// 2. Rootless Docker: $XDG_RUNTIME_DIR/docker.sock
 	if xdgRuntime != "" {
@@ -139,7 +142,7 @@ func detectPlatformCandidates(log *logrus.Entry) (string, ContainerRuntime, erro
 			log.Debugf("Socket %s exists but validation failed: %v", candidate.Path, err)
 			errStr := strings.ToLower(err.Error())
 			if strings.Contains(errStr, "permission denied") || strings.Contains(errStr, "eacces") {
-				lastErr = fmt.Errorf("%s: permission denied (are you in the docker group?)", candidate.Path)
+				lastErr = fmt.Errorf("%s: permission denied (are you in the %v group?)", candidate.Path, candidate.Runtime)
 			} else {
 				lastErr = fmt.Errorf("%s: %v", candidate.Path, err)
 			}

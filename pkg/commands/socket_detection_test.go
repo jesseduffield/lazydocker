@@ -8,38 +8,52 @@ import (
 	"os"
 	"testing"
 
+	"github.com/docker/cli/cli/config/configfile"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetSocketCandidates(t *testing.T) {
-	// Save env vars
-	oldXdg := os.Getenv("XDG_RUNTIME_DIR")
-	oldHome := os.Getenv("HOME")
+	// Save and restore
+	oldGetuid := getuidFunc
+	oldGetenv := getenvFunc
+	oldUserHomeDir := userHomeDirFunc
 	defer func() {
-		os.Setenv("XDG_RUNTIME_DIR", oldXdg)
-		os.Setenv("HOME", oldHome)
+		getuidFunc = oldGetuid
+		getenvFunc = oldGetenv
+		userHomeDirFunc = oldUserHomeDir
 	}()
 
-	os.Setenv("XDG_RUNTIME_DIR", "/tmp/runtime")
-	os.Setenv("HOME", "/home/user")
+	getuidFunc = func() int { return 1000 }
+	getenvFunc = func(key string) string {
+		if key == "XDG_RUNTIME_DIR" {
+			return "/run/user/1000"
+		}
+		return ""
+	}
+	userHomeDirFunc = func() (string, error) { return "/home/user", nil }
 
 	candidates := getSocketCandidates()
 
-	// Check some expected candidates
-	foundDocker := false
-	foundPodman := false
-	for _, c := range candidates {
-		if c.Path == "unix:///var/run/docker.sock" {
-			foundDocker = true
-		}
-		if c.Path == "unix:///tmp/runtime/podman/podman.sock" {
-			foundPodman = true
-		}
+	expectedPaths := []string{
+		"unix:///var/run/docker.sock",
+		"unix:///run/user/1000/docker.sock",
+		"unix:///home/user/.docker/run/docker.sock",
+		"unix:///run/user/1000/podman/podman.sock",
+		"unix:///home/user/.colima/default/docker.sock",
+		"unix:///home/user/.orbstack/run/docker.sock",
+		"unix:///home/user/.lima/default/sock/docker.sock",
+		"unix:///home/user/.rd/docker.sock",
 	}
 
-	assert.True(t, foundDocker, "Standard Docker socket should be in candidates")
-	assert.True(t, foundPodman, "Rootless Podman socket should be in candidates")
+	var paths []string
+	for _, c := range candidates {
+		paths = append(paths, c.Path)
+	}
+
+	for _, expected := range expectedPaths {
+		assert.Contains(t, paths, expected)
+	}
 }
 
 func TestDetectDockerHost_DOCKER_HOST_Priority(t *testing.T) {
@@ -50,6 +64,13 @@ func TestDetectDockerHost_DOCKER_HOST_Priority(t *testing.T) {
 	expectedHost := "unix:///tmp/custom.sock"
 	os.Setenv("DOCKER_HOST", expectedHost)
 
+	// Mock validateSocketFunc to succeed
+	oldValidate := validateSocketFunc
+	defer func() { validateSocketFunc = oldValidate }()
+	validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
+		return nil
+	}
+
 	// Reset cache for test
 	ResetDockerHostCache()
 
@@ -58,12 +79,20 @@ func TestDetectDockerHost_DOCKER_HOST_Priority(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expectedHost, host)
 }
+
 func TestDetectDockerHost_Caching(t *testing.T) {
 	// Save env var
 	oldDockerHost := os.Getenv("DOCKER_HOST")
 	defer os.Setenv("DOCKER_HOST", oldDockerHost)
 
 	os.Setenv("DOCKER_HOST", "unix:///tmp/first.sock")
+
+	// Mock validateSocketFunc to succeed
+	oldValidate := validateSocketFunc
+	defer func() { validateSocketFunc = oldValidate }()
+	validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
+		return nil
+	}
 
 	// Reset cache for test
 	ResetDockerHostCache()
@@ -78,6 +107,89 @@ func TestDetectDockerHost_Caching(t *testing.T) {
 	assert.Equal(t, host1, host2)
 	assert.Equal(t, "unix:///tmp/first.sock", host2)
 }
+
+func TestDetectDockerHost_DOCKER_HOST_Invalid(t *testing.T) {
+	oldDockerHost := os.Getenv("DOCKER_HOST")
+	os.Setenv("DOCKER_HOST", "unix:///tmp/invalid.sock")
+	defer os.Setenv("DOCKER_HOST", oldDockerHost)
+
+	ResetDockerHostCache()
+
+	oldValidate := validateSocketFunc
+	defer func() { validateSocketFunc = oldValidate }()
+	validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
+		return errors.New("invalid")
+	}
+
+	log := logrus.NewEntry(logrus.New())
+	_, _, err := DetectDockerHost(log)
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), "DOCKER_HOST")
+	}
+}
+
+func TestDetectDockerHost_Context_Success(t *testing.T) {
+	oldDockerHost := os.Getenv("DOCKER_HOST")
+	os.Setenv("DOCKER_HOST", "")
+	defer os.Setenv("DOCKER_HOST", oldDockerHost)
+
+	oldGetHost := getHostFromContextFunc
+	oldValidate := validateSocketFunc
+	defer func() {
+		getHostFromContextFunc = oldGetHost
+		validateSocketFunc = oldValidate
+	}()
+
+	getHostFromContextFunc = func() (string, error) {
+		return "unix:///tmp/context.sock", nil
+	}
+	validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
+		if host == "unix:///tmp/context.sock" {
+			return nil
+		}
+		return errors.New("invalid")
+	}
+
+	ResetDockerHostCache()
+
+	log := logrus.NewEntry(logrus.New())
+	host, _, err := DetectDockerHost(log)
+	assert.NoError(t, err)
+	assert.Equal(t, "unix:///tmp/context.sock", host)
+}
+
+func TestDetectDockerHost_Context_Invalid_Fallback(t *testing.T) {
+	oldDockerHost := os.Getenv("DOCKER_HOST")
+	os.Setenv("DOCKER_HOST", "")
+	defer os.Setenv("DOCKER_HOST", oldDockerHost)
+
+	oldGetHost := getHostFromContextFunc
+	oldValidate := validateSocketFunc
+	oldDetectPlatform := detectPlatformCandidatesFunc
+	defer func() {
+		getHostFromContextFunc = oldGetHost
+		validateSocketFunc = oldValidate
+		detectPlatformCandidatesFunc = oldDetectPlatform
+	}()
+
+	getHostFromContextFunc = func() (string, error) {
+		return "unix:///tmp/invalid-context.sock", nil
+	}
+	validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
+		return errors.New("invalid")
+	}
+	detectPlatformCandidatesFunc = func(log *logrus.Entry) (string, ContainerRuntime, error) {
+		return "unix:///tmp/fallback.sock", RuntimeDocker, nil
+	}
+
+	ResetDockerHostCache()
+
+	log := logrus.NewEntry(logrus.New())
+	host, _, err := DetectDockerHost(log)
+	assert.NoError(t, err)
+	assert.Equal(t, "unix:///tmp/fallback.sock", host)
+}
+
 func TestDetectDockerHost_Context_Invalid(t *testing.T) {
 	// Save env vars
 	oldDockerHost := os.Getenv("DOCKER_HOST")
@@ -99,15 +211,123 @@ func TestDetectDockerHost_Context_Invalid(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to use DOCKER_CONTEXT")
 }
 
-func TestGetHostFromContext(t *testing.T) {
-	// This test is tricky because it depends on the Docker CLI config.
-	// We'll skip it if we can't easily mock the config directory.
-	// But we can at least test the "default" case.
-	host, err := getHostFromContext()
-	if err == nil {
-		// If it succeeded, it should be empty or a valid host
-		assert.True(t, host == "" || host != "")
+func TestDetectDockerHost_Context_Error_NoEnv(t *testing.T) {
+	// Save and restore
+	oldGetHost := getHostFromContextFunc
+	oldDetectPlatform := detectPlatformCandidatesFunc
+	defer func() {
+		getHostFromContextFunc = oldGetHost
+		detectPlatformCandidatesFunc = oldDetectPlatform
+	}()
+
+	// Mock getHostFromContext to return error
+	getHostFromContextFunc = func() (string, error) {
+		return "", errors.New("context error")
 	}
+
+	// Mock detectPlatformCandidates to return success so we can see it falls through
+	detectPlatformCandidatesFunc = func(log *logrus.Entry) (string, ContainerRuntime, error) {
+		return "unix:///tmp/fallback.sock", RuntimeDocker, nil
+	}
+
+	// Clear DOCKER_HOST
+	oldDockerHost := os.Getenv("DOCKER_HOST")
+	os.Setenv("DOCKER_HOST", "")
+	defer os.Setenv("DOCKER_HOST", oldDockerHost)
+
+	ResetDockerHostCache()
+
+	log := logrus.NewEntry(logrus.New())
+	host, runtime, err := DetectDockerHost(log)
+	assert.NoError(t, err)
+	assert.Equal(t, "unix:///tmp/fallback.sock", host)
+	assert.Equal(t, RuntimeDocker, runtime)
+}
+
+func TestDetectDockerHost_SSH(t *testing.T) {
+	oldDockerHost := os.Getenv("DOCKER_HOST")
+	os.Setenv("DOCKER_HOST", "ssh://user@host")
+	defer os.Setenv("DOCKER_HOST", oldDockerHost)
+
+	ResetDockerHostCache()
+
+	log := logrus.NewEntry(logrus.New())
+	host, _, err := DetectDockerHost(log)
+	assert.NoError(t, err)
+	assert.Equal(t, "ssh://user@host", host)
+}
+
+func TestDetectDockerHost_PlainPath(t *testing.T) {
+	oldDockerHost := os.Getenv("DOCKER_HOST")
+	defer os.Setenv("DOCKER_HOST", oldDockerHost)
+
+	// Create a temporary file to act as a socket
+	tmpFile, err := os.CreateTemp("", "lazydocker-test-*.sock")
+	assert.NoError(t, err)
+	defer os.Remove(tmpFile.Name())
+	tmpFile.Close()
+
+	os.Setenv("DOCKER_HOST", tmpFile.Name())
+
+	ResetDockerHostCache()
+
+	// Mock validateSocketFunc to succeed
+	oldValidate := validateSocketFunc
+	defer func() { validateSocketFunc = oldValidate }()
+	validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
+		return nil
+	}
+
+	log := logrus.NewEntry(logrus.New())
+	host, _, err := DetectDockerHost(log)
+	assert.NoError(t, err)
+	assert.Equal(t, "unix://"+tmpFile.Name(), host)
+}
+
+func TestValidateSocket_UseEnv(t *testing.T) {
+	ctx := context.Background()
+	oldDockerHost := os.Getenv("DOCKER_HOST")
+	os.Setenv("DOCKER_HOST", "unix:///tmp/test.sock")
+	defer os.Setenv("DOCKER_HOST", oldDockerHost)
+
+	// This will fail ping but cover the useEnv branch
+	err := validateSocket(ctx, "unix:///tmp/test.sock", true)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "ping failed")
+}
+
+func TestGetHostFromContext_Implementation(t *testing.T) {
+	// Save and restore
+	oldLoad := cliconfigLoadFunc
+	defer func() { cliconfigLoadFunc = oldLoad }()
+
+	t.Run("DOCKER_CONTEXT set", func(t *testing.T) {
+		oldCtx := os.Getenv("DOCKER_CONTEXT")
+		os.Setenv("DOCKER_CONTEXT", "default")
+		defer os.Setenv("DOCKER_CONTEXT", oldCtx)
+
+		host, err := getHostFromContext()
+		assert.NoError(t, err)
+		assert.Empty(t, host)
+	})
+
+	t.Run("Config load success but empty context", func(t *testing.T) {
+		cliconfigLoadFunc = func(dir string) (*configfile.ConfigFile, error) {
+			return &configfile.ConfigFile{CurrentContext: ""}, nil
+		}
+		host, err := getHostFromContext()
+		assert.NoError(t, err)
+		assert.Empty(t, host)
+	})
+
+	t.Run("Config load error", func(t *testing.T) {
+		cliconfigLoadFunc = func(dir string) (*configfile.ConfigFile, error) {
+			return nil, errors.New("load error")
+		}
+		_, err := getHostFromContext()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "load error")
+	})
 }
 
 func TestValidateSocket_Failures(t *testing.T) {
@@ -123,58 +343,95 @@ func TestValidateSocket_Failures(t *testing.T) {
 }
 
 func TestDetectPlatformCandidates_Unix(t *testing.T) {
-	// Mock validateSocketFunc to always fail
-	oldValidate := validateSocketFunc
-	defer func() { validateSocketFunc = oldValidate }()
-
-	validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
-		return errors.New("mock failure")
-	}
-
-	// Mock environment to ensure no candidates are found
-	oldXdg := os.Getenv("XDG_RUNTIME_DIR")
-	oldHome := os.Getenv("HOME")
-	defer func() {
-		os.Setenv("XDG_RUNTIME_DIR", oldXdg)
-		os.Setenv("HOME", oldHome)
-	}()
-
-	os.Setenv("XDG_RUNTIME_DIR", "/tmp/nonexistent-xdg")
-	os.Setenv("HOME", "/tmp/nonexistent-home")
-
-	log := logrus.NewEntry(logrus.New())
-	_, _, err := detectPlatformCandidates(log)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), ErrNoDockerSocket.Error())
-}
-
-func TestDetectPlatformCandidates_Unix_Success(t *testing.T) {
-	// Mock validateSocketFunc to succeed for a specific path
-	oldValidate := validateSocketFunc
+	// Save and restore
 	oldStat := statFunc
+	oldValidate := validateSocketFunc
 	defer func() {
-		validateSocketFunc = oldValidate
 		statFunc = oldStat
+		validateSocketFunc = oldValidate
 	}()
 
-	expectedPath := "unix:///var/run/docker.sock"
-	statFunc = func(name string) (os.FileInfo, error) {
-		if name == "/var/run/docker.sock" {
-			return nil, nil // Mock success
-		}
-		return nil, os.ErrNotExist
-	}
+	log := logrus.New().WithField("test", "test")
 
-	validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
-		if host == expectedPath {
-			return nil
+	t.Run("No sockets exist", func(t *testing.T) {
+		statFunc = func(name string) (os.FileInfo, error) {
+			return nil, os.ErrNotExist
 		}
-		return errors.New("mock failure")
-	}
+		_, _, err := detectPlatformCandidates(log)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "ensure Docker or Podman is running")
+	})
 
-	log := logrus.NewEntry(logrus.New())
-	host, runtime, err := detectPlatformCandidates(log)
-	assert.NoError(t, err)
-	assert.Equal(t, expectedPath, host)
-	assert.Equal(t, RuntimeDocker, runtime)
+	t.Run("Docker socket exists and is valid", func(t *testing.T) {
+		statFunc = func(name string) (os.FileInfo, error) {
+			if name == "/var/run/docker.sock" {
+				return nil, nil
+			}
+			return nil, os.ErrNotExist
+		}
+		validateSocketFunc = func(ctx context.Context, host string, silent bool) error {
+			if host == "unix:///var/run/docker.sock" {
+				return nil
+			}
+			return errors.New("invalid")
+		}
+		path, runtime, err := detectPlatformCandidates(log)
+		assert.NoError(t, err)
+		assert.Equal(t, "unix:///var/run/docker.sock", path)
+		assert.Equal(t, RuntimeDocker, runtime)
+	})
+
+	t.Run("Docker socket exists but permission denied", func(t *testing.T) {
+		statFunc = func(name string) (os.FileInfo, error) {
+			if name == "/var/run/docker.sock" {
+				return nil, nil
+			}
+			return nil, os.ErrNotExist
+		}
+		validateSocketFunc = func(ctx context.Context, host string, silent bool) error {
+			return errors.New("permission denied")
+		}
+		_, _, err := detectPlatformCandidates(log)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "permission denied")
+	})
+
+	t.Run("Docker socket exists but other error", func(t *testing.T) {
+		statFunc = func(name string) (os.FileInfo, error) {
+			if name == "/var/run/docker.sock" {
+				return nil, nil
+			}
+			return nil, os.ErrNotExist
+		}
+		validateSocketFunc = func(ctx context.Context, host string, silent bool) error {
+			return errors.New("other error")
+		}
+		_, _, err := detectPlatformCandidates(log)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "other error")
+	})
+
+	t.Run("Podman socket exists and is valid", func(t *testing.T) {
+		// Mock getuid to return 1000
+		oldGetuid := getuidFunc
+		getuidFunc = func() int { return 1000 }
+		defer func() { getuidFunc = oldGetuid }()
+
+		statFunc = func(name string) (os.FileInfo, error) {
+			if name == "/run/user/1000/podman/podman.sock" {
+				return nil, nil
+			}
+			return nil, os.ErrNotExist
+		}
+		validateSocketFunc = func(ctx context.Context, host string, silent bool) error {
+			if host == "unix:///run/user/1000/podman/podman.sock" {
+				return nil
+			}
+			return errors.New("invalid")
+		}
+		path, runtime, err := detectPlatformCandidates(log)
+		assert.NoError(t, err)
+		assert.Equal(t, "unix:///run/user/1000/podman/podman.sock", path)
+		assert.Equal(t, RuntimePodman, runtime)
+	})
 }
