@@ -24,6 +24,7 @@ const socketValidationTimeout = 3 * time.Second
 
 var (
 	validateSocketFunc           = validateSocket
+	inferRuntimeFromHostFunc     = inferRuntimeFromHost
 	getHostFromContextFunc       = getHostFromContext
 	detectPlatformCandidatesFunc = detectPlatformCandidates
 
@@ -68,12 +69,23 @@ func DetectDockerHost(log *logrus.Entry) (string, ContainerRuntime, error) {
 	return host, runtime, nil
 }
 
-// ResetDockerHostCache resets the cached docker host. Used for testing.
+// ResetDockerHostCache resets the cached docker host.
+//
+// This is serialized with DetectDockerHost via dockerHostMu.
+// Primarily used for testing.
 func ResetDockerHostCache() {
 	dockerHostMu.Lock()
 	defer dockerHostMu.Unlock()
 	cachedDockerHost = ""
 	cachedRuntime = RuntimeUnknown
+}
+
+func inferRuntimeFromHostHeuristic(host string) ContainerRuntime {
+	lowerHost := strings.ToLower(host)
+	if strings.Contains(lowerHost, "podman") {
+		return RuntimePodman
+	}
+	return RuntimeDocker
 }
 
 func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, error) {
@@ -95,8 +107,17 @@ func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, erro
 			if err := validateSocketFunc(ctx, dockerHost, true); err != nil {
 				return "", RuntimeUnknown, fmt.Errorf("DOCKER_HOST=%s is set but not accessible: %w", dockerHost, err)
 			}
+
+			runtime, err := inferRuntimeFromHostFunc(ctx, dockerHost, true)
+			if err != nil {
+				log.Debugf("Failed to infer runtime for DOCKER_HOST=%s: %v", dockerHost, err)
+				runtime = inferRuntimeFromHostHeuristic(dockerHost)
+			}
+			return dockerHost, runtime, nil
 		}
-		return dockerHost, RuntimeDocker, nil
+
+		// SSH hosts can point to either Docker or Podman; we don't attempt runtime inference here.
+		return dockerHost, RuntimeUnknown, nil
 	}
 
 	// Priority 2: Docker Context
@@ -123,7 +144,14 @@ func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, erro
 		}
 
 		if isValid {
-			return contextHost, RuntimeDocker, nil
+			ctx, cancel := context.WithTimeout(context.Background(), socketValidationTimeout)
+			defer cancel()
+			runtime, err := inferRuntimeFromHostFunc(ctx, contextHost, false)
+			if err != nil {
+				log.Debugf("Failed to infer runtime for Docker context host %s: %v", contextHost, err)
+				runtime = inferRuntimeFromHostHeuristic(contextHost)
+			}
+			return contextHost, runtime, nil
 		}
 	}
 
@@ -189,4 +217,41 @@ func validateSocket(ctx context.Context, host string, useEnv bool) error {
 	}
 
 	return nil
+}
+
+// inferRuntimeFromHost inspects the engine behind the host to distinguish Docker vs Podman.
+//
+// It uses the Docker-compatible API. Podman supports this and typically reports itself
+// via version metadata.
+func inferRuntimeFromHost(ctx context.Context, host string, useEnv bool) (ContainerRuntime, error) {
+	var opts []client.Opt
+	if useEnv {
+		// If we're validating/inferencing the host from the environment, use FromEnv to pick up TLS settings
+		opts = append(opts, client.FromEnv)
+	}
+	opts = append(opts, client.WithHost(host), client.WithAPIVersionNegotiation())
+
+	cli, err := client.NewClientWithOpts(opts...)
+	if err != nil {
+		return RuntimeUnknown, fmt.Errorf("create client: %w", err)
+	}
+	defer cli.Close()
+
+	v, err := cli.ServerVersion(ctx)
+	if err != nil {
+		return RuntimeUnknown, fmt.Errorf("server version: %w", err)
+	}
+
+	// Heuristics: Podman typically identifies itself in platform name or components.
+	needle := "podman"
+	if strings.Contains(strings.ToLower(v.Platform.Name), needle) {
+		return RuntimePodman, nil
+	}
+	for _, c := range v.Components {
+		if strings.Contains(strings.ToLower(c.Name), needle) {
+			return RuntimePodman, nil
+		}
+	}
+
+	return RuntimeDocker, nil
 }

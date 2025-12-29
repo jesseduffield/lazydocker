@@ -132,8 +132,8 @@ func detectPlatformCandidates(log *logrus.Entry) (string, ContainerRuntime, erro
 		}
 
 		// Validate by actually connecting
-		ctx, cancel := context.WithTimeout(context.Background(), socketValidationTimeout)
 		err := func() error {
+			ctx, cancel := context.WithTimeout(context.Background(), socketValidationTimeout)
 			defer cancel()
 			return validateSocketFunc(ctx, candidate.Path, false)
 		}()
@@ -142,7 +142,7 @@ func detectPlatformCandidates(log *logrus.Entry) (string, ContainerRuntime, erro
 			log.Debugf("Socket %s exists but validation failed: %v", candidate.Path, err)
 			errStr := strings.ToLower(err.Error())
 			if strings.Contains(errStr, "permission denied") || strings.Contains(errStr, "eacces") {
-				lastErr = fmt.Errorf("%s: permission denied (are you in the %v group?)", candidate.Path, candidate.Runtime)
+				lastErr = fmt.Errorf("%s: permission denied (check your user permissions for this socket)", candidate.Path)
 			} else {
 				lastErr = fmt.Errorf("%s: %v", candidate.Path, err)
 			}

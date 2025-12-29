@@ -66,18 +66,24 @@ func TestDetectDockerHost_DOCKER_HOST_Priority(t *testing.T) {
 
 	// Mock validateSocketFunc to succeed
 	oldValidate := validateSocketFunc
+	oldInfer := inferRuntimeFromHostFunc
 	defer func() { validateSocketFunc = oldValidate }()
+	defer func() { inferRuntimeFromHostFunc = oldInfer }()
 	validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
 		return nil
+	}
+	inferRuntimeFromHostFunc = func(ctx context.Context, host string, useEnv bool) (ContainerRuntime, error) {
+		return RuntimePodman, nil
 	}
 
 	// Reset cache for test
 	ResetDockerHostCache()
 
 	log := logrus.NewEntry(logrus.New())
-	host, _, err := DetectDockerHost(log)
+	host, runtime, err := DetectDockerHost(log)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedHost, host)
+	assert.Equal(t, RuntimePodman, runtime)
 }
 
 func TestDetectDockerHost_Caching(t *testing.T) {
@@ -89,23 +95,30 @@ func TestDetectDockerHost_Caching(t *testing.T) {
 
 	// Mock validateSocketFunc to succeed
 	oldValidate := validateSocketFunc
+	oldInfer := inferRuntimeFromHostFunc
 	defer func() { validateSocketFunc = oldValidate }()
+	defer func() { inferRuntimeFromHostFunc = oldInfer }()
 	validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
 		return nil
+	}
+	inferRuntimeFromHostFunc = func(ctx context.Context, host string, useEnv bool) (ContainerRuntime, error) {
+		return RuntimePodman, nil
 	}
 
 	// Reset cache for test
 	ResetDockerHostCache()
 
 	log := logrus.NewEntry(logrus.New())
-	host1, _, _ := DetectDockerHost(log)
+	host1, runtime1, _ := DetectDockerHost(log)
 
 	// Change env var - should still return first one from cache
 	os.Setenv("DOCKER_HOST", "unix:///tmp/second.sock")
-	host2, _, _ := DetectDockerHost(log)
+	host2, runtime2, _ := DetectDockerHost(log)
 
 	assert.Equal(t, host1, host2)
 	assert.Equal(t, "unix:///tmp/first.sock", host2)
+	assert.Equal(t, runtime1, runtime2)
+	assert.Equal(t, RuntimePodman, runtime2)
 }
 
 func TestDetectDockerHost_DOCKER_HOST_Invalid(t *testing.T) {
@@ -135,9 +148,11 @@ func TestDetectDockerHost_Context_Success(t *testing.T) {
 
 	oldGetHost := getHostFromContextFunc
 	oldValidate := validateSocketFunc
+	oldInfer := inferRuntimeFromHostFunc
 	defer func() {
 		getHostFromContextFunc = oldGetHost
 		validateSocketFunc = oldValidate
+		inferRuntimeFromHostFunc = oldInfer
 	}()
 
 	getHostFromContextFunc = func() (string, error) {
@@ -149,13 +164,17 @@ func TestDetectDockerHost_Context_Success(t *testing.T) {
 		}
 		return errors.New("invalid")
 	}
+	inferRuntimeFromHostFunc = func(ctx context.Context, host string, useEnv bool) (ContainerRuntime, error) {
+		return RuntimePodman, nil
+	}
 
 	ResetDockerHostCache()
 
 	log := logrus.NewEntry(logrus.New())
-	host, _, err := DetectDockerHost(log)
+	host, runtime, err := DetectDockerHost(log)
 	assert.NoError(t, err)
 	assert.Equal(t, "unix:///tmp/context.sock", host)
+	assert.Equal(t, RuntimePodman, runtime)
 }
 
 func TestDetectDockerHost_Context_Invalid_Fallback(t *testing.T) {
