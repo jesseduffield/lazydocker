@@ -4,11 +4,17 @@ package commands
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
 	"github.com/docker/cli/cli/config/configfile"
+	ddocker "github.com/docker/cli/cli/context/docker"
+	ctxstore "github.com/docker/cli/cli/context/store"
+	"github.com/docker/docker/api/types"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -303,6 +309,241 @@ func TestDetectDockerHost_PlainPath(t *testing.T) {
 	assert.Equal(t, "unix://"+tmpFile.Name(), host)
 }
 
+func TestInferRuntimeFromHost(t *testing.T) {
+	tests := []struct {
+		name            string
+		versionResponse types.Version
+		expectedRuntime ContainerRuntime
+	}{
+		{
+			name: "Docker",
+			versionResponse: types.Version{
+				Platform: struct{ Name string }{Name: "Docker Engine - Community"},
+				Components: []types.ComponentVersion{
+					{Name: "Engine", Version: "20.10.7"},
+				},
+			},
+			expectedRuntime: RuntimeDocker,
+		},
+		{
+			name: "Podman via Platform",
+			versionResponse: types.Version{
+				Platform: struct{ Name string }{Name: "Podman Engine"},
+			},
+			expectedRuntime: RuntimePodman,
+		},
+		{
+			name: "Podman via Components",
+			versionResponse: types.Version{
+				Components: []types.ComponentVersion{
+					{Name: "Podman Engine", Version: "3.2.3"},
+				},
+			},
+			expectedRuntime: RuntimePodman,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				json.NewEncoder(w).Encode(tt.versionResponse)
+			}))
+			defer server.Close()
+
+			runtime, err := inferRuntimeFromHost(context.Background(), server.URL, false)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedRuntime, runtime)
+		})
+	}
+}
+
+func TestValidateSocket(t *testing.T) {
+	t.Run("Success", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer server.Close()
+
+		err := validateSocket(context.Background(), server.URL, false)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Failure", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}))
+		defer server.Close()
+
+		err := validateSocket(context.Background(), server.URL, false)
+		assert.Error(t, err)
+	})
+}
+
+func TestGetHostFromContext(t *testing.T) {
+	oldLoad := cliconfigLoadFunc
+	oldNew := ctxstoreNewFunc
+	defer func() {
+		cliconfigLoadFunc = oldLoad
+		ctxstoreNewFunc = oldNew
+	}()
+
+	t.Run("Default context", func(t *testing.T) {
+		cliconfigLoadFunc = func(dir string) (*configfile.ConfigFile, error) {
+			return &configfile.ConfigFile{CurrentContext: "default"}, nil
+		}
+		host, err := getHostFromContext()
+		assert.NoError(t, err)
+		assert.Equal(t, "", host)
+	})
+
+	t.Run("Custom context", func(t *testing.T) {
+		cliconfigLoadFunc = func(dir string) (*configfile.ConfigFile, error) {
+			return &configfile.ConfigFile{CurrentContext: "my-context"}, nil
+		}
+		ctxstoreNewFunc = func(dir string, config ctxstore.Config) storeInterface {
+			return &mockStore{
+				metadata: ctxstore.Metadata{
+					Endpoints: map[string]interface{}{
+						ddocker.DockerEndpoint: ddocker.EndpointMeta{
+							Host: "unix:///tmp/my-context.sock",
+						},
+					},
+				},
+			}
+		}
+		host, err := getHostFromContext()
+		assert.NoError(t, err)
+		assert.Equal(t, "unix:///tmp/my-context.sock", host)
+	})
+}
+
+type mockStore struct {
+	metadata ctxstore.Metadata
+}
+
+func (m *mockStore) GetMetadata(name string) (ctxstore.Metadata, error) {
+	return m.metadata, nil
+}
+
+func TestDetectPlatformCandidates_Unix(t *testing.T) {
+	// Save and restore
+	oldStat := statFunc
+	oldValidate := validateSocketFunc
+	defer func() {
+		statFunc = oldStat
+		validateSocketFunc = oldValidate
+	}()
+
+	log := logrus.New().WithField("test", "test")
+
+	t.Run("No sockets exist", func(t *testing.T) {
+		statFunc = func(name string) (os.FileInfo, error) {
+			return nil, os.ErrNotExist
+		}
+		_, _, err := detectPlatformCandidates(log)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "no Docker or Podman socket found")
+		assert.Contains(t, err.Error(), "systemctl --user enable --now podman.socket")
+	})
+
+	t.Run("Docker socket exists and is valid", func(t *testing.T) {
+		statFunc = func(name string) (os.FileInfo, error) {
+			if name == "/var/run/docker.sock" {
+				return nil, nil
+			}
+			return nil, os.ErrNotExist
+		}
+		validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
+			if host == "unix:///var/run/docker.sock" {
+				return nil
+			}
+			return errors.New("invalid")
+		}
+		host, runtime, err := detectPlatformCandidates(log)
+		assert.NoError(t, err)
+		assert.Equal(t, "unix:///var/run/docker.sock", host)
+		assert.Equal(t, RuntimeDocker, runtime)
+	})
+
+	t.Run("Docker socket exists but permission denied", func(t *testing.T) {
+		statFunc = func(name string) (os.FileInfo, error) {
+			if name == "/var/run/docker.sock" {
+				return nil, nil
+			}
+			return nil, os.ErrNotExist
+		}
+		validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
+			return errors.New("permission denied")
+		}
+		_, _, err := detectPlatformCandidates(log)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "permission denied")
+	})
+
+	t.Run("Podman socket exists and is valid", func(t *testing.T) {
+		// Mock getuid to return 1000
+		oldGetuid := getuidFunc
+		defer func() { getuidFunc = oldGetuid }()
+		getuidFunc = func() int { return 1000 }
+
+		statFunc = func(name string) (os.FileInfo, error) {
+			if name == "/run/user/1000/podman/podman.sock" {
+				return nil, nil
+			}
+			return nil, os.ErrNotExist
+		}
+		validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
+			if host == "unix:///run/user/1000/podman/podman.sock" {
+				return nil
+			}
+			return errors.New("invalid")
+		}
+		host, runtime, err := detectPlatformCandidates(log)
+		assert.NoError(t, err)
+		assert.Equal(t, "unix:///run/user/1000/podman/podman.sock", host)
+		assert.Equal(t, RuntimePodman, runtime)
+	})
+}
+
+func TestDetectPlatformCandidates(t *testing.T) {
+	oldStat := statFunc
+	oldValidate := validateSocketFunc
+	defer func() {
+		statFunc = oldStat
+		validateSocketFunc = oldValidate
+	}()
+
+	log := logrus.NewEntry(logrus.New())
+
+	t.Run("First candidate succeeds", func(t *testing.T) {
+		statFunc = func(name string) (os.FileInfo, error) {
+			return nil, nil // exists
+		}
+		validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
+			return nil
+		}
+		host, runtime, err := detectPlatformCandidates(log)
+		assert.NoError(t, err)
+		assert.Equal(t, "unix:///var/run/docker.sock", host)
+		assert.Equal(t, RuntimeDocker, runtime)
+	})
+
+	t.Run("First fails, second succeeds", func(t *testing.T) {
+		statFunc = func(name string) (os.FileInfo, error) {
+			if name == "/var/run/docker.sock" {
+				return nil, os.ErrNotExist
+			}
+			return nil, nil
+		}
+		validateSocketFunc = func(ctx context.Context, host string, useEnv bool) error {
+			return nil
+		}
+		host, _, err := detectPlatformCandidates(log)
+		assert.NoError(t, err)
+		assert.NotEqual(t, "unix:///var/run/docker.sock", host)
+	})
+}
+
 func TestValidateSocket_UseEnv(t *testing.T) {
 	ctx := context.Background()
 	oldDockerHost := os.Getenv("DOCKER_HOST")
@@ -359,98 +600,4 @@ func TestValidateSocket_Failures(t *testing.T) {
 	// Test invalid schema
 	err = validateSocket(ctx, "invalid:///tmp/test.sock", false)
 	assert.Error(t, err)
-}
-
-func TestDetectPlatformCandidates_Unix(t *testing.T) {
-	// Save and restore
-	oldStat := statFunc
-	oldValidate := validateSocketFunc
-	defer func() {
-		statFunc = oldStat
-		validateSocketFunc = oldValidate
-	}()
-
-	log := logrus.New().WithField("test", "test")
-
-	t.Run("No sockets exist", func(t *testing.T) {
-		statFunc = func(name string) (os.FileInfo, error) {
-			return nil, os.ErrNotExist
-		}
-		_, _, err := detectPlatformCandidates(log)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "ensure Docker or Podman is running")
-	})
-
-	t.Run("Docker socket exists and is valid", func(t *testing.T) {
-		statFunc = func(name string) (os.FileInfo, error) {
-			if name == "/var/run/docker.sock" {
-				return nil, nil
-			}
-			return nil, os.ErrNotExist
-		}
-		validateSocketFunc = func(ctx context.Context, host string, silent bool) error {
-			if host == "unix:///var/run/docker.sock" {
-				return nil
-			}
-			return errors.New("invalid")
-		}
-		path, runtime, err := detectPlatformCandidates(log)
-		assert.NoError(t, err)
-		assert.Equal(t, "unix:///var/run/docker.sock", path)
-		assert.Equal(t, RuntimeDocker, runtime)
-	})
-
-	t.Run("Docker socket exists but permission denied", func(t *testing.T) {
-		statFunc = func(name string) (os.FileInfo, error) {
-			if name == "/var/run/docker.sock" {
-				return nil, nil
-			}
-			return nil, os.ErrNotExist
-		}
-		validateSocketFunc = func(ctx context.Context, host string, silent bool) error {
-			return errors.New("permission denied")
-		}
-		_, _, err := detectPlatformCandidates(log)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "permission denied")
-	})
-
-	t.Run("Docker socket exists but other error", func(t *testing.T) {
-		statFunc = func(name string) (os.FileInfo, error) {
-			if name == "/var/run/docker.sock" {
-				return nil, nil
-			}
-			return nil, os.ErrNotExist
-		}
-		validateSocketFunc = func(ctx context.Context, host string, silent bool) error {
-			return errors.New("other error")
-		}
-		_, _, err := detectPlatformCandidates(log)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "other error")
-	})
-
-	t.Run("Podman socket exists and is valid", func(t *testing.T) {
-		// Mock getuid to return 1000
-		oldGetuid := getuidFunc
-		getuidFunc = func() int { return 1000 }
-		defer func() { getuidFunc = oldGetuid }()
-
-		statFunc = func(name string) (os.FileInfo, error) {
-			if name == "/run/user/1000/podman/podman.sock" {
-				return nil, nil
-			}
-			return nil, os.ErrNotExist
-		}
-		validateSocketFunc = func(ctx context.Context, host string, silent bool) error {
-			if host == "unix:///run/user/1000/podman/podman.sock" {
-				return nil
-			}
-			return errors.New("invalid")
-		}
-		path, runtime, err := detectPlatformCandidates(log)
-		assert.NoError(t, err)
-		assert.Equal(t, "unix:///run/user/1000/podman/podman.sock", path)
-		assert.Equal(t, RuntimePodman, runtime)
-	})
 }

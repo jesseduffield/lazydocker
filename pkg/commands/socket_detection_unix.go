@@ -158,6 +158,14 @@ func detectPlatformCandidates(log *logrus.Entry) (string, ContainerRuntime, erro
 		return "", RuntimeUnknown, fmt.Errorf("%w: last error: %v", ErrNoDockerSocket, lastErr)
 	}
 
-	msg := fmt.Sprintf("%v: ensure Docker or Podman is running", ErrNoDockerSocket)
+	var checkedSockets []string
+	for _, candidate := range candidates {
+		checkedSockets = append(checkedSockets, strings.TrimPrefix(candidate.Path, DockerSocketSchema))
+	}
+
+	msg := fmt.Sprintf("%v: no Docker or Podman socket found; checked %s. "+
+		"If you are using Podman with systemd socket activation, try running "+
+		"'systemctl --user enable --now podman.socket' and then re-run this command.",
+		ErrNoDockerSocket, strings.Join(checkedSockets, ", "))
 	return "", RuntimeUnknown, errors.New(msg)
 }

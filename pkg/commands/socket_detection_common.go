@@ -30,8 +30,14 @@ var (
 
 	// For testing getHostFromContext
 	cliconfigLoadFunc = cliconfig.Load
-	ctxstoreNewFunc   = ctxstore.New
+	ctxstoreNewFunc   = func(dir string, config ctxstore.Config) storeInterface {
+		return ctxstore.New(dir, config)
+	}
 )
+
+type storeInterface interface {
+	GetMetadata(name string) (ctxstore.Metadata, error)
+}
 
 // Runtime type detection
 type ContainerRuntime string
@@ -130,7 +136,6 @@ func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, erro
 		log.Debugf("Failed to get host from default context: %v", err)
 	} else if contextHost != "" {
 		log.Debugf("Using host from Docker context: %s", contextHost)
-		isValid := true
 		if !strings.HasPrefix(contextHost, "ssh://") {
 			ctx, cancel := context.WithTimeout(context.Background(), socketValidationTimeout)
 			defer cancel()
@@ -139,19 +144,17 @@ func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, erro
 					return "", RuntimeUnknown, fmt.Errorf("DOCKER_CONTEXT host %s is not accessible: %w", contextHost, err)
 				}
 				log.Warnf("Context host %s is not accessible: %v", contextHost, err)
-				isValid = false
+			} else {
+				runtime, err := inferRuntimeFromHostFunc(ctx, contextHost, false)
+				if err != nil {
+					log.Debugf("Failed to infer runtime for Docker context host %s: %v", contextHost, err)
+					runtime = inferRuntimeFromHostHeuristic(contextHost)
+				}
+				return contextHost, runtime, nil
 			}
-		}
-
-		if isValid {
-			ctx, cancel := context.WithTimeout(context.Background(), socketValidationTimeout)
-			defer cancel()
-			runtime, err := inferRuntimeFromHostFunc(ctx, contextHost, false)
-			if err != nil {
-				log.Debugf("Failed to infer runtime for Docker context host %s: %v", contextHost, err)
-				runtime = inferRuntimeFromHostHeuristic(contextHost)
-			}
-			return contextHost, runtime, nil
+		} else {
+			// SSH hosts can point to either Docker or Podman; we don't attempt runtime inference here.
+			return contextHost, RuntimeUnknown, nil
 		}
 	}
 
