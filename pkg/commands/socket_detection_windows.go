@@ -73,5 +73,5 @@ func detectPlatformCandidates(log *logrus.Entry) (string, ContainerRuntime, erro
 		}
 	}
 
-	return "", RuntimeUnknown, ErrNoDockerSocket
+	return "", RuntimeUnknown, ErrNoContainerSocket
 }

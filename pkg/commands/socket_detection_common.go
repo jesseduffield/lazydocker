@@ -16,7 +16,11 @@ import (
 )
 
 var (
-	ErrNoDockerSocket = fmt.Errorf("no working Docker/Podman socket found")
+	// ErrNoContainerSocket is returned when no working Docker or Podman socket is found.
+	ErrNoContainerSocket = fmt.Errorf("no working Docker/Podman socket found")
+	// ErrNoDockerSocket is an alias for ErrNoContainerSocket for backwards compatibility.
+	// Deprecated: Use ErrNoContainerSocket instead.
+	ErrNoDockerSocket = ErrNoContainerSocket
 )
 
 // Timeout for validating socket connectivity
@@ -94,6 +98,11 @@ func inferRuntimeFromHostHeuristic(host string) ContainerRuntime {
 	return RuntimeDocker
 }
 
+// isSSHHost returns true if the host uses the SSH protocol.
+func isSSHHost(host string) bool {
+	return strings.HasPrefix(host, "ssh://")
+}
+
 func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, error) {
 	// Priority 1: Explicit DOCKER_HOST environment variable
 	if dockerHost := os.Getenv("DOCKER_HOST"); dockerHost != "" {
@@ -107,11 +116,12 @@ func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, erro
 			}
 		}
 
-		if !strings.HasPrefix(dockerHost, "ssh://") {
+		if !isSSHHost(dockerHost) {
 			ctx, cancel := context.WithTimeout(context.Background(), socketValidationTimeout)
 			defer cancel()
 			if err := validateSocketFunc(ctx, dockerHost, true); err != nil {
-				return "", RuntimeUnknown, fmt.Errorf("DOCKER_HOST=%s is set but not accessible: %w", dockerHost, err)
+				errMsg := formatConnectionError(ctx, err)
+				return "", RuntimeUnknown, fmt.Errorf("DOCKER_HOST=%s is set but not accessible: %s", dockerHost, errMsg)
 			}
 
 			runtime, err := inferRuntimeFromHostFunc(ctx, dockerHost, true)
@@ -136,14 +146,15 @@ func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, erro
 		log.Debugf("Failed to get host from default context: %v", err)
 	} else if contextHost != "" {
 		log.Debugf("Using host from Docker context: %s", contextHost)
-		if !strings.HasPrefix(contextHost, "ssh://") {
+		if !isSSHHost(contextHost) {
 			ctx, cancel := context.WithTimeout(context.Background(), socketValidationTimeout)
 			defer cancel()
 			if err := validateSocketFunc(ctx, contextHost, false); err != nil {
+				errMsg := formatConnectionError(ctx, err)
 				if os.Getenv("DOCKER_CONTEXT") != "" {
-					return "", RuntimeUnknown, fmt.Errorf("DOCKER_CONTEXT host %s is not accessible: %w", contextHost, err)
+					return "", RuntimeUnknown, fmt.Errorf("DOCKER_CONTEXT host %s is not accessible: %s", contextHost, errMsg)
 				}
-				log.Warnf("Context host %s is not accessible: %v", contextHost, err)
+				log.Warnf("Context host %s is not accessible: %s", contextHost, errMsg)
 			} else {
 				runtime, err := inferRuntimeFromHostFunc(ctx, contextHost, false)
 				if err != nil {
@@ -160,6 +171,18 @@ func detectDockerHostInternal(log *logrus.Entry) (string, ContainerRuntime, erro
 
 	// Priority 3: Platform-specific candidates
 	return detectPlatformCandidatesFunc(log)
+}
+
+// formatConnectionError returns a user-friendly error message, distinguishing timeout from other errors.
+func formatConnectionError(ctx context.Context, err error) string {
+	if ctx.Err() == context.DeadlineExceeded {
+		return "connection timed out (is the container runtime running?)"
+	}
+	errStr := strings.ToLower(err.Error())
+	if strings.Contains(errStr, "permission denied") || strings.Contains(errStr, "eacces") {
+		return "permission denied (check your user permissions for this socket)"
+	}
+	return err.Error()
 }
 
 // getHostFromContext retrieves the host from the current Docker context

@@ -4,7 +4,6 @@ package commands
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -155,7 +154,7 @@ func detectPlatformCandidates(log *logrus.Entry) (string, ContainerRuntime, erro
 
 	// All candidates failed - provide actionable error
 	if lastErr != nil {
-		return "", RuntimeUnknown, fmt.Errorf("%w: last error: %v", ErrNoDockerSocket, lastErr)
+		return "", RuntimeUnknown, fmt.Errorf("%w: %v", ErrNoContainerSocket, lastErr)
 	}
 
 	var checkedSockets []string
@@ -163,9 +162,8 @@ func detectPlatformCandidates(log *logrus.Entry) (string, ContainerRuntime, erro
 		checkedSockets = append(checkedSockets, strings.TrimPrefix(candidate.Path, DockerSocketSchema))
 	}
 
-	msg := fmt.Sprintf("%v: no Docker or Podman socket found; checked %s. "+
+	return "", RuntimeUnknown, fmt.Errorf("%w: no Docker or Podman socket found; checked %s. "+
 		"If you are using Podman with systemd socket activation, try running "+
 		"'systemctl --user enable --now podman.socket' and then re-run this command.",
-		ErrNoDockerSocket, strings.Join(checkedSockets, ", "))
-	return "", RuntimeUnknown, errors.New(msg)
+		ErrNoContainerSocket, strings.Join(checkedSockets, ", "))
 }

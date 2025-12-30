@@ -60,7 +60,7 @@ func TestDetectPlatformCandidates_Windows_Failure(t *testing.T) {
 	log := logrus.NewEntry(logrus.New())
 	_, _, err := detectPlatformCandidates(log)
 	assert.Error(t, err)
-	assert.Equal(t, ErrNoDockerSocket, err)
+	assert.ErrorIs(t, err, ErrNoContainerSocket)
 }
 
 func TestGetPodmanPipes(t *testing.T) {
@@ -72,12 +72,16 @@ func TestGetPodmanPipes(t *testing.T) {
 
 	tmpDir, err := os.MkdirTemp("", "podman-test")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	t.Cleanup(func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Errorf("failed to remove temp dir %s: %v", tmpDir, err)
+		}
+	})
 
 	// Set USERPROFILE to our temp dir
 	oldProfile := os.Getenv("USERPROFILE")
+	t.Cleanup(func() { os.Setenv("USERPROFILE", oldProfile) })
 	os.Setenv("USERPROFILE", tmpDir)
-	defer os.Setenv("USERPROFILE", oldProfile)
 
 	// 1. Test fallback when directory doesn't exist
 	pipes := getPodmanPipes(log)
@@ -99,4 +103,27 @@ func TestGetPodmanPipes(t *testing.T) {
 	assert.Len(t, pipes, 2)
 	assert.Contains(t, pipes, "npipe:////./pipe/machine1")
 	assert.Contains(t, pipes, "npipe:////./pipe/machine2")
+
+	// 3. Test with empty config directory (no JSON files)
+	emptyDir := filepath.Join(tmpDir, ".config", "containers", "podman", "machine", "empty-wsl")
+	err = os.MkdirAll(emptyDir, 0755)
+	assert.NoError(t, err)
+
+	// Create a new temp dir for this specific test
+	tmpDir2, err := os.MkdirTemp("", "podman-test-empty")
+	assert.NoError(t, err)
+	t.Cleanup(func() {
+		if err := os.RemoveAll(tmpDir2); err != nil {
+			t.Errorf("failed to remove temp dir %s: %v", tmpDir2, err)
+		}
+	})
+	os.Setenv("USERPROFILE", tmpDir2)
+
+	// Create the wsl directory but leave it empty
+	emptyConfigDir := filepath.Join(tmpDir2, ".config", "containers", "podman", "machine", "wsl")
+	err = os.MkdirAll(emptyConfigDir, 0755)
+	assert.NoError(t, err)
+
+	pipes = getPodmanPipes(log)
+	assert.Equal(t, []string{"npipe:////./pipe/podman-machine-default"}, pipes)
 }
