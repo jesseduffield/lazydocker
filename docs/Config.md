@@ -64,6 +64,16 @@ logs:
   timestamps: false
   since: '60m' # set to '' to show all logs
   tail: '' # set to 200 to show last 200 lines of logs
+
+### Logs Filtering
+
+When viewing container or service logs in the main panel, you can filter the log output in real-time:
+
+- Press `/` while viewing logs to open the filter prompt
+- Type a search string to filter log lines (case-sensitive substring match)
+- Press `Enter` to commit the filter and return to viewing filtered logs
+- Press `Esc` to cancel the filter and return to unfiltered logs
+
 commandTemplates:
   dockerCompose: docker compose # Determines the Docker Compose command to run, referred to as .DockerCompose in commandTemplates
   restartService: '{{ .DockerCompose }} restart {{ .Service.Name }}'

@@ -46,6 +46,12 @@ type Views struct {
 	// appears next to the SearchPrefix view, it's where you type in the search string
 	Filter *gocui.View
 
+	// text that prompts you to enter text in the LogsFilter view
+	LogsFilter *gocui.View
+
+	// appears next to the SearchPrefix view, it's where you type in the log search string
+	LogsFilterPrefix *gocui.View
+
 	// popups
 	Confirmation *gocui.View
 	Menu         *gocui.View
@@ -81,6 +87,8 @@ func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
 		{viewPtr: &gui.Views.Information, name: "information", autoPosition: true},
 		{viewPtr: &gui.Views.Filter, name: "filter", autoPosition: true},
 		{viewPtr: &gui.Views.FilterPrefix, name: "filterPrefix", autoPosition: true},
+		{viewPtr: &gui.Views.LogsFilter, name: "logsfilter", autoPosition: true},
+		{viewPtr: &gui.Views.LogsFilterPrefix, name: "logsfilterPrefix", autoPosition: true},
 
 		// popups.
 		{viewPtr: &gui.Views.Menu, name: "menu", autoPosition: false},
@@ -178,6 +186,16 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Filter.Frame = false
 	gui.Views.Filter.Editor = gocui.EditorFunc(gui.wrapEditor(gocui.SimpleEditor))
 
+	gui.Views.LogsFilterPrefix.BgColor = gocui.ColorDefault
+	gui.Views.LogsFilterPrefix.FgColor = gocui.ColorGreen
+	gui.Views.LogsFilterPrefix.Frame = false
+
+	gui.Views.LogsFilter.BgColor = gocui.ColorDefault
+	gui.Views.LogsFilter.FgColor = gocui.ColorGreen
+	gui.Views.LogsFilter.Editable = true
+	gui.Views.LogsFilter.Frame = false
+	gui.Views.LogsFilter.Editor = gocui.EditorFunc(gui.wrapLogsEditor(gocui.SimpleEditor))
+
 	return nil
 }
 
@@ -187,6 +205,7 @@ func (gui *Gui) setInitialViewContent() error {
 	}
 
 	_ = gui.setViewContent(gui.Views.FilterPrefix, gui.filterPrompt())
+	_ = gui.setViewContent(gui.Views.LogsFilterPrefix, gui.logsFilterPrompt())
 
 	return nil
 }
