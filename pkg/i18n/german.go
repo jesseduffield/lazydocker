@@ -10,11 +10,11 @@ func germanSet() TranslationSet {
 
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
 
-		ErrorOccurred:                     "Es ist ein Fehler aufgetreten! Bitte erstelle ein Issue hier: https://github.com/jesseduffield/lazydocker/issues",
+		ErrorOccurred:                     "Es ist ein Fehler aufgetreten! Bitte erstelle ein Issue hier: https://github.com/christophe-duc/lazypodman/issues",
 		ConnectionFailed:                  "Verbindung zum Docker Client fehlgeschlagen. Du musst ggf. den Docker Client neustarten.",
 		UnattachableContainerError:        "Der Container bietet keine Unterstützung für das Anbinden. Du musst den Dienst entweder mit der '-it' Flagge benutzen oder `stdin_open: true, tty: true` in der docker-compose.yml Datei setzen.",
 		CannotAttachStoppedContainerError: "Du kannst keinen angehaltenen Container anbinden. Du musst ihn erst starten (was du tun kannst, indem du 'r' drückst), (ja, ich bin zu faul um das zu automatisieren) (aber ist schon cool, dass ich so eine Konversation durch eine Fehlermeldung mit dir führen kann)",
-		CannotAccessDockerSocketError:     "Kann nicht auf den Socket zugreifen: unix:///var/run/docker.sock\nFühre lazydocker als root aus oder lese https://docs.docker.com/install/linux/linux-postinstall/",
+		CannotAccessDockerSocketError:     "Kann nicht auf den Socket zugreifen: unix:///var/run/docker.sock\nFühre lazypodman als root aus oder lese https://docs.docker.com/install/linux/linux-postinstall/",
 
 		Donate:  "Spenden",
 		Confirm: "Bestätigen",
@@ -27,8 +27,8 @@ func germanSet() TranslationSet {
 		Menu:               "menü",
 		MenuTitle:          "Menü",
 		Scroll:             "scrollen",
-		OpenConfig:         "öffne lazydocker Konfiguration",
-		EditConfig:         "bearbeite lazydocker Konfiguration",
+		OpenConfig:         "öffne lazypodman Konfiguration",
+		EditConfig:         "bearbeite lazypodman Konfiguration",
 		Cancel:             "abbrechen",
 		Remove:             "entfernen",
 		ForceRemove:        "Entfernen erzwingen",
@@ -91,7 +91,7 @@ func germanSet() TranslationSet {
 		ConfirmPruneNetworks:        "Bist du dir sicher, dass du alle unbenutzen Netzwerk entfernen möchtest?",
 		StopService:                 "Bist du dir sicher, dass du den Dienst dieses Containers anhalten möchtest?",
 		StopContainer:               "Bist du dir sicher, dass du den Container anhalten möchtest?",
-		PressEnterToReturn:          "Drücke Eingabe um zu lazydocker zurückzukehren. (Diese Nachfrage kann in Deiner Konfiguration deaktiviert werden, indem du folgenden Wert setzt: `gui.returnImmediately: true`)",
+		PressEnterToReturn:          "Drücke Eingabe um zu lazypodman zurückzukehren. (Diese Nachfrage kann in Deiner Konfiguration deaktiviert werden, indem du folgenden Wert setzt: `gui.returnImmediately: true`)",
 		DetachFromContainerShortCut: "Um sich vom Container zu trennen, drücken Sie standardmäßig ctrl-p ​​und dann ctrl-q",
 	}
 }

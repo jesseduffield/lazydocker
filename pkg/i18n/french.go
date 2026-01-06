@@ -13,13 +13,13 @@ func frenchSet() TranslationSet {
 
 		NoViewMachingNewLineFocusedSwitchStatement: "Aucune vue correspondant au switch newLineFocused",
 
-		ErrorOccurred:              "Une erreur s'est produite ! Veuillez créer un rapport d'erreur sur https://github.com/jesseduffield/lazydocker/issues",
+		ErrorOccurred:              "Une erreur s'est produite ! Veuillez créer un rapport d'erreur sur https://github.com/christophe-duc/lazypodman/issues",
 		ConnectionFailed:           "Erreur lors de la connexion au client Docker. Essayez de redémarrer votre client Docker",
 		UnattachableContainerError: "Le conteneur ne peut pas être attaché. Vous devez exécuter le service avec le drapeau 'it' ou bien utiliser `stdin_open: true, tty: true` dans votre fichier docker-compose.yml",
 		WaitingForContainerInfo:    "Le processus ne peut pas continuer avant que Docker ne fournisse plus d'informations. Veuillez réessayer dans quelques instants.",
 
 		CannotAttachStoppedContainerError: "Vous ne pouvez pas vous attacher à un conteneur arrêté, vous devez le démarrer en amont (ce que vous pouvez faire avec la touche 'r') (oui, je suis trop paresseux pour le faire automatiquement pour vous) (plutôt cool que je puisse communiquer en tête-à-tête avec vous au travers d'un message d'erreur, cependant)",
-		CannotAccessDockerSocketError:     "Impossible d'accéder au socket Docker à : unix:///var/run/docker.sock\nLancez lazydocker en tant que root ou alors lisez https://docs.docker.com/install/linux/linux-postinstall/",
+		CannotAccessDockerSocketError:     "Impossible d'accéder au socket Docker à : unix:///var/run/docker.sock\nLancez lazypodman en tant que root ou alors lisez https://docs.docker.com/install/linux/linux-postinstall/",
 		CannotKillChildError:              "Trois secondes se sont écoulées depuis la demande d'arrêt des processus enfants. Il se peut qu'un processus orphelin continue à tourner sur votre système.",
 
 		Donate:  "Donner",
@@ -33,8 +33,8 @@ func frenchSet() TranslationSet {
 		Menu:                        "menu",
 		MenuTitle:                   "Menu",
 		Scroll:                      "faire défiler",
-		OpenConfig:                  "ouvrir la configuration lazydocker",
-		EditConfig:                  "modifier la configuration lazydocker",
+		OpenConfig:                  "ouvrir la configuration lazypodman",
+		EditConfig:                  "modifier la configuration lazypodman",
 		Cancel:                      "annuler",
 		Remove:                      "supprimer",
 		HideStopped:                 "cacher/montrer les conteneurs arrêtés",
@@ -111,7 +111,7 @@ func frenchSet() TranslationSet {
 		ConfirmPruneNetworks:        "Êtes-vous certain de vouloir détruire tous les réseaux non utilisés ?",
 		StopService:                 "Êtes-vous certain de vouloir arrêter le conteneur de ce service ?",
 		StopContainer:               "Êtes-vous certain de vouloir arrêter ce conteneur ?",
-		PressEnterToReturn:          "Appuyez sur Entrée pour revenir à lazydocker (ce message peut être désactivé dans vos configurations en appliquant `gui.returnImmediately: true`)",
+		PressEnterToReturn:          "Appuyez sur Entrée pour revenir à lazypodman (ce message peut être désactivé dans vos configurations en appliquant `gui.returnImmediately: true`)",
 		DetachFromContainerShortCut: "Par défaut, pour se détacher du conteneur appuyez sur CTRL-P puis CTRL-Q",
 
 		No:  "non",

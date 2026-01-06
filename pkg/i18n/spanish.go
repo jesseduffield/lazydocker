@@ -14,11 +14,11 @@ func spanishSet() TranslationSet {
 		RunningCustomCommandStatus: "ejecutando comando personalizado",
 		RunningBulkCommandStatus:   "ejecutando comando masivo",
 
-		ErrorOccurred:                 "¡Hubo un error! Por favor crea un issue en https://github.com/jesseduffield/lazydocker/issues",
+		ErrorOccurred:                 "¡Hubo un error! Por favor crea un issue en https://github.com/christophe-duc/lazypodman/issues",
 		ConnectionFailed:              "Falló la conexión con el docker client. Quizá necesitas reiniciar tu docker client",
 		UnattachableContainerError:    "Container does not support attaching. You must either run the service with the '-it' flag or use `stdin_open: true, tty: true` in the docker-compose.yml file",
 		WaitingForContainerInfo:       "No podemos proceder hasta que docker nos de más información sobre el contenedor. Inténtalo otra vez en unos segundos.",
-		CannotAccessDockerSocketError: "No es posible acceder al docker socket en: unix:///var/run/docker.sock\nEjecuta lazydocker como root o lee https://docs.docker.com/install/linux/linux-postinstall/",
+		CannotAccessDockerSocketError: "No es posible acceder al docker socket en: unix:///var/run/docker.sock\nEjecuta lazypodman como root o lee https://docs.docker.com/install/linux/linux-postinstall/",
 		CannotKillChildError:          "Esperamos tres segundos a que el proceso hijo se detenga. Debe de haber un proceso huérfano que continua activo en tu sistema.",
 
 		Donate:  "Donar",
@@ -33,8 +33,8 @@ func spanishSet() TranslationSet {
 		Quit:                        "salir",
 		Menu:                        "menú",
 		MenuTitle:                   "Menú",
-		OpenConfig:                  "abrir configuración de lazydocker",
-		EditConfig:                  "editar configuración de lazydocker",
+		OpenConfig:                  "abrir configuración de lazypodman",
+		EditConfig:                  "editar configuración de lazypodman",
 		Cancel:                      "cancelar",
 		Remove:                      "borrar",
 		HideStopped:                 "esconder/mostrar contenedores parados",
@@ -119,7 +119,7 @@ func spanishSet() TranslationSet {
 		ConfirmPruneNetworks:       "¿Realmente quieres limpiar todas las redes sin usar?",
 		StopService:                "¿Realmente quieres detener los contenedores de este servicio?",
 		StopContainer:              "¿Realmente quieres detener este contenedor?",
-		PressEnterToReturn:         "Presionar [enter] para volver a lazydocker (este mensaje puede ser desactivado en tu configuración poniendo `gui.returnImmediately: true`)",
+		PressEnterToReturn:         "Presionar [enter] para volver a lazypodman (este mensaje puede ser desactivado en tu configuración poniendo `gui.returnImmediately: true`)",
 
 		No:  "no",
 		Yes: "sí",

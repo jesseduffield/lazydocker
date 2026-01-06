@@ -1,16 +1,16 @@
 version: '3'
 services:
-  lazydocker:
+  lazypodman:
     build:
-      context: https://github.com/jesseduffield/lazydocker.git
+      context: https://github.com/christophe-duc/lazypodman.git
       args:
         BASE_IMAGE_BUILDER: golang
         GOARCH: amd64
         GOARM:
-    image: lazyteam/lazydocker
-    container_name: lazydocker
+    image: christophe-duc/lazypodman
+    container_name: lazypodman
     stdin_open: true
     tty: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./config:/.config/jesseduffield/lazydocker
+      - ./config:/.config/christophe-duc/lazypodman

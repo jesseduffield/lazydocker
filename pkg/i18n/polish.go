@@ -10,7 +10,7 @@ func polishSet() TranslationSet {
 
 		NoViewMachingNewLineFocusedSwitchStatement: "Żaden widok nie odpowiada instrukcji przełączenia newLineFocused",
 
-		ErrorOccurred:                     "Wystąpił błąd! Proszę go zgłosić na https://github.com/jesseduffield/lazydocker/issues",
+		ErrorOccurred:                     "Wystąpił błąd! Proszę go zgłosić na https://github.com/christophe-duc/lazypodman/issues",
 		ConnectionFailed:                  "Błąd połączenia z Dockerem. Być może należy go zrestartować.",
 		UnattachableContainerError:        "Kontener nie obsługuje przyczepiania (attach). Musisz albo użyć flag '-it', albo `stdin_open: true, tty: true` w pliku docker-compose.yml.",
 		CannotAttachStoppedContainerError: "Nie można przyczepić się do zatrzymanego kontenera, należy go najpierw uruchomić (co można wykonać wciskając przycisk 'r')",
@@ -91,7 +91,7 @@ func polishSet() TranslationSet {
 		ConfirmPruneNetworks:        "Na pewno wyczyścić wszystkie nieużywane sieci?",
 		StopService:                 "Na pewno zatrzymać kontenery tego serwisu?",
 		StopContainer:               "Na pewno zatrzymać ten kontener?",
-		PressEnterToReturn:          "Wciśnij enter aby powrócić do lazydockera (ten komunikat może być wyłączony w konfiguracji poprzez ustawienie `gui.returnImmediately: true`)",
+		PressEnterToReturn:          "Wciśnij enter aby powrócić do lazypodmana (ten komunikat może być wyłączony w konfiguracji poprzez ustawienie `gui.returnImmediately: true`)",
 		DetachFromContainerShortCut: "Domyślnie, aby odłączyć się od kontenera, naciśnij ctrl-p, a następnie ctrl-q",
 	}
 }

@@ -86,7 +86,7 @@ func (t *tunneledDockerHost) Close() error {
 }
 
 func (self *SSHHandler) createDockerHostTunnel(ctx context.Context, remoteHost string) (*tunneledDockerHost, error) {
-	socketDir, err := self.tempDir("/tmp", "lazydocker-sshtunnel-")
+	socketDir, err := self.tempDir("/tmp", "lazypodman-sshtunnel-")
 	if err != nil {
 		return nil, fmt.Errorf("create ssh tunnel tmp file: %w", err)
 	}

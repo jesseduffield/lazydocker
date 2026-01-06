@@ -2,7 +2,7 @@
 <sup>Special thanks to:</sup>
 <br>
 <br>
-<a href="https://www.warp.dev/?utm_source=github&utm_medium=referral&utm_campaign=lazydocker_20231023">
+<a href="https://www.warp.dev/?utm_source=github&utm_medium=referral&utm_campaign=lazypodman_20231023">
   <div>
     <img src="https://github.com/warpdotdev/brand-assets/blob/main/Github/Sponsor/Warp-Github-LG-02.png?raw=true" width="400" alt="Warp">
   </div>
@@ -16,7 +16,7 @@
 </a>
 <br>
 <hr>
-<a href="https://tuple.app/lazydocker">
+<a href="https://tuple.app/lazypodman">
   <div>
     <img src="assets/tuple.png" width="400" alt="Tuple">
   </div>
@@ -43,13 +43,13 @@
 A simple terminal UI for both docker and docker-compose, written in Go with the [gocui](https://github.com/jroimartin/gocui 'gocui') library.
 
 ![CI](https://github.com/jesseduffield/lazygit/workflows/Continuous%20Integration/badge.svg)
-[![Go Report Card](https://goreportcard.com/badge/github.com/jesseduffield/lazydocker)](https://goreportcard.com/report/github.com/jesseduffield/lazydocker)
-[![GolangCI](https://golangci.com/badges/github.com/jesseduffield/lazydocker.svg)](https://golangci.com)
-[![GoDoc](https://godoc.org/github.com/jesseduffield/lazydocker?status.svg)](http://godoc.org/github.com/jesseduffield/lazydocker)
-![GitHub repo size](https://img.shields.io/github/repo-size/jesseduffield/lazydocker)
-[![GitHub Releases](https://img.shields.io/github/downloads/jesseduffield/lazydocker/total)](https://github.com/jesseduffield/lazydocker/releases)
-[![GitHub tag](https://img.shields.io/github/tag/jesseduffield/lazydocker.svg)](https://github.com/jesseduffield/lazydocker/releases/latest)
-[![homebrew](https://img.shields.io/homebrew/v/lazydocker)](https://github.com/Homebrew/homebrew-core/blob/master/Formula/lazydocker.rb)
+[![Go Report Card](https://goreportcard.com/badge/github.com/christophe-duc/lazypodman)](https://goreportcard.com/report/github.com/christophe-duc/lazypodman)
+[![GolangCI](https://golangci.com/badges/github.com/christophe-duc/lazypodman.svg)](https://golangci.com)
+[![GoDoc](https://godoc.org/github.com/christophe-duc/lazypodman?status.svg)](http://godoc.org/github.com/christophe-duc/lazypodman)
+![GitHub repo size](https://img.shields.io/github/repo-size/christophe-duc/lazypodman)
+[![GitHub Releases](https://img.shields.io/github/downloads/christophe-duc/lazypodman/total)](https://github.com/christophe-duc/lazypodman/releases)
+[![GitHub tag](https://img.shields.io/github/tag/christophe-duc/lazypodman.svg)](https://github.com/christophe-duc/lazypodman/releases/latest)
+[![homebrew](https://img.shields.io/homebrew/v/lazypodman)](https://github.com/Homebrew/homebrew-core/blob/master/Formula/lazypodman.rb)
 
 ![Gif](/docs/resources/demo3.gif)
 
@@ -58,7 +58,7 @@ A simple terminal UI for both docker and docker-compose, written in Go with the 
 ## Sponsors
 
 <p align="center">
- Maintenance of this project is made possible by all the <a href="https://github.com/jesseduffield/lazydocker/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/jesseduffield">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/jesseduffield">click here</a>. 💙
+ Maintenance of this project is made possible by all the <a href="https://github.com/christophe-duc/lazypodman/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/jesseduffield">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/jesseduffield">click here</a>. 💙
 </p>
 
 <p align="center">
@@ -73,16 +73,16 @@ What a headache!
 
 Memorising docker commands is hard. Memorising aliases is slightly less hard. Keeping track of your containers across multiple terminal windows is near impossible. What if you had all the information you needed in one terminal window with every common command living one keypress away (and the ability to add custom commands as well). Lazydocker's goal is to make that dream a reality.
 
-- [Requirements](https://github.com/jesseduffield/lazydocker#requirements)
-- [Installation](https://github.com/jesseduffield/lazydocker#installation)
-- [Usage](https://github.com/jesseduffield/lazydocker#usage)
+- [Requirements](https://github.com/christophe-duc/lazypodman#requirements)
+- [Installation](https://github.com/christophe-duc/lazypodman#installation)
+- [Usage](https://github.com/christophe-duc/lazypodman#usage)
 - [Keybindings](/docs/keybindings)
-- [Cool Features](https://github.com/jesseduffield/lazydocker#cool-features)
-- [Contributing](https://github.com/jesseduffield/lazydocker#contributing)
+- [Cool Features](https://github.com/christophe-duc/lazypodman#cool-features)
+- [Contributing](https://github.com/christophe-duc/lazypodman#contributing)
 - [Video Tutorial](https://youtu.be/NICqQPxwJWw)
 - [Config Docs](/docs/Config.md)
 - [Twitch Stream](https://www.twitch.tv/jesseduffield)
-- [FAQ](https://github.com/jesseduffield/lazydocker#faq)
+- [FAQ](https://github.com/christophe-duc/lazypodman#faq)
 
 ## Requirements
 
@@ -93,55 +93,55 @@ Memorising docker commands is hard. Memorising aliases is slightly less hard. Ke
 
 ### Homebrew
 
-Normally `lazydocker` formula can be found in the Homebrew core but we suggest you to tap our formula to get frequently updated one. It works with Linux, too.
+Normally `lazypodman` formula can be found in the Homebrew core but we suggest you to tap our formula to get frequently updated one. It works with Linux, too.
 
 **Tap**:
 ```sh
-brew install jesseduffield/lazydocker/lazydocker
+brew install christophe-duc/lazypodman/lazypodman
 ```
 
 **Core**:
 ```sh
-brew install lazydocker
+brew install lazypodman
 ```
 
 ### Scoop (Windows)
 
-You can install `lazydocker` using [scoop](https://scoop.sh/):
+You can install `lazypodman` using [scoop](https://scoop.sh/):
 
 ```sh
-scoop install lazydocker
+scoop install lazypodman
 ```
 ### Chocolatey (Windows)
 
-You can install `lazydocker` using [Chocolatey](https://chocolatey.org/):
+You can install `lazypodman` using [Chocolatey](https://chocolatey.org/):
 
 ```sh
-choco install lazydocker
+choco install lazypodman
 ```
 ### asdf-vm
 
-You can install [asdf-lazydocker plugin](https://github.com/comdotlinux/asdf-lazydocker) using [asdf-vm](https://asdf-vm.com/):
+You can install [asdf-lazypodman plugin](https://github.com/comdotlinux/asdf-lazypodman) using [asdf-vm](https://asdf-vm.com/):
 #### Setup (Once)
 ```sh
-asdf plugin add lazydocker https://github.com/comdotlinux/asdf-lazydocker.git
+asdf plugin add lazypodman https://github.com/comdotlinux/asdf-lazypodman.git
 ```
 
 #### For Install / Upgrade
 ```sh
-asdf list all lazydocker
-asdf install lazydocker latest
-asdf global lazydocker latest
+asdf list all lazypodman
+asdf install lazypodman latest
+asdf global lazypodman latest
 ```
 
 ### Binary Release (Linux/OSX/Windows)
 
-You can manually download a binary release from [the release page](https://github.com/jesseduffield/lazydocker/releases).
+You can manually download a binary release from [the release page](https://github.com/christophe-duc/lazypodman/releases).
 
 Automated install/update, don't forget to always verify what you're piping into bash:
 
 ```sh
-curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+curl https://raw.githubusercontent.com/christophe-duc/lazypodman/master/scripts/install_update_linux.sh | bash
 ```
 The script installs downloaded binary to `$HOME/.local/bin` directory by default, but it can be changed by setting `DIR` environment variable.
 
@@ -150,58 +150,58 @@ The script installs downloaded binary to `$HOME/.local/bin` directory by default
 Required Go Version >= **1.19**
 
 ```sh
-go install github.com/jesseduffield/lazydocker@latest
+go install github.com/christophe-duc/lazypodman@latest
 ```
 
 Required Go version >= **1.8**, <= **1.17**
 
 ```sh
-go get github.com/jesseduffield/lazydocker
+go get github.com/christophe-duc/lazypodman
 ```
 
 ### Arch Linux AUR
 
-You can install lazydocker using the [AUR](https://aur.archlinux.org/packages/lazydocker) by running:
+You can install lazypodman using the [AUR](https://aur.archlinux.org/packages/lazypodman) by running:
 
 ```sh
-yay -S lazydocker
+yay -S lazypodman
 ```
 
 ### Docker
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
-[![Docker Stars](https://img.shields.io/docker/stars/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
-[![Docker Automated](https://img.shields.io/docker/cloud/automated/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
+[![Docker Pulls](https://img.shields.io/docker/pulls/christophe-duc/lazypodman.svg)](https://hub.docker.com/r/christophe-duc/lazypodman)
+[![Docker Stars](https://img.shields.io/docker/stars/christophe-duc/lazypodman.svg)](https://hub.docker.com/r/christophe-duc/lazypodman)
+[![Docker Automated](https://img.shields.io/docker/cloud/automated/christophe-duc/lazypodman.svg)](https://hub.docker.com/r/christophe-duc/lazypodman)
 
 1. <details><summary>Click if you have an ARM device</summary><p>
 
     - If you have a ARM 32 bit v6 architecture
 
         ```sh
-        docker build -t lazyteam/lazydocker \
+        docker build -t christophe-duc/lazypodman \
         --build-arg BASE_IMAGE_BUILDER=arm32v6/golang \
         --build-arg GOARCH=arm \
         --build-arg GOARM=6 \
-        https://github.com/jesseduffield/lazydocker.git
+        https://github.com/christophe-duc/lazypodman.git
         ```
 
     - If you have a ARM 32 bit v7 architecture
 
         ```sh
-        docker build -t lazyteam/lazydocker \
+        docker build -t christophe-duc/lazypodman \
         --build-arg BASE_IMAGE_BUILDER=arm32v7/golang \
         --build-arg GOARCH=arm \
         --build-arg GOARM=7 \
-        https://github.com/jesseduffield/lazydocker.git
+        https://github.com/christophe-duc/lazypodman.git
         ```
 
     - If you have a ARM 64 bit v8 architecture
 
         ```sh
-        docker build -t lazyteam/lazydocker \
+        docker build -t christophe-duc/lazypodman \
         --build-arg BASE_IMAGE_BUILDER=arm64v8/golang \
         --build-arg GOARCH=arm64 \
-        https://github.com/jesseduffield/lazydocker.git
+        https://github.com/christophe-duc/lazypodman.git
         ```
 
     </p></details>
@@ -211,16 +211,16 @@ yay -S lazydocker
     ```sh
     docker run --rm -it -v \
     /var/run/docker.sock:/var/run/docker.sock \
-    -v /yourpath:/.config/jesseduffield/lazydocker \
-    lazyteam/lazydocker
+    -v /yourpath:/.config/christophe-duc/lazypodman \
+    christophe-duc/lazypodman
     ```
 
-    - Don't forget to change `/yourpath` to an actual path you created to store lazydocker's config
-    - You can also use this [docker-compose.yml](https://github.com/jesseduffield/lazydocker/blob/master/docker-compose.yml)
+    - Don't forget to change `/yourpath` to an actual path you created to store lazypodman's config
+    - You can also use this [docker-compose.yml](https://github.com/christophe-duc/lazypodman/blob/master/docker-compose.yml)
     - You might want to create an alias, for example:
 
         ```sh
-        echo "alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'" >> ~/.zshrc
+        echo "alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/christophe-duc/lazypodman christophe-duc/lazypodman'" >> ~/.zshrc
         ```
 
 
@@ -228,9 +228,9 @@ yay -S lazydocker
 For development, you can build the image using:
 
 ```sh
-git clone https://github.com/jesseduffield/lazydocker.git
-cd lazydocker
-docker build -t lazyteam/lazydocker \
+git clone https://github.com/christophe-duc/lazypodman.git
+cd lazypodman
+docker build -t christophe-duc/lazypodman \
     --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
     --build-arg VCS_REF=`git rev-parse --short HEAD` \
     --build-arg VERSION=`git describe --abbrev=0 --tag` \
@@ -246,8 +246,8 @@ so that the bundled docker binary matches your host docker binary version.
 You'll need to [install Go](https://golang.org/doc/install)
 
 ```
-git clone https://github.com/jesseduffield/lazydocker.git
-cd lazydocker
+git clone https://github.com/christophe-duc/lazypodman.git
+cd lazypodman
 go install
 ```
 
@@ -255,10 +255,10 @@ You can also use `go run main.go` to compile and run in one go (pun definitely i
 
 ## Usage
 
-Call `lazydocker` in your terminal. I personally use this a lot so I've made an alias for it like so:
+Call `lazypodman` in your terminal. I personally use this a lot so I've made an alias for it like so:
 
 ```
-echo "alias lzd='lazydocker'" >> ~/.zshrc
+echo "alias lzd='lazypodman'" >> ~/.zshrc
 ```
 
 (you can substitute .zshrc for whatever rc file you're using)
@@ -289,7 +289,7 @@ For contributor discussion about things not better discussed here in the repo, j
 
 ## Donate
 
-If you would like to support the development of lazydocker, consider [sponsoring me](https://github.com/sponsors/jesseduffield) (github is matching all donations dollar-for-dollar for 12 months)
+If you would like to support the development of lazypodman, consider [sponsoring me](https://github.com/sponsors/jesseduffield) (github is matching all donations dollar-for-dollar for 12 months)
 
 ## Social
 
@@ -301,7 +301,7 @@ If you want to see what I (Jesse) am up to in terms of development, follow me on
 
 ### How do I edit my config?
 
-By opening lazydocker, clicking on the 'project' panel in the top left, and pressing 'o' (or 'e' if your editor is vim). See [Config Docs](/docs/Config.md)
+By opening lazypodman, clicking on the 'project' panel in the top left, and pressing 'o' (or 'e' if your editor is vim). See [Config Docs](/docs/Config.md)
 
 ### How do I get text to wrap in my main panel?
 
@@ -311,16 +311,16 @@ In the future I want to make this the default, but for now there are some CPU is
 
 Because we support mouse events, you will need to hold option while dragging the mouse to indicate you're trying to select text rather than click on something. Alternatively you can disable mouse events via the `gui.ignoreMouseEvents` config value.
 
-Mac Users: See [Issue #190](https://github.com/jesseduffield/lazydocker/issues/190) for other options.
+Mac Users: See [Issue #190](https://github.com/christophe-duc/lazypodman/issues/190) for other options.
 
 ### Why can't I see my container's logs?
 
-By default we only show logs from the last hour, so that we're not putting too much strain on the machine. This may be why you can't see logs when you first start lazydocker. This can be overwritten in the config's `commandTemplates`
+By default we only show logs from the last hour, so that we're not putting too much strain on the machine. This may be why you can't see logs when you first start lazypodman. This can be overwritten in the config's `commandTemplates`
 
-If you are running lazydocker in Docker container, it is a know bug, that you can't see logs or CPU usage.
+If you are running lazypodman in Docker container, it is a know bug, that you can't see logs or CPU usage.
 
 ## Alternatives
 
-- [docui](https://github.com/skanehira/docui) - Skanehira beat me to the punch on making a docker terminal UI, so definitely check out that repo as well! I think the two repos can live in harmony though: lazydocker is more about managing existing containers/services, and docui is more about creating and configuring them.
+- [docui](https://github.com/skanehira/docui) - Skanehira beat me to the punch on making a docker terminal UI, so definitely check out that repo as well! I think the two repos can live in harmony though: lazypodman is more about managing existing containers/services, and docui is more about creating and configuring them.
 - [Portainer](https://github.com/portainer/portainer) - Portainer tries to solve the same problem but it's accessed via your browser rather than your terminal. It also supports docker swarm.
 - See [Awesome Docker list](https://github.com/veggiemonk/awesome-docker/blob/master/README.md#terminal) for similar tools to work with Docker.

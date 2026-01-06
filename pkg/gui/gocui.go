@@ -3,7 +3,7 @@ package gui
 import (
 	"github.com/gookit/color"
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/christophe-duc/lazypodman/pkg/utils"
 )
 
 var gocuiColorMap = map[string]gocui.Attribute{

@@ -16,12 +16,12 @@ func chineseSet() TranslationSet {
 
 		NoViewMachingNewLineFocusedSwitchStatement: "没有匹配 newLineFocused switch 语句的视图",
 
-		ErrorOccurred:                     "发生错误！请在 https://github.com/jesseduffield/lazydocker/issues 上创建一个问题",
+		ErrorOccurred:                     "发生错误！请在 https://github.com/christophe-duc/lazypodman/issues 上创建一个问题",
 		ConnectionFailed:                  "无法连接到 Docker 客户端。您可能需要重新启动 Docker 客户端",
 		UnattachableContainerError:        "容器不支持 attaching。您必须使用“-it”标志运行服务，或者在docker-compose.yml文件中使用`stdin_open: true，tty: true`",
 		WaitingForContainerInfo:           "在 Docker 给我们更多关于容器的信息之前，无法继续。请几分钟后重试。",
 		CannotAttachStoppedContainerError: "您不能 attach 到已停止的容器，您需要先启动它（您可以用 'r' 键来执行此操作）（是的，我懒得为您自动执行此操作）（很酷的是，我可以通过错误消息与您进行一对一的通讯）",
-		CannotAccessDockerSocketError:     "无法访问 Docker 套接字：unix:///var/run/docker.sock\n请以 root 用户身份运行 lazydocker 或阅读https://docs.docker.com/install/linux/linux-postinstall/",
+		CannotAccessDockerSocketError:     "无法访问 Docker 套接字：unix:///var/run/docker.sock\n请以 root 用户身份运行 lazypodman 或阅读https://docs.docker.com/install/linux/linux-postinstall/",
 		CannotKillChildError:              "等待三秒钟以停止子进程。可能有一个孤儿进程在您的系统上继续运行。",
 
 		Donate:  "捐赠",
@@ -37,8 +37,8 @@ func chineseSet() TranslationSet {
 		Menu:              "菜单",
 		MenuTitle:         "菜单",
 		Scroll:            "滚动",
-		OpenConfig:        "打开lazydocker配置",
-		EditConfig:        "编辑lazydocker配置",
+		OpenConfig:        "打开lazypodman配置",
+		EditConfig:        "编辑lazypodman配置",
 		Cancel:            "取消",
 		Remove:            "移除",
 		HideStopped:       "隐藏/显示已停止的容器",
@@ -124,7 +124,7 @@ func chineseSet() TranslationSet {
 		ConfirmPruneNetworks:       "您确定要删除所有未使用的网络吗？",
 		StopService:                "您确定要停止此服务的容器吗？",
 		StopContainer:              "您确定要停止此容器吗？",
-		PressEnterToReturn:         "按 enter 返回 lazydocker（您可以在配置文件中设置 `gui.returnImmediately: true` 来禁用此提示）",
+		PressEnterToReturn:         "按 enter 返回 lazypodman（您可以在配置文件中设置 `gui.returnImmediately: true` 来禁用此提示）",
 
 		No:  "否",
 		Yes: "是",

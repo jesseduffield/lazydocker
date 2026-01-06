@@ -10,11 +10,11 @@ func dutchSet() TranslationSet {
 
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
 
-		ErrorOccurred:                     "Er is iets fout gegaan! Zou je hier een issue aan willen maken: https://github.com/jesseduffield/lazydocker/issues",
+		ErrorOccurred:                     "Er is iets fout gegaan! Zou je hier een issue aan willen maken: https://github.com/christophe-duc/lazypodman/issues",
 		ConnectionFailed:                  "connectie naar de docker client mislukt. Het zou kunnen dat je de docker client moet herstarten",
 		UnattachableContainerError:        "Container heeft geen ondersteuning voor vastmaken. Je zou de service met het '-it' argument kunnen draaien of stop dit in je `stdin_open: true, tty: true` docker-compose.yml",
 		CannotAttachStoppedContainerError: "Je kan niet een vastgemaakte container stoppen, je moet het eerst starten (dit kan je doen met de 'r' toets) (ja ik ben te leu om dat voor je te doen automatisch)",
-		CannotAccessDockerSocketError:     "Kan de docker socket niet bereiken: unix:///var/run/docker.sock\nDraai lazydocker als root of lees https://docs.docker.com/install/linux/linux-postinstall/",
+		CannotAccessDockerSocketError:     "Kan de docker socket niet bereiken: unix:///var/run/docker.sock\nDraai lazypodman als root of lees https://docs.docker.com/install/linux/linux-postinstall/",
 
 		Donate:  "Doneer",
 		Confirm: "Bevestigen",
@@ -27,8 +27,8 @@ func dutchSet() TranslationSet {
 		Menu:               "menu",
 		MenuTitle:          "Menu",
 		Scroll:             "scroll",
-		OpenConfig:         "open de lazydocker configuratie",
-		EditConfig:         "verander de lazydocker configuratie",
+		OpenConfig:         "open de lazypodman configuratie",
+		EditConfig:         "verander de lazypodman configuratie",
 		Cancel:             "annuleren",
 		Remove:             "verwijder",
 		HideStopped:        "verberg gestopte containers",
@@ -92,7 +92,7 @@ func dutchSet() TranslationSet {
 		ConfirmPruneNetworks:        "Weet je zeker dat je alle niet gebruikte networks wil vernietigen?",
 		StopService:                 "Weet je zeker dat je deze service zijn containers wil stoppen?",
 		StopContainer:               "Weet je zeker dat je deze container wil stoppen?",
-		PressEnterToReturn:          "Druk op enter om terug te gaan naar lazydocker (Deze popup kan uit gezet worden door in de config dit neer te zetten `gui.returnImmediately: true`)",
+		PressEnterToReturn:          "Druk op enter om terug te gaan naar lazypodman (Deze popup kan uit gezet worden door in de config dit neer te zetten `gui.returnImmediately: true`)",
 		DetachFromContainerShortCut: "Als u wilt loskoppelen van de container, drukt u standaard op ctrl-p en vervolgens op ctrl-q",
 	}
 }

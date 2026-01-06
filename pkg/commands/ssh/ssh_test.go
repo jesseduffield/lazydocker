@@ -51,20 +51,20 @@ func TestSSHHandlerHandleSSHDockerHost(t *testing.T) {
 
 			tempDir := func(dir string, pattern string) (string, error) {
 				assert.Equal(t, "/tmp", dir)
-				assert.Equal(t, "lazydocker-sshtunnel-", pattern)
+				assert.Equal(t, "lazypodman-sshtunnel-", pattern)
 
-				return "/tmp/lazydocker-ssh-tunnel-12345", nil
+				return "/tmp/lazypodman-ssh-tunnel-12345", nil
 			}
 
 			setenv := func(key, value string) error {
 				assert.Equal(t, "DOCKER_HOST", key)
-				assert.Equal(t, "unix:///tmp/lazydocker-ssh-tunnel-12345/dockerhost.sock", value)
+				assert.Equal(t, "unix:///tmp/lazypodman-ssh-tunnel-12345/dockerhost.sock", value)
 				return nil
 			}
 
 			startCmdCount := 0
 			startCmd := func(cmd *exec.Cmd) error {
-				assert.EqualValues(t, []string{"ssh", "-L", "/tmp/lazydocker-ssh-tunnel-12345/dockerhost.sock:/var/run/docker.sock", "192.168.5.178", "-N"}, cmd.Args)
+				assert.EqualValues(t, []string{"ssh", "-L", "/tmp/lazypodman-ssh-tunnel-12345/dockerhost.sock:/var/run/docker.sock", "192.168.5.178", "-N"}, cmd.Args)
 
 				startCmdCount++
 
@@ -74,7 +74,7 @@ func TestSSHHandlerHandleSSHDockerHost(t *testing.T) {
 			dialContextCount := 0
 			dialContext := func(ctx context.Context, network string, address string) (io.Closer, error) {
 				assert.Equal(t, "unix", network)
-				assert.Equal(t, "/tmp/lazydocker-ssh-tunnel-12345/dockerhost.sock", address)
+				assert.Equal(t, "/tmp/lazypodman-ssh-tunnel-12345/dockerhost.sock", address)
 
 				dialContextCount++
 

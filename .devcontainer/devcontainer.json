@@ -50,5 +50,5 @@
     }
   }
   // TODO: make this work.
-  // "postStartCommand": "echo \"alias gr=\\\"go run /workspaces/lazydocker/main.go\\\"\" >> ~/.zhsrc"
+  // "postStartCommand": "echo \"alias gr=\\\"go run /workspaces/lazypodman/main.go\\\"\" >> ~/.zhsrc"
 }

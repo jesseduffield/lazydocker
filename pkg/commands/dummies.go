@@ -3,8 +3,8 @@ package commands
 import (
 	"io"
 
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
+	"github.com/christophe-duc/lazypodman/pkg/config"
+	"github.com/christophe-duc/lazypodman/pkg/i18n"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,7 +18,7 @@ func NewDummyOSCommand() *OSCommand {
 // NewDummyAppConfig creates a new dummy AppConfig for testing
 func NewDummyAppConfig() *config.AppConfig {
 	appConfig := &config.AppConfig{
-		Name:        "lazydocker",
+		Name:        "lazypodman",
 		Version:     "unversioned",
 		Commit:      "",
 		BuildDate:   "",

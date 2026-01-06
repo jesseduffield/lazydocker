@@ -5,8 +5,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 ## Projet
 
 <pre>
-  <kbd>e</kbd>: modifier la configuration lazydocker
-  <kbd>o</kbd>: ouvrir la configuration lazydocker
+  <kbd>e</kbd>: modifier la configuration lazypodman
+  <kbd>o</kbd>: ouvrir la configuration lazypodman
   <kbd>m</kbd>: voir les enregistrements
   <kbd>enter</kbd>: focus panneau principal
   <kbd>[</kbd>: onglet précédent

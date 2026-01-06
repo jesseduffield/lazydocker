@@ -13,12 +13,12 @@ import (
 	throttle "github.com/boz/go-throttle"
 	"github.com/jesseduffield/gocui"
 	lcUtils "github.com/jesseduffield/lazycore/pkg/utils"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/gui/types"
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
-	"github.com/jesseduffield/lazydocker/pkg/tasks"
+	"github.com/christophe-duc/lazypodman/pkg/commands"
+	"github.com/christophe-duc/lazypodman/pkg/config"
+	"github.com/christophe-duc/lazypodman/pkg/gui/panels"
+	"github.com/christophe-duc/lazypodman/pkg/gui/types"
+	"github.com/christophe-duc/lazypodman/pkg/i18n"
+	"github.com/christophe-duc/lazypodman/pkg/tasks"
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 )
@@ -182,7 +182,7 @@ func (gui *Gui) goEvery(interval time.Duration, function func() error) {
 
 // Run setup the gui with keybindings and start the mainloop
 func (gui *Gui) Run() error {
-	// closing our task manager which in turn closes the current task if there is any, so we aren't leaving processes lying around after closing lazydocker
+	// closing our task manager which in turn closes the current task if there is any, so we aren't leaving processes lying around after closing lazypodman
 	defer gui.taskManager.Close()
 
 	g, err := gocui.NewGui(gocui.NewGuiOpts{

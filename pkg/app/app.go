@@ -4,12 +4,12 @@ import (
 	"io"
 	"strings"
 
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/gui"
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
-	"github.com/jesseduffield/lazydocker/pkg/log"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/christophe-duc/lazypodman/pkg/commands"
+	"github.com/christophe-duc/lazypodman/pkg/config"
+	"github.com/christophe-duc/lazypodman/pkg/gui"
+	"github.com/christophe-duc/lazypodman/pkg/i18n"
+	"github.com/christophe-duc/lazypodman/pkg/log"
+	"github.com/christophe-duc/lazypodman/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 

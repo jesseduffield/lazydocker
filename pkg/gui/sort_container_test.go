@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/docker/docker/api/types/container"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/christophe-duc/lazypodman/pkg/commands"
 	"github.com/stretchr/testify/assert"
 )
 

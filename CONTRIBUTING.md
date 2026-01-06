@@ -32,7 +32,7 @@ This means there is a little overhead in working with the code base. If you need
 # 1)
 
 a) Set `export GOFLAGS=-mod=vendor` in your ~/.bashrc file
-b) use `go run main.go` to run lazydocker
+b) use `go run main.go` to run lazypodman
 c) if you need to bump a dependency e.g. jesseduffield/gocui, use
 
 ```
@@ -44,7 +44,7 @@ go mod vendor
 # 2)
 
 a) don't worry about your ~/.bashrc file
-b) use `go run -mod=vendor main.go` to run lazydocker
+b) use `go run -mod=vendor main.go` to run lazypodman
 c) if you need to bump a dependency e.g. jesseduffield/gocui, use
 
 ```
@@ -59,7 +59,7 @@ Hopefully this will be much more streamlined in the future :)
 
 Please note by participating in this project, you agree to abide by the [code of conduct].
 
-[code of conduct]: https://github.com/jesseduffield/lazydocker/blob/master/CODE-OF-CONDUCT.md
+[code of conduct]: https://github.com/christophe-duc/lazypodman/blob/master/CODE-OF-CONDUCT.md
 
 ## Any contributions you make will be under the MIT Software License
 
@@ -67,7 +67,7 @@ In short, when you submit code changes, your submissions are understood to be
 under the same [MIT License](http://choosealicense.com/licenses/mit/) that
 covers the project. Feel free to contact the maintainers if that's a concern.
 
-## Report bugs using Github's [issues](https://github.com/jesseduffield/lazydocker/issues)
+## Report bugs using Github's [issues](https://github.com/christophe-duc/lazypodman/issues)
 
 We use GitHub issues to track public bugs. Report a bug by [opening a new
-issue](https://github.com/jesseduffield/lazydocker/issues/new); it's that easy!
+issue](https://github.com/christophe-duc/lazypodman/issues/new); it's that easy!

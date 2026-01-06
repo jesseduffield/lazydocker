@@ -8,11 +8,11 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
-	"github.com/jesseduffield/lazydocker/pkg/tasks"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/christophe-duc/lazypodman/pkg/commands"
+	"github.com/christophe-duc/lazypodman/pkg/gui/panels"
+	"github.com/christophe-duc/lazypodman/pkg/gui/presentation"
+	"github.com/christophe-duc/lazypodman/pkg/tasks"
+	"github.com/christophe-duc/lazypodman/pkg/utils"
 	"github.com/jesseduffield/yaml"
 )
 
@@ -101,13 +101,13 @@ func (gui *Gui) creditsStr() string {
 
 	return strings.Join(
 		[]string{
-			lazydockerTitle(),
+			lazypodmanTitle(),
 			"Copyright (c) 2019 Jesse Duffield",
-			"Keybindings: https://github.com/jesseduffield/lazydocker/blob/master/docs/keybindings",
-			"Config Options: https://github.com/jesseduffield/lazydocker/blob/master/docs/Config.md",
-			"Raise an Issue: https://github.com/jesseduffield/lazydocker/issues",
+			"Keybindings: https://github.com/christophe-duc/lazypodman/blob/master/docs/keybindings",
+			"Config Options: https://github.com/christophe-duc/lazypodman/blob/master/docs/Config.md",
+			"Raise an Issue: https://github.com/christophe-duc/lazypodman/issues",
 			utils.ColoredString("Buy Jesse a coffee: https://github.com/sponsors/jesseduffield", color.FgMagenta), // caffeine ain't free
-			"Here's your lazydocker config when merged in with the defaults (you can open your config by pressing 'o'):",
+			"Here's your lazypodman config when merged in with the defaults (you can open your config by pressing 'o'):",
 			utils.ColoredYamlString(configBuf.String()),
 		}, "\n\n")
 }
@@ -158,7 +158,7 @@ func (gui *Gui) handleEditConfig(g *gocui.Gui, v *gocui.View) error {
 	return gui.editFile(gui.Config.ConfigFilename())
 }
 
-func lazydockerTitle() string {
+func lazypodmanTitle() string {
 	return `
    _                     _            _
   | |                   | |          | |

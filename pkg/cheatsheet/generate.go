@@ -13,10 +13,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/jesseduffield/lazydocker/pkg/app"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/gui"
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
+	"github.com/christophe-duc/lazypodman/pkg/app"
+	"github.com/christophe-duc/lazypodman/pkg/config"
+	"github.com/christophe-duc/lazypodman/pkg/gui"
+	"github.com/christophe-duc/lazypodman/pkg/i18n"
 )
 
 const (
@@ -33,7 +33,7 @@ func Generate() {
 }
 
 func generateAtDir(dir string) {
-	mConfig, err := config.NewAppConfig("lazydocker", "", "", "", "", true, nil, "")
+	mConfig, err := config.NewAppConfig("lazypodman", "", "", "", "", true, nil, "")
 	if err != nil {
 		panic(err)
 	}

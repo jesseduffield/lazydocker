@@ -2,15 +2,15 @@
 
 ## Opening The User Config
 
-The location of the user config will differ depending on your OS. You can open it via lazydocker by opening the application, clicking on the 'project' panel at the top left and pressing 'o' (or pressing 'e' if your files open in vim).
+The location of the user config will differ depending on your OS. You can open it via lazypodman by opening the application, clicking on the 'project' panel at the top left and pressing 'o' (or pressing 'e' if your files open in vim).
 
-Changes to the user config will only take place after closing and re-opening lazydocker
+Changes to the user config will only take place after closing and re-opening lazypodman
 
 ### Locations:
 
-- OSX: `~/Library/Application Support/jesseduffield/lazydocker/config.yml`
-- Linux: `~/.config/lazydocker/config.yml`
-- Windows: `C:\Users\<User>\AppData\Roaming\lazydocker\config.yml`
+- OSX: `~/Library/Application Support/christophe-duc/lazypodman/config.yml`
+- Linux: `~/.config/lazypodman/config.yml`
+- Windows: `C:\Users\<User>\AppData\Roaming\lazypodman\config.yml`
 
 JSON schema is available for `config.yml` so that IntelliSense in Visual Studio Code
 (completion and error checking) is automatically enabled when the [YAML Red Hat][yaml]
@@ -19,7 +19,7 @@ if your config file is in one of the standard paths mentioned above. If you
 override the path to the file, you can still make IntelliSense work by adding
 
 ```yaml
-# yaml-language-server: $schema=https://json.schemastore.org/lazydocker.json
+# yaml-language-server: $schema=https://json.schemastore.org/lazypodman.json
 ```
 
 to the top of your config file or via [Visual Studio Code settings.json config][settings].
@@ -95,7 +95,7 @@ stats:
       color: green
 ```
 
-## To see what all of the config options mean, and what other options you can set, see [here](https://godoc.org/github.com/jesseduffield/lazydocker/pkg/config)
+## To see what all of the config options mean, and what other options you can set, see [here](https://godoc.org/github.com/christophe-duc/lazypodman/pkg/config)
 
 ## Color Attributes:
 
@@ -130,8 +130,8 @@ customCommands:
 
 You may use the following go templates (such as `{{ .Container.ID }}` above) in your commands:
 - `{{ .DockerCompose }}`: the docker compose command (default: `docker-compose`)
-- [`{{ .Container }}`](https://pkg.go.dev/github.com/jesseduffield/lazydocker@v0.20.0/pkg/commands#Container) and its fields. For example: `{{ .Container.Container.ImageID }}`
-- [`{{ .Service }}`](https://pkg.go.dev/github.com/jesseduffield/lazydocker@v0.20.0/pkg/commands#Service) and its fields. For example: `{{ .Service.Name }}`
+- [`{{ .Container }}`](https://pkg.go.dev/github.com/christophe-duc/lazypodman@v0.20.0/pkg/commands#Container) and its fields. For example: `{{ .Container.Container.ImageID }}`
+- [`{{ .Service }}`](https://pkg.go.dev/github.com/christophe-duc/lazypodman@v0.20.0/pkg/commands#Service) and its fields. For example: `{{ .Service.Name }}`
 
 ## Replacements
 

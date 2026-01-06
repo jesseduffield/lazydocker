@@ -1,6 +1,6 @@
 package presentation
 
-import "github.com/jesseduffield/lazydocker/pkg/gui/types"
+import "github.com/christophe-duc/lazypodman/pkg/gui/types"
 
 func GetMenuItemDisplayStrings(menuItem *types.MenuItem) []string {
 	return menuItem.LabelColumns

@@ -13,12 +13,12 @@ case $ARCH in
 esac
 
 # prepare the download URL
-GITHUB_LATEST_VERSION=$(curl -L -s -H 'Accept: application/json' https://github.com/jesseduffield/lazydocker/releases/latest | sed -e 's/.*"tag_name":"\([^"]*\)".*/\1/')
-GITHUB_FILE="lazydocker_${GITHUB_LATEST_VERSION//v/}_$(uname -s)_${ARCH}.tar.gz"
-GITHUB_URL="https://github.com/jesseduffield/lazydocker/releases/download/${GITHUB_LATEST_VERSION}/${GITHUB_FILE}"
+GITHUB_LATEST_VERSION=$(curl -L -s -H 'Accept: application/json' https://github.com/christophe-duc/lazypodman/releases/latest | sed -e 's/.*"tag_name":"\([^"]*\)".*/\1/')
+GITHUB_FILE="lazypodman_${GITHUB_LATEST_VERSION//v/}_$(uname -s)_${ARCH}.tar.gz"
+GITHUB_URL="https://github.com/christophe-duc/lazypodman/releases/download/${GITHUB_LATEST_VERSION}/${GITHUB_FILE}"
 
 # install/update the local binary
-curl -L -o lazydocker.tar.gz $GITHUB_URL
-tar xzvf lazydocker.tar.gz lazydocker
-install -Dm 755 lazydocker -t "$DIR"
-rm lazydocker lazydocker.tar.gz
+curl -L -o lazypodman.tar.gz $GITHUB_URL
+tar xzvf lazypodman.tar.gz lazypodman
+install -Dm 755 lazypodman -t "$DIR"
+rm lazypodman lazypodman.tar.gz

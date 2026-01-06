@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazydocker/pkg/tasks"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/christophe-duc/lazypodman/pkg/tasks"
+	"github.com/christophe-duc/lazypodman/pkg/utils"
 	"github.com/samber/lo"
 )
 

@@ -1,6 +1,6 @@
 // Package config handles all the user-configuration. The fields here are
 // all in PascalCase but in your actual config.yml they'll be in camelCase.
-// You can view the default config with `lazydocker --config`.
+// You can view the default config with `lazypodman --config`.
 // You can open your config file by going to the status panel (using left-arrow)
 // and pressing 'o'.
 // You can directly edit the file (e.g. in vim) by pressing 'e' instead.
@@ -53,7 +53,7 @@ type UserConfig struct {
 	// OS determines what defaults are set for opening files and links
 	OS OSConfig `yaml:"oS,omitempty"`
 
-	// Stats determines how long lazydocker will gather container stats for, and
+	// Stats determines how long lazypodman will gather container stats for, and
 	// what stat info to graph
 	Stats StatsConfig `yaml:"stats,omitempty"`
 
@@ -106,9 +106,9 @@ type GuiConfig struct {
 	ShowAllContainers bool `yaml:"showAllContainers,omitempty"`
 
 	// ReturnImmediately determines whether you get the 'press enter to return to
-	// lazydocker' message after a subprocess has completed. You would set this to
+	// lazypodman' message after a subprocess has completed. You would set this to
 	// true if you often want to see the output of subprocesses before returning
-	// to lazydocker. I would default this to false but then people who want it
+	// to lazypodman. I would default this to false but then people who want it
 	// set to true won't even know the config option exists.
 	ReturnImmediately bool `yaml:"returnImmediately,omitempty"`
 
@@ -254,7 +254,7 @@ type GraphConfig struct {
 
 	// This is the path to the stat that you want to display. It is based on the
 	// RecordedStats struct in container_stats.go, so feel free to look there to
-	// see all the options available. Alternatively if you go into lazydocker and
+	// see all the options available. Alternatively if you go into lazypodman and
 	// go to the stats tab, you'll see that same struct in JSON format, so you can
 	// just PascalCase the path and you'll have a valid path. E.g.
 	// ClientStats.blkio_stats -> "ClientStats.BlkioStats"
@@ -336,7 +336,7 @@ type CustomCommand struct {
 	// the customCommand config.
 	ServiceNames []string `yaml:"serviceNames"`
 
-	// InternalFunction is the name of a function inside lazydocker that we want to run, as opposed to a command-line command. This is only used internally and can't be configured by the user
+	// InternalFunction is the name of a function inside lazypodman that we want to run, as opposed to a command-line command. This is only used internally and can't be configured by the user
 	InternalFunction func() error `yaml:"-"`
 }
 
@@ -477,13 +477,13 @@ func GetDefaultConfig() UserConfig {
 	}
 }
 
-// AppConfig contains the base configuration fields required for lazydocker.
+// AppConfig contains the base configuration fields required for lazypodman.
 type AppConfig struct {
 	Debug       bool   `long:"debug" env:"DEBUG" default:"false"`
 	Version     string `long:"version" env:"VERSION" default:"unversioned"`
 	Commit      string `long:"commit" env:"COMMIT"`
 	BuildDate   string `long:"build-date" env:"BUILD_DATE"`
-	Name        string `long:"name" env:"NAME" default:"lazydocker"`
+	Name        string `long:"name" env:"NAME" default:"lazypodman"`
 	BuildSource string `long:"build-source" env:"BUILD_SOURCE" default:""`
 	UserConfig  *UserConfig
 	ConfigDir   string
@@ -532,7 +532,7 @@ func configDirForVendor(vendor string, projectName string) string {
 }
 
 func configDir(projectName string) string {
-	legacyConfigDirectory := configDirForVendor("jesseduffield", projectName)
+	legacyConfigDirectory := configDirForVendor("christophe-duc", projectName)
 	if _, err := os.Stat(legacyConfigDirectory); !os.IsNotExist(err) {
 		return legacyConfigDirectory
 	}

@@ -5,7 +5,7 @@ import (
 	"os/exec"
 
 	"github.com/docker/docker/api/types/container"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/christophe-duc/lazypodman/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 

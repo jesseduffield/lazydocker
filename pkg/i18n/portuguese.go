@@ -16,12 +16,12 @@ func portugueseSet() TranslationSet {
 
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
 
-		ErrorOccurred:                     "Um erro ocorreu! Por favor, crie uma issue em https://github.com/jesseduffield/lazydocker/issues",
+		ErrorOccurred:                     "Um erro ocorreu! Por favor, crie uma issue em https://github.com/christophe-duc/lazypodman/issues",
 		ConnectionFailed:                  "Falha na conexão com o cliente Docker. Você pode precisar reiniciar o seu cliente Docker",
 		UnattachableContainerError:        "O contêiner não suporta anexação. Você deve executar o serviço com a flag '-it' ou usar `stdin_open: true, tty: true` no arquivo docker-compose.yml",
 		WaitingForContainerInfo:           "Não é possível prosseguir até que o Docker forneça mais informações sobre o contêiner. Por favor, tente novamente em alguns momentos.",
 		CannotAttachStoppedContainerError: "Você não pode anexar a um contêiner parado, você precisa iniciá-lo primeiro (o que você pode fazer com a tecla 'r') (sim, sou preguiçoso demais para fazer isso automaticamente para você) (aliás, bem legal que eu posso me comunicar diretamente com você na forma de uma mensagem de erro)",
-		CannotAccessDockerSocketError:     "Não é possível acessar o sôquete docker em: unix:///var/run/docker.sock\nExecute o lazydocker como root ou leia https://docs.docker.com/install/linux/linux-postinstall/",
+		CannotAccessDockerSocketError:     "Não é possível acessar o sôquete docker em: unix:///var/run/docker.sock\nExecute o lazypodman como root ou leia https://docs.docker.com/install/linux/linux-postinstall/",
 		CannotKillChildError:              "Três segundos foram esperarados para que os processos filhos parassem. Pode haver um processo órfão que continua em execução em seu sistema.",
 
 		Donate:  "Doar",
@@ -37,8 +37,8 @@ func portugueseSet() TranslationSet {
 		Menu:                        "menu",
 		MenuTitle:                   "Menu",
 		Scroll:                      "rolar",
-		OpenConfig:                  "abrir configuração do lazydocker",
-		EditConfig:                  "editar configuração do lazydocker",
+		OpenConfig:                  "abrir configuração do lazypodman",
+		EditConfig:                  "editar configuração do lazypodman",
 		Cancel:                      "cancelar",
 		Remove:                      "remover",
 		HideStopped:                 "ocultar/mostrar contêineres parados",
@@ -124,7 +124,7 @@ func portugueseSet() TranslationSet {
 		ConfirmPruneNetworks:        "Tem certeza que deseja destruir todas as redes não utilizadas?",
 		StopService:                 "Tem certeza que deseja parar os contêineres deste serviço?",
 		StopContainer:               "Tem certeza que deseja parar este contêiner?",
-		PressEnterToReturn:          "Pressione enter para retornar ao lazydocker (este prompt pode ser desativado em sua configuração definindo `gui.returnImmediately: true`)",
+		PressEnterToReturn:          "Pressione enter para retornar ao lazypodman (este prompt pode ser desativado em sua configuração definindo `gui.returnImmediately: true`)",
 		DetachFromContainerShortCut: "Por padrão, para desanexar do contêiner, pressione ctrl-p e depois ctrl-q",
 
 		No:  "não",

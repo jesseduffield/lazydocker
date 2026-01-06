@@ -10,11 +10,11 @@ func turkishSet() TranslationSet {
 
 		NoViewMachingNewLineFocusedSwitchStatement: "NewLineFocused anahtar deyimi ile eşleşen görünüm yok",
 
-		ErrorOccurred:                     "Bir hata oluştu! Lütfen https://github.com/jesseduffield/lazydocker/issues adresinden bir hataya ilişkin konu oluşturun",
+		ErrorOccurred:                     "Bir hata oluştu! Lütfen https://github.com/christophe-duc/lazypodman/issues adresinden bir hataya ilişkin konu oluşturun",
 		ConnectionFailed:                  "Docker bağlantısı başarısız oldu. Docker' ı yeniden başlatmanız gerekebilir",
 		UnattachableContainerError:        "Konteyner attaching modunda çalışmayı desteklemiyor. Hizmeti '-it' opsiyonu ile çalıştırmanız veya docker-compose.yml dosyasında `stdin_open: true, tty: true` kullanmanız gerekir.",
 		CannotAttachStoppedContainerError: "Durdurulan konteynera bağlanamazsınız, ilk önce başlatmanız gerekir (aslında başlatmayı r tuşu ile yapabilirsiniz) (evet, senin için bunu otomatik olarak yapabilirim fakat çok tembelim) (hata mesajı ile seninle birebir iletişim kurmam çok daha güzel)",
-		CannotAccessDockerSocketError:     "Docker' a şu adresten erişilemiyor : unix:///var/run/docker.sock\n lazydocker' ı root(kök kullanıcı) olarak çalıştır veya şu adresteki adımları takip et : https://docs.docker.com/install/linux/linux-postinstall/",
+		CannotAccessDockerSocketError:     "Docker' a şu adresten erişilemiyor : unix:///var/run/docker.sock\n lazypodman' ı root(kök kullanıcı) olarak çalıştır veya şu adresteki adımları takip et : https://docs.docker.com/install/linux/linux-postinstall/",
 
 		Donate:  "Bağış",
 		Confirm: "Onayla",
@@ -27,7 +27,7 @@ func turkishSet() TranslationSet {
 		Menu:               "menü",
 		MenuTitle:          "Menü",
 		Scroll:             "kaydır",
-		OpenConfig:         "lazydocker ayarlarını aç",
+		OpenConfig:         "lazypodman ayarlarını aç",
 		EditConfig:         "lazzydocker ayarlarını düzenle",
 		Cancel:             "iptal",
 		Remove:             "kaldır",
@@ -91,7 +91,7 @@ func turkishSet() TranslationSet {
 		ConfirmPruneNetworks:        "Kullanılmayan tüm ağları temizlemek istediğinizden emin misiniz?",
 		StopService:                 "Bu servisin konteynerlerini durdurmak istediğinize emin misiniz?",
 		StopContainer:               "Bu konteyneri durdurmak istediğinize emin misiniz?",
-		PressEnterToReturn:          "lazydocker' a geri dönmek için enter tuşuna basın ( Bu uyarı, `gui.return Immediately: true` ayarıyla devre dışı bırakılabilir)",
+		PressEnterToReturn:          "lazypodman' a geri dönmek için enter tuşuna basın ( Bu uyarı, `gui.return Immediately: true` ayarıyla devre dışı bırakılabilir)",
 		DetachFromContainerShortCut: "Varsayılan olarak, kaptan ayırmak için ctrl-p ve ardından ctrl-q tuşlarına basın",
 	}
 }

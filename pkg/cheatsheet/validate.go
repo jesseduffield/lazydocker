@@ -14,7 +14,7 @@ import (
 
 func Check() {
 	dir := GetKeybindingsDir()
-	tmpDir := filepath.Join(os.TempDir(), "lazydocker_cheatsheet")
+	tmpDir := filepath.Join(os.TempDir(), "lazypodman_cheatsheet")
 
 	err := os.RemoveAll(tmpDir)
 	if err != nil {

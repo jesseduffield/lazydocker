@@ -5,8 +5,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 ## 项目
 
 <pre>
-  <kbd>e</kbd>: 编辑lazydocker配置
-  <kbd>o</kbd>: 打开lazydocker配置
+  <kbd>e</kbd>: 编辑lazypodman配置
+  <kbd>o</kbd>: 打开lazypodman配置
   <kbd>m</kbd>: 查看日志
   <kbd>enter</kbd>: 聚焦主面板
   <kbd>[</kbd>: 上一个选项卡

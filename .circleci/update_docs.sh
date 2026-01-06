@@ -14,8 +14,8 @@ fi
 
 echo "committing updated docs"
 
-git config user.name "lazydocker bot"
-git config user.email "jessedduffield@gmail.com"
+git config user.name "lazypodman bot"
+git config user.email "lazypodman-bot@christophe-duc.dev"
 
 git checkout master # just making sure we're up to date
 git pull

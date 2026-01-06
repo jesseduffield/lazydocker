@@ -62,16 +62,16 @@ changelog:
 
 brews:
   - tap:
-      owner: jesseduffield
-      name: homebrew-lazydocker
+      owner: christophe-duc
+      name: homebrew-lazypodman
 
     # Your app's homepage.
     # Default is empty.
-    homepage: "https://github.com/jesseduffield/lazydocker/"
+    homepage: "https://github.com/christophe-duc/lazypodman/"
 
     # Your app's description.
     # Default is empty.
-    description: "A simple terminal UI for docker, written in Go"
+    description: "A simple terminal UI for podman, written in Go"
 #snapcrafts:
 #  - builds:
 #      - snap
