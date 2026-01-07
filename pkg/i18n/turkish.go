@@ -28,7 +28,7 @@ func turkishSet() TranslationSet {
 		MenuTitle:          "Menü",
 		Scroll:             "kaydır",
 		OpenConfig:         "lazypodman ayarlarını aç",
-		EditConfig:         "lazzydocker ayarlarını düzenle",
+		EditConfig:         "lazypodman ayarlarını düzenle",
 		Cancel:             "iptal",
 		Remove:             "kaldır",
 		ForceRemove:        "kaldırmaya zorla",
