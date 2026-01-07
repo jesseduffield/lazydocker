@@ -27,6 +27,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>c</kbd>: run predefined custom command
   <kbd>b</kbd>: view bulk commands
   <kbd>w</kbd>: open in browser (first port is http)
+  <kbd>space</kbd>: expand/collapse pod
   <kbd>enter</kbd>: focus main panel
   <kbd>[</kbd>: previous tab
   <kbd>]</kbd>: next tab

@@ -27,6 +27,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>c</kbd>: önceden tanımlanmış özel komutu çalıştır
   <kbd>b</kbd>: view bulk commands
   <kbd>w</kbd>: open in browser (first port is http)
+  <kbd>space</kbd>: pod'u genişlet/daralt
   <kbd>enter</kbd>: ana panele odaklan
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
