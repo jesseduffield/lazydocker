@@ -67,7 +67,7 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 				// where a container restarts but the new logs don't get read.
 				// Note that this might be jarring if we have a lot of logs and the container
 				// restarts a lot, so let's keep an eye on it.
-				return "containers-" + container.ID + "-" + container.Container.State
+				return "containers-" + container.ID + "-" + container.Summary.State
 			},
 		},
 		ListPanel: panels.ListPanel[*commands.Container]{
@@ -89,7 +89,7 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 				return false
 			}
 
-			if !gui.State.ShowExitedContainers && container.Container.State == "exited" {
+			if !gui.State.ShowExitedContainers && container.Summary.State == "exited" {
 				return false
 			}
 
@@ -112,13 +112,13 @@ func sortContainers(a *commands.Container, b *commands.Container, legacySort boo
 		return a.Name < b.Name
 	}
 
-	stateLeft := containerStates[a.Container.State]
-	stateRight := containerStates[b.Container.State]
+	stateLeft := containerStates[a.Summary.State]
+	stateRight := containerStates[b.Summary.State]
 	if stateLeft == stateRight {
 		return a.Name < b.Name
 	}
 
-	return containerStates[a.Container.State] < containerStates[b.Container.State]
+	return containerStates[a.Summary.State] < containerStates[b.Summary.State]
 }
 
 func (gui *Gui) renderContainerEnv(container *commands.Container) tasks.TaskFunc {
@@ -532,11 +532,11 @@ func (gui *Gui) handleContainersOpenInBrowserCommand(g *gocui.Gui, v *gocui.View
 
 func (gui *Gui) openContainerInBrowser(ctr *commands.Container) error {
 	// skip if no any ports
-	if len(ctr.Container.Ports) == 0 {
+	if len(ctr.Summary.Ports) == 0 {
 		return nil
 	}
 	// skip if the first port is not published
-	port := ctr.Container.Ports[0]
+	port := ctr.Summary.Ports[0]
 	if port.IP == "" {
 		return nil
 	}

@@ -7,7 +7,6 @@ suits you.
 
 ![Color](https://user-images.githubusercontent.com/438920/96832689-03b3e000-13f4-11eb-9803-46f4c4de3406.jpg)
 
-
 ## Install
 
 ```bash
@@ -78,7 +77,7 @@ notice("Don't forget this...")
 ### Custom fprint functions (FprintFunc)
 
 ```go
-blue := color.New(FgBlue).FprintfFunc()
+blue := color.New(color.FgBlue).FprintfFunc()
 blue(myWriter, "important notice: %s", stars)
 
 // Mix up with multiple attributes
@@ -124,17 +123,19 @@ fmt.Println("All text will now be bold magenta.")
 ```
 
 ### Disable/Enable color
- 
+
 There might be a case where you want to explicitly disable/enable color output. the 
 `go-isatty` package will automatically disable color output for non-tty output streams 
-(for example if the output were piped directly to `less`)
+(for example if the output were piped directly to `less`).
 
-`Color` has support to disable/enable colors both globally and for single color 
-definitions. For example suppose you have a CLI app and a `--no-color` bool flag. You 
-can easily disable the color output with:
+The `color` package also disables color output if the [`NO_COLOR`](https://no-color.org) environment
+variable is set to a non-empty string.
+
+`Color` has support to disable/enable colors programmatically both globally and
+for single color definitions. For example suppose you have a CLI app and a
+`-no-color` bool flag. You can easily disable the color output with:
 
 ```go
-
 var flagNoColor = flag.Bool("no-color", false, "Disable color output")
 
 if *flagNoColor {
@@ -156,18 +157,20 @@ c.EnableColor()
 c.Println("This prints again cyan...")
 ```
 
+## GitHub Actions
+
+To output color in GitHub Actions (or other CI systems that support ANSI colors), make sure to set `color.NoColor = false` so that it bypasses the check for non-tty output streams. 
+
 ## Todo
 
 * Save/Return previous values
 * Evaluate fmt.Formatter interface
 
-
 ## Credits
 
- * [Fatih Arslan](https://github.com/fatih)
- * Windows support via @mattn: [colorable](https://github.com/mattn/go-colorable)
+* [Fatih Arslan](https://github.com/fatih)
+* Windows support via @mattn: [colorable](https://github.com/mattn/go-colorable)
 
 ## License
 
 The MIT License (MIT) - see [`LICENSE.md`](https://github.com/fatih/color/blob/master/LICENSE.md) for more details
-

@@ -1,0 +1,14 @@
+docs/buildah*.1
+docs/*.5
+/bin
+/buildah
+/imgtype
+/build/
+/tests/tools/build
+Dockerfile*
+!/tests/bud/*/Dockerfile*
+!/tests/conformance/**/Dockerfile*
+*.swp
+/result/
+internal/mkcw/embed/entrypoint_amd64.o
+internal/mkcw/embed/entrypoint_amd64

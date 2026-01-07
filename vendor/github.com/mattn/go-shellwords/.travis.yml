@@ -1,0 +1,16 @@
+arch:
+  - amd64
+  - ppc64le
+language: go
+sudo: false
+go:
+  - tip
+
+before_install:
+  - go get -t -v ./...
+
+script:
+  - ./go.test.sh
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

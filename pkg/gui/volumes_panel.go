@@ -41,10 +41,10 @@ func (gui *Gui) getVolumesPanel() *panels.SideListPanel[*commands.Volume] {
 		// because those are the ones you typically care about.
 		// Within that, we also sort them alphabetically
 		Sort: func(a *commands.Volume, b *commands.Volume) bool {
-			if len(a.Volume.Labels) == 0 && len(b.Volume.Labels) > 0 {
+			if len(a.Summary.Labels) == 0 && len(b.Summary.Labels) > 0 {
 				return false
 			}
-			if len(a.Volume.Labels) > 0 && len(b.Volume.Labels) == 0 {
+			if len(a.Summary.Labels) > 0 && len(b.Summary.Labels) == 0 {
 				return true
 			}
 			return a.Name < b.Name
@@ -61,25 +61,25 @@ func (gui *Gui) volumeConfigStr(volume *commands.Volume) string {
 	padding := 15
 	output := ""
 	output += utils.WithPadding("Name: ", padding) + volume.Name + "\n"
-	output += utils.WithPadding("Driver: ", padding) + volume.Volume.Driver + "\n"
-	output += utils.WithPadding("Scope: ", padding) + volume.Volume.Scope + "\n"
-	output += utils.WithPadding("Mountpoint: ", padding) + volume.Volume.Mountpoint + "\n"
-	output += utils.WithPadding("Labels: ", padding) + utils.FormatMap(padding, volume.Volume.Labels) + "\n"
-	output += utils.WithPadding("Options: ", padding) + utils.FormatMap(padding, volume.Volume.Options) + "\n"
+	output += utils.WithPadding("Driver: ", padding) + volume.Summary.Driver + "\n"
+	output += utils.WithPadding("Scope: ", padding) + volume.Summary.Scope + "\n"
+	output += utils.WithPadding("Mountpoint: ", padding) + volume.Summary.Mountpoint + "\n"
+	output += utils.WithPadding("Labels: ", padding) + utils.FormatMap(padding, volume.Summary.Labels) + "\n"
+	output += utils.WithPadding("Options: ", padding) + utils.FormatMap(padding, volume.Summary.Options) + "\n"
 
 	output += utils.WithPadding("Status: ", padding)
-	if volume.Volume.Status != nil {
+	if volume.Summary.Status != nil {
 		output += "\n"
-		for k, v := range volume.Volume.Status {
+		for k, v := range volume.Summary.Status {
 			output += utils.FormatMapItem(padding, k, v)
 		}
 	} else {
 		output += "n/a"
 	}
 
-	if volume.Volume.UsageData != nil {
-		output += utils.WithPadding("RefCount: ", padding) + fmt.Sprintf("%d", volume.Volume.UsageData.RefCount) + "\n"
-		output += utils.WithPadding("Size: ", padding) + utils.FormatBinaryBytes(int(volume.Volume.UsageData.Size)) + "\n"
+	if volume.Summary.UsageData != nil {
+		output += utils.WithPadding("RefCount: ", padding) + fmt.Sprintf("%d", volume.Summary.UsageData.RefCount) + "\n"
+		output += utils.WithPadding("Size: ", padding) + utils.FormatBinaryBytes(int(volume.Summary.UsageData.Size)) + "\n"
 	}
 
 	return output

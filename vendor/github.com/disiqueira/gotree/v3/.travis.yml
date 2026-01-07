@@ -1,0 +1,11 @@
+language: go
+go_import_path: github.com/disiqueira/gotree
+git:
+  depth: 1
+env:
+  - GO111MODULE=on
+  - GO111MODULE=off
+go: [ 1.11.x, 1.12.x, 1.13.x ]
+os: [ linux, osx ]
+script:
+  - go test -race -v ./...

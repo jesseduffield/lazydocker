@@ -1,0 +1,751 @@
+# The containers configuration file specifies all of the available configuration
+# command-line options/flags for container engine tools like Podman & Buildah,
+# but in a TOML format that can be easily modified and versioned.
+
+# Please refer to containers.conf(5) for details of all configuration options.
+# Not all container engines implement all of the options.
+# All of the options have hard coded defaults and these options will override
+# the built in defaults. Users can then override these options via the command
+# line. Container engines will read containers.conf files in up to three
+# locations in the following order:
+#  1. /usr/local/share/containers/containers.conf
+#  2. /usr/local/etc/containers/containers.conf
+#  3. $HOME/.config/containers/containers.conf (Rootless containers ONLY)
+#  Items specified in the latter containers.conf, if they exist, override the
+# previous containers.conf settings, or the default settings.
+
+[containers]
+
+# List of annotation. Specified as
+# "key = value"
+# If it is empty or commented out, no annotations will be added
+#
+#annotations = []
+
+# The hosts entries from the base hosts file are added to the containers hosts
+# file. This must be either an absolute path or as special values "image" which
+# uses the hosts file from the container image or "none" which means
+# no base hosts file is used. The default is "" which will use /etc/hosts.
+#
+#base_hosts_file = ""
+
+# When no hostname is set for a container, use the container's name, with
+# characters not valid for a hostname removed, as the hostname instead of
+# the first 12 characters of the container's ID.
+#
+#container_name_as_hostname = false
+
+# The database backend of Podman.  Supported values are "" (default), "boltdb"
+# and "sqlite". An empty value means it will check whenever a boltdb already
+# exists and use it when it does, otherwise it will use sqlite as default
+# (e.g. new installs). This allows for backwards compatibility with older versions.
+# Please run `podman-system-reset` prior to changing the database
+# backend of an existing deployment, to make sure Podman can operate correctly.
+#
+#database_backend = ""
+
+# List of default capabilities for containers. If it is empty or commented out,
+# the default capabilities defined in the container engine will be added.
+#
+default_capabilities = [
+  "CHOWN",
+  "DAC_OVERRIDE",
+  "FOWNER",
+  "FSETID",
+  "KILL",
+  "NET_BIND_SERVICE",
+  "SETFCAP",
+  "SETGID",
+  "SETPCAP",
+  "SETUID",
+  "SYS_CHROOT"
+]
+
+# A list of sysctls to be set in containers by default,
+# specified as "name=value",
+# for example:"net.ipv4.ping_group_range=0 0".
+#
+default_sysctls = [
+  "net.ipv4.ping_group_range=0 0",
+]
+
+# A list of ulimits to be set in containers by default, specified as
+# "<ulimit name>=<soft limit>:<hard limit>", for example:
+# "nofile=1024:2048"
+# See setrlimit(2) for a list of resource names.
+# Any limit not specified here will be inherited from the process launching the
+# container engine.
+# Ulimits has limits for non privileged container engines.
+#
+#default_ulimits = [
+#  "nofile=1280:2560",
+#]
+
+# List of devices. Specified as
+# "<device-on-host>:<device-on-container>:<permissions>", for example:
+# "/dev/sdc:/dev/xvdc:rwm".
+# If it is empty or commented out, only the default devices will be used
+#
+#devices = []
+
+# List of default DNS options to be added to /etc/resolv.conf inside of the container.
+#
+#dns_options = []
+
+# List of default DNS search domains to be added to /etc/resolv.conf inside of the container.
+#
+#dns_searches = []
+
+# Set default DNS servers.
+# This option can be used to override the DNS configuration passed to the
+# container. The special value "none" can be specified to disable creation of
+# /etc/resolv.conf in the container.
+# The /etc/resolv.conf file in the image will be used without changes.
+#
+#dns_servers = []
+
+# Environment variable list for the conmon process; used for passing necessary
+# environment variables to conmon or the runtime.
+#
+#env = [
+#  "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+#]
+
+# Pass all host environment variables into the container.
+#
+#env_host = false
+
+# Set the ip for the host.containers.internal entry in the containers /etc/hosts
+# file. This can be set to "none" to disable adding this entry. By default it
+# will automatically choose the host ip.
+#
+# NOTE: When using podman machine this entry will never be added to the containers
+# hosts file instead the gvproxy dns resolver will resolve this hostname. Therefore
+# it is not possible to disable the entry in this case.
+#
+#host_containers_internal_ip = ""
+
+# Default proxy environment variables passed into the container.
+# The environment variables passed in include:
+# http_proxy, https_proxy, ftp_proxy, no_proxy, and the upper case versions of
+# these. This option is needed when host system uses a proxy but container
+# should not use proxy. Proxy environment variables specified for the container
+# in any other way will override the values passed from the host.
+#
+#http_proxy = true
+
+# Run an init inside the container that forwards signals and reaps processes.
+#
+#init = false
+
+# Container init binary, if init=true, this is the init binary to be used for containers.
+# If this option is not set catatonit is searched in the directories listed under
+# the helper_binaries_dir option. It is recommended to just install catatonit
+# there instead of configuring this option here.
+#
+#init_path = "/usr/local/libexec/podman/catatonit"
+
+# Default way to to create an IPC namespace (POSIX SysV IPC) for the container
+# Options are:
+#  "host"     Share host IPC Namespace with the container.
+#  "none"     Create shareable IPC Namespace for the container without a private /dev/shm.
+#  "private"  Create private IPC Namespace for the container, other containers are not allowed to share it.
+#  "shareable" Create shareable IPC Namespace for the container.
+#
+#ipcns = "shareable"
+
+# keyring tells the container engine whether to create
+# a kernel keyring for use within the container.
+#
+#keyring = true
+
+# label tells the container engine whether to use container separation using
+# MAC(SELinux) labeling or not.
+# The label flag is ignored on label disabled systems.
+#
+#label = true
+
+# Logging driver for the container. Available options: k8s-file and journald.
+#
+#log_driver = "k8s-file"
+
+# Default path for container logs to be stored in. When empty, logs will be stored
+# in the container's default storage and removed when the container is removed.
+# A subdirectory named with the container ID will be created under the specified
+# path, and the log file will have the default name `ctr.log` within that directory.
+# This option can be overridden by the `--log-opt` flag.
+#
+#log_path = ""
+
+# Maximum size allowed for the container log file. Negative numbers indicate
+# that no size limit is imposed. If positive, it must be >= 8192 to match or
+# exceed conmon's read buffer. The file is truncated and re-opened so the
+# limit is never exceeded.
+#
+#log_size_max = -1
+
+# Specifies default format tag for container log messages.
+# This is useful for creating a specific tag for container log messages.
+# Containers logs default to truncated container ID as a tag.
+#
+#log_tag = ""
+
+# Default way to create a NET namespace for the container.
+# The option is mapped to the **--network** argument for the podman commands, it accepts the same values as that option.
+# For example it can be set to `bridge`, `host`, `none`, `pasta` and more, see the podman-create(1)
+# manual for all available options.
+#
+#netns = ""
+
+# Create /etc/hosts for the container.  By default, container engine manage
+# /etc/hosts, automatically adding  the container's  own  IP  address.
+#
+#no_hosts = false
+
+# Default way to to create a PID namespace for the container
+# Options are:
+# `private` Create private PID Namespace for the container.
+# `host`    Share host PID Namespace with the container.
+#
+#pidns = "private"
+
+# Maximum number of processes allowed in a container.
+#
+#pids_limit = 2048
+
+# Copy the content from the underlying image into the newly created volume
+# when the container is created instead of when it is started. If false,
+# the container engine will not copy the content until the container is started.
+# Setting it to true may have negative performance implications.
+#
+#prepare_volume_on_create = false
+
+# Give extended privileges to all containers. A privileged container turns off
+# the security features that isolate the container from the host. Dropped
+# Capabilities, limited devices, read-only mount points, Apparmor/SELinux
+# separation, and Seccomp filters are all disabled. Due to the disabled
+# security features the privileged field should almost never be set as
+# containers can easily break out of confinment.
+#
+# Containers running in a user namespace (e.g., rootless containers) cannot
+# have more privileges than the user that launched them.
+#
+#privileged = false
+
+# Set timezone in container. Takes IANA timezones as well as "local",
+# which sets the timezone in the container to match the host machine.
+#
+#tz = ""
+
+# Set umask inside the container
+#
+#umask = "0022"
+
+# Default way to to create a User namespace for the container
+# Options are:
+# `auto`        Create unique User Namespace for the container.
+# `host`    Share host User Namespace with the container.
+#
+#userns = "host"
+
+# Default way to to create a UTS namespace for the container
+# Options are:
+# `private`        Create private UTS Namespace for the container.
+# `host`    Share host UTS Namespace with the container.
+#
+#utsns = "private"
+
+# List of volumes. Specified as
+# "<directory-on-host>:<directory-in-container>:<options>", for example:
+# "/db:/var/lib/db:ro".
+# If it is empty or commented out, no volumes will be added
+#
+#volumes = []
+
+[secrets]
+#driver = "file"
+
+[secrets.opts]
+#root = "/example/directory"
+
+[network]
+
+# Network backend determines what network driver will be used to set up and tear down container networks.
+# Valid values are "cni" and "netavark".
+# The default value is empty which means that it will automatically choose CNI or netavark. If there are
+# already containers/images or CNI networks preset it will choose CNI.
+#
+# Before changing this value all containers must be stopped otherwise it is likely that
+# iptables rules and network interfaces might leak on the host. A reboot will fix this.
+#
+#network_backend = ""
+
+# Path to directory where CNI plugin binaries are located.
+#
+#cni_plugin_dirs = [
+#  "/usr/local/libexec/cni",
+#  "/usr/libexec/cni",
+#  "/usr/local/lib/cni",
+#  "/usr/lib/cni",
+#  "/opt/cni/bin",
+#]
+
+# List of directories that will be searched for netavark plugins.
+#
+#netavark_plugin_dirs = [
+#  "/usr/local/libexec/netavark",
+#	"/usr/libexec/netavark",
+#	"/usr/local/lib/netavark",
+#	"/usr/lib/netavark",
+#]
+
+# The name of the default network as seen in `podman network ls`. This option only effects the network assignment when
+# the bridge network mode is selected, i.e. `--network bridge`. It is the default for rootful containers but not as
+# rootless. To change the default network mode use the **netns** option under the `[containers]` table.
+#
+# Note: This should not be changed while you have any containers using this network.
+#
+#default_network = "podman"
+
+# The default subnet for the default network given in default_network.
+#
+# Note: This should not be changed if any containers are currently running on the default network.
+#
+#default_subnet = "10.88.0.0/16"
+
+# DefaultSubnetPools is a list of subnets and size which are used to
+# allocate subnets automatically for podman network create.
+# It will iterate through the list and will pick the first free subnet
+# with the given size. This is only used for ipv4 subnets, ipv6 subnets
+# are always assigned randomly.
+#
+#default_subnet_pools = [
+#  {"base" = "10.89.0.0/16", "size" = 24},
+#  {"base" = "10.90.0.0/15", "size" = 24},
+#  {"base" = "10.92.0.0/14", "size" = 24},
+#  {"base" = "10.96.0.0/11", "size" = 24},
+#  {"base" = "10.128.0.0/9", "size" = 24},
+#]
+
+# Path to the directory where network configuration files are located.
+# For the CNI backend the default is "/etc/cni/net.d" as root
+# and "$HOME/.config/cni/net.d" as rootless.
+# For the netavark backend "/etc/containers/networks" is used as root
+# and "$graphroot/networks" as rootless.
+#
+#network_config_dir = "/usr/local/etc/cni/net.d/"
+
+[engine]
+# Index to the active service
+#
+#active_service = production
+
+# The compression format to use when pushing an image.
+# Valid options are: `gzip`, `zstd` and `zstd:chunked`.
+# `zstd:chunked` is incompatible with encrypting images, and will be treated as `zstd` with a warning
+# in that case.
+#
+#compression_format = "gzip"
+
+# The compression level to use when pushing an image.
+# Valid options depend on the compression format used.
+# For gzip, valid options are 1-9, with a default of 5.
+# For zstd, valid options are 1-20, with a default of 3.
+#
+#compression_level = 5
+
+# Environment variables to pass into conmon
+#
+#conmon_env_vars = [
+#  "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+#]
+
+# Paths to look for the conmon container manager binary
+#
+#conmon_path = [
+#  "/usr/libexec/podman/conmon",
+#  "/usr/local/libexec/podman/conmon",
+#  "/usr/local/lib/podman/conmon",
+#  "/usr/bin/conmon",
+#  "/usr/sbin/conmon",
+#  "/usr/local/bin/conmon",
+#  "/usr/local/sbin/conmon"
+#]
+
+# Enforces using docker.io for completing short names in Podman's compatibility
+# REST API. Note that this will ignore unqualified-search-registries and
+# short-name aliases defined in containers-registries.conf(5).
+#compat_api_enforce_docker_hub = true
+
+# Specify the keys sequence used to detach a container.
+# Format is a single character [a-Z] or a comma separated sequence of
+# `ctrl-<value>`, where `<value>` is one of:
+# `a-z`, `@`, `^`, `[`, `\`, `]`, `^` or `_`
+#
+#detach_keys = "ctrl-p,ctrl-q"
+
+# Determines whether engine will reserve ports on the host when they are
+# forwarded to containers. When enabled, when ports are forwarded to containers,
+# ports are held open by as long as the container is running, ensuring that
+# they cannot be reused by other programs on the host. However, this can cause
+# significant memory usage if a container has many ports forwarded to it.
+# Disabling this can save memory.
+#
+#enable_port_reservation = true
+
+# Environment variables to be used when running the container engine (e.g.,
+# Podman, Buildah). For example "MYVAR=value". These environment variables
+# will not be used within the container. Set the env section under the
+# [containers] table, if you want to set environment variables for the
+# container.
+# Note when using this to set http proxy variables then they might get
+# leaked into the container depending on if `http_proxy` (under the
+# [containers] table) is set to to true (default) or false.
+#
+#env = []
+
+# Define where event logs will be stored, when events_logger is "file".
+#events_logfile_path=""
+
+# Sets the maximum size for events_logfile_path.
+# The size can be b (bytes), k (kilobytes), m (megabytes), or g (gigabytes).
+# The format for the size is `<number><unit>`, e.g., `1b` or `3g`.
+# If no unit is included then the size will be read in bytes.
+# When the limit is exceeded, the logfile will be rotated and the old one will be deleted.
+# If the maximum size is set to 0, then no limit will be applied,
+# and the logfile will not be rotated.
+#events_logfile_max_size = "1m"
+
+# Selects which logging mechanism to use for container engine events.
+# Valid values are `journald`, `file` and `none`.
+#
+#events_logger = "file"
+
+# Whenever Podman should log healthcheck events.
+# With many running healthcheck on short interval Podman will spam the event
+# log a lot as it generates a event for each single healthcheck run. Because
+# this event is optional and only useful to external consumers that may want
+# to know when a healthcheck is run or failed allow users to turn it off by
+# setting it to false. The default is true.
+#
+#healthcheck_events = true
+
+# A is a list of directories which are used to search for helper binaries.
+#
+#helper_binaries_dir = [
+#  "/usr/local/libexec/podman",
+#  "/usr/local/lib/podman",
+#  "/usr/libexec/podman",
+#  "/usr/lib/podman",
+#]
+
+# Path to OCI hooks directories for automatically executed hooks.
+#
+#hooks_dir = [
+#  "/usr/local/share/containers/oci/hooks.d",
+#]
+
+# Directories to scan for CDI Spec files.
+#
+#cdi_spec_dirs = [
+#  "/etc/cdi",
+#  "/var/run/cdi",
+#]
+
+# Manifest Type (oci, v2s2, or v2s1) to use when pulling, pushing, building
+# container images. By default image pulled and pushed match the format of the
+# source image. Building/committing defaults to OCI.
+#
+#image_default_format = ""
+
+# Default transport method for pulling and pushing for images
+#
+#image_default_transport = "docker://"
+
+# Maximum number of image layers to be copied (pulled/pushed) simultaneously.
+# Not setting this field, or setting it to zero, will fall back to containers/image defaults.
+#
+#image_parallel_copies = 0
+
+# Default command to run the infra container
+#
+#infra_command = "/pause"
+
+# Infra (pause) container image name for pod infra containers.  When running a
+# pod, we start a `pause` process in a container to hold open the namespaces
+# associated with the  pod.  This container does nothing other than sleep,
+# reserving the pod's resources for the lifetime of the pod. By default container
+# engines run a built-in container using the pause executable. If you want override
+# specify an image to pull.
+#
+#infra_image = ""
+
+# Specify the locking mechanism to use; valid values are "shm" and "file".
+# Change the default only if you are sure of what you are doing, in general
+# "file" is useful only on platforms where cgo is not available for using the
+# faster "shm" lock type. You may need to run "podman system renumber" after
+# you change the lock type.
+#
+#lock_type** = "shm"
+
+# MultiImageArchive - if true, the container engine allows for storing archives
+# (e.g., of the docker-archive transport) with multiple images.  By default,
+# Podman creates single-image archives.
+#
+#multi_image_archive = "false"
+
+# Default engine namespace
+# If engine is joined to a namespace, it will see only containers and pods
+# that were created in the same namespace, and will create new containers and
+# pods in that namespace.
+# The default namespace is "", which corresponds to no namespace. When no
+# namespace is set, all containers and pods are visible.
+#
+#namespace = ""
+
+# Path to the slirp4netns binary
+#
+#network_cmd_path = ""
+
+# Default options to pass to the slirp4netns binary.
+# Valid options values are:
+#
+# - allow_host_loopback=true|false: Allow the slirp4netns to reach the host loopback IP (`10.0.2.2`).
+#   Default is false.
+# - mtu=MTU: Specify the MTU to use for this network. (Default is `65520`).
+# - cidr=CIDR: Specify ip range to use for this network. (Default is `10.0.2.0/24`).
+# - enable_ipv6=true|false: Enable IPv6. Default is true. (Required for `outbound_addr6`).
+# - outbound_addr=INTERFACE: Specify the outbound interface slirp should bind to (ipv4 traffic only).
+# - outbound_addr=IPv4: Specify the outbound ipv4 address slirp should bind to.
+# - outbound_addr6=INTERFACE: Specify the outbound interface slirp should bind to (ipv6 traffic only).
+# - outbound_addr6=IPv6: Specify the outbound ipv6 address slirp should bind to.
+# - port_handler=rootlesskit: Use rootlesskit for port forwarding. Default.
+#   Note: Rootlesskit changes the source IP address of incoming packets to a IP address in the container
+#   network namespace, usually `10.0.2.100`. If your application requires the real source IP address,
+#   e.g. web server logs, use the slirp4netns port handler. The rootlesskit port handler is also used for
+#   rootless containers when connected to user-defined networks.
+# - port_handler=slirp4netns: Use the slirp4netns port forwarding, it is slower than rootlesskit but
+#   preserves the correct source IP address. This port handler cannot be used for user-defined networks.
+#
+#network_cmd_options = []
+
+# Whether to use chroot instead of pivot_root in the runtime
+#
+#no_pivot_root = false
+
+# Number of locks available for containers and pods.
+# If this is changed, a lock renumber must be performed (e.g. with the
+# 'podman system renumber' command).
+#
+#num_locks = 2048
+
+# Whether to pull new image before running a container
+#
+#pull_policy = "missing"
+
+# Indicates whether the application should be running in remote mode. This flag modifies the
+# --remote option on container engines. Setting the flag to true will default
+# `podman --remote=true` for access to the remote Podman service.
+#
+#remote = false
+
+# Default OCI runtime
+#
+#runtime = "crun"
+
+# List of the OCI runtimes that support --format=json. When json is supported
+# engine will use it for reporting nicer errors.
+#
+#runtime_supports_json = ["crun", "runc", "kata", "runsc", "youki", "krun", "ocijail"]
+
+# List of the OCI runtimes that supports running containers with KVM Separation.
+#
+#runtime_supports_kvm = ["kata", "krun"]
+
+# List of the OCI runtimes that supports running containers without cgroups.
+#
+#runtime_supports_nocgroups = ["crun", "krun"]
+
+# Default location for storing temporary container image content. Can be overridden with the TMPDIR environment
+# variable. If you specify "storage", then the location of the
+# container/storage tmp directory will be used.
+# image_copy_tmp_dir="/var/tmp"
+
+# Number of seconds to wait without a connection
+# before the `podman system service` times out and exits
+#
+#service_timeout = 5
+
+# Directory for persistent engine files (database, etc)
+# By default, this will be configured relative to where the containers/storage
+# stores containers
+# Uncomment to change location from this default
+#
+#static_dir = "/var/lib/containers/storage/libpod"
+
+# Number of seconds to wait for container to exit before sending kill signal.
+#
+#stop_timeout = 10
+
+# Number of seconds to wait before exit command in API process is given to.
+# This mimics Docker's exec cleanup behaviour, where the default is 5 minutes (value is in seconds).
+#
+#exit_command_delay = 300
+
+# map of service destinations
+#
+#[service_destinations]
+#  [service_destinations.production]
+#     URI to access the Podman service
+#     Examples:
+#       rootless "unix:///run/user/$UID/podman/podman.sock" (Default)
+#       rootful "unix:///run/podman/podman.sock (Default)
+#       remote rootless ssh://engineering.lab.company.com/run/user/1000/podman/podman.sock
+#       remote rootful ssh://root@10.10.1.136:22/run/podman/podman.sock
+#       tcp/tls remote tcp://10.10.1.136:9443
+#
+#    uri = "ssh://user@production.example.com/run/user/1001/podman/podman.sock"
+#    Path to file containing ssh identity key
+#    identity = "~/.ssh/id_rsa"
+#    Path to PEM file containing TLS client certificate
+#    tls_cert = "/path/to/certs/podman/tls.crt"
+#    Path to PEM file containing TLS client certificate private key
+#    tls_key = "/path/to/certs/podman/tls.key"
+#    Path to PEM file containing TLS certificate authority (CA) bundle
+#    tls_ca = "/path/to/certs/podman/ca.crt"
+
+# Directory for temporary files. Must be tmpfs (wiped after reboot)
+#
+#tmp_dir = "/run/libpod"
+
+# Directory for libpod named volumes.
+# By default, this will be configured relative to where containers/storage
+# stores containers.
+# Uncomment to change location from this default.
+#
+#volume_path = "/var/lib/containers/storage/volumes"
+
+# Paths to look for a valid OCI runtime (crun, runc, kata, runsc, krun, etc)
+[engine.runtimes]
+#crun = [
+#  "/usr/bin/crun",
+#  "/usr/sbin/crun",
+#  "/usr/local/bin/crun",
+#  "/usr/local/sbin/crun",
+#  "/sbin/crun",
+#  "/bin/crun",
+#  "/run/current-system/sw/bin/crun",
+#]
+
+#kata = [
+#  "/usr/bin/kata-runtime",
+#  "/usr/sbin/kata-runtime",
+#  "/usr/local/bin/kata-runtime",
+#  "/usr/local/sbin/kata-runtime",
+#  "/sbin/kata-runtime",
+#  "/bin/kata-runtime",
+#  "/usr/bin/kata-qemu",
+#  "/usr/bin/kata-fc",
+#]
+
+#runc = [
+#  "/usr/bin/runc",
+#  "/usr/sbin/runc",
+#  "/usr/local/bin/runc",
+#  "/usr/local/sbin/runc",
+#  "/sbin/runc",
+#  "/bin/runc",
+#  "/usr/lib/cri-o-runc/sbin/runc",
+#]
+
+#runsc = [
+#  "/usr/bin/runsc",
+#  "/usr/sbin/runsc",
+#  "/usr/local/bin/runsc",
+#  "/usr/local/sbin/runsc",
+#  "/bin/runsc",
+#  "/sbin/runsc",
+#  "/run/current-system/sw/bin/runsc",
+#]
+
+#youki = [
+#  "/usr/local/bin/youki",
+#  "/usr/bin/youki",
+#  "/bin/youki",
+#  "/run/current-system/sw/bin/youki",
+#]
+
+#krun = [
+#  "/usr/bin/krun",
+#  "/usr/local/bin/krun",
+#]
+
+# Default flags for a valid OCI runtime (crun, runc, kata, runsc, krun, etc)
+# Note: Do not pass the leading -- to the flag. To pass the runc flag --log-format json, the option given is log-format=json.
+[engine.runtimes_flags]
+#crun = []
+
+#crun-vm = []
+
+#kata = []
+
+#runc = []
+
+#runsc = []
+
+#youki = []
+
+#krun = []
+
+[engine.volume_plugins]
+#testplugin = "/var/run/podman/plugins/test.sock"
+
+[machine]
+# Number of CPU's a machine is created with.
+#
+#cpus=1
+
+# The size of the disk in GB created when init-ing a podman-machine VM.
+#
+#disk_size=10
+
+# The image used when creating a podman-machine VM.
+#
+#image = "testing"
+
+# Memory in MB a machine is created with.
+#
+#memory=2048
+
+# The username to use and create on the podman machine OS for rootless
+# container access.
+#
+#user = "core"
+
+# Host directories to be mounted as volumes into the VM by default.
+# Environment variables like $HOME as well as complete paths are supported for
+# the source and destination. An optional third field `:ro` can be used to
+# tell the container engines to mount the volume readonly.
+#
+#volumes = [
+#  "$HOME:$HOME",
+#]
+
+# Virtualization provider used to run Podman machine.
+# If it is empty or commented out, the default provider will be used.
+#
+#provider = ""
+
+# The [machine] table MUST be the last entry in this file.
+# (Unless another table is added)
+# TOML does not provide a way to end a table other than a further table being
+# defined, so every key hereafter will be part of [machine] and not the
+# main config.
+
+[farms]
+#
+# the default farm to use when farming out builds
+# default = ""
+#
+# map of existing farms
+#[farms.list]

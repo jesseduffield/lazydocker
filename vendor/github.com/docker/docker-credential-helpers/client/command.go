@@ -15,27 +15,30 @@ type Program interface {
 // ProgramFunc is a type of function that initializes programs based on arguments.
 type ProgramFunc func(args ...string) Program
 
-// NewShellProgramFunc creates programs that are executed in a Shell.
-func NewShellProgramFunc(name string) ProgramFunc {
-	return NewShellProgramFuncWithEnv(name, nil)
-}
-
-// NewShellProgramFuncWithEnv creates programs that are executed in a Shell with environment variables
-func NewShellProgramFuncWithEnv(name string, env *map[string]string) ProgramFunc {
+// NewShellProgramFunc creates a [ProgramFunc] to run command in a [Shell].
+func NewShellProgramFunc(command string) ProgramFunc {
 	return func(args ...string) Program {
-		return &Shell{cmd: createProgramCmdRedirectErr(name, args, env)}
+		return createProgramCmdRedirectErr(command, args, nil)
 	}
 }
 
-func createProgramCmdRedirectErr(commandName string, args []string, env *map[string]string) *exec.Cmd {
-	programCmd := exec.Command(commandName, args...)
+// NewShellProgramFuncWithEnv creates a [ProgramFunc] tu run command
+// in a [Shell] with the given environment variables.
+func NewShellProgramFuncWithEnv(command string, env *map[string]string) ProgramFunc {
+	return func(args ...string) Program {
+		return createProgramCmdRedirectErr(command, args, env)
+	}
+}
+
+func createProgramCmdRedirectErr(command string, args []string, env *map[string]string) *Shell {
+	ec := exec.Command(command, args...)
 	if env != nil {
 		for k, v := range *env {
-			programCmd.Env = append(programCmd.Environ(), k+"="+v)
+			ec.Env = append(ec.Environ(), k+"="+v)
 		}
 	}
-	programCmd.Stderr = os.Stderr
-	return programCmd
+	ec.Stderr = os.Stderr
+	return &Shell{cmd: ec}
 }
 
 // Shell invokes shell commands to talk with a remote credentials-helper.

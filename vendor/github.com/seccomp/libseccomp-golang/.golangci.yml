@@ -1,0 +1,12 @@
+# For documentation, see https://golangci-lint.run/usage/configuration/
+version: "2"
+
+formatters:
+  enable:
+    - gofumpt
+
+linters:
+  exclusions:
+    generated: disable
+    presets:
+      - std-error-handling

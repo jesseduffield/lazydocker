@@ -1,0 +1,35 @@
+linters:
+  enable:
+    - depguard
+    - staticcheck
+    - unconvert
+    - gofmt
+    - goimports
+    - revive
+    - ineffassign
+    - govet
+    - unused
+    - misspell
+
+linters-settings:
+  depguard:
+    rules:
+      main:
+        files:
+          - $all
+        deny:
+          - pkg: "io/ioutil"
+
+  revive:
+    severity: error
+    rules:
+      - name: indent-error-flow
+        severity: warning
+        disabled: false
+
+      - name: error-strings
+        disabled: false
+
+  staticcheck:
+    # Suppress reports of deprecated packages
+    checks: ["-SA1019"]

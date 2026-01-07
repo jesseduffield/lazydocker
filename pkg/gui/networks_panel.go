@@ -54,19 +54,19 @@ func (gui *Gui) renderNetworkConfig(network *commands.Network) tasks.TaskFunc {
 func (gui *Gui) networkConfigStr(network *commands.Network) string {
 	padding := 15
 	output := ""
-	output += utils.WithPadding("ID: ", padding) + network.Network.ID + "\n"
+	output += utils.WithPadding("ID: ", padding) + network.Summary.ID + "\n"
 	output += utils.WithPadding("Name: ", padding) + network.Name + "\n"
-	output += utils.WithPadding("Driver: ", padding) + network.Network.Driver + "\n"
-	output += utils.WithPadding("Scope: ", padding) + network.Network.Scope + "\n"
-	output += utils.WithPadding("EnabledIPV6: ", padding) + strconv.FormatBool(network.Network.EnableIPv6) + "\n"
-	output += utils.WithPadding("Internal: ", padding) + strconv.FormatBool(network.Network.Internal) + "\n"
-	output += utils.WithPadding("Attachable: ", padding) + strconv.FormatBool(network.Network.Attachable) + "\n"
-	output += utils.WithPadding("Ingress: ", padding) + strconv.FormatBool(network.Network.Ingress) + "\n"
+	output += utils.WithPadding("Driver: ", padding) + network.Summary.Driver + "\n"
+	output += utils.WithPadding("Scope: ", padding) + network.Summary.Scope + "\n"
+	output += utils.WithPadding("EnabledIPV6: ", padding) + strconv.FormatBool(network.Summary.EnableIPv6) + "\n"
+	output += utils.WithPadding("Internal: ", padding) + strconv.FormatBool(network.Summary.Internal) + "\n"
+	output += utils.WithPadding("Attachable: ", padding) + strconv.FormatBool(network.Summary.Attachable) + "\n"
+	output += utils.WithPadding("Ingress: ", padding) + strconv.FormatBool(network.Summary.Ingress) + "\n"
 
 	output += utils.WithPadding("Containers: ", padding)
-	if len(network.Network.Containers) > 0 {
+	if len(network.Summary.Containers) > 0 {
 		output += "\n"
-		for _, v := range network.Network.Containers {
+		for _, v := range network.Summary.Containers {
 			output += utils.FormatMapItem(padding, v.Name, v.EndpointID)
 		}
 	} else {
@@ -74,8 +74,8 @@ func (gui *Gui) networkConfigStr(network *commands.Network) string {
 	}
 
 	output += "\n"
-	output += utils.WithPadding("Labels: ", padding) + utils.FormatMap(padding, network.Network.Labels) + "\n"
-	output += utils.WithPadding("Options: ", padding) + utils.FormatMap(padding, network.Network.Options)
+	output += utils.WithPadding("Labels: ", padding) + utils.FormatMap(padding, network.Summary.Labels) + "\n"
+	output += utils.WithPadding("Options: ", padding) + utils.FormatMap(padding, network.Summary.Options)
 
 	return output
 }

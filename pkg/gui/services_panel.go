@@ -53,7 +53,7 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 				if service.Container == nil {
 					return "services-" + service.ID
 				}
-				return "services-" + service.ID + "-" + service.Container.ID + "-" + service.Container.Container.State
+				return "services-" + service.ID + "-" + service.Container.ID + "-" + service.Container.Summary.State
 			},
 		},
 		ListPanel: panels.ListPanel[*commands.Service]{

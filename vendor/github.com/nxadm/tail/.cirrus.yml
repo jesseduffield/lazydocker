@@ -1,0 +1,8 @@
+task:
+  name: FreeBSD
+  freebsd_instance:
+      image_family: freebsd-12-2
+  install_script: pkg install -y go
+  script: |
+    go build
+    go test -v -race -timeout 2m ./...

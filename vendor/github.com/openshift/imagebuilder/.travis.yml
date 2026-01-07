@@ -1,0 +1,40 @@
+language: go
+
+os: linux
+
+arch:
+  - amd64
+  - arm64
+
+dist: jammy
+
+services:
+  - docker
+
+go:
+  - "1.22.12"
+
+before_install:
+  - sudo systemctl stop docker.service && sudo systemctl stop docker.socket
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - yes | sudo add-apt-repository "deb [arch=${TRAVIS_CPU_ARCH}] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get update -q -y
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+  - sudo systemctl enable --now docker.service && sudo systemctl enable --now docker.socket
+  - docker pull mirror.gcr.io/alpine
+  - docker pull mirror.gcr.io/busybox
+  - docker pull public.ecr.aws/docker/library/centos:7
+  - docker pull mirror.gcr.io/debian
+  - docker pull registry.fedoraproject.org/fedora-minimal
+  - docker pull registry.fedoraproject.org/fedora-minimal:42-x86_64
+  - docker pull registry.fedoraproject.org/fedora-minimal:42-aarch64
+  - docker pull mirror.gcr.io/golang:1.24
+  - chmod -R go-w ./dockerclient/testdata
+
+script:
+  - make build
+  - make test
+  - travis_wait 45 make test-conformance
+
+notifications:
+  irc: "chat.freenode.net#openshift-dev"

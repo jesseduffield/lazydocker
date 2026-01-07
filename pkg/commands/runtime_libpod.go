@@ -8,6 +8,8 @@ import (
 
 	"github.com/containers/podman/v5/libpod"
 	"github.com/containers/podman/v5/libpod/define"
+	"go.podman.io/common/libimage"
+	nettypes "go.podman.io/common/libnetwork/types"
 )
 
 // LibpodRuntime implements ContainerRuntime using libpod directly.
@@ -193,25 +195,25 @@ func (r *LibpodRuntime) ContainerStats(ctx context.Context, id string, stream bo
 
 // ListImages returns all images.
 func (r *LibpodRuntime) ListImages(ctx context.Context) ([]ImageSummary, error) {
-	imgs, err := r.runtime.ImageRuntime().GetImages()
+	imgs, err := r.runtime.LibimageRuntime().ListImages(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
-	return convertLibpodImageList(imgs), nil
+	return convertLibpodImageList(ctx, imgs), nil
 }
 
 // InspectImage returns detailed information about an image.
 func (r *LibpodRuntime) InspectImage(ctx context.Context, id string) (*ImageDetails, error) {
-	img, _, err := r.runtime.ImageRuntime().LookupImage(id, nil)
+	img, _, err := r.runtime.LibimageRuntime().LookupImage(id, nil)
 	if err != nil {
 		return nil, err
 	}
-	return convertLibpodImageInspect(img), nil
+	return convertLibpodImageInspect(ctx, img), nil
 }
 
 // ImageHistory returns the history of an image.
 func (r *LibpodRuntime) ImageHistory(ctx context.Context, id string) ([]ImageHistoryEntry, error) {
-	img, _, err := r.runtime.ImageRuntime().LookupImage(id, nil)
+	img, _, err := r.runtime.LibimageRuntime().LookupImage(id, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -224,17 +226,20 @@ func (r *LibpodRuntime) ImageHistory(ctx context.Context, id string) ([]ImageHis
 
 // RemoveImage removes an image.
 func (r *LibpodRuntime) RemoveImage(ctx context.Context, id string, force bool) error {
-	img, _, err := r.runtime.ImageRuntime().LookupImage(id, nil)
+	img, _, err := r.runtime.LibimageRuntime().LookupImage(id, nil)
 	if err != nil {
 		return err
 	}
-	_, err = r.runtime.ImageRuntime().RemoveImages(ctx, []string{img.ID()}, &libimage.RemoveImagesOptions{Force: force})
-	return err
+	_, errs := r.runtime.LibimageRuntime().RemoveImages(ctx, []string{img.ID()}, &libimage.RemoveImagesOptions{Force: force})
+	if len(errs) > 0 {
+		return errs[0]
+	}
+	return nil
 }
 
 // PruneImages removes unused images.
 func (r *LibpodRuntime) PruneImages(ctx context.Context) error {
-	_, err := r.runtime.ImageRuntime().PruneImages(ctx, nil)
+	_, err := r.runtime.LibimageRuntime().PruneImages(ctx, nil)
 	return err
 }
 
@@ -443,40 +448,59 @@ func convertLibpodContainerStats(stats *define.ContainerStats) ContainerStatsEnt
 	}
 }
 
-func convertLibpodImageList(imgs []*libimage.Image) []ImageSummary {
+func convertLibpodImageList(ctx context.Context, imgs []*libimage.Image) []ImageSummary {
 	result := make([]ImageSummary, len(imgs))
 	for i, img := range imgs {
+		size, _ := img.Size()           // Ignore error for list view
+		labels, _ := img.Labels(ctx)    // Ignore error for list view
 		result[i] = ImageSummary{
 			ID:       img.ID(),
 			RepoTags: img.Names(),
 			Created:  img.Created().Unix(),
-			Size:     img.Size(),
-			Labels:   img.Labels(),
+			Size:     size,
+			Labels:   labels,
 		}
 	}
 	return result
 }
 
-func convertLibpodImageInspect(img *libimage.Image) *ImageDetails {
+func convertLibpodImageInspect(ctx context.Context, img *libimage.Image) *ImageDetails {
 	if img == nil {
 		return nil
 	}
+	data, err := img.Inspect(ctx, nil)
+	if err != nil {
+		return nil
+	}
+	var created time.Time
+	if data.Created != nil {
+		created = *data.Created
+	}
 	return &ImageDetails{
-		ID:           img.ID(),
-		RepoTags:     img.Names(),
-		Created:      img.Created(),
-		Size:         img.Size(),
-		Architecture: img.Architecture(),
-		Os:           img.OS(),
+		ID:           data.ID,
+		RepoTags:     data.RepoTags,
+		RepoDigests:  data.RepoDigests,
+		Parent:       data.Parent,
+		Comment:      data.Comment,
+		Created:      created,
+		Author:       data.Author,
+		Architecture: data.Architecture,
+		Os:           data.Os,
+		Size:         data.Size,
+		VirtualSize:  data.VirtualSize,
 	}
 }
 
-func convertLibpodImageHistory(history []*libimage.ImageHistoryLayer) []ImageHistoryEntry {
+func convertLibpodImageHistory(history []libimage.ImageHistory) []ImageHistoryEntry {
 	result := make([]ImageHistoryEntry, len(history))
 	for i, layer := range history {
+		created := int64(0)
+		if layer.Created != nil {
+			created = layer.Created.Unix()
+		}
 		result[i] = ImageHistoryEntry{
 			ID:        layer.ID,
-			Created:   layer.Created.Unix(),
+			Created:   created,
 			CreatedBy: layer.CreatedBy,
 			Tags:      layer.Tags,
 			Size:      layer.Size,
@@ -502,7 +526,7 @@ func convertLibpodVolumeList(vols []*libpod.Volume) []VolumeSummary {
 	return result
 }
 
-func convertLibpodNetworkList(nets []types.Network) []NetworkSummary {
+func convertLibpodNetworkList(nets []nettypes.Network) []NetworkSummary {
 	result := make([]NetworkSummary, len(nets))
 	for i, nw := range nets {
 		result[i] = NetworkSummary{

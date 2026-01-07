@@ -1,0 +1,149 @@
+---
+# See the documentation for more information:
+# https://packit.dev/docs/configuration/
+
+downstream_package_name: buildah
+upstream_tag_template: v{version}
+
+# These files get synced from upstream to downstream (Fedora / CentOS Stream) on every
+# propose-downstream job. This is done so tests maintained upstream can be run
+# downstream in Zuul CI and Bodhi.
+# Ref: https://packit.dev/docs/configuration#files_to_sync
+files_to_sync:
+  - src: rpm/gating.yaml
+    dest: gating.yaml
+    delete: true
+  - src: plans/
+    dest: plans/
+    delete: true
+    mkpath: true
+  - src: tests/tmt/
+    dest: tests/tmt/
+    delete: true
+    mkpath: true
+  - src: .fmf/
+    dest: .fmf/
+    delete: true
+  - .packit.yaml
+
+packages:
+  buildah-fedora:
+    pkg_tool: fedpkg
+    specfile_path: rpm/buildah.spec
+  buildah-centos:
+    pkg_tool: centpkg
+    specfile_path: rpm/buildah.spec
+  buildah-eln:
+    specfile_path: rpm/buildah.spec
+
+srpm_build_deps:
+  - make
+
+jobs:
+  - job: copr_build
+    trigger: pull_request
+    packages: [buildah-fedora]
+    notifications: &copr_build_failure_notification
+      failure_comment:
+        message: "Ephemeral COPR build failed. @containers/packit-build please check."
+    # Fedora aliases documentation: https://packit.dev/docs/configuration#aliases
+    # python3-fedora-distro-aliases provides `resolve-fedora-aliases` command
+    targets: &fedora_copr_targets
+      - fedora-all-x86_64
+      - fedora-all-aarch64
+    enable_net: true
+    # Disable osh diff scan until Go support is available
+    # Ref: https://github.com/openscanhub/known-false-positives/pull/30#issuecomment-2858698495
+    osh_diff_scan_after_copr_build: false
+
+  # Ignore until golang is updated in distro buildroot to 1.23.3+
+  - job: copr_build
+    trigger: ignore
+    packages: [buildah-eln]
+    notifications: *copr_build_failure_notification
+    targets:
+      fedora-eln-x86_64:
+        additional_repos:
+          - "https://kojipkgs.fedoraproject.org/repos/eln-build/latest/x86_64/"
+      fedora-eln-aarch64:
+        additional_repos:
+          - "https://kojipkgs.fedoraproject.org/repos/eln-build/latest/aarch64/"
+    enable_net: true
+
+  # Ignore until golang is updated in distro buildroot to 1.23.3+
+  - job: copr_build
+    trigger: ignore
+    packages: [buildah-centos]
+    notifications: *copr_build_failure_notification
+    targets: &centos_copr_targets
+      - centos-stream-9-x86_64
+      - centos-stream-9-aarch64
+      - centos-stream-10-x86_64
+      - centos-stream-10-aarch64
+    enable_net: true
+
+  # Run on commit to main branch
+  - job: copr_build
+    trigger: commit
+    packages: [buildah-fedora]
+    notifications:
+      failure_comment:
+        message: "podman-next COPR build failed. @containers/packit-build please check."
+    branch: main
+    owner: rhcontainerbot
+    project: podman-next
+    enable_net: true
+
+  # Tests on Fedora for main branch PRs
+  - job: tests
+    trigger: pull_request
+    packages: [buildah-fedora]
+    targets:
+      - fedora-all-x86_64
+    tf_extra_params:
+      environments:
+        - artifacts:
+          - type: repository-file
+            id: https://copr.fedorainfracloud.org/coprs/rhcontainerbot/podman-next/repo/fedora-$releasever/rhcontainerbot-podman-next-fedora-$releasever.repo
+
+  # Ignore until golang is updated in distro buildroot to 1.23.3+
+  # Tests on CentOS Stream for main branch PRs
+  - job: tests
+    trigger: ignore
+    packages: [buildah-centos]
+    targets:
+      - centos-stream-9-x86_64
+      - centos-stream-10-x86_64
+    tf_extra_params:
+      environments:
+        - artifacts:
+          - type: repository-file
+            id: https://copr.fedorainfracloud.org/coprs/rhcontainerbot/podman-next/repo/centos-stream-$releasever/rhcontainerbot-podman-next-centos-stream-$releasever.repo
+
+  # Sync to Fedora
+  - job: propose_downstream
+    trigger: release
+    packages: [buildah-fedora]
+    update_release: false
+    dist_git_branches: &fedora_targets
+      - fedora-all
+
+  # Sync to CentOS Stream
+  - job: propose_downstream
+    trigger: release
+    packages: [buildah-centos]
+    update_release: false
+    dist_git_branches:
+      - c10s
+
+  # Fedora Koji build
+  - job: koji_build
+    trigger: commit
+    packages: [buildah-fedora]
+    sidetag_group: podman-releases
+    # Dependents are not rpm dependencies, but the package whose bodhi update
+    # should include this package.
+    # Ref: https://packit.dev/docs/fedora-releases-guide/releasing-multiple-packages
+    dependents:
+      - podman
+    dist_git_branches: *fedora_targets

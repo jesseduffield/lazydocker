@@ -76,10 +76,10 @@ func (gui *Gui) imageConfigStr(image *commands.Image) string {
 	padding := 10
 	output := ""
 	output += utils.WithPadding("Name: ", padding) + image.Name + "\n"
-	output += utils.WithPadding("ID: ", padding) + image.Image.ID + "\n"
-	output += utils.WithPadding("Tags: ", padding) + utils.ColoredString(strings.Join(image.Image.RepoTags, ", "), color.FgGreen) + "\n"
-	output += utils.WithPadding("Size: ", padding) + utils.FormatDecimalBytes(int(image.Image.Size)) + "\n"
-	output += utils.WithPadding("Created: ", padding) + fmt.Sprintf("%v", time.Unix(image.Image.Created, 0).Format(time.RFC1123)) + "\n"
+	output += utils.WithPadding("ID: ", padding) + image.Summary.ID + "\n"
+	output += utils.WithPadding("Tags: ", padding) + utils.ColoredString(strings.Join(image.Summary.RepoTags, ", "), color.FgGreen) + "\n"
+	output += utils.WithPadding("Size: ", padding) + utils.FormatDecimalBytes(int(image.Summary.Size)) + "\n"
+	output += utils.WithPadding("Created: ", padding) + fmt.Sprintf("%v", time.Unix(image.Summary.Created, 0).Format(time.RFC1123)) + "\n"
 
 	history, err := image.RenderHistory()
 	if err != nil {

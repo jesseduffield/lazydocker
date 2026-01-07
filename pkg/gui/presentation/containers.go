@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/docker/docker/api/types/container"
 	"github.com/fatih/color"
 	"github.com/christophe-duc/lazypodman/pkg/commands"
 	"github.com/christophe-duc/lazypodman/pkg/config"
@@ -26,11 +25,11 @@ func GetContainerDisplayStrings(guiConfig *config.GuiConfig, container *commands
 }
 
 func displayContainerImage(container *commands.Container) string {
-	return strings.TrimPrefix(container.Container.Image, "sha256:")
+	return strings.TrimPrefix(container.Summary.Image, "sha256:")
 }
 
 func displayPorts(c *commands.Container) string {
-	portStrings := lo.Map(c.Container.Ports, func(port container.Port, _ int) string {
+	portStrings := lo.Map(c.Summary.Ports, func(port commands.PortMapping, _ int) string {
 		if port.PublicPort == 0 {
 			return fmt.Sprintf("%d/%s", port.PrivatePort, port.Type)
 		}
@@ -77,13 +76,13 @@ func getContainerDisplayStatus(guiConfig *config.GuiConfig, c *commands.Containe
 	var containerState string
 	switch guiConfig.ContainerStatusHealthStyle {
 	case "short":
-		containerState = shortStatusMap[c.Container.State]
+		containerState = shortStatusMap[c.Summary.State]
 	case "icon":
-		containerState = string(iconStatusMap[c.Container.State])
+		containerState = string(iconStatusMap[c.Summary.State])
 	case "long":
 		fallthrough
 	default:
-		containerState = c.Container.State
+		containerState = c.Summary.State
 	}
 
 	return utils.ColoredString(containerState, getContainerColor(c))
@@ -95,7 +94,7 @@ func getContainerDisplaySubstatus(guiConfig *config.GuiConfig, c *commands.Conta
 		return ""
 	}
 
-	switch c.Container.State {
+	switch c.Summary.State {
 	case "exited":
 		return utils.ColoredString(
 			fmt.Sprintf("(%s)", strconv.Itoa(c.Details.State.ExitCode)), getContainerColor(c),
@@ -176,7 +175,7 @@ func getDisplayCPUPerc(c *commands.Container) string {
 
 // getContainerColor Container color
 func getContainerColor(c *commands.Container) color.Attribute {
-	switch c.Container.State {
+	switch c.Summary.State {
 	case "exited":
 		// This means the colour may be briefly yellow and then switch to red upon starting
 		// Not sure what a better alternative is.

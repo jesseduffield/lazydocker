@@ -1,4 +1,5 @@
-// +build darwin freebsd openbsd netbsd dragonfly
+//go:build (darwin || freebsd || openbsd || netbsd || dragonfly || hurd) && !appengine
+// +build darwin freebsd openbsd netbsd dragonfly hurd
 // +build !appengine
 
 package isatty

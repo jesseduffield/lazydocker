@@ -1,0 +1,22 @@
+linters:
+  presets:
+    - bugs
+    - performance
+    - unused
+    - format
+  disable:
+    - musttag
+  enable:
+    - whitespace
+    - misspell
+    - dupl
+    - gosimple
+    - stylecheck
+
+linters-settings:
+  exhaustive:
+    default-signifies-exhaustive: true
+  gosec:
+    excludes:
+      # https://github.com/securego/gosec/issues/1185
+      - G115

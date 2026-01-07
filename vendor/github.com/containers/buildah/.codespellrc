@@ -1,0 +1,3 @@
+[codespell]
+skip = ./vendor,./.git,./go.sum,./docs/*.1,./docker/AUTHORS,./CHANGELOG.md,./changelog.txt,./tests/tools/vendor,./tests/tools/go.mod,./tests/tools/go.sum
+ignore-words-list = fo,passt,secon,erro

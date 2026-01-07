@@ -1,0 +1,20 @@
+version: "2"
+
+formatters:
+  enable:
+    - gofumpt
+
+linters:
+  enable:
+    - nolintlint
+    - unconvert
+  exclusions:
+    presets:
+      - comments
+      - std-error-handling
+  settings:
+    staticcheck:
+      checks:
+        - all
+        - -ST1003 # https://staticcheck.dev/docs/checks/#ST1003 Poorly chosen identifier.
+        - -QF1008 # https://staticcheck.dev/docs/checks/#QF1008 Omit embedded fields from selector expression.

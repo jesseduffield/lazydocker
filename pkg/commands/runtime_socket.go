@@ -3,8 +3,10 @@ package commands
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"time"
 
+	"github.com/containers/podman/v5/libpod/define"
 	"github.com/containers/podman/v5/pkg/bindings"
 	"github.com/containers/podman/v5/pkg/bindings/containers"
 	"github.com/containers/podman/v5/pkg/bindings/images"
@@ -12,6 +14,9 @@ import (
 	"github.com/containers/podman/v5/pkg/bindings/system"
 	"github.com/containers/podman/v5/pkg/bindings/volumes"
 	"github.com/containers/podman/v5/pkg/domain/entities"
+	"github.com/containers/podman/v5/pkg/domain/entities/types"
+	handlertypes "github.com/containers/podman/v5/pkg/api/handlers/types"
+	nettypes "go.podman.io/common/libnetwork/types"
 )
 
 // SocketRuntime implements ContainerRuntime using Podman's REST API bindings.
@@ -115,7 +120,16 @@ func (r *SocketRuntime) ContainerTop(ctx context.Context, id string) ([]string, 
 	if err != nil {
 		return nil, nil, err
 	}
-	return result.Titles, result.Processes, nil
+	// Parse the result - first line is headers, rest are processes
+	if len(result) == 0 {
+		return nil, nil, nil
+	}
+	headers := strings.Fields(result[0])
+	processes := make([][]string, 0, len(result)-1)
+	for _, line := range result[1:] {
+		processes = append(processes, strings.Fields(line))
+	}
+	return headers, processes, nil
 }
 
 // PruneContainers removes all stopped containers.
@@ -271,11 +285,20 @@ func (r *SocketRuntime) Events(ctx context.Context) (<-chan Event, <-chan error)
 		defer close(errChan)
 
 		opts := &system.EventsOptions{}
-		podmanEventChan, err := system.Events(r.conn, nil, opts)
-		if err != nil {
-			errChan <- err
-			return
-		}
+		podmanEventChan := make(chan types.Event)
+		cancelChan := make(chan bool)
+
+		go func() {
+			<-ctx.Done()
+			close(cancelChan)
+		}()
+
+		go func() {
+			err := system.Events(r.conn, podmanEventChan, cancelChan, opts)
+			if err != nil {
+				errChan <- err
+			}
+		}()
 
 		for podmanEvent := range podmanEventChan {
 			event := Event{
@@ -303,6 +326,11 @@ func (r *SocketRuntime) Events(ctx context.Context) (<-chan Event, <-chan error)
 func convertPodmanContainerList(podmanContainers []entities.ListContainer) []ContainerSummary {
 	result := make([]ContainerSummary, len(podmanContainers))
 	for i, c := range podmanContainers {
+		var sizeRw, sizeRootFs int64
+		if c.Size != nil {
+			sizeRw = c.Size.RwSize
+			sizeRootFs = c.Size.RootFsSize
+		}
 		result[i] = ContainerSummary{
 			ID:         c.ID,
 			Names:      c.Names,
@@ -314,8 +342,8 @@ func convertPodmanContainerList(podmanContainers []entities.ListContainer) []Con
 			Status:     c.Status,
 			Ports:      convertPodmanPorts(c.Ports),
 			Labels:     c.Labels,
-			SizeRw:     c.Size.RwSize,
-			SizeRootFs: c.Size.RootFsSize,
+			SizeRw:     sizeRw,
+			SizeRootFs: sizeRootFs,
 			Pod:        c.Pod,
 			PodName:    c.PodName,
 		}
@@ -332,7 +360,7 @@ func commandToString(cmd []string) string {
 	return string(data)
 }
 
-func convertPodmanPorts(ports []entities.PortMapping) []PortMapping {
+func convertPodmanPorts(ports []nettypes.PortMapping) []PortMapping {
 	result := make([]PortMapping, len(ports))
 	for i, p := range ports {
 		result[i] = PortMapping{
@@ -345,7 +373,7 @@ func convertPodmanPorts(ports []entities.PortMapping) []PortMapping {
 	return result
 }
 
-func convertPodmanContainerInspect(data *entities.InspectContainerData) *ContainerDetails {
+func convertPodmanContainerInspect(data *define.InspectContainerData) *ContainerDetails {
 	if data == nil {
 		return nil
 	}
@@ -361,7 +389,6 @@ func convertPodmanContainerInspect(data *entities.InspectContainerData) *Contain
 		ResolvConfPath:  data.ResolvConfPath,
 		HostnamePath:    data.HostnamePath,
 		HostsPath:       data.HostsPath,
-		LogPath:         data.LogPath,
 		RestartCount:    int(data.RestartCount),
 		Driver:          data.Driver,
 		MountLabel:      data.MountLabel,
@@ -393,9 +420,13 @@ func convertPodmanContainerInspect(data *entities.InspectContainerData) *Contain
 	}
 
 	if data.Config != nil {
+		var onBuild []string
+		if data.Config.OnBuild != nil {
+			onBuild = []string{*data.Config.OnBuild}
+		}
 		details.Config = &ContainerConfig{
 			Hostname:     data.Config.Hostname,
-			Domainname:   data.Config.Domainname,
+			Domainname:   data.Config.DomainName,
 			User:         data.Config.User,
 			AttachStdin:  data.Config.AttachStdin,
 			AttachStdout: data.Config.AttachStdout,
@@ -408,7 +439,7 @@ func convertPodmanContainerInspect(data *entities.InspectContainerData) *Contain
 			Image:        data.Config.Image,
 			WorkingDir:   data.Config.WorkingDir,
 			Entrypoint:   data.Config.Entrypoint,
-			OnBuild:      data.Config.OnBuild,
+			OnBuild:      onBuild,
 			Labels:       data.Config.Labels,
 			StopSignal:   data.Config.StopSignal,
 		}
@@ -417,7 +448,7 @@ func convertPodmanContainerInspect(data *entities.InspectContainerData) *Contain
 	return details
 }
 
-func convertPodmanContainerStats(stat entities.ContainerStats) ContainerStatsEntry {
+func convertPodmanContainerStats(stat define.ContainerStats) ContainerStatsEntry {
 	return ContainerStatsEntry{
 		Read:    time.Now(),
 		PreRead: time.Now().Add(-time.Second),
@@ -451,10 +482,10 @@ func convertPodmanImageList(podmanImages []*entities.ImageSummary) []ImageSummar
 			RepoDigests: img.RepoDigests,
 			Created:     img.Created,
 			Size:        img.Size,
-			SharedSize:  img.SharedSize,
+			SharedSize:  int64(img.SharedSize),
 			VirtualSize: img.VirtualSize,
 			Labels:      img.Labels,
-			Containers:  img.Containers,
+			Containers:  int64(img.Containers),
 		}
 	}
 	return result
@@ -480,21 +511,25 @@ func convertPodmanImageInspect(data *entities.ImageInspectReport) *ImageDetails 
 	}
 
 	if data.RootFS != nil {
+		layers := make([]string, len(data.RootFS.Layers))
+		for i, layer := range data.RootFS.Layers {
+			layers[i] = layer.String()
+		}
 		details.RootFS = RootFS{
 			Type:   data.RootFS.Type,
-			Layers: data.RootFS.Layers,
+			Layers: layers,
 		}
 	}
 
 	return details
 }
 
-func convertPodmanImageHistory(history []*entities.ImageHistoryLayer) []ImageHistoryEntry {
+func convertPodmanImageHistory(history []*handlertypes.HistoryResponse) []ImageHistoryEntry {
 	result := make([]ImageHistoryEntry, len(history))
 	for i, layer := range history {
 		result[i] = ImageHistoryEntry{
 			ID:        layer.ID,
-			Created:   layer.Created.Unix(),
+			Created:   layer.Created,
 			CreatedBy: layer.CreatedBy,
 			Tags:      layer.Tags,
 			Size:      layer.Size,
@@ -520,7 +555,7 @@ func convertPodmanVolumeList(podmanVolumes []*entities.VolumeListReport) []Volum
 	return result
 }
 
-func convertPodmanNetworkList(podmanNetworks []entities.NetworkListReport) []NetworkSummary {
+func convertPodmanNetworkList(podmanNetworks []nettypes.Network) []NetworkSummary {
 	result := make([]NetworkSummary, len(podmanNetworks))
 	for i, nw := range podmanNetworks {
 		result[i] = NetworkSummary{

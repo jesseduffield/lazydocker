@@ -1,0 +1,115 @@
+# This file is is the configuration file for all tools
+# that use the containers/storage library. The storage.conf file
+# overrides all other storage.conf files. Container engines using the
+# container/storage library do not inherit fields from other storage.conf
+# files.
+#
+#  Note: The storage.conf file overrides other storage.conf files based on this precedence:
+#      /usr/local/share/containers/storage.conf
+#      /usr/local/etc/containers/storage.conf
+#      $HOME/.config/containers/storage.conf
+#      $XDG_CONFIG_HOME/containers/storage.conf (If XDG_CONFIG_HOME is set)
+# See man 5 containers-storage.conf for more information
+# The "container storage" table contains all of the server options.
+[storage]
+
+# Default Storage Driver, Must be set for proper operation.
+driver = "zfs"
+
+# Temporary storage location
+runroot = "/var/run/containers/storage"
+
+# Primary Read/Write location of container storage
+graphroot = "/var/db/containers/storage"
+
+# Optional value for image storage location
+# If set, it must be different than graphroot.
+
+# imagestore = ""
+
+# Storage path for rootless users
+#
+# rootless_storage_path = "$HOME/.local/share/containers/storage"
+
+[storage.options]
+# Storage options to be passed to underlying storage drivers
+
+# AdditionalImageStores is used to pass paths to additional Read/Only image stores
+# Must be comma separated list.
+additionalimagestores = [
+]
+
+# Root-auto-userns-user is a user name which can be used to look up one or more UID/GID
+# ranges in the /etc/subuid and /etc/subgid file.  These ranges will be partitioned
+# to containers configured to create automatically a user namespace.  Containers
+# configured to automatically create a user namespace can still overlap with containers
+# having an explicit mapping set.
+# This setting is ignored when running as rootless.
+# root-auto-userns-user = "storage"
+#
+# Auto-userns-min-size is the minimum size for a user namespace created automatically.
+# auto-userns-min-size=1024
+#
+# Auto-userns-max-size is the minimum size for a user namespace created automatically.
+# auto-userns-max-size=65536
+
+[storage.options.overlay]
+# ignore_chown_errors can be set to allow a non privileged user running with
+# a single UID within a user namespace to run containers. The user can pull
+# and use any image even those with multiple uids.  Note multiple UIDs will be
+# squashed down to the default uid in the container.  These images will have no
+# separation between the users in the container. Only supported for the overlay
+# and vfs drivers.
+#ignore_chown_errors = "false"
+
+# Inodes is used to set a maximum inodes of the container image.
+# inodes = ""
+
+# Path to an helper program to use for mounting the file system instead of mounting it
+# directly.
+#mount_program = "/usr/bin/fuse-overlayfs"
+
+# mountopt specifies comma separated list of extra mount options
+mountopt = "nodev"
+
+# Set to skip a PRIVATE bind mount on the storage home directory.
+# skip_mount_home = "false"
+
+# Set to use composefs to mount data layers with overlay.
+# use_composefs = "false"
+
+# Size is used to set a maximum size of the container image.
+# size = ""
+
+# ForceMask specifies the permissions mask that is used for new files and
+# directories.
+#
+# The values "shared" and "private" are accepted.
+# Octal permission masks are also accepted.
+#
+#  "": No value specified.
+#     All files/directories, get set with the permissions identified within the
+#     image.
+#  "private": it is equivalent to 0700.
+#     All files/directories get set with 0700 permissions.  The owner has rwx
+#     access to the files. No other users on the system can access the files.
+#     This setting could be used with networked based homedirs.
+#  "shared": it is equivalent to 0755.
+#     The owner has rwx access to the files and everyone else can read, access
+#     and execute them. This setting is useful for sharing containers storage
+#     with other users.  For instance have a storage owned by root but shared
+#     to rootless users as an additional store.
+#     NOTE:  All files within the image are made readable and executable by any
+#     user on the system. Even /etc/shadow within your image is now readable by
+#     any user.
+#
+#   OCTAL: Users can experiment with other OCTAL Permissions.
+#
+#  Note: The force_mask Flag is an experimental feature, it could change in the
+#  future.  When "force_mask" is set the original permission mask is stored in
+#  the "user.containers.override_stat" xattr and the "mount_program" option must
+#  be specified. Mount programs like "/usr/bin/fuse-overlayfs" present the
+#  extended attribute permissions to processes within containers rather then the
+#  "force_mask"  permissions.
+#
+# force_mask = ""
