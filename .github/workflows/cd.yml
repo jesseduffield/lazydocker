@@ -8,20 +8,22 @@ on:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Unshallow repo
-        run: git fetch --prune --unshallow
-      - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/checkout@v4
         with:
-          go-version: 1.24.x
+          fetch-depth: 0
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
       - name: Run goreleaser
-        uses: goreleaser/goreleaser-action@v1
+        uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
-          version: v1.17.2
+          version: '~> v2'
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{secrets.TOKEN_GITHUB}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
