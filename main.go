@@ -8,12 +8,12 @@ import (
 	"runtime"
 	"runtime/debug"
 
-	"github.com/go-errors/errors"
-	"github.com/integrii/flaggy"
 	"github.com/christophe-duc/lazypodman/pkg/app"
 	"github.com/christophe-duc/lazypodman/pkg/commands"
 	"github.com/christophe-duc/lazypodman/pkg/config"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
+	"github.com/go-errors/errors"
+	"github.com/integrii/flaggy"
 	"github.com/jesseduffield/yaml"
 	"github.com/samber/lo"
 )

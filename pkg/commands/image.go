@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
+	"github.com/fatih/color"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )

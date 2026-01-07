@@ -6,9 +6,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/go-errors/errors"
 	"github.com/christophe-duc/lazypodman/pkg/i18n"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
+	"github.com/go-errors/errors"
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"

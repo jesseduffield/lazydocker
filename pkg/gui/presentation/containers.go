@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/christophe-duc/lazypodman/pkg/commands"
 	"github.com/christophe-duc/lazypodman/pkg/config"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
+	"github.com/fatih/color"
 	"github.com/samber/lo"
 )
 
@@ -47,10 +47,10 @@ func GetContainerListItemDisplayStrings(guiConfig *config.GuiConfig, item *comma
 func GetPodDisplayStrings(guiConfig *config.GuiConfig, pod *commands.Pod) []string {
 	return []string{
 		getPodDisplayStatus(guiConfig, pod),
-		"",  // No substatus for pods
+		"", // No substatus for pods
 		utils.ColoredString(pod.Name, color.FgCyan),
-		"",  // No CPU% for pods
-		"",  // No ports for pods
+		"", // No CPU% for pods
+		"", // No ports for pods
 		utils.ColoredString(fmt.Sprintf("(%d containers)", len(pod.Containers)), color.FgMagenta),
 	}
 }

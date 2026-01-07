@@ -323,11 +323,7 @@ func (r *LibpodRuntime) ListPods(ctx context.Context) ([]PodSummary, error) {
 		if err != nil {
 			status = "unknown"
 		}
-		config, configErr := pod.Config()
-		infraID := ""
-		if configErr == nil && config != nil {
-			infraID = config.InfraContainerID
-		}
+		infraID, _ := pod.InfraContainerID()
 		result[i] = PodSummary{
 			ID:      pod.ID(),
 			Name:    pod.Name(),
@@ -520,8 +516,8 @@ func convertLibpodContainerStats(stats *define.ContainerStats) ContainerStatsEnt
 func convertLibpodImageList(ctx context.Context, imgs []*libimage.Image) []ImageSummary {
 	result := make([]ImageSummary, len(imgs))
 	for i, img := range imgs {
-		size, _ := img.Size()           // Ignore error for list view
-		labels, _ := img.Labels(ctx)    // Ignore error for list view
+		size, _ := img.Size()        // Ignore error for list view
+		labels, _ := img.Labels(ctx) // Ignore error for list view
 		result[i] = ImageSummary{
 			ID:       img.ID(),
 			RepoTags: img.Names(),

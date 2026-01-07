@@ -5,9 +5,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/jesseduffield/gocui"
 	"github.com/christophe-duc/lazypodman/pkg/gui/panels"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
+	"github.com/jesseduffield/gocui"
 	"github.com/samber/lo"
 	"github.com/spkg/bom"
 )

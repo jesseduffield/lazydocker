@@ -90,27 +90,27 @@ type HealthLog struct {
 
 // ContainerConfig represents container configuration.
 type ContainerConfig struct {
-	Hostname        string
-	Domainname      string
-	User            string
-	AttachStdin     bool
-	AttachStdout    bool
-	AttachStderr    bool
-	ExposedPorts    map[string]struct{}
-	Tty             bool
-	OpenStdin       bool
-	StdinOnce       bool
-	Env             []string
-	Cmd             []string
-	Image           string
-	Volumes         map[string]struct{}
-	WorkingDir      string
-	Entrypoint      []string
-	OnBuild         []string
-	Labels          map[string]string
-	StopSignal      string
-	StopTimeout     *int
-	Shell           []string
+	Hostname     string
+	Domainname   string
+	User         string
+	AttachStdin  bool
+	AttachStdout bool
+	AttachStderr bool
+	ExposedPorts map[string]struct{}
+	Tty          bool
+	OpenStdin    bool
+	StdinOnce    bool
+	Env          []string
+	Cmd          []string
+	Image        string
+	Volumes      map[string]struct{}
+	WorkingDir   string
+	Entrypoint   []string
+	OnBuild      []string
+	Labels       map[string]string
+	StopSignal   string
+	StopTimeout  *int
+	Shell        []string
 }
 
 // NetworkSettings represents container network settings.
@@ -304,23 +304,23 @@ type ImageSummary struct {
 
 // ImageDetails provides full image inspection data.
 type ImageDetails struct {
-	ID              string
-	RepoTags        []string
-	RepoDigests     []string
-	Parent          string
-	Comment         string
-	Created         time.Time
-	Container       string
-	DockerVersion   string
-	Author          string
-	Config          *ContainerConfig
-	Architecture    string
-	Os              string
-	OsVersion       string
-	Size            int64
-	VirtualSize     int64
-	RootFS          RootFS
-	Metadata        ImageMetadata
+	ID            string
+	RepoTags      []string
+	RepoDigests   []string
+	Parent        string
+	Comment       string
+	Created       time.Time
+	Container     string
+	DockerVersion string
+	Author        string
+	Config        *ContainerConfig
+	Architecture  string
+	Os            string
+	OsVersion     string
+	Size          int64
+	VirtualSize   int64
+	RootFS        RootFS
+	Metadata      ImageMetadata
 }
 
 // RootFS represents the root filesystem of an image.
