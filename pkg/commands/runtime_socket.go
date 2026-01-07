@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"encoding/json"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -275,6 +276,45 @@ func (r *SocketRuntime) PruneNetworks(ctx context.Context) error {
 	return err
 }
 
+// podPsJSON represents the JSON output of `podman pod ps --format json`
+type podPsJSON struct {
+	ID      string            `json:"Id"`
+	Name    string            `json:"Name"`
+	Status  string            `json:"Status"`
+	Created string            `json:"Created"`
+	InfraID string            `json:"InfraId"`
+	Labels  map[string]string `json:"Labels"`
+}
+
+// ListPods returns all pods.
+func (r *SocketRuntime) ListPods(ctx context.Context) ([]PodSummary, error) {
+	// Use podman CLI since there's no pods binding package
+	cmd := exec.CommandContext(ctx, "podman", "pod", "ps", "--format", "json")
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+
+	var pods []podPsJSON
+	if err := json.Unmarshal(output, &pods); err != nil {
+		return nil, err
+	}
+
+	result := make([]PodSummary, len(pods))
+	for i, p := range pods {
+		created, _ := time.Parse(time.RFC3339, p.Created)
+		result[i] = PodSummary{
+			ID:      p.ID,
+			Name:    p.Name,
+			Status:  p.Status,
+			Created: created,
+			InfraID: p.InfraID,
+			Labels:  p.Labels,
+		}
+	}
+	return result, nil
+}
+
 // Events streams container runtime events.
 func (r *SocketRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
 	eventChan := make(chan Event)
@@ -346,6 +386,7 @@ func convertPodmanContainerList(podmanContainers []entities.ListContainer) []Con
 			SizeRootFs: sizeRootFs,
 			Pod:        c.Pod,
 			PodName:    c.PodName,
+			IsInfra:    c.IsInfra,
 		}
 	}
 	return result

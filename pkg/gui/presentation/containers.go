@@ -24,6 +24,91 @@ func GetContainerDisplayStrings(guiConfig *config.GuiConfig, container *commands
 	}
 }
 
+// GetContainerListItemDisplayStrings returns display strings for a ContainerListItem (pod or container)
+func GetContainerListItemDisplayStrings(guiConfig *config.GuiConfig, item *commands.ContainerListItem) []string {
+	if item.IsPod {
+		return GetPodDisplayStrings(guiConfig, item.Pod)
+	}
+
+	// Add indentation for containers in pods
+	strings := GetContainerDisplayStrings(guiConfig, item.Container)
+	if item.Indent > 0 {
+		strings[2] = fmt.Sprintf("%s%s", createIndent(item.Indent), strings[2])
+	}
+	return strings
+}
+
+// GetPodDisplayStrings returns display strings for a pod
+func GetPodDisplayStrings(guiConfig *config.GuiConfig, pod *commands.Pod) []string {
+	return []string{
+		getPodDisplayStatus(guiConfig, pod),
+		"",  // No substatus for pods
+		utils.ColoredString(pod.Name, color.FgCyan),
+		"",  // No CPU% for pods
+		"",  // No ports for pods
+		utils.ColoredString(fmt.Sprintf("(%d containers)", len(pod.Containers)), color.FgMagenta),
+	}
+}
+
+func getPodDisplayStatus(guiConfig *config.GuiConfig, pod *commands.Pod) string {
+	shortStatusMap := map[string]string{
+		"Running":  "R",
+		"Degraded": "D",
+		"Exited":   "X",
+		"Dead":     "!",
+		"Created":  "C",
+	}
+
+	iconStatusMap := map[string]rune{
+		"Running":  '▶',
+		"Degraded": '◐',
+		"Exited":   '⨯',
+		"Dead":     '!',
+		"Created":  '+',
+	}
+
+	var podState string
+	switch guiConfig.ContainerStatusHealthStyle {
+	case "short":
+		if s, ok := shortStatusMap[pod.State()]; ok {
+			podState = s
+		} else {
+			podState = "?"
+		}
+	case "icon":
+		if r, ok := iconStatusMap[pod.State()]; ok {
+			podState = string(r)
+		} else {
+			podState = "?"
+		}
+	default:
+		podState = pod.State()
+	}
+
+	return utils.ColoredString(podState, getPodColor(pod))
+}
+
+func getPodColor(pod *commands.Pod) color.Attribute {
+	switch pod.State() {
+	case "Running":
+		return color.FgGreen
+	case "Degraded":
+		return color.FgYellow
+	case "Exited":
+		return color.FgRed
+	case "Dead":
+		return color.FgRed
+	case "Created":
+		return color.FgCyan
+	default:
+		return color.FgWhite
+	}
+}
+
+func createIndent(spaces int) string {
+	return fmt.Sprintf("%*s", spaces, "")
+}
+
 func displayContainerImage(container *commands.Container) string {
 	return strings.TrimPrefix(container.Summary.Image, "sha256:")
 }

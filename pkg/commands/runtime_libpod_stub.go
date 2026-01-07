@@ -128,6 +128,12 @@ func (r *LibpodRuntime) PruneNetworks(ctx context.Context) error {
 	return ErrLibpodNotAvailable
 }
 
+// Pod operations - all return ErrLibpodNotAvailable
+
+func (r *LibpodRuntime) ListPods(ctx context.Context) ([]PodSummary, error) {
+	return nil, ErrLibpodNotAvailable
+}
+
 // Events returns an error channel on non-Linux platforms.
 func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
 	errChan := make(chan error, 1)

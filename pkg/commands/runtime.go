@@ -37,6 +37,9 @@ type ContainerRuntime interface {
 	RemoveNetwork(ctx context.Context, name string) error
 	PruneNetworks(ctx context.Context) error
 
+	// Pod operations
+	ListPods(ctx context.Context) ([]PodSummary, error)
+
 	// Events streams container/image/volume/network events
 	Events(ctx context.Context) (<-chan Event, <-chan error)
 

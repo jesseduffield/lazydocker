@@ -109,18 +109,17 @@ type TranslationSet struct {
 	FilterList                  string
 	OpenInBrowser               string
 	SortContainersByState       string
-
-	LogsTitle            string
-	ConfigTitle          string
-	EnvTitle             string
-	ComposeConfigTitle   string
-	StatsTitle                string
-	CreditsTitle              string
-	ContainerConfigTitle      string
-	ContainerEnvTitle         string
-	NothingToDisplay          string
-	NoContainerForService     string
-	CannotDisplayEnvVariables string
+	LogsTitle                   string
+	ConfigTitle                 string
+	EnvTitle                    string
+	ComposeConfigTitle          string
+	StatsTitle                  string
+	CreditsTitle                string
+	ContainerConfigTitle        string
+	ContainerEnvTitle           string
+	NothingToDisplay            string
+	NoContainerForService       string
+	CannotDisplayEnvVariables   string
 
 	No  string
 	Yes string

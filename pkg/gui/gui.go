@@ -48,7 +48,7 @@ type Gui struct {
 type Panels struct {
 	Projects   *panels.SideListPanel[*commands.Project]
 	Services   *panels.SideListPanel[*commands.Service]
-	Containers *panels.SideListPanel[*commands.Container]
+	Containers *panels.SideListPanel[*commands.ContainerListItem]
 	Images     *panels.SideListPanel[*commands.Image]
 	Volumes    *panels.SideListPanel[*commands.Volume]
 	Networks   *panels.SideListPanel[*commands.Network]
@@ -290,7 +290,14 @@ func (gui *Gui) setPanels() {
 }
 
 func (gui *Gui) updateContainerDetails() error {
-	return gui.PodmanCommand.RefreshContainerDetails(gui.Panels.Containers.List.GetAllItems())
+	// Extract containers from ContainerListItems
+	var containers []*commands.Container
+	for _, item := range gui.Panels.Containers.List.GetAllItems() {
+		if !item.IsPod && item.Container != nil {
+			containers = append(containers, item.Container)
+		}
+	}
+	return gui.PodmanCommand.RefreshContainerDetails(containers)
 }
 
 func (gui *Gui) refresh() {
@@ -469,9 +476,9 @@ func (gui *Gui) monitorContainerStats(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			for _, container := range gui.Panels.Containers.List.GetAllItems() {
-				if !container.MonitoringStats {
-					go gui.PodmanCommand.CreateClientStatMonitor(container)
+			for _, item := range gui.Panels.Containers.List.GetAllItems() {
+				if !item.IsPod && item.Container != nil && !item.Container.MonitoringStats {
+					go gui.PodmanCommand.CreateClientStatMonitor(item.Container)
 				}
 			}
 		}

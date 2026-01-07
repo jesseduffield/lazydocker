@@ -146,7 +146,7 @@ func (r *LibpodRuntime) ContainerTop(ctx context.Context, id string) ([]string, 
 	// Parse the result: first line is headers, rest are process rows
 	// Each line is space-separated fields
 	headers := splitFields(result[0])
-	var processes [][]string
+	processes := make([][]string, 0, len(result)-1)
 	for _, line := range result[1:] {
 		processes = append(processes, splitFields(line))
 	}
@@ -309,6 +309,37 @@ func (r *LibpodRuntime) PruneNetworks(ctx context.Context) error {
 	return nil
 }
 
+// Pod operations
+
+// ListPods returns all pods.
+func (r *LibpodRuntime) ListPods(ctx context.Context) ([]PodSummary, error) {
+	pods, err := r.runtime.GetAllPods()
+	if err != nil {
+		return nil, err
+	}
+	result := make([]PodSummary, len(pods))
+	for i, pod := range pods {
+		status, err := pod.GetPodStatus()
+		if err != nil {
+			status = "unknown"
+		}
+		config := pod.Config()
+		infraID := ""
+		if config != nil {
+			infraID = config.InfraContainerID
+		}
+		result[i] = PodSummary{
+			ID:      pod.ID(),
+			Name:    pod.Name(),
+			Status:  status,
+			Created: pod.CreatedTime(),
+			InfraID: infraID,
+			Labels:  pod.Labels(),
+		}
+	}
+	return result, nil
+}
+
 // Events streams container runtime events.
 // For libpod, we use a polling approach since direct event streaming requires more setup.
 func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
@@ -361,6 +392,14 @@ func convertLibpodContainerList(ctrs []*libpod.Container) ([]ContainerSummary, e
 		if len(config.Command) > 0 {
 			command = config.Command[0]
 		}
+		// Get pod name if container is in a pod
+		podName := ""
+		if podID := ctr.PodID(); podID != "" {
+			// Try to get pod name from config labels or leave empty
+			if pn, ok := config.Labels["io.kubernetes.pod.name"]; ok {
+				podName = pn
+			}
+		}
 		result[i] = ContainerSummary{
 			ID:      ctr.ID(),
 			Names:   []string{ctr.Name()},
@@ -372,6 +411,8 @@ func convertLibpodContainerList(ctrs []*libpod.Container) ([]ContainerSummary, e
 			Status:  state.String(),
 			Labels:  config.Labels,
 			Pod:     ctr.PodID(),
+			PodName: podName,
+			IsInfra: ctr.IsInfra(),
 		}
 	}
 	return result, nil

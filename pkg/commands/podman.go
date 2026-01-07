@@ -347,14 +347,34 @@ func calculateMemoryPercentageFromEntry(stats ContainerStatsEntry) float64 {
 	return 0.0
 }
 
-func (c *PodmanCommand) RefreshContainersAndServices(currentServices []*Service, currentContainers []*Container) ([]*Container, []*Service, error) {
+func (c *PodmanCommand) RefreshContainersAndServices(currentServices []*Service, currentItems []*ContainerListItem) ([]*ContainerListItem, []*Service, error) {
 	c.ServiceMutex.Lock()
 	defer c.ServiceMutex.Unlock()
+
+	// Extract existing containers from current items
+	var currentContainers []*Container
+	for _, item := range currentItems {
+		if !item.IsPod && item.Container != nil {
+			currentContainers = append(currentContainers, item.Container)
+		}
+	}
 
 	containers, err := c.GetContainers(currentContainers)
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// Get pods
+	ctx := context.Background()
+	podSummaries, err := c.Runtime.ListPods(ctx)
+	if err != nil {
+		// Don't fail if pods can't be listed, just log and continue without pods
+		c.Log.Warnf("Failed to list pods: %v", err)
+		podSummaries = nil
+	}
+
+	// Build the unified list
+	items := c.buildContainerListItems(containers, podSummaries)
 
 	var services []*Service
 	// we only need to get these services once because they won't change in the runtime of the program
@@ -367,9 +387,88 @@ func (c *PodmanCommand) RefreshContainersAndServices(currentServices []*Service,
 		}
 	}
 
-	c.assignContainersToServices(containers, services)
+	// Extract just containers for service assignment
+	var containersForServices []*Container
+	for _, item := range items {
+		if !item.IsPod && item.Container != nil {
+			containersForServices = append(containersForServices, item.Container)
+		}
+	}
+	c.assignContainersToServices(containersForServices, services)
 
-	return containers, services, nil
+	return items, services, nil
+}
+
+// buildContainerListItems creates a unified list of pods and containers
+func (c *PodmanCommand) buildContainerListItems(containers []*Container, podSummaries []PodSummary) []*ContainerListItem {
+	var items []*ContainerListItem
+
+	// Create a map of pod ID -> pod summary
+	podMap := make(map[string]PodSummary)
+	for _, ps := range podSummaries {
+		podMap[ps.ID] = ps
+	}
+
+	// Create a map of pod ID -> containers in that pod
+	podContainers := make(map[string][]*Container)
+	var standaloneContainers []*Container
+
+	for _, ctr := range containers {
+		// Skip infra containers
+		if ctr.Summary.IsInfra {
+			continue
+		}
+
+		if ctr.Summary.Pod != "" {
+			podContainers[ctr.Summary.Pod] = append(podContainers[ctr.Summary.Pod], ctr)
+		} else {
+			standaloneContainers = append(standaloneContainers, ctr)
+		}
+	}
+
+	// Add pods and their containers
+	for podID, ps := range podMap {
+		// Create pod object
+		pod := &Pod{
+			ID:         ps.ID,
+			Name:       ps.Name,
+			Summary:    ps,
+			Containers: podContainers[podID],
+			OSCommand:  c.OSCommand,
+			Log:        c.Log,
+		}
+
+		// Add pod item
+		items = append(items, &ContainerListItem{
+			IsPod:  true,
+			Pod:    pod,
+			Indent: 0,
+		})
+
+		// Add containers in this pod with indent
+		for _, ctr := range podContainers[podID] {
+			// Set pod name on container if not already set
+			if ctr.Summary.PodName == "" {
+				ctr.Summary.PodName = ps.Name
+			}
+			items = append(items, &ContainerListItem{
+				IsPod:     false,
+				Container: ctr,
+				Indent:    2,
+			})
+		}
+	}
+
+	// Add standalone containers
+	for _, ctr := range standaloneContainers {
+		items = append(items, &ContainerListItem{
+			IsPod:     false,
+			Container: ctr,
+			Indent:    0,
+		})
+	}
+
+	return items
 }
 
 func (c *PodmanCommand) assignContainersToServices(containers []*Container, services []*Service) {

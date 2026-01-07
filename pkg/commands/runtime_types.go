@@ -20,6 +20,7 @@ type ContainerSummary struct {
 	// Podman-specific fields
 	Pod     string
 	PodName string
+	IsInfra bool
 }
 
 // PortMapping represents a container port mapping.
@@ -423,4 +424,14 @@ type Event struct {
 type EventActor struct {
 	ID         string
 	Attributes map[string]string
+}
+
+// PodSummary provides runtime-agnostic pod information.
+type PodSummary struct {
+	ID      string
+	Name    string
+	Status  string
+	Created time.Time
+	InfraID string
+	Labels  map[string]string
 }

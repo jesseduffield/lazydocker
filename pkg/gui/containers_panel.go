@@ -18,7 +18,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] {
+func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.ContainerListItem] {
 	// Standalone containers are containers which are either one-off containers, or whose service is not part of this docker-compose context.
 	isStandaloneContainer := func(container *commands.Container) bool {
 		if container.OneOff || container.ServiceName == "" {
@@ -30,58 +30,60 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 		})
 	}
 
-	return &panels.SideListPanel[*commands.Container]{
-		ContextState: &panels.ContextState[*commands.Container]{
-			GetMainTabs: func() []panels.MainTab[*commands.Container] {
-				return []panels.MainTab[*commands.Container]{
+	return &panels.SideListPanel[*commands.ContainerListItem]{
+		ContextState: &panels.ContextState[*commands.ContainerListItem]{
+			GetMainTabs: func() []panels.MainTab[*commands.ContainerListItem] {
+				return []panels.MainTab[*commands.ContainerListItem]{
 					{
 						Key:    "logs",
 						Title:  gui.Tr.LogsTitle,
-						Render: gui.renderContainerLogsToMain,
+						Render: gui.renderContainerListItemLogs,
 					},
 					{
 						Key:    "stats",
 						Title:  gui.Tr.StatsTitle,
-						Render: gui.renderContainerStats,
+						Render: gui.renderContainerListItemStats,
 					},
 					{
 						Key:    "env",
 						Title:  gui.Tr.EnvTitle,
-						Render: gui.renderContainerEnv,
+						Render: gui.renderContainerListItemEnv,
 					},
 					{
 						Key:    "config",
 						Title:  gui.Tr.ConfigTitle,
-						Render: gui.renderContainerConfig,
+						Render: gui.renderContainerListItemConfig,
 					},
 					{
 						Key:    "top",
 						Title:  gui.Tr.TopTitle,
-						Render: gui.renderContainerTop,
+						Render: gui.renderContainerListItemTop,
 					},
 				}
 			},
-			GetItemContextCacheKey: func(container *commands.Container) string {
-				// Including the container state in the cache key so that if the container
-				// restarts we re-read the logs. In the past we've had some glitchiness
-				// where a container restarts but the new logs don't get read.
-				// Note that this might be jarring if we have a lot of logs and the container
-				// restarts a lot, so let's keep an eye on it.
-				return "containers-" + container.ID + "-" + container.Summary.State
+			GetItemContextCacheKey: func(item *commands.ContainerListItem) string {
+				// Including the state in the cache key so that if the container/pod
+				// restarts we re-read the logs.
+				return "containers-" + item.ID() + "-" + item.State()
 			},
 		},
-		ListPanel: panels.ListPanel[*commands.Container]{
-			List: panels.NewFilteredList[*commands.Container](),
+		ListPanel: panels.ListPanel[*commands.ContainerListItem]{
+			List: panels.NewFilteredList[*commands.ContainerListItem](),
 			View: gui.Views.Containers,
 		},
 		NoItemsMessage: gui.Tr.NoContainers,
 		Gui:            gui.intoInterface(),
-		// sortedContainers returns containers sorted by state if c.SortContainersByState is true (follows 1- running, 2- exited, 3- created)
-		// and sorted by name if c.SortContainersByState is false
-		Sort: func(a *commands.Container, b *commands.Container) bool {
-			return sortContainers(a, b, gui.Config.UserConfig.Gui.LegacySortContainers)
+		// Sort items: pods first (with their containers grouped), then standalone containers
+		Sort: func(a *commands.ContainerListItem, b *commands.ContainerListItem) bool {
+			return sortContainerListItems(a, b, gui.Config.UserConfig.Gui.LegacySortContainers)
 		},
-		Filter: func(container *commands.Container) bool {
+		Filter: func(item *commands.ContainerListItem) bool {
+			// Pods are always shown
+			if item.IsPod {
+				return true
+			}
+
+			container := item.Container
 			// Note that this is O(N*M) time complexity where N is the number of services
 			// and M is the number of containers. We expect N to be small but M may be large,
 			// so we will need to keep an eye on this.
@@ -95,8 +97,8 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 
 			return true
 		},
-		GetTableCells: func(container *commands.Container) []string {
-			return presentation.GetContainerDisplayStrings(&gui.Config.UserConfig.Gui, container)
+		GetTableCells: func(item *commands.ContainerListItem) []string {
+			return presentation.GetContainerListItemDisplayStrings(&gui.Config.UserConfig.Gui, item)
 		},
 	}
 }
@@ -119,6 +121,137 @@ func sortContainers(a *commands.Container, b *commands.Container, legacySort boo
 	}
 
 	return containerStates[a.Summary.State] < containerStates[b.Summary.State]
+}
+
+// sortContainerListItems sorts items to group pods with their containers.
+// Order: pods first (sorted by state/name), then their containers indented,
+// then standalone containers (sorted by state/name).
+func sortContainerListItems(a *commands.ContainerListItem, b *commands.ContainerListItem, legacySort bool) bool {
+	// If both are in the same pod, sort by indent (pod first) then by name
+	if a.PodID() != "" && a.PodID() == b.PodID() {
+		// Pod comes before its containers
+		if a.IsPod && !b.IsPod {
+			return true
+		}
+		if !a.IsPod && b.IsPod {
+			return false
+		}
+		// Both are containers in the same pod, sort by name
+		return a.Name() < b.Name()
+	}
+
+	// Get the effective sort key (pod name for items in pods, own name for standalone)
+	aKey := a.Name()
+	bKey := b.Name()
+	if a.PodID() != "" && !a.IsPod {
+		aKey = a.PodName() + "\x00" + a.Name() // Sort after the pod
+	}
+	if b.PodID() != "" && !b.IsPod {
+		bKey = b.PodName() + "\x00" + b.Name()
+	}
+	if a.IsPod {
+		aKey = a.Name() + "\x00" // Pod sorts before its containers
+	}
+	if b.IsPod {
+		bKey = b.Name() + "\x00"
+	}
+
+	// Pods and their containers sort together, standalone containers at the end
+	aInPod := a.IsPod || a.PodID() != ""
+	bInPod := b.IsPod || b.PodID() != ""
+
+	if aInPod && !bInPod {
+		return true // Pods/pod containers before standalone
+	}
+	if !aInPod && bInPod {
+		return false
+	}
+
+	// Both in same category (pod-related or standalone)
+	if legacySort {
+		return aKey < bKey
+	}
+
+	// Sort by state, then by key
+	stateA := containerStates[a.State()]
+	stateB := containerStates[b.State()]
+	if stateA == stateB {
+		return aKey < bKey
+	}
+	return stateA < stateB
+}
+
+// Wrapper functions that delegate to container or pod rendering
+
+func (gui *Gui) renderContainerListItemLogs(item *commands.ContainerListItem) tasks.TaskFunc {
+	if item.IsPod {
+		return gui.renderPodLogsToMain(item.Pod)
+	}
+	return gui.renderContainerLogsToMain(item.Container)
+}
+
+func (gui *Gui) renderContainerListItemStats(item *commands.ContainerListItem) tasks.TaskFunc {
+	if item.IsPod {
+		return gui.NewSimpleRenderStringTask(func() string {
+			return fmt.Sprintf("Pod: %s\nStatus: %s\nContainers: %d\n\nStats not available for pods. Select a container to view stats.",
+				item.Pod.Name, item.Pod.State(), len(item.Pod.Containers))
+		})
+	}
+	return gui.renderContainerStats(item.Container)
+}
+
+func (gui *Gui) renderContainerListItemEnv(item *commands.ContainerListItem) tasks.TaskFunc {
+	if item.IsPod {
+		return gui.NewSimpleRenderStringTask(func() string {
+			return "Environment variables not available for pods. Select a container to view environment."
+		})
+	}
+	return gui.renderContainerEnv(item.Container)
+}
+
+func (gui *Gui) renderContainerListItemConfig(item *commands.ContainerListItem) tasks.TaskFunc {
+	if item.IsPod {
+		return gui.renderPodConfig(item.Pod)
+	}
+	return gui.renderContainerConfig(item.Container)
+}
+
+func (gui *Gui) renderContainerListItemTop(item *commands.ContainerListItem) tasks.TaskFunc {
+	if item.IsPod {
+		return gui.NewSimpleRenderStringTask(func() string {
+			return "Process list not available for pods. Select a container to view processes."
+		})
+	}
+	return gui.renderContainerTop(item.Container)
+}
+
+func (gui *Gui) renderPodConfig(pod *commands.Pod) tasks.TaskFunc {
+	return gui.NewSimpleRenderStringTask(func() string {
+		padding := 10
+		output := ""
+		output += utils.ColoredString("Pod Information\n\n", color.FgCyan)
+		output += utils.WithPadding("ID: ", padding) + pod.ID + "\n"
+		output += utils.WithPadding("Name: ", padding) + pod.Name + "\n"
+		output += utils.WithPadding("Status: ", padding) + pod.State() + "\n"
+		output += utils.WithPadding("Created: ", padding) + pod.Summary.Created.Format(time.RFC3339) + "\n"
+		output += fmt.Sprintf("%s%d\n", utils.WithPadding("Containers: ", padding), len(pod.Containers))
+
+		if len(pod.Containers) > 0 {
+			output += "\n" + utils.ColoredString("Containers in this pod:\n", color.FgYellow)
+			for _, c := range pod.Containers {
+				stateColor := color.FgWhite
+				switch c.Summary.State {
+				case "running":
+					stateColor = color.FgGreen
+				case "exited":
+					stateColor = color.FgRed
+				}
+				output += fmt.Sprintf("  - %s (%s)\n", c.Name, utils.ColoredString(c.Summary.State, stateColor))
+			}
+		}
+
+		return output
+	})
 }
 
 func (gui *Gui) renderContainerEnv(container *commands.Container) tasks.TaskFunc {
@@ -179,9 +312,9 @@ func (gui *Gui) containerConfigStr(container *commands.Container) string {
 		output += "\n"
 		for _, mount := range container.Details.Mounts {
 			if mount.Type == "volume" {
-				output += fmt.Sprintf("%s%s %s\n", strings.Repeat(" ", padding), utils.ColoredString(string(mount.Type)+":", color.FgYellow), mount.Name)
+				output += fmt.Sprintf("%s%s %s\n", strings.Repeat(" ", padding), utils.ColoredString(mount.Type+":", color.FgYellow), mount.Name)
 			} else {
-				output += fmt.Sprintf("%s%s %s:%s\n", strings.Repeat(" ", padding), utils.ColoredString(string(mount.Type)+":", color.FgYellow), mount.Source, mount.Destination)
+				output += fmt.Sprintf("%s%s %s:%s\n", strings.Repeat(" ", padding), utils.ColoredString(mount.Type+":", color.FgYellow), mount.Source, mount.Destination)
 			}
 		}
 	} else {
@@ -302,11 +435,16 @@ func (gui *Gui) handleHideStoppedContainers(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
-	ctr, err := gui.Panels.Containers.GetSelectedItem()
+	item, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
+	if item.IsPod {
+		return gui.createErrorPanel("Pod operations not yet supported")
+	}
+
+	ctr := item.Container
 	handleMenuPress := func(force bool, removeVolumes bool) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 			if err := ctr.Remove(force, removeVolumes); err != nil {
@@ -357,20 +495,29 @@ func (gui *Gui) PauseContainer(container *commands.Container) error {
 }
 
 func (gui *Gui) handleContainerPause(g *gocui.Gui, v *gocui.View) error {
-	ctr, err := gui.Panels.Containers.GetSelectedItem()
+	item, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
-	return gui.PauseContainer(ctr)
+	if item.IsPod {
+		return gui.createErrorPanel("Pod operations not yet supported")
+	}
+
+	return gui.PauseContainer(item.Container)
 }
 
 func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
-	ctr, err := gui.Panels.Containers.GetSelectedItem()
+	item, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
+	if item.IsPod {
+		return gui.createErrorPanel("Pod operations not yet supported")
+	}
+
+	ctr := item.Container
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.StopContainer, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
 			if err := ctr.Stop(); err != nil {
@@ -383,11 +530,16 @@ func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
-	ctr, err := gui.Panels.Containers.GetSelectedItem()
+	item, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
+	if item.IsPod {
+		return gui.createErrorPanel("Pod operations not yet supported")
+	}
+
+	ctr := item.Container
 	return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
 		if err := ctr.Restart(); err != nil {
 			return gui.createErrorPanel(err.Error())
@@ -398,11 +550,16 @@ func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
-	ctr, err := gui.Panels.Containers.GetSelectedItem()
+	item, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
+	if item.IsPod {
+		return gui.createErrorPanel("Pod operations not yet supported")
+	}
+
+	ctr := item.Container
 	c, err := ctr.Attach()
 	if err != nil {
 		return gui.createErrorPanel(err.Error())
@@ -424,23 +581,32 @@ func (gui *Gui) handlePruneContainers() error {
 }
 
 func (gui *Gui) handleContainerViewLogs(g *gocui.Gui, v *gocui.View) error {
-	ctr, err := gui.Panels.Containers.GetSelectedItem()
+	item, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
-	gui.renderLogsToStdout(ctr)
+	if item.IsPod {
+		// TODO: implement pod logs to stdout
+		return gui.createErrorPanel("Pod logs to stdout not yet supported")
+	}
+
+	gui.renderLogsToStdout(item.Container)
 
 	return nil
 }
 
 func (gui *Gui) handleContainersExecShell(g *gocui.Gui, v *gocui.View) error {
-	ctr, err := gui.Panels.Containers.GetSelectedItem()
+	item, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
-	return gui.containerExecShell(ctr)
+	if item.IsPod {
+		return gui.createErrorPanel("Cannot exec into a pod. Select a container instead.")
+	}
+
+	return gui.containerExecShell(item.Container)
 }
 
 func (gui *Gui) containerExecShell(container *commands.Container) error {
@@ -456,13 +622,17 @@ func (gui *Gui) containerExecShell(container *commands.Container) error {
 }
 
 func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error {
-	ctr, err := gui.Panels.Containers.GetSelectedItem()
+	item, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
+	if item.IsPod {
+		return gui.createErrorPanel("Custom commands not yet supported for pods")
+	}
+
 	commandObject := gui.PodmanCommand.NewCommandObject(commands.CommandObject{
-		Container: ctr,
+		Container: item.Container,
 	})
 
 	customCommands := gui.Config.UserConfig.CustomCommands.Containers
@@ -473,9 +643,11 @@ func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error
 func (gui *Gui) handleStopContainers() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmStopContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
-			for _, ctr := range gui.Panels.Containers.List.GetAllItems() {
-				if err := ctr.Stop(); err != nil {
-					gui.Log.Error(err)
+			for _, item := range gui.Panels.Containers.List.GetAllItems() {
+				if !item.IsPod && item.Container != nil {
+					if err := item.Container.Stop(); err != nil {
+						gui.Log.Error(err)
+					}
 				}
 			}
 
@@ -487,9 +659,11 @@ func (gui *Gui) handleStopContainers() error {
 func (gui *Gui) handleRemoveContainers() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmRemoveContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
-			for _, ctr := range gui.Panels.Containers.List.GetAllItems() {
-				if err := ctr.Remove(true, false); err != nil {
-					gui.Log.Error(err)
+			for _, item := range gui.Panels.Containers.List.GetAllItems() {
+				if !item.IsPod && item.Container != nil {
+					if err := item.Container.Remove(true, false); err != nil {
+						gui.Log.Error(err)
+					}
 				}
 			}
 
@@ -522,12 +696,16 @@ func (gui *Gui) handleContainersBulkCommand(g *gocui.Gui, v *gocui.View) error {
 
 // Open first port in browser
 func (gui *Gui) handleContainersOpenInBrowserCommand(g *gocui.Gui, v *gocui.View) error {
-	ctr, err := gui.Panels.Containers.GetSelectedItem()
+	item, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
-	return gui.openContainerInBrowser(ctr)
+	if item.IsPod {
+		return gui.createErrorPanel("Cannot open pod in browser. Select a container instead.")
+	}
+
+	return gui.openContainerInBrowser(item.Container)
 }
 
 func (gui *Gui) openContainerInBrowser(ctr *commands.Container) error {
