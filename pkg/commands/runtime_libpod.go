@@ -36,8 +36,7 @@ func (r *LibpodRuntime) Mode() string {
 // Close shuts down the libpod runtime.
 func (r *LibpodRuntime) Close() error {
 	if r.runtime != nil {
-		_, err := r.runtime.Shutdown(false)
-		return err
+		return r.runtime.Shutdown(false)
 	}
 	return nil
 }
@@ -136,6 +135,7 @@ func (r *LibpodRuntime) ContainerTop(ctx context.Context, id string) ([]string, 
 	if err != nil {
 		return nil, nil, err
 	}
+	// Top returns []string where each string is a line (header + processes)
 	result, err := ctr.Top([]string{})
 	if err != nil {
 		return nil, nil, err
@@ -143,12 +143,19 @@ func (r *LibpodRuntime) ContainerTop(ctx context.Context, id string) ([]string, 
 	if len(result) == 0 {
 		return nil, nil, nil
 	}
-	return result[0], result[1:], nil
+	// Parse the result: first line is headers, rest are process rows
+	// Each line is space-separated fields
+	headers := splitFields(result[0])
+	var processes [][]string
+	for _, line := range result[1:] {
+		processes = append(processes, splitFields(line))
+	}
+	return headers, processes, nil
 }
 
 // PruneContainers removes all stopped containers.
 func (r *LibpodRuntime) PruneContainers(ctx context.Context) error {
-	_, err := r.runtime.PruneContainers(ctx, nil)
+	_, err := r.runtime.PruneContainers(nil)
 	return err
 }
 
@@ -239,8 +246,15 @@ func (r *LibpodRuntime) RemoveImage(ctx context.Context, id string, force bool) 
 
 // PruneImages removes unused images.
 func (r *LibpodRuntime) PruneImages(ctx context.Context) error {
-	_, err := r.runtime.LibimageRuntime().PruneImages(ctx, nil)
-	return err
+	// RemoveImages with no names and dangling=true filter prunes dangling images
+	opts := &libimage.RemoveImagesOptions{
+		Filters: []string{"dangling=true"},
+	}
+	_, errs := r.runtime.LibimageRuntime().RemoveImages(ctx, nil, opts)
+	if len(errs) > 0 {
+		return errs[0]
+	}
+	return nil
 }
 
 // Volume operations
@@ -283,14 +297,16 @@ func (r *LibpodRuntime) ListNetworks(ctx context.Context) ([]NetworkSummary, err
 
 // RemoveNetwork removes a network.
 func (r *LibpodRuntime) RemoveNetwork(ctx context.Context, name string) error {
-	_, err := r.runtime.Network().NetworkRemove(name)
-	return err
+	return r.runtime.Network().NetworkRemove(name)
 }
 
 // PruneNetworks removes unused networks.
+// Note: libnetwork doesn't have a direct prune method, so we skip this for now.
+// Proper implementation would require checking which networks are in use.
 func (r *LibpodRuntime) PruneNetworks(ctx context.Context) error {
-	_, err := r.runtime.Network().NetworkPrune(nil)
-	return err
+	// NetworkPrune is not available in libnetwork interface
+	// TODO: Implement manual pruning by listing networks and checking usage
+	return nil
 }
 
 // Events streams container runtime events.
@@ -366,6 +382,12 @@ func convertLibpodContainerInspect(data *define.InspectContainerData) *Container
 		return nil
 	}
 
+	// Get LogPath from HostConfig.LogConfig if available
+	logPath := ""
+	if data.HostConfig != nil && data.HostConfig.LogConfig != nil {
+		logPath = data.HostConfig.LogConfig.Path
+	}
+
 	details := &ContainerDetails{
 		ID:              data.ID,
 		Name:            data.Name,
@@ -377,7 +399,7 @@ func convertLibpodContainerInspect(data *define.InspectContainerData) *Container
 		ResolvConfPath:  data.ResolvConfPath,
 		HostnamePath:    data.HostnamePath,
 		HostsPath:       data.HostsPath,
-		LogPath:         data.LogPath,
+		LogPath:         logPath,
 		RestartCount:    int(data.RestartCount),
 		Driver:          data.Driver,
 		MountLabel:      data.MountLabel,
@@ -402,9 +424,15 @@ func convertLibpodContainerInspect(data *define.InspectContainerData) *Container
 	}
 
 	if data.Config != nil {
+		// OnBuild is *string in Podman, convert to []string for our interface
+		var onBuild []string
+		if data.Config.OnBuild != nil && *data.Config.OnBuild != "" {
+			onBuild = []string{*data.Config.OnBuild}
+		}
+
 		details.Config = &ContainerConfig{
 			Hostname:     data.Config.Hostname,
-			Domainname:   data.Config.Domainname,
+			Domainname:   data.Config.DomainName,
 			User:         data.Config.User,
 			AttachStdin:  data.Config.AttachStdin,
 			AttachStdout: data.Config.AttachStdout,
@@ -417,7 +445,7 @@ func convertLibpodContainerInspect(data *define.InspectContainerData) *Container
 			Image:        data.Config.Image,
 			WorkingDir:   data.Config.WorkingDir,
 			Entrypoint:   data.Config.Entrypoint,
-			OnBuild:      data.Config.OnBuild,
+			OnBuild:      onBuild,
 			Labels:       data.Config.Labels,
 			StopSignal:   data.Config.StopSignal,
 		}
@@ -538,4 +566,24 @@ func convertLibpodNetworkList(nets []nettypes.Network) []NetworkSummary {
 		}
 	}
 	return result
+}
+
+// splitFields splits a string by whitespace into fields.
+func splitFields(s string) []string {
+	var fields []string
+	var field []rune
+	for _, r := range s {
+		if r == ' ' || r == '\t' {
+			if len(field) > 0 {
+				fields = append(fields, string(field))
+				field = nil
+			}
+		} else {
+			field = append(field, r)
+		}
+	}
+	if len(field) > 0 {
+		fields = append(fields, string(field))
+	}
+	return fields
 }
