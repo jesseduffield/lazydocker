@@ -7,29 +7,24 @@ env:
 
 builds:
   - id: binary
+    tags:
+      - containers_image_openpgp
     goos:
-      # - freebsd
-      - windows
       - darwin
       - linux
     goarch:
       - amd64
-      - arm
       - arm64
-      - 386
-    goarm:
-      - 6
-      - 7
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.buildSource=binaryRelease
   - id: snap
+    tags:
+      - containers_image_openpgp
     goos:
       - linux
     goarch:
       - amd64
-      - arm
       - arm64
-      - 386
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.buildSource=snap
 
