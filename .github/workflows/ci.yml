@@ -38,6 +38,38 @@ jobs:
       - name: Test code
         run: |
           bash ./test.sh
+
+  integration:
+    name: integration-tests
+    runs-on: ubuntu-latest
+    env:
+      GOFLAGS: -mod=vendor
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 1.24.x
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/go-build
+          key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-integration
+          restore-keys: |
+            ${{runner.os}}-go-
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+      - name: Start Podman socket
+        run: |
+          systemctl --user start podman.socket
+          # Verify socket is available
+          podman info
+      - name: Run integration tests
+        run: |
+          go test -tags=integration -v ./pkg/commands/...
   build:
     runs-on: ubuntu-latest
     env:

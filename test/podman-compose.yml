@@ -1,0 +1,25 @@
+version: "3"
+services:
+  test-service:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
+    depends_on:
+      - test-service2
+    ports:
+      - "8080:80"
+
+  test-service2:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
+    ports:
+      - "8081:81"
+
+  test-service3:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: /app/print-random-stuff.sh
