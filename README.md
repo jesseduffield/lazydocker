@@ -17,6 +17,12 @@ A simple terminal UI for Podman and podman-compose, written in Go with the [gocu
 
 ## Elevator Pitch
 
+Again, this is a fork! and probably with reduced functionality as the original from Jesse Duffield. It was created to resolve a simple problem, work fully with podman and don't depend on how docker works and the socket.
+
+This is published as is. Compilation works and lazypodman runs on Linux without needing a socket present to monitor your containers.
+
+Original elevator pitch below:
+
 Minor rant incoming: Something's not working? Maybe a service is down. `podman-compose ps`. Yep, it's that microservice that's still buggy. No issue, I'll just restart it: `podman-compose restart`. Okay now let's try again. Oh wait the issue is still there. Hmm. `podman-compose ps`. Right so the service must have just stopped immediately after starting. I probably would have known that if I was reading the log stream, but there is a lot of clutter in there from other services. I could get the logs for just that one service with `podman-compose logs --follow myservice` but that dies everytime the service dies so I'd need to run that command every time I restart the service. I could alternatively run `podman-compose up myservice` and in that terminal window if the service is down I could just `up` it again, but now I've got one service hogging a terminal window even after I no longer care about its logs. I guess when I want to reclaim the terminal realestate I can do `ctrl+P,Q`, but... wait, that's not working for some reason. Should I use ctrl+C instead? I can't remember if that closes the foreground process or kills the actual service.
 
 What a headache!
@@ -31,7 +37,6 @@ Memorising podman commands is hard. Memorising aliases is slightly less hard. Ke
 - [Contributing](https://github.com/christophe-duc/lazypodman#contributing)
 - [Video Tutorial](https://youtu.be/NICqQPxwJWw)
 - [Config Docs](/docs/Config.md)
-- [Twitch Stream](https://www.twitch.tv/jesseduffield)
 - [FAQ](https://github.com/christophe-duc/lazypodman#faq)
 
 ## Requirements
