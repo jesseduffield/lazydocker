@@ -136,15 +136,13 @@ jobs:
           restore-keys: |
             ${{runner.os}}-go-
       - name: Lint
-        uses: golangci/golangci-lint-action@v3.1.0
+        uses: golangci/golangci-lint-action@v6
         with:
           version: latest
+          args: --build-tags=containers_image_openpgp,exclude_graphdriver_btrfs
       - name: Format code
         run: |
           if [ $(find . ! -path "./vendor/*" -name "*.go" -exec gofmt -s -d {} \;|wc -l) -gt 0 ]; then
            find . ! -path "./vendor/*" -name "*.go" -exec gofmt -s -d {} \;
            exit 1
           fi
-      - name: errors
-        run: golangci-lint run
-        if: ${{ failure() }}
