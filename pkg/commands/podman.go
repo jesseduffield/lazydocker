@@ -402,7 +402,8 @@ func (c *PodmanCommand) RefreshContainersAndServices(currentServices []*Service,
 
 // buildContainerListItems creates a unified list of pods and containers
 func (c *PodmanCommand) buildContainerListItems(containers []*Container, podSummaries []PodSummary) []*ContainerListItem {
-	var items []*ContainerListItem
+	// Pre-allocate: pods + containers (max possible size)
+	items := make([]*ContainerListItem, 0, len(podSummaries)+len(containers))
 
 	// Create a map of pod ID -> pod summary
 	podMap := make(map[string]PodSummary)
