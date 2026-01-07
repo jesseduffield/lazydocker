@@ -3,8 +3,8 @@ package gui
 import (
 	"time"
 
-	"github.com/jesseduffield/gocui"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
+	"github.com/jesseduffield/gocui"
 )
 
 type appStatus struct {

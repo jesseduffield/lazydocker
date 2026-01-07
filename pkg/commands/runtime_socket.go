@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/containers/podman/v5/libpod/define"
+	handlertypes "github.com/containers/podman/v5/pkg/api/handlers/types"
 	"github.com/containers/podman/v5/pkg/bindings"
 	"github.com/containers/podman/v5/pkg/bindings/containers"
 	"github.com/containers/podman/v5/pkg/bindings/images"
@@ -16,7 +17,6 @@ import (
 	"github.com/containers/podman/v5/pkg/bindings/volumes"
 	"github.com/containers/podman/v5/pkg/domain/entities"
 	"github.com/containers/podman/v5/pkg/domain/entities/types"
-	handlertypes "github.com/containers/podman/v5/pkg/api/handlers/types"
 	nettypes "go.podman.io/common/libnetwork/types"
 )
 
@@ -520,17 +520,17 @@ func convertPodmanImageInspect(data *entities.ImageInspectReport) *ImageDetails 
 	}
 
 	details := &ImageDetails{
-		ID:            data.ID,
-		RepoTags:      data.RepoTags,
-		RepoDigests:   data.RepoDigests,
-		Parent:        data.Parent,
-		Comment:       data.Comment,
-		Created:       *data.Created,
-		Author:        data.Author,
-		Architecture:  data.Architecture,
-		Os:            data.Os,
-		Size:          data.Size,
-		VirtualSize:   data.VirtualSize,
+		ID:           data.ID,
+		RepoTags:     data.RepoTags,
+		RepoDigests:  data.RepoDigests,
+		Parent:       data.Parent,
+		Comment:      data.Comment,
+		Created:      *data.Created,
+		Author:       data.Author,
+		Architecture: data.Architecture,
+		Os:           data.Os,
+		Size:         data.Size,
+		VirtualSize:  data.VirtualSize,
 	}
 
 	if data.RootFS != nil {

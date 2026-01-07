@@ -516,8 +516,8 @@ func convertLibpodContainerStats(stats *define.ContainerStats) ContainerStatsEnt
 func convertLibpodImageList(ctx context.Context, imgs []*libimage.Image) []ImageSummary {
 	result := make([]ImageSummary, len(imgs))
 	for i, img := range imgs {
-		size, _ := img.Size()           // Ignore error for list view
-		labels, _ := img.Labels(ctx)    // Ignore error for list view
+		size, _ := img.Size()        // Ignore error for list view
+		labels, _ := img.Labels(ctx) // Ignore error for list view
 		result[i] = ImageSummary{
 			ID:       img.ID(),
 			RepoTags: img.Names(),

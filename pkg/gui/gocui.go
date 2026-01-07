@@ -1,9 +1,9 @@
 package gui
 
 import (
+	"github.com/christophe-duc/lazypodman/pkg/utils"
 	"github.com/gookit/color"
 	"github.com/jesseduffield/gocui"
-	"github.com/christophe-duc/lazypodman/pkg/utils"
 )
 
 var gocuiColorMap = map[string]gocui.Attribute{

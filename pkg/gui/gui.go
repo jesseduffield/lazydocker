@@ -9,14 +9,14 @@ import (
 	"github.com/go-errors/errors"
 
 	throttle "github.com/boz/go-throttle"
-	"github.com/jesseduffield/gocui"
-	lcUtils "github.com/jesseduffield/lazycore/pkg/utils"
 	"github.com/christophe-duc/lazypodman/pkg/commands"
 	"github.com/christophe-duc/lazypodman/pkg/config"
 	"github.com/christophe-duc/lazypodman/pkg/gui/panels"
 	"github.com/christophe-duc/lazypodman/pkg/gui/types"
 	"github.com/christophe-duc/lazypodman/pkg/i18n"
 	"github.com/christophe-duc/lazypodman/pkg/tasks"
+	"github.com/jesseduffield/gocui"
+	lcUtils "github.com/jesseduffield/lazycore/pkg/utils"
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 )

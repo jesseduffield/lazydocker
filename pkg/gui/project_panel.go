@@ -6,13 +6,13 @@ import (
 	"path"
 	"strings"
 
-	"github.com/fatih/color"
-	"github.com/jesseduffield/gocui"
 	"github.com/christophe-duc/lazypodman/pkg/commands"
 	"github.com/christophe-duc/lazypodman/pkg/gui/panels"
 	"github.com/christophe-duc/lazypodman/pkg/gui/presentation"
 	"github.com/christophe-duc/lazypodman/pkg/tasks"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
+	"github.com/fatih/color"
+	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/yaml"
 )
 

@@ -1,11 +1,11 @@
 package gui
 
 import (
-	"github.com/fatih/color"
 	"github.com/christophe-duc/lazypodman/pkg/commands"
 	"github.com/christophe-duc/lazypodman/pkg/config"
 	"github.com/christophe-duc/lazypodman/pkg/gui/types"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
+	"github.com/fatih/color"
 	"github.com/samber/lo"
 )
 

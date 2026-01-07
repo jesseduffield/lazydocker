@@ -12,11 +12,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/imdario/mergo"
 	"github.com/christophe-duc/lazypodman/pkg/commands/ssh"
 	"github.com/christophe-duc/lazypodman/pkg/config"
 	"github.com/christophe-duc/lazypodman/pkg/i18n"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
+	"github.com/imdario/mergo"
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 )
@@ -27,15 +27,15 @@ const (
 
 // PodmanCommand is our main podman interface
 type PodmanCommand struct {
-	Log                    *logrus.Entry
-	OSCommand              *OSCommand
-	Tr                     *i18n.TranslationSet
-	Config                 *config.AppConfig
-	Runtime                ContainerRuntime
+	Log              *logrus.Entry
+	OSCommand        *OSCommand
+	Tr               *i18n.TranslationSet
+	Config           *config.AppConfig
+	Runtime          ContainerRuntime
 	InComposeProject bool
-	ErrorChan              chan error
-	ContainerMutex         deadlock.Mutex
-	ServiceMutex           deadlock.Mutex
+	ErrorChan        chan error
+	ContainerMutex   deadlock.Mutex
+	ServiceMutex     deadlock.Mutex
 
 	Closers []io.Closer
 }
@@ -110,9 +110,9 @@ func NewPodmanCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 	}
 
 	podmanCommand := &PodmanCommand{
-		Log:                    log,
-		OSCommand:              osCommand,
-		Tr:                     tr,
+		Log:              log,
+		OSCommand:        osCommand,
+		Tr:               tr,
 		Config:           config,
 		Runtime:          runtime,
 		ErrorChan:        errorChan,

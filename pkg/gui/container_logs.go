@@ -8,10 +8,10 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/christophe-duc/lazypodman/pkg/commands"
 	"github.com/christophe-duc/lazypodman/pkg/tasks"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
+	"github.com/fatih/color"
 )
 
 func (gui *Gui) renderContainerLogsToMain(container *commands.Container) tasks.TaskFunc {

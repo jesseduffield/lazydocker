@@ -10,34 +10,34 @@ import (
 // If a function is not set, the method returns sensible defaults or errors.
 type MockRuntime struct {
 	// Container operation mocks
-	ListContainersFunc    func(ctx context.Context) ([]ContainerSummary, error)
-	InspectContainerFunc  func(ctx context.Context, id string) (*ContainerDetails, error)
-	StartContainerFunc    func(ctx context.Context, id string) error
-	StopContainerFunc     func(ctx context.Context, id string, timeout *int) error
-	PauseContainerFunc    func(ctx context.Context, id string) error
-	UnpauseContainerFunc  func(ctx context.Context, id string) error
-	RestartContainerFunc  func(ctx context.Context, id string, timeout *int) error
-	RemoveContainerFunc   func(ctx context.Context, id string, force bool, volumes bool) error
-	ContainerTopFunc      func(ctx context.Context, id string) ([]string, [][]string, error)
-	PruneContainersFunc   func(ctx context.Context) error
-	ContainerStatsFunc    func(ctx context.Context, id string, stream bool) (<-chan ContainerStatsEntry, <-chan error)
+	ListContainersFunc   func(ctx context.Context) ([]ContainerSummary, error)
+	InspectContainerFunc func(ctx context.Context, id string) (*ContainerDetails, error)
+	StartContainerFunc   func(ctx context.Context, id string) error
+	StopContainerFunc    func(ctx context.Context, id string, timeout *int) error
+	PauseContainerFunc   func(ctx context.Context, id string) error
+	UnpauseContainerFunc func(ctx context.Context, id string) error
+	RestartContainerFunc func(ctx context.Context, id string, timeout *int) error
+	RemoveContainerFunc  func(ctx context.Context, id string, force bool, volumes bool) error
+	ContainerTopFunc     func(ctx context.Context, id string) ([]string, [][]string, error)
+	PruneContainersFunc  func(ctx context.Context) error
+	ContainerStatsFunc   func(ctx context.Context, id string, stream bool) (<-chan ContainerStatsEntry, <-chan error)
 
 	// Image operation mocks
-	ListImagesFunc    func(ctx context.Context) ([]ImageSummary, error)
-	InspectImageFunc  func(ctx context.Context, id string) (*ImageDetails, error)
-	ImageHistoryFunc  func(ctx context.Context, id string) ([]ImageHistoryEntry, error)
-	RemoveImageFunc   func(ctx context.Context, id string, force bool) error
-	PruneImagesFunc   func(ctx context.Context) error
+	ListImagesFunc   func(ctx context.Context) ([]ImageSummary, error)
+	InspectImageFunc func(ctx context.Context, id string) (*ImageDetails, error)
+	ImageHistoryFunc func(ctx context.Context, id string) ([]ImageHistoryEntry, error)
+	RemoveImageFunc  func(ctx context.Context, id string, force bool) error
+	PruneImagesFunc  func(ctx context.Context) error
 
 	// Volume operation mocks
-	ListVolumesFunc   func(ctx context.Context) ([]VolumeSummary, error)
-	RemoveVolumeFunc  func(ctx context.Context, name string, force bool) error
-	PruneVolumesFunc  func(ctx context.Context) error
+	ListVolumesFunc  func(ctx context.Context) ([]VolumeSummary, error)
+	RemoveVolumeFunc func(ctx context.Context, name string, force bool) error
+	PruneVolumesFunc func(ctx context.Context) error
 
 	// Network operation mocks
-	ListNetworksFunc   func(ctx context.Context) ([]NetworkSummary, error)
-	RemoveNetworkFunc  func(ctx context.Context, name string) error
-	PruneNetworksFunc  func(ctx context.Context) error
+	ListNetworksFunc  func(ctx context.Context) ([]NetworkSummary, error)
+	RemoveNetworkFunc func(ctx context.Context, name string) error
+	PruneNetworksFunc func(ctx context.Context) error
 
 	// Pod operation mocks
 	ListPodsFunc func(ctx context.Context) ([]PodSummary, error)

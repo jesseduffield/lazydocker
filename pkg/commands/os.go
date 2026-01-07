@@ -13,9 +13,9 @@ import (
 
 	"github.com/go-errors/errors"
 
-	"github.com/jesseduffield/kill"
 	"github.com/christophe-duc/lazypodman/pkg/config"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
+	"github.com/jesseduffield/kill"
 	"github.com/mgutz/str"
 	"github.com/sirupsen/logrus"
 )

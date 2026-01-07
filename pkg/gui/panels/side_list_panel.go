@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-errors/errors"
-	"github.com/jesseduffield/gocui"
 	"github.com/christophe-duc/lazypodman/pkg/tasks"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
+	"github.com/go-errors/errors"
+	"github.com/jesseduffield/gocui"
 	"github.com/samber/lo"
 )
 

@@ -3,8 +3,6 @@ package gui
 import (
 	"fmt"
 
-	"github.com/fatih/color"
-	"github.com/jesseduffield/gocui"
 	"github.com/christophe-duc/lazypodman/pkg/commands"
 	"github.com/christophe-duc/lazypodman/pkg/config"
 	"github.com/christophe-duc/lazypodman/pkg/gui/panels"
@@ -12,6 +10,8 @@ import (
 	"github.com/christophe-duc/lazypodman/pkg/gui/types"
 	"github.com/christophe-duc/lazypodman/pkg/tasks"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
+	"github.com/fatih/color"
+	"github.com/jesseduffield/gocui"
 	"github.com/samber/lo"
 )
 
