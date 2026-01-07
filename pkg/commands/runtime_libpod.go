@@ -323,11 +323,7 @@ func (r *LibpodRuntime) ListPods(ctx context.Context) ([]PodSummary, error) {
 		if err != nil {
 			status = "unknown"
 		}
-		config, configErr := pod.Config()
-		infraID := ""
-		if configErr == nil && config != nil {
-			infraID = config.InfraContainerID
-		}
+		infraID, _ := pod.InfraContainerID()
 		result[i] = PodSummary{
 			ID:      pod.ID(),
 			Name:    pod.Name(),
