@@ -142,3 +142,75 @@ func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context,
 		return err
 	}
 }
+
+// Pod logs rendering
+
+func (gui *Gui) renderPodLogsToMain(pod *commands.Pod) tasks.TaskFunc {
+	return gui.NewTickerTask(TickerTaskOpts{
+		Func: func(ctx context.Context, notifyStopped chan struct{}) {
+			gui.renderPodLogsToMainAux(pod, ctx, notifyStopped)
+		},
+		Duration:   time.Millisecond * 200,
+		Before:     func(ctx context.Context) { gui.clearMainView() },
+		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
+		Autoscroll: true,
+	})
+}
+
+func (gui *Gui) renderPodLogsToMainAux(pod *commands.Pod, ctx context.Context, notifyStopped chan struct{}) {
+	gui.clearMainView()
+	defer func() {
+		notifyStopped <- struct{}{}
+	}()
+
+	mainView := gui.Views.Main
+
+	if err := gui.writePodLogs(pod, ctx, mainView); err != nil {
+		gui.Log.Error(err)
+	}
+
+	// Wait for context cancellation
+	<-ctx.Done()
+}
+
+func (gui *Gui) writePodLogs(pod *commands.Pod, ctx context.Context, writer io.Writer) error {
+	// Build podman pod logs command
+	// Note: --color is used to distinguish output from different containers in the pod
+	args := []string{"pod", "logs", "--follow"}
+
+	if gui.Config.UserConfig.Logs.Timestamps {
+		args = append(args, "--timestamps")
+	}
+	if gui.Config.UserConfig.Logs.Since != "" {
+		args = append(args, "--since", gui.Config.UserConfig.Logs.Since)
+	}
+	if gui.Config.UserConfig.Logs.Tail != "" {
+		args = append(args, "--tail", gui.Config.UserConfig.Logs.Tail)
+	}
+	args = append(args, pod.Name)
+
+	cmd := pod.OSCommand.NewCmd("podman", args...)
+	cmd.Stdout = writer
+	cmd.Stderr = writer
+
+	if err := cmd.Start(); err != nil {
+		gui.Log.Error(err)
+		return err
+	}
+
+	// Wait for context cancellation or command completion
+	done := make(chan error, 1)
+	go func() {
+		done <- cmd.Wait()
+	}()
+
+	select {
+	case <-ctx.Done():
+		if err := pod.OSCommand.Kill(cmd); err != nil {
+			gui.Log.Warn(err)
+		}
+		return nil
+	case err := <-done:
+		return err
+	}
+}

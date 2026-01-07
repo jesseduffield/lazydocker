@@ -11,6 +11,7 @@ import (
 	"github.com/containers/podman/v5/pkg/bindings/containers"
 	"github.com/containers/podman/v5/pkg/bindings/images"
 	"github.com/containers/podman/v5/pkg/bindings/network"
+	"github.com/containers/podman/v5/pkg/bindings/pods"
 	"github.com/containers/podman/v5/pkg/bindings/system"
 	"github.com/containers/podman/v5/pkg/bindings/volumes"
 	"github.com/containers/podman/v5/pkg/domain/entities"
@@ -275,6 +276,27 @@ func (r *SocketRuntime) PruneNetworks(ctx context.Context) error {
 	return err
 }
 
+// ListPods returns all pods using the pods bindings API.
+func (r *SocketRuntime) ListPods(ctx context.Context) ([]PodSummary, error) {
+	podList, err := pods.List(r.conn, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]PodSummary, len(podList))
+	for i, p := range podList {
+		result[i] = PodSummary{
+			ID:      p.Id,
+			Name:    p.Name,
+			Status:  p.Status,
+			Created: p.Created,
+			InfraID: p.InfraId,
+			Labels:  p.Labels,
+		}
+	}
+	return result, nil
+}
+
 // Events streams container runtime events.
 func (r *SocketRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
 	eventChan := make(chan Event)
@@ -346,6 +368,7 @@ func convertPodmanContainerList(podmanContainers []entities.ListContainer) []Con
 			SizeRootFs: sizeRootFs,
 			Pod:        c.Pod,
 			PodName:    c.PodName,
+			IsInfra:    c.IsInfra,
 		}
 	}
 	return result

@@ -39,6 +39,9 @@ type MockRuntime struct {
 	RemoveNetworkFunc  func(ctx context.Context, name string) error
 	PruneNetworksFunc  func(ctx context.Context) error
 
+	// Pod operation mocks
+	ListPodsFunc func(ctx context.Context) ([]PodSummary, error)
+
 	// Event mock
 	EventsFunc func(ctx context.Context) (<-chan Event, <-chan error)
 
@@ -249,6 +252,16 @@ func (m *MockRuntime) PruneNetworks(ctx context.Context) error {
 		return m.PruneNetworksFunc(ctx)
 	}
 	return ErrMockNotImplemented
+}
+
+// Pod operations
+
+func (m *MockRuntime) ListPods(ctx context.Context) ([]PodSummary, error) {
+	m.recordCall("ListPods")
+	if m.ListPodsFunc != nil {
+		return m.ListPodsFunc(ctx)
+	}
+	return nil, ErrMockNotImplemented
 }
 
 // Events
