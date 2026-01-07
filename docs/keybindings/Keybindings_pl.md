@@ -1,6 +1,6 @@
 _This file is auto-generated. To update, make the changes in the pkg/i18n directory and then run `go run scripts/cheatsheet/main.go generate` from the project root._
 
-# Lazydocker menu
+# Lazypodman menu
 
 ## Projekt
 

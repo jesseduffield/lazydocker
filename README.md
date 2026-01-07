@@ -40,7 +40,9 @@
   <img src="https://user-images.githubusercontent.com/8456633/59972109-8e9c8480-95cc-11e9-8350-38f7f86ba76d.png">
 </p>
 
-A simple terminal UI for both docker and docker-compose, written in Go with the [gocui](https://github.com/jroimartin/gocui 'gocui') library.
+A simple terminal UI for Podman and podman-compose, written in Go with the [gocui](https://github.com/jroimartin/gocui 'gocui') library.
+
+> **Fork Notice:** This project is a fork of [lazydocker](https://github.com/jesseduffield/lazydocker) by Jesse Duffield, converted to use Podman's native libpod library instead of the Docker SDK.
 
 ![CI](https://github.com/jesseduffield/lazygit/workflows/Continuous%20Integration/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/christophe-duc/lazypodman)](https://goreportcard.com/report/github.com/christophe-duc/lazypodman)
@@ -67,11 +69,11 @@ A simple terminal UI for both docker and docker-compose, written in Go with the 
 
 ## Elevator Pitch
 
-Minor rant incoming: Something's not working? Maybe a service is down. `docker-compose ps`. Yep, it's that microservice that's still buggy. No issue, I'll just restart it: `docker-compose restart`. Okay now let's try again. Oh wait the issue is still there. Hmm. `docker-compose ps`. Right so the service must have just stopped immediately after starting. I probably would have known that if I was reading the log stream, but there is a lot of clutter in there from other services. I could get the logs for just that one service with `docker compose logs --follow myservice` but that dies everytime the service dies so I'd need to run that command every time I restart the service. I could alternatively run `docker-compose up myservice` and in that terminal window if the service is down I could just `up` it again, but now I've got one service hogging a terminal window even after I no longer care about its logs. I guess when I want to reclaim the terminal realestate I can do `ctrl+P,Q`, but... wait, that's not working for some reason. Should I use ctrl+C instead? I can't remember if that closes the foreground process or kills the actual service.
+Minor rant incoming: Something's not working? Maybe a service is down. `podman-compose ps`. Yep, it's that microservice that's still buggy. No issue, I'll just restart it: `podman-compose restart`. Okay now let's try again. Oh wait the issue is still there. Hmm. `podman-compose ps`. Right so the service must have just stopped immediately after starting. I probably would have known that if I was reading the log stream, but there is a lot of clutter in there from other services. I could get the logs for just that one service with `podman-compose logs --follow myservice` but that dies everytime the service dies so I'd need to run that command every time I restart the service. I could alternatively run `podman-compose up myservice` and in that terminal window if the service is down I could just `up` it again, but now I've got one service hogging a terminal window even after I no longer care about its logs. I guess when I want to reclaim the terminal realestate I can do `ctrl+P,Q`, but... wait, that's not working for some reason. Should I use ctrl+C instead? I can't remember if that closes the foreground process or kills the actual service.
 
 What a headache!
 
-Memorising docker commands is hard. Memorising aliases is slightly less hard. Keeping track of your containers across multiple terminal windows is near impossible. What if you had all the information you needed in one terminal window with every common command living one keypress away (and the ability to add custom commands as well). Lazydocker's goal is to make that dream a reality.
+Memorising podman commands is hard. Memorising aliases is slightly less hard. Keeping track of your containers across multiple terminal windows is near impossible. What if you had all the information you needed in one terminal window with every common command living one keypress away (and the ability to add custom commands as well). Lazypodman's goal is to make that dream a reality.
 
 - [Requirements](https://github.com/christophe-duc/lazypodman#requirements)
 - [Installation](https://github.com/christophe-duc/lazypodman#installation)
@@ -86,8 +88,8 @@ Memorising docker commands is hard. Memorising aliases is slightly less hard. Ke
 
 ## Requirements
 
-- Docker >= **29.0.0** (API >= **1.24**)
-- Docker-Compose >= **1.23.2** (optional)
+- Podman >= **5.0**
+- podman-compose >= **1.0** (optional, for compose support)
 
 ## Installation
 
@@ -167,18 +169,14 @@ You can install lazypodman using the [AUR](https://aur.archlinux.org/packages/la
 yay -S lazypodman
 ```
 
-### Docker
-
-[![Docker Pulls](https://img.shields.io/docker/pulls/christophe-duc/lazypodman.svg)](https://hub.docker.com/r/christophe-duc/lazypodman)
-[![Docker Stars](https://img.shields.io/docker/stars/christophe-duc/lazypodman.svg)](https://hub.docker.com/r/christophe-duc/lazypodman)
-[![Docker Automated](https://img.shields.io/docker/cloud/automated/christophe-duc/lazypodman.svg)](https://hub.docker.com/r/christophe-duc/lazypodman)
+### Podman Container
 
 1. <details><summary>Click if you have an ARM device</summary><p>
 
     - If you have a ARM 32 bit v6 architecture
 
         ```sh
-        docker build -t christophe-duc/lazypodman \
+        podman build -t lazypodman \
         --build-arg BASE_IMAGE_BUILDER=arm32v6/golang \
         --build-arg GOARCH=arm \
         --build-arg GOARM=6 \
@@ -188,7 +186,7 @@ yay -S lazypodman
     - If you have a ARM 32 bit v7 architecture
 
         ```sh
-        docker build -t christophe-duc/lazypodman \
+        podman build -t lazypodman \
         --build-arg BASE_IMAGE_BUILDER=arm32v7/golang \
         --build-arg GOARCH=arm \
         --build-arg GOARM=7 \
@@ -198,7 +196,7 @@ yay -S lazypodman
     - If you have a ARM 64 bit v8 architecture
 
         ```sh
-        docker build -t christophe-duc/lazypodman \
+        podman build -t lazypodman \
         --build-arg BASE_IMAGE_BUILDER=arm64v8/golang \
         --build-arg GOARCH=arm64 \
         https://github.com/christophe-duc/lazypodman.git
@@ -209,18 +207,25 @@ yay -S lazypodman
 1. Run the container
 
     ```sh
-    docker run --rm -it -v \
-    /var/run/docker.sock:/var/run/docker.sock \
-    -v /yourpath:/.config/christophe-duc/lazypodman \
-    christophe-duc/lazypodman
+    # Rootful Podman
+    podman run --rm -it \
+    -v /run/podman/podman.sock:/run/podman/podman.sock:ro \
+    -v /yourpath:/.config/lazypodman \
+    ghcr.io/christophe-duc/lazypodman
+
+    # Rootless Podman
+    podman run --rm -it \
+    -v $XDG_RUNTIME_DIR/podman/podman.sock:/run/podman/podman.sock:ro \
+    -v /yourpath:/.config/lazypodman \
+    ghcr.io/christophe-duc/lazypodman
     ```
 
     - Don't forget to change `/yourpath` to an actual path you created to store lazypodman's config
-    - You can also use this [docker-compose.yml](https://github.com/christophe-duc/lazypodman/blob/master/docker-compose.yml)
+    - You can also use this [podman-compose.yml](https://github.com/christophe-duc/lazypodman/blob/master/podman-compose.yml)
     - You might want to create an alias, for example:
 
         ```sh
-        echo "alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/christophe-duc/lazypodman christophe-duc/lazypodman'" >> ~/.zshrc
+        echo "alias lzd='podman run --rm -it -v \$XDG_RUNTIME_DIR/podman/podman.sock:/run/podman/podman.sock:ro -v /yourpath/config:/.config/lazypodman ghcr.io/christophe-duc/lazypodman'" >> ~/.zshrc
         ```
 
 
@@ -230,16 +235,12 @@ For development, you can build the image using:
 ```sh
 git clone https://github.com/christophe-duc/lazypodman.git
 cd lazypodman
-docker build -t christophe-duc/lazypodman \
+podman build -t lazypodman \
     --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
     --build-arg VCS_REF=`git rev-parse --short HEAD` \
     --build-arg VERSION=`git describe --abbrev=0 --tag` \
     .
 ```
-
-If you encounter a compatibility issue with Docker bundled binary, try rebuilding
-the image with the build argument `--build-arg DOCKER_VERSION="v$(docker -v | cut -d" " -f3 | rev | cut -c 2- | rev)"`
-so that the bundled docker binary matches your host docker binary version.
 
 ### Manual
 
@@ -271,7 +272,7 @@ echo "alias lzd='lazypodman'" >> ~/.zshrc
 
 everything is one keypress away (or one click away! Mouse support FTW):
 
-- viewing the state of your docker or docker-compose container environment at a glance
+- viewing the state of your Podman or podman-compose container environment at a glance
 - viewing logs for a container/service
 - viewing ascii graphs of your containers' metrics so that you can not only feel but also look like a developer
 - customising those graphs to measure nearly any metric you want
@@ -317,10 +318,11 @@ Mac Users: See [Issue #190](https://github.com/christophe-duc/lazypodman/issues/
 
 By default we only show logs from the last hour, so that we're not putting too much strain on the machine. This may be why you can't see logs when you first start lazypodman. This can be overwritten in the config's `commandTemplates`
 
-If you are running lazypodman in Docker container, it is a know bug, that you can't see logs or CPU usage.
+If you are running lazypodman in a Podman container, it is a known bug that you can't see logs or CPU usage.
 
 ## Alternatives
 
-- [docui](https://github.com/skanehira/docui) - Skanehira beat me to the punch on making a docker terminal UI, so definitely check out that repo as well! I think the two repos can live in harmony though: lazypodman is more about managing existing containers/services, and docui is more about creating and configuring them.
-- [Portainer](https://github.com/portainer/portainer) - Portainer tries to solve the same problem but it's accessed via your browser rather than your terminal. It also supports docker swarm.
-- See [Awesome Docker list](https://github.com/veggiemonk/awesome-docker/blob/master/README.md#terminal) for similar tools to work with Docker.
+- [lazydocker](https://github.com/jesseduffield/lazydocker) - The original project this was forked from, for Docker users.
+- [podman-tui](https://github.com/containers/podman-tui) - Another terminal UI for Podman from the Containers project.
+- [Portainer](https://github.com/portainer/portainer) - Portainer tries to solve the same problem but it's accessed via your browser rather than your terminal.
+- See [Awesome Podman list](https://github.com/containers/awesome-podman) for similar tools to work with Podman.

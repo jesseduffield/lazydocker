@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
  - OS: [e.g. Windows]
- - Lazydocker Version [e.g. v0.1.45]
+ - Lazypodman Version [e.g. v0.1.45]
  - The last commit id if you built project from sources (run : ```git rev-parse HEAD```)
 
 **Additional context**
