@@ -541,10 +541,11 @@ func convertLibpodImageHistory(history []libimage.ImageHistory) []ImageHistoryEn
 func convertLibpodVolumeList(vols []*libpod.Volume) []VolumeSummary {
 	result := make([]VolumeSummary, len(vols))
 	for i, vol := range vols {
+		mountpoint, _ := vol.MountPoint()
 		result[i] = VolumeSummary{
 			Name:       vol.Name(),
 			Driver:     vol.Driver(),
-			Mountpoint: vol.MountPoint(),
+			Mountpoint: mountpoint,
 			CreatedAt:  vol.CreatedTime(),
 			Labels:     vol.Labels(),
 			Scope:      vol.Scope(),
