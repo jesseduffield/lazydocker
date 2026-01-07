@@ -108,6 +108,7 @@ type TranslationSet struct {
 	ViewBulkCommands            string
 	FilterList                  string
 	OpenInBrowser               string
+	TogglePodExpansion          string
 	SortContainersByState       string
 	LogsTitle                   string
 	ConfigTitle                 string
@@ -214,6 +215,7 @@ func englishSet() TranslationSet {
 		ViewBulkCommands:            "view bulk commands",
 		FilterList:                  "filter list",
 		OpenInBrowser:               "open in browser (first port is http)",
+		TogglePodExpansion:          "expand/collapse pod",
 		SortContainersByState:       "sort containers by state",
 
 		GlobalTitle:               "Global",

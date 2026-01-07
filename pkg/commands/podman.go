@@ -440,12 +440,19 @@ func (c *PodmanCommand) buildContainerListItems(containers []*Container, podSumm
 	// Add pods and their containers
 	for _, podID := range podIDs {
 		ps := podMap[podID]
+
+		// Sort containers within this pod alphabetically
+		podCtrs := podContainers[podID]
+		sort.Slice(podCtrs, func(i, j int) bool {
+			return podCtrs[i].Name < podCtrs[j].Name
+		})
+
 		// Create pod object
 		pod := &Pod{
 			ID:         ps.ID,
 			Name:       ps.Name,
 			Summary:    ps,
-			Containers: podContainers[podID],
+			Containers: podCtrs,
 			OSCommand:  c.OSCommand,
 			Log:        c.Log,
 		}
@@ -458,7 +465,7 @@ func (c *PodmanCommand) buildContainerListItems(containers []*Container, podSumm
 		})
 
 		// Add containers in this pod with indent
-		for _, ctr := range podContainers[podID] {
+		for _, ctr := range podCtrs {
 			// Set pod name on container if not already set
 			if ctr.Summary.PodName == "" {
 				ctr.Summary.PodName = ps.Name

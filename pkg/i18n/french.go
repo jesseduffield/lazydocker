@@ -68,6 +68,7 @@ func frenchSet() TranslationSet {
 		RunCustomCommand:            "exécuter une commande prédéfinie",
 		ViewBulkCommands:            "voir les commandes groupées",
 		OpenInBrowser:               "ouvrir dans le navigateur (le premier port est http)",
+		TogglePodExpansion:          "ouvrir/réduire les conteneurs du pod",
 		SortContainersByState:       "ordonner les conteneurs par état",
 
 		GlobalTitle:               "Global",

@@ -263,6 +263,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.OpenInBrowser,
 		},
 		{
+			ViewName:    "containers",
+			Key:         gocui.KeySpace,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleTogglePodExpansion,
+			Description: gui.Tr.TogglePodExpansion,
+		},
+		{
 			ViewName:    "services",
 			Key:         'u',
 			Modifier:    gocui.ModNone,

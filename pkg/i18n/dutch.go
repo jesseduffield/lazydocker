@@ -51,8 +51,9 @@ func dutchSet() TranslationSet {
 		PruneVolumes:       "vernietig ongebruikte volumes",
 		PruneNetworks:      "vernietig ongebruikte networks",
 		PruneImages:        "vernietig ongebruikte images",
-		ViewRestartOptions: "bekijk herstart opties",
-		RunCustomCommand:   "draai een vooraf bedacht aangepaste opdracht",
+		ViewRestartOptions:    "bekijk herstart opties",
+		RunCustomCommand:      "draai een vooraf bedacht aangepaste opdracht",
+		TogglePodExpansion:    "pod uitvouwen/invouwen",
 
 		GlobalTitle:               "Globaal",
 		MainTitle:                 "Hoofd",

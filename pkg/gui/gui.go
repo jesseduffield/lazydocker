@@ -80,6 +80,10 @@ type guiState struct {
 	// if true, we show containers with an 'exited' status in the containers panel
 	ShowExitedContainers bool
 
+	// ExpandedPods tracks which pods are expanded (showing their containers)
+	// Key is pod ID, value is true if expanded. Pods start collapsed by default.
+	ExpandedPods map[string]bool
+
 	ScreenMode WindowMaximisation
 
 	// Maintains the state of manual filtering i.e. typing in a substring
@@ -134,6 +138,7 @@ func NewGui(log *logrus.Entry, podmanCommand *commands.PodmanCommand, oSCommand 
 		ViewStack: []string{},
 
 		ShowExitedContainers: true,
+		ExpandedPods:         make(map[string]bool),
 		ScreenMode:           getScreenMode(config),
 	}
 

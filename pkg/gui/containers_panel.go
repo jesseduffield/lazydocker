@@ -84,6 +84,14 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.ContainerLi
 			}
 
 			container := item.Container
+
+			// Hide containers in collapsed pods
+			if container.Summary.Pod != "" {
+				if !gui.State.ExpandedPods[container.Summary.Pod] {
+					return false // Pod is collapsed, hide this container
+				}
+			}
+
 			// Note that this is O(N*M) time complexity where N is the number of services
 			// and M is the number of containers. We expect N to be small but M may be large,
 			// so we will need to keep an eye on this.
@@ -98,7 +106,11 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.ContainerLi
 			return true
 		},
 		GetTableCells: func(item *commands.ContainerListItem) []string {
-			return presentation.GetContainerListItemDisplayStrings(&gui.Config.UserConfig.Gui, item)
+			expanded := false
+			if item.IsPod && item.Pod != nil {
+				expanded = gui.State.ExpandedPods[item.Pod.ID]
+			}
+			return presentation.GetContainerListItemDisplayStrings(&gui.Config.UserConfig.Gui, item, expanded)
 		},
 	}
 }
@@ -124,39 +136,10 @@ func sortContainers(a *commands.Container, b *commands.Container, legacySort boo
 }
 
 // sortContainerListItems sorts items to group pods with their containers.
-// Order: pods first (sorted by state/name), then their containers indented,
-// then standalone containers (sorted by state/name).
-func sortContainerListItems(a *commands.ContainerListItem, b *commands.ContainerListItem, legacySort bool) bool {
-	// If both are in the same pod, sort by indent (pod first) then by name
-	if a.PodID() != "" && a.PodID() == b.PodID() {
-		// Pod comes before its containers
-		if a.IsPod && !b.IsPod {
-			return true
-		}
-		if !a.IsPod && b.IsPod {
-			return false
-		}
-		// Both are containers in the same pod, sort by name
-		return a.Name() < b.Name()
-	}
-
-	// Get the effective sort key (pod name for items in pods, own name for standalone)
-	aKey := a.Name()
-	bKey := b.Name()
-	if a.PodID() != "" && !a.IsPod {
-		aKey = a.PodName() + "\x00" + a.Name() // Sort after the pod
-	}
-	if b.PodID() != "" && !b.IsPod {
-		bKey = b.PodName() + "\x00" + b.Name()
-	}
-	if a.IsPod {
-		aKey = a.Name() + "\x00" // Pod sorts before its containers
-	}
-	if b.IsPod {
-		bKey = b.Name() + "\x00"
-	}
-
-	// Pods and their containers sort together, standalone containers at the end
+// Order: pods first (sorted alphabetically), then their containers indented (sorted alphabetically),
+// then standalone containers (sorted alphabetically).
+func sortContainerListItems(a *commands.ContainerListItem, b *commands.ContainerListItem, _ bool) bool {
+	// Pods and their containers sort before standalone containers
 	aInPod := a.IsPod || a.PodID() != ""
 	bInPod := b.IsPod || b.PodID() != ""
 
@@ -167,18 +150,39 @@ func sortContainerListItems(a *commands.ContainerListItem, b *commands.Container
 		return false
 	}
 
-	// Both in same category (pod-related or standalone)
-	if legacySort {
-		return aKey < bKey
+	// Both are in the same category (pod-related or standalone)
+
+	// For pod-related items, sort by pod name first, then by type (pod before containers), then by container name
+	if aInPod && bInPod {
+		// Get effective pod name for comparison
+		aPodName := a.PodName()
+		if a.IsPod {
+			aPodName = a.Name()
+		}
+		bPodName := b.PodName()
+		if b.IsPod {
+			bPodName = b.Name()
+		}
+
+		// Different pods: sort by pod name
+		if aPodName != bPodName {
+			return aPodName < bPodName
+		}
+
+		// Same pod: pod comes first, then containers alphabetically
+		if a.IsPod && !b.IsPod {
+			return true
+		}
+		if !a.IsPod && b.IsPod {
+			return false
+		}
+
+		// Both are containers in the same pod: sort by name
+		return a.Name() < b.Name()
 	}
 
-	// Sort by state, then by key
-	stateA := containerStates[a.State()]
-	stateB := containerStates[b.State()]
-	if stateA == stateB {
-		return aKey < bKey
-	}
-	return stateA < stateB
+	// Both are standalone containers: sort alphabetically
+	return a.Name() < b.Name()
 }
 
 // Wrapper functions that delegate to container or pod rendering
@@ -724,4 +728,20 @@ func (gui *Gui) openContainerInBrowser(ctr *commands.Container) error {
 	}
 	link := fmt.Sprintf("http://%s:%d/", ip, port.PublicPort)
 	return gui.OSCommand.OpenLink(link)
+}
+
+func (gui *Gui) handleTogglePodExpansion(g *gocui.Gui, v *gocui.View) error {
+	item, err := gui.Panels.Containers.GetSelectedItem()
+	if err != nil {
+		return nil
+	}
+
+	if !item.IsPod {
+		return nil // Only works on pods
+	}
+
+	podID := item.Pod.ID
+	gui.State.ExpandedPods[podID] = !gui.State.ExpandedPods[podID]
+
+	return gui.Panels.Containers.RerenderList()
 }
