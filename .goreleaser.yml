@@ -59,12 +59,6 @@ changelog:
       - "^test:"
       - "^bump"
 
-brews:
-  - repository:
-      owner: christophe-duc
-      name: homebrew-lazypodman
-    homepage: "https://github.com/christophe-duc/lazypodman/"
-    description: "A simple terminal UI for podman, written in Go"
 #snapcrafts:
 #  - builds:
 #      - snap
