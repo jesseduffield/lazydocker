@@ -7,6 +7,7 @@ import (
 	ogLog "log"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -426,8 +427,18 @@ func (c *PodmanCommand) buildContainerListItems(containers []*Container, podSumm
 		}
 	}
 
+	// Sort pod IDs for deterministic ordering
+	podIDs := make([]string, 0, len(podMap))
+	for podID := range podMap {
+		podIDs = append(podIDs, podID)
+	}
+	sort.Slice(podIDs, func(i, j int) bool {
+		return podMap[podIDs[i]].Name < podMap[podIDs[j]].Name
+	})
+
 	// Add pods and their containers
-	for podID, ps := range podMap {
+	for _, podID := range podIDs {
+		ps := podMap[podID]
 		// Create pod object
 		pod := &Pod{
 			ID:         ps.ID,

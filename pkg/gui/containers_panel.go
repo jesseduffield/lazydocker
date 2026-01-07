@@ -441,7 +441,7 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	if item.IsPod {
-		return gui.createErrorPanel("Pod operations not yet supported")
+		return gui.createErrorPanel("Remove not yet supported for pods")
 	}
 
 	ctr := item.Container
@@ -501,7 +501,7 @@ func (gui *Gui) handleContainerPause(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	if item.IsPod {
-		return gui.createErrorPanel("Pod operations not yet supported")
+		return gui.createErrorPanel("Pause not yet supported for pods")
 	}
 
 	return gui.PauseContainer(item.Container)
@@ -514,7 +514,7 @@ func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	if item.IsPod {
-		return gui.createErrorPanel("Pod operations not yet supported")
+		return gui.createErrorPanel("Stop not yet supported for pods")
 	}
 
 	ctr := item.Container
@@ -536,7 +536,7 @@ func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	if item.IsPod {
-		return gui.createErrorPanel("Pod operations not yet supported")
+		return gui.createErrorPanel("Restart not yet supported for pods")
 	}
 
 	ctr := item.Container
@@ -556,7 +556,7 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	if item.IsPod {
-		return gui.createErrorPanel("Pod operations not yet supported")
+		return gui.createErrorPanel("Attach not yet supported for pods")
 	}
 
 	ctr := item.Container
@@ -588,7 +588,7 @@ func (gui *Gui) handleContainerViewLogs(g *gocui.Gui, v *gocui.View) error {
 
 	if item.IsPod {
 		// TODO: implement pod logs to stdout
-		return gui.createErrorPanel("Pod logs to stdout not yet supported")
+		return gui.createErrorPanel("View logs (stdout) not yet supported for pods")
 	}
 
 	gui.renderLogsToStdout(item.Container)
@@ -603,7 +603,7 @@ func (gui *Gui) handleContainersExecShell(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	if item.IsPod {
-		return gui.createErrorPanel("Cannot exec into a pod. Select a container instead.")
+		return gui.createErrorPanel("Exec shell not yet supported for pods. Select a container instead.")
 	}
 
 	return gui.containerExecShell(item.Container)
@@ -628,7 +628,7 @@ func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error
 	}
 
 	if item.IsPod {
-		return gui.createErrorPanel("Custom commands not yet supported for pods")
+		return gui.createErrorPanel("Custom commands not yet supported for pods. Select a container instead.")
 	}
 
 	commandObject := gui.PodmanCommand.NewCommandObject(commands.CommandObject{

@@ -26,8 +26,13 @@ func GetContainerDisplayStrings(guiConfig *config.GuiConfig, container *commands
 
 // GetContainerListItemDisplayStrings returns display strings for a ContainerListItem (pod or container)
 func GetContainerListItemDisplayStrings(guiConfig *config.GuiConfig, item *commands.ContainerListItem) []string {
-	if item.IsPod {
+	if item.IsPod && item.Pod != nil {
 		return GetPodDisplayStrings(guiConfig, item.Pod)
+	}
+
+	if item.Container == nil {
+		// Return an empty row with the expected number of columns when container data is missing.
+		return []string{"", "", "", "", "", ""}
 	}
 
 	// Add indentation for containers in pods

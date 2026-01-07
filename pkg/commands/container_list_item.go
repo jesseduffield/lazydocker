@@ -11,31 +11,40 @@ type ContainerListItem struct {
 
 // ID returns the unique ID for the item.
 func (c *ContainerListItem) ID() string {
-	if c.IsPod {
+	if c.IsPod && c.Pod != nil {
 		return c.Pod.ID
 	}
-	return c.Container.ID
+	if c.Container != nil {
+		return c.Container.ID
+	}
+	return ""
 }
 
 // Name returns the display name for the item.
 func (c *ContainerListItem) Name() string {
-	if c.IsPod {
+	if c.IsPod && c.Pod != nil {
 		return c.Pod.Name
 	}
-	return c.Container.Name
+	if c.Container != nil {
+		return c.Container.Name
+	}
+	return ""
 }
 
 // State returns the state for the item.
 func (c *ContainerListItem) State() string {
-	if c.IsPod {
+	if c.IsPod && c.Pod != nil {
 		return c.Pod.State()
 	}
-	return c.Container.Summary.State
+	if c.Container != nil {
+		return c.Container.Summary.State
+	}
+	return ""
 }
 
 // GetContainers returns the containers if this is a pod, nil otherwise.
 func (c *ContainerListItem) GetContainers() []*Container {
-	if c.IsPod {
+	if c.IsPod && c.Pod != nil {
 		return c.Pod.Containers
 	}
 	return nil
@@ -46,21 +55,30 @@ func (c *ContainerListItem) IsInPod() bool {
 	if c.IsPod {
 		return false
 	}
-	return c.Container.Summary.Pod != ""
+	if c.Container != nil {
+		return c.Container.Summary.Pod != ""
+	}
+	return false
 }
 
 // PodID returns the pod ID if this container is in a pod, empty string otherwise.
 func (c *ContainerListItem) PodID() string {
-	if c.IsPod {
+	if c.IsPod && c.Pod != nil {
 		return c.Pod.ID
 	}
-	return c.Container.Summary.Pod
+	if c.Container != nil {
+		return c.Container.Summary.Pod
+	}
+	return ""
 }
 
 // PodName returns the pod name if this container is in a pod, empty string otherwise.
 func (c *ContainerListItem) PodName() string {
-	if c.IsPod {
+	if c.IsPod && c.Pod != nil {
 		return c.Pod.Name
 	}
-	return c.Container.Summary.PodName
+	if c.Container != nil {
+		return c.Container.Summary.PodName
+	}
+	return ""
 }

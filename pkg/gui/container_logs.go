@@ -175,7 +175,8 @@ func (gui *Gui) renderPodLogsToMainAux(pod *commands.Pod, ctx context.Context, n
 
 func (gui *Gui) writePodLogs(pod *commands.Pod, ctx context.Context, writer io.Writer) error {
 	// Build podman pod logs command
-	args := []string{"pod", "logs", "--follow", "--color"}
+	// Note: --color is used to distinguish output from different containers in the pod
+	args := []string{"pod", "logs", "--follow"}
 
 	if gui.Config.UserConfig.Logs.Timestamps {
 		args = append(args, "--timestamps")
