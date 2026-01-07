@@ -23,7 +23,7 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 	return &panels.SideListPanel[*commands.Project]{
 		ContextState: &panels.ContextState[*commands.Project]{
 			GetMainTabs: func() []panels.MainTab[*commands.Project] {
-				if gui.PodmanCommand.InDockerComposeProject {
+				if gui.PodmanCommand.InComposeProject {
 					return []panels.MainTab[*commands.Project]{
 						{
 							Key:    "logs",
@@ -32,8 +32,8 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 						},
 						{
 							Key:    "config",
-							Title:  gui.Tr.DockerComposeConfigTitle,
-							Render: gui.renderDockerComposeConfig,
+							Title:  gui.Tr.ComposeConfigTitle,
+							Render: gui.renderComposeConfig,
 						},
 						{
 							Key:    "credits",
@@ -79,7 +79,7 @@ func (gui *Gui) refreshProject() error {
 
 func (gui *Gui) getProjectName() string {
 	projectName := path.Base(gui.Config.ProjectDir)
-	if gui.PodmanCommand.InDockerComposeProject {
+	if gui.PodmanCommand.InComposeProject {
 		for _, service := range gui.Panels.Services.List.GetAllItems() {
 			container := service.Container
 			if container != nil && container.DetailsLoaded() {
@@ -144,9 +144,9 @@ func (gui *Gui) renderAllLogs(_project *commands.Project) tasks.TaskFunc {
 	})
 }
 
-func (gui *Gui) renderDockerComposeConfig(_project *commands.Project) tasks.TaskFunc {
+func (gui *Gui) renderComposeConfig(_project *commands.Project) tasks.TaskFunc {
 	return gui.NewSimpleRenderStringTask(func() string {
-		return utils.ColoredYamlString(gui.PodmanCommand.DockerComposeConfig())
+		return utils.ColoredYamlString(gui.PodmanCommand.ComposeConfig())
 	})
 }
 

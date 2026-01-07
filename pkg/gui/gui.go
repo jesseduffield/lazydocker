@@ -445,7 +445,7 @@ func (gui *Gui) ShouldRefresh(key string) bool {
 }
 
 func (gui *Gui) initiallyFocusedViewName() string {
-	if gui.PodmanCommand.InDockerComposeProject {
+	if gui.PodmanCommand.InComposeProject {
 		return "services"
 	}
 	return "containers"

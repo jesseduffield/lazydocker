@@ -65,23 +65,23 @@ logs:
   since: '60m' # set to '' to show all logs
   tail: '' # set to 200 to show last 200 lines of logs
 commandTemplates:
-  dockerCompose: docker compose # Determines the Docker Compose command to run, referred to as .DockerCompose in commandTemplates
-  restartService: '{{ .DockerCompose }} restart {{ .Service.Name }}'
-  up:  '{{ .DockerCompose }} up -d'
-  down: '{{ .DockerCompose }} down'
-  downWithVolumes: '{{ .DockerCompose }} down --volumes'
-  upService:  '{{ .DockerCompose }} up -d {{ .Service.Name }}'
-  startService: '{{ .DockerCompose }} start {{ .Service.Name }}'
-  stopService: '{{ .DockerCompose }} stop {{ .Service.Name }}'
-  serviceLogs: '{{ .DockerCompose }} logs --since=60m --follow {{ .Service.Name }}'
-  viewServiceLogs: '{{ .DockerCompose }} logs --follow {{ .Service.Name }}'
-  rebuildService: '{{ .DockerCompose }} up -d --build {{ .Service.Name }}'
-  recreateService: '{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}'
-  allLogs: '{{ .DockerCompose }} logs --tail=300 --follow'
-  viewAlLogs: '{{ .DockerCompose }} logs'
-  dockerComposeConfig: '{{ .DockerCompose }} config'
-  checkDockerComposeConfig: '{{ .DockerCompose }} config --quiet'
-  serviceTop: '{{ .DockerCompose }} top {{ .Service.Name }}'
+  podmanCompose: podman-compose # Determines the compose command to run, referred to as .PodmanCompose in commandTemplates
+  restartService: '{{ .PodmanCompose }} restart {{ .Service.Name }}'
+  up:  '{{ .PodmanCompose }} up -d'
+  down: '{{ .PodmanCompose }} down'
+  downWithVolumes: '{{ .PodmanCompose }} down --volumes'
+  upService:  '{{ .PodmanCompose }} up -d {{ .Service.Name }}'
+  startService: '{{ .PodmanCompose }} start {{ .Service.Name }}'
+  stopService: '{{ .PodmanCompose }} stop {{ .Service.Name }}'
+  serviceLogs: '{{ .PodmanCompose }} logs --since=60m --follow {{ .Service.Name }}'
+  viewServiceLogs: '{{ .PodmanCompose }} logs --follow {{ .Service.Name }}'
+  rebuildService: '{{ .PodmanCompose }} up -d --build {{ .Service.Name }}'
+  recreateService: '{{ .PodmanCompose }} up -d --force-recreate {{ .Service.Name }}'
+  allLogs: '{{ .PodmanCompose }} logs --tail=300 --follow'
+  viewAlLogs: '{{ .PodmanCompose }} logs'
+  composeConfig: '{{ .PodmanCompose }} config'
+  checkComposeConfig: '{{ .PodmanCompose }} config --quiet'
+  serviceTop: '{{ .PodmanCompose }} top {{ .Service.Name }}'
 oS:
   openCommand: open {{filename}}
   openLinkCommand: open {{link}}
@@ -124,12 +124,12 @@ customCommands:
   containers:
     - name: bash
       attach: true
-      command: 'docker exec -it {{ .Container.ID }} bash'
+      command: 'podman exec -it {{ .Container.ID }} bash'
       serviceNames: []
 ```
 
 You may use the following go templates (such as `{{ .Container.ID }}` above) in your commands:
-- `{{ .DockerCompose }}`: the docker compose command (default: `docker-compose`)
+- `{{ .PodmanCompose }}`: the compose command (default: `podman-compose`)
 - [`{{ .Container }}`](https://pkg.go.dev/github.com/christophe-duc/lazypodman@v0.20.0/pkg/commands#Container) and its fields. For example: `{{ .Container.Container.ImageID }}`
 - [`{{ .Service }}`](https://pkg.go.dev/github.com/christophe-duc/lazypodman@v0.20.0/pkg/commands#Service) and its fields. For example: `{{ .Service.Name }}`
 

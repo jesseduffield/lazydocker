@@ -31,7 +31,7 @@ type PodmanCommand struct {
 	Tr                     *i18n.TranslationSet
 	Config                 *config.AppConfig
 	Runtime                ContainerRuntime
-	InDockerComposeProject bool
+	InComposeProject bool
 	ErrorChan              chan error
 	ContainerMutex         deadlock.Mutex
 	ServiceMutex           deadlock.Mutex
@@ -49,7 +49,7 @@ type LimitedPodmanCommand interface {
 // CommandObject is what we pass to our template resolvers when we are running a custom command.
 // We do not guarantee that all fields will be populated: just the ones that make sense for the current context
 type CommandObject struct {
-	DockerCompose string
+	PodmanCompose string
 	Service       *Service
 	Container     *Container
 	Image         *Image
@@ -59,7 +59,7 @@ type CommandObject struct {
 
 // NewCommandObject takes a command object and returns a default command object with the passed command object merged in
 func (c *PodmanCommand) NewCommandObject(obj CommandObject) CommandObject {
-	defaultObj := CommandObject{DockerCompose: c.Config.UserConfig.CommandTemplates.DockerCompose}
+	defaultObj := CommandObject{PodmanCompose: c.Config.UserConfig.CommandTemplates.PodmanCompose}
 	_ = mergo.Merge(&defaultObj, obj)
 	return defaultObj
 }
@@ -112,23 +112,23 @@ func NewPodmanCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		Log:                    log,
 		OSCommand:              osCommand,
 		Tr:                     tr,
-		Config:                 config,
-		Runtime:                runtime,
-		ErrorChan:              errorChan,
-		InDockerComposeProject: true,
-		Closers:                closers,
+		Config:           config,
+		Runtime:          runtime,
+		ErrorChan:        errorChan,
+		InComposeProject: true,
+		Closers:          closers,
 	}
 
 	podmanCommand.setComposeCommand(config)
 
 	err = osCommand.RunCommand(
 		utils.ApplyTemplate(
-			config.UserConfig.CommandTemplates.CheckDockerComposeConfig,
+			config.UserConfig.CommandTemplates.CheckComposeConfig,
 			podmanCommand.NewCommandObject(CommandObject{}),
 		),
 	)
 	if err != nil {
-		podmanCommand.InDockerComposeProject = false
+		podmanCommand.InComposeProject = false
 		log.Warn(err.Error())
 	}
 
@@ -138,31 +138,31 @@ func NewPodmanCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 // setComposeCommand detects and sets the appropriate compose command
 func (c *PodmanCommand) setComposeCommand(config *config.AppConfig) {
 	// If user has explicitly set a compose command, respect it
-	if config.UserConfig.CommandTemplates.DockerCompose != "docker compose" &&
-		config.UserConfig.CommandTemplates.DockerCompose != "" {
+	if config.UserConfig.CommandTemplates.PodmanCompose != "podman-compose" &&
+		config.UserConfig.CommandTemplates.PodmanCompose != "" {
 		return
 	}
 
 	// Try podman-compose first
 	if err := c.OSCommand.RunCommand("podman-compose version"); err == nil {
-		config.UserConfig.CommandTemplates.DockerCompose = "podman-compose"
+		config.UserConfig.CommandTemplates.PodmanCompose = "podman-compose"
 		return
 	}
 
 	// Try podman compose (built-in, if available)
 	if err := c.OSCommand.RunCommand("podman compose version"); err == nil {
-		config.UserConfig.CommandTemplates.DockerCompose = "podman compose"
+		config.UserConfig.CommandTemplates.PodmanCompose = "podman compose"
 		return
 	}
 
 	// Fall back to docker-compose for compatibility
 	if err := c.OSCommand.RunCommand("docker-compose version"); err == nil {
-		config.UserConfig.CommandTemplates.DockerCompose = "docker-compose"
+		config.UserConfig.CommandTemplates.PodmanCompose = "docker-compose"
 		return
 	}
 
 	// Default to podman-compose
-	config.UserConfig.CommandTemplates.DockerCompose = "podman-compose"
+	config.UserConfig.CommandTemplates.PodmanCompose = "podman-compose"
 }
 
 func (c *PodmanCommand) Close() error {
@@ -448,11 +448,11 @@ func (c *PodmanCommand) GetContainers(existingContainers []*Container) ([]*Conta
 
 // GetServices gets services
 func (c *PodmanCommand) GetServices() ([]*Service, error) {
-	if !c.InDockerComposeProject {
+	if !c.InComposeProject {
 		return nil, nil
 	}
 
-	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
+	composeCommand := c.Config.UserConfig.CommandTemplates.PodmanCompose
 	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --services", composeCommand))
 	if err != nil {
 		return nil, err
@@ -520,11 +520,11 @@ func (c *PodmanCommand) ViewAllLogs() (*exec.Cmd, error) {
 	return cmd, nil
 }
 
-// DockerComposeConfig returns the result of 'compose config'
-func (c *PodmanCommand) DockerComposeConfig() string {
+// ComposeConfig returns the result of 'compose config'
+func (c *PodmanCommand) ComposeConfig() string {
 	output, err := c.OSCommand.RunCommandWithOutput(
 		utils.ApplyTemplate(
-			c.OSCommand.Config.UserConfig.CommandTemplates.DockerComposeConfig,
+			c.OSCommand.Config.UserConfig.CommandTemplates.ComposeConfig,
 			c.NewCommandObject(CommandObject{}),
 		),
 	)

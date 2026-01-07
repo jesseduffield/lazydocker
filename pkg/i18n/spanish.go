@@ -90,7 +90,7 @@ func spanishSet() TranslationSet {
 		LogsTitle:                 "Logs",
 		ConfigTitle:               "Configuración",
 		EnvTitle:                  "Variables de entorno",
-		DockerComposeConfigTitle:  "Docker-Compose Config",
+		ComposeConfigTitle:        "Compose Config",
 		TopTitle:                  "Top",
 		StatsTitle:                "Estadísticas",
 		CreditsTitle:              "Acerca",
@@ -108,7 +108,7 @@ func spanishSet() TranslationSet {
 		NoServices:   "Sin servicios",
 
 		ConfirmQuit:                "¿Realmente quieres salir?",
-		ConfirmUpProject:           "¿Realmente quieres levantar tu proyecto docker compose?",
+		ConfirmUpProject:           "¿Realmente quieres levantar tu proyecto compose?",
 		MustForceToRemoveContainer: "No puedes borrar un contenedor en ejecución a menos de que lo fuerces, ¿quieres hacerlo?",
 		NotEnoughSpace:             "No hay suficiente espacio para renderizar los paneles",
 		ConfirmPruneImages:         "¿Realmente quieres limpiar todas tus imágenes?",

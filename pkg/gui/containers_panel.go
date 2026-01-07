@@ -282,7 +282,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 }
 
 func (gui *Gui) renderContainersAndServices() error {
-	if gui.PodmanCommand.InDockerComposeProject {
+	if gui.PodmanCommand.InComposeProject {
 		if err := gui.Panels.Services.RerenderList(); err != nil {
 			return err
 		}
@@ -449,7 +449,7 @@ func (gui *Gui) containerExecShell(container *commands.Container) error {
 	})
 
 	// TODO: use SDK
-	resolvedCommand := utils.ApplyTemplate("docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'", commandObject)
+	resolvedCommand := utils.ApplyTemplate("podman exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'", commandObject)
 	// attach and return the subprocess error
 	cmd := gui.OSCommand.ExecutableFromString(resolvedCommand)
 	return gui.runSubprocess(cmd)

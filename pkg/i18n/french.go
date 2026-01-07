@@ -85,7 +85,7 @@ func frenchSet() TranslationSet {
 		LogsTitle:                 "Journaux",
 		ConfigTitle:               "Config",
 		EnvTitle:                  "Env",
-		DockerComposeConfigTitle:  "Config Docker-Compose",
+		ComposeConfigTitle:        "Config Compose",
 		TopTitle:                  "Top",
 		StatsTitle:                "Statistiques",
 		CreditsTitle:              "À propos",

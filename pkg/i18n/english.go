@@ -110,10 +110,10 @@ type TranslationSet struct {
 	OpenInBrowser               string
 	SortContainersByState       string
 
-	LogsTitle                 string
-	ConfigTitle               string
-	EnvTitle                  string
-	DockerComposeConfigTitle  string
+	LogsTitle            string
+	ConfigTitle          string
+	EnvTitle             string
+	ComposeConfigTitle   string
 	StatsTitle                string
 	CreditsTitle              string
 	ContainerConfigTitle      string
@@ -232,7 +232,7 @@ func englishSet() TranslationSet {
 		LogsTitle:                 "Logs",
 		ConfigTitle:               "Config",
 		EnvTitle:                  "Env",
-		DockerComposeConfigTitle:  "Docker-Compose Config",
+		ComposeConfigTitle:        "Compose Config",
 		TopTitle:                  "Top",
 		StatsTitle:                "Stats",
 		CreditsTitle:              "About",
@@ -250,7 +250,7 @@ func englishSet() TranslationSet {
 		NoServices:   "No services",
 
 		ConfirmQuit:                 "Are you sure you want to quit?",
-		ConfirmUpProject:            "Are you sure you want to 'up' your docker compose project?",
+		ConfirmUpProject:            "Are you sure you want to 'up' your compose project?",
 		MustForceToRemoveContainer:  "You cannot remove a running container unless you force it. Do you want to force it?",
 		NotEnoughSpace:              "Not enough space to render panels",
 		ConfirmPruneImages:          "Are you sure you want to prune all unused images?",

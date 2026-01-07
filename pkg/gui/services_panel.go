@@ -78,7 +78,7 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 			return presentation.GetServiceDisplayStrings(&gui.Config.UserConfig.Gui, service)
 		},
 		Hide: func() bool {
-			return !gui.PodmanCommand.InDockerComposeProject
+			return !gui.PodmanCommand.InComposeProject
 		},
 	}
 }
@@ -148,7 +148,7 @@ func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	composeCommand := gui.Config.UserConfig.CommandTemplates.DockerCompose
+	composeCommand := gui.Config.UserConfig.CommandTemplates.PodmanCompose
 
 	options := []*commandOption{
 		{

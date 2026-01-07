@@ -7,43 +7,43 @@ import (
 	"github.com/jesseduffield/yaml"
 )
 
-func TestDockerComposeCommandNoFiles(t *testing.T) {
+func TestPodmanComposeCommandNoFiles(t *testing.T) {
 	composeFiles := []string{}
 	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
 
-	actual := conf.UserConfig.CommandTemplates.DockerCompose
-	expected := "docker compose"
+	actual := conf.UserConfig.CommandTemplates.PodmanCompose
+	expected := "podman-compose"
 	if actual != expected {
 		t.Fatalf("Expected %s but got %s", expected, actual)
 	}
 }
 
-func TestDockerComposeCommandSingleFile(t *testing.T) {
+func TestPodmanComposeCommandSingleFile(t *testing.T) {
 	composeFiles := []string{"one.yml"}
 	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
 
-	actual := conf.UserConfig.CommandTemplates.DockerCompose
-	expected := "docker compose -f one.yml"
+	actual := conf.UserConfig.CommandTemplates.PodmanCompose
+	expected := "podman-compose -f one.yml"
 	if actual != expected {
 		t.Fatalf("Expected %s but got %s", expected, actual)
 	}
 }
 
-func TestDockerComposeCommandMultipleFiles(t *testing.T) {
+func TestPodmanComposeCommandMultipleFiles(t *testing.T) {
 	composeFiles := []string{"one.yml", "two.yml", "three.yml"}
 	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
 
-	actual := conf.UserConfig.CommandTemplates.DockerCompose
-	expected := "docker compose -f one.yml -f two.yml -f three.yml"
+	actual := conf.UserConfig.CommandTemplates.PodmanCompose
+	expected := "podman-compose -f one.yml -f two.yml -f three.yml"
 	if actual != expected {
 		t.Fatalf("Expected %s but got %s", expected, actual)
 	}

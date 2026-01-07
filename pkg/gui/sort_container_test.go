@@ -4,7 +4,6 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/docker/docker/api/types/container"
 	"github.com/christophe-duc/lazypodman/pkg/commands"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,28 +13,28 @@ func sampleContainers() []*commands.Container {
 		{
 			ID:   "1",
 			Name: "1",
-			Container: container.Summary{
+			Summary: commands.ContainerSummary{
 				State: "exited",
 			},
 		},
 		{
 			ID:   "2",
 			Name: "2",
-			Container: container.Summary{
+			Summary: commands.ContainerSummary{
 				State: "running",
 			},
 		},
 		{
 			ID:   "3",
 			Name: "3",
-			Container: container.Summary{
+			Summary: commands.ContainerSummary{
 				State: "running",
 			},
 		},
 		{
 			ID:   "4",
 			Name: "4",
-			Container: container.Summary{
+			Summary: commands.ContainerSummary{
 				State: "created",
 			},
 		},
@@ -47,28 +46,28 @@ func expectedPerStatusContainers() []*commands.Container {
 		{
 			ID:   "2",
 			Name: "2",
-			Container: container.Summary{
+			Summary: commands.ContainerSummary{
 				State: "running",
 			},
 		},
 		{
 			ID:   "3",
 			Name: "3",
-			Container: container.Summary{
+			Summary: commands.ContainerSummary{
 				State: "running",
 			},
 		},
 		{
 			ID:   "1",
 			Name: "1",
-			Container: container.Summary{
+			Summary: commands.ContainerSummary{
 				State: "exited",
 			},
 		},
 		{
 			ID:   "4",
 			Name: "4",
-			Container: container.Summary{
+			Summary: commands.ContainerSummary{
 				State: "created",
 			},
 		},
@@ -80,28 +79,28 @@ func expectedLegacySortedContainers() []*commands.Container {
 		{
 			ID:   "1",
 			Name: "1",
-			Container: container.Summary{
+			Summary: commands.ContainerSummary{
 				State: "exited",
 			},
 		},
 		{
 			ID:   "2",
 			Name: "2",
-			Container: container.Summary{
+			Summary: commands.ContainerSummary{
 				State: "running",
 			},
 		},
 		{
 			ID:   "3",
 			Name: "3",
-			Container: container.Summary{
+			Summary: commands.ContainerSummary{
 				State: "running",
 			},
 		},
 		{
 			ID:   "4",
 			Name: "4",
-			Container: container.Summary{
+			Summary: commands.ContainerSummary{
 				State: "created",
 			},
 		},
@@ -110,8 +109,8 @@ func expectedLegacySortedContainers() []*commands.Container {
 
 func assertEqualContainers(t *testing.T, left *commands.Container, right *commands.Container) {
 	t.Helper()
-	assert.Equal(t, left.Container.State, right.Container.State)
-	assert.Equal(t, left.Container.ID, right.Container.ID)
+	assert.Equal(t, left.Summary.State, right.Summary.State)
+	assert.Equal(t, left.Summary.ID, right.Summary.ID)
 	assert.Equal(t, left.Name, right.Name)
 }
 

@@ -67,7 +67,7 @@ func turkishSet() TranslationSet {
 		LogsTitle:                 "Kayitlar",
 		ConfigTitle:               "Ayarlar",
 		EnvTitle:                  "Env",
-		DockerComposeConfigTitle:  "Docker-Compose Ayar",
+		ComposeConfigTitle:        "Compose Ayar",
 		TopTitle:                  "Top",
 		StatsTitle:                "Durumlar",
 		CreditsTitle:              "Hakkinda",
