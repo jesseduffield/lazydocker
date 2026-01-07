@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 	"encoding/json"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/containers/podman/v5/pkg/bindings/containers"
 	"github.com/containers/podman/v5/pkg/bindings/images"
 	"github.com/containers/podman/v5/pkg/bindings/network"
+	"github.com/containers/podman/v5/pkg/bindings/pods"
 	"github.com/containers/podman/v5/pkg/bindings/system"
 	"github.com/containers/podman/v5/pkg/bindings/volumes"
 	"github.com/containers/podman/v5/pkg/domain/entities"
@@ -276,39 +276,21 @@ func (r *SocketRuntime) PruneNetworks(ctx context.Context) error {
 	return err
 }
 
-// podPsJSON represents the JSON output of `podman pod ps --format json`
-type podPsJSON struct {
-	ID      string            `json:"Id"`
-	Name    string            `json:"Name"`
-	Status  string            `json:"Status"`
-	Created string            `json:"Created"`
-	InfraID string            `json:"InfraId"`
-	Labels  map[string]string `json:"Labels"`
-}
-
-// ListPods returns all pods.
+// ListPods returns all pods using the pods bindings API.
 func (r *SocketRuntime) ListPods(ctx context.Context) ([]PodSummary, error) {
-	// Use podman CLI since there's no pods binding package
-	cmd := exec.CommandContext(ctx, "podman", "pod", "ps", "--format", "json")
-	output, err := cmd.Output()
+	podList, err := pods.List(r.conn, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var pods []podPsJSON
-	if err := json.Unmarshal(output, &pods); err != nil {
-		return nil, err
-	}
-
-	result := make([]PodSummary, len(pods))
-	for i, p := range pods {
-		created, _ := time.Parse(time.RFC3339, p.Created)
+	result := make([]PodSummary, len(podList))
+	for i, p := range podList {
 		result[i] = PodSummary{
-			ID:      p.ID,
+			ID:      p.Id,
 			Name:    p.Name,
 			Status:  p.Status,
-			Created: created,
-			InfraID: p.InfraID,
+			Created: p.Created,
+			InfraID: p.InfraId,
 			Labels:  p.Labels,
 		}
 	}

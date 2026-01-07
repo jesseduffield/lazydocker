@@ -55,11 +55,13 @@ pkg/
 - `pkg/commands/runtime_socket.go` - Socket mode implementation using Podman REST API bindings
 - `pkg/commands/runtime_libpod.go` - Direct libpod implementation (Linux+CGO only)
 - `pkg/commands/runtime_libpod_stub.go` - Stub for non-Linux platforms
-- `pkg/commands/runtime_types.go` - Custom types (ContainerSummary, ImageSummary, etc.)
+- `pkg/commands/runtime_types.go` - Custom types (ContainerSummary, ImageSummary, PodSummary, etc.)
 
 **Podman integration:**
 - `pkg/commands/podman.go` - Main client connection, auto-detection, and initialization
 - `pkg/commands/container.go` - Container wrapper operations
+- `pkg/commands/pod.go` - Pod wrapper with state and container count methods
+- `pkg/commands/container_list_item.go` - Unified wrapper for pods/containers in list view
 - `pkg/commands/image.go` - Image wrapper operations
 - `pkg/commands/volume.go` - Volume wrapper operations
 - `pkg/commands/network.go` - Network wrapper operations
@@ -101,6 +103,9 @@ The codebase uses a `ContainerRuntime` interface with two implementations:
 ListContainers() / InspectContainer() / ContainerStats()
 StartContainer() / StopContainer() / PauseContainer() / UnpauseContainer()
 RestartContainer() / RemoveContainer() / PruneContainers() / ContainerTop()
+
+// Pod operations
+ListPods() - Returns all pods with their metadata
 
 // Image operations
 ListImages() / InspectImage() / ImageHistory() / RemoveImage() / PruneImages()

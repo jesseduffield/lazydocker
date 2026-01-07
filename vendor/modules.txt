@@ -165,6 +165,7 @@ github.com/containers/podman/v5/pkg/bindings/containers
 github.com/containers/podman/v5/pkg/bindings/images
 github.com/containers/podman/v5/pkg/bindings/internal/util
 github.com/containers/podman/v5/pkg/bindings/network
+github.com/containers/podman/v5/pkg/bindings/pods
 github.com/containers/podman/v5/pkg/bindings/system
 github.com/containers/podman/v5/pkg/bindings/volumes
 github.com/containers/podman/v5/pkg/checkpoint/crutils
