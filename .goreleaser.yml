@@ -120,7 +120,7 @@ brews:
 #    # apps:
 #
 #    #   # The name of the app must be the same name as the binary built or the snapcraft name.
-#    #   lazydocker:
+#    #   lazypodman:
 #
 #    #     # If your app requires extra permissions to work outside of its default
 #    #     # confined space, declare them here.

@@ -5,7 +5,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 ## Proje
 
 <pre>
-  <kbd>e</kbd>: lazzydocker ayarlarını düzenle
+  <kbd>e</kbd>: lazypodman ayarlarını düzenle
   <kbd>o</kbd>: lazypodman ayarlarını aç
   <kbd>m</kbd>: kayıt defterini görüntüle
   <kbd>enter</kbd>: ana panele odaklan

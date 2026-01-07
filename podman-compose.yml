@@ -1,0 +1,24 @@
+version: '3'
+services:
+  lazypodman:
+    build:
+      context: https://github.com/christophe-duc/lazypodman.git
+      dockerfile: Containerfile
+      args:
+        BASE_IMAGE_BUILDER: golang
+        GOARCH: amd64
+        GOARM:
+    image: christophe-duc/lazypodman
+    container_name: lazypodman
+    stdin_open: true
+    tty: true
+    volumes:
+      # Rootless Podman socket (default for most users)
+      # For rootful: use /run/podman/podman.sock instead
+      - ${XDG_RUNTIME_DIR:-/run/user/1000}/podman/podman.sock:/run/podman/podman.sock:ro
+      # Config directory
+      - ./config:/.config/lazypodman
+    environment:
+      - CONTAINER_HOST=unix:///run/podman/podman.sock
+    security_opt:
+      - label=disable

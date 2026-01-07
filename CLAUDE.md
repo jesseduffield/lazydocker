@@ -2,13 +2,13 @@
 
 ## Project Overview
 
-This is a fork of **lazydocker** being converted to **lazypodman** - a terminal UI for managing Podman containers.
+This is a fork of **lazydocker** converted to **lazypodman** - a terminal UI for managing Podman containers.
 
 **Goals:**
 1. Support native libpod (Podman's Go library) instead of Docker SDK
 2. Enable socket-less operation for Podman commands (no daemon required)
 
-**Current State:** The codebase uses Docker Go SDK (`github.com/docker/docker` v28.5.2) and requires conversion to libpod.
+**Current State:** Conversion complete. The codebase now uses Podman bindings (`github.com/containers/podman/v5` v5.7.1) with a hybrid runtime architecture supporting both socket mode (REST API) and socket-less mode (direct libpod).
 
 ## Quick Start
 
@@ -26,7 +26,7 @@ go build -mod=vendor
 ./lazypodman -d
 
 # Run with specific compose files
-./lazypodman -f docker-compose.yml -f docker-compose.override.yml
+./lazypodman -f podman-compose.yml -f podman-compose.override.yml
 ```
 
 ## Architecture
@@ -48,78 +48,83 @@ pkg/
 └── cheatsheet/    # Keybinding reference
 ```
 
-### Key Files for Podman Integration
+### Key Files
 
-**Primary targets for libpod conversion:**
-- `pkg/commands/docker.go` - Main client connection and initialization
-- `pkg/commands/container.go` - Container operations
-- `pkg/commands/image.go` - Image operations
-- `pkg/commands/volume.go` - Volume operations
-- `pkg/commands/network.go` - Network operations
+**Runtime abstraction layer:**
+- `pkg/commands/runtime.go` - `ContainerRuntime` interface abstracting all container operations
+- `pkg/commands/runtime_socket.go` - Socket mode implementation using Podman REST API bindings
+- `pkg/commands/runtime_libpod.go` - Direct libpod implementation (Linux+CGO only)
+- `pkg/commands/runtime_libpod_stub.go` - Stub for non-Linux platforms
+- `pkg/commands/runtime_types.go` - Custom types (ContainerSummary, ImageSummary, etc.)
+
+**Podman integration:**
+- `pkg/commands/podman.go` - Main client connection, auto-detection, and initialization
+- `pkg/commands/container.go` - Container wrapper operations
+- `pkg/commands/image.go` - Image wrapper operations
+- `pkg/commands/volume.go` - Volume wrapper operations
+- `pkg/commands/network.go` - Network wrapper operations
 - `pkg/commands/service.go` - Compose service operations
-- `pkg/commands/docker_host_unix.go` - Unix socket detection
-- `pkg/commands/docker_host_windows.go` - Windows pipe detection
+- `pkg/commands/podman_host_unix.go` - Unix socket detection
+- `pkg/commands/podman_host_windows.go` - Windows pipe detection
 
 **Application entry:**
 - `main.go` - Entry point, CLI flags
 - `pkg/app/app.go` - App struct, initialization flow
 
-## Current Docker Integration
+## Runtime Architecture
+
+### Hybrid Runtime System
+
+The codebase uses a `ContainerRuntime` interface with two implementations:
+
+1. **Socket Mode** (`runtime_socket.go`)
+   - Uses Podman REST API via `pkg/bindings`
+   - Connects to local or remote Podman instances
+   - Supports SSH tunneling for remote hosts
+   - Real event streaming
+
+2. **Libpod Mode** (`runtime_libpod.go`)
+   - Direct libpod library calls (no socket required)
+   - Linux + CGO only
+   - Event polling (2-second intervals)
+   - Fallback when socket unavailable
 
 ### Connection Flow
-1. `NewDockerCommand()` in `docker.go` initializes client
-2. Docker host determined from `DOCKER_HOST` env or platform defaults
-3. Uses `github.com/docker/docker/client` SDK for API calls
-4. SSH tunneling supported for remote hosts
+1. `NewPodmanCommand()` in `podman.go` initializes runtime
+2. Host determined from `CONTAINER_HOST` env or platform defaults
+3. Tries socket mode first, falls back to libpod if unavailable
+4. Auto-detects compose tool: `podman-compose`, `podman compose`, or `docker-compose`
 
-### API Methods Used
+### Runtime Interface Methods
 ```go
 // Container operations
-Client.ContainerList()
-Client.ContainerInspect()
-Client.ContainerStats()      // Streaming
-Client.ContainerStart/Stop/Pause/Unpause/Restart/Remove()
-Client.ContainersPrune()
+ListContainers() / InspectContainer() / ContainerStats()
+StartContainer() / StopContainer() / PauseContainer() / UnpauseContainer()
+RestartContainer() / RemoveContainer() / PruneContainers() / ContainerTop()
 
 // Image operations
-Client.ImageList()
-Client.ImagesPrune()
+ListImages() / InspectImage() / ImageHistory() / RemoveImage() / PruneImages()
 
 // Volume/Network
-Client.VolumeList/VolumesPrune()
-Client.NetworkList/NetworksPrune()
+ListVolumes() / RemoveVolume() / PruneVolumes()
+ListNetworks() / RemoveNetwork() / PruneNetworks()
+
+// Events
+GetEvents() - Streaming (socket) or polling (libpod)
 ```
 
 ### Command Execution Patterns
-1. **SDK calls** - For most container/image operations
+1. **Runtime interface calls** - For most container/image operations
 2. **Shell commands** - For interactive operations (attach, logs) and compose
 3. **Template-based** - Configurable command templates in config
 
-## Libpod Integration Path
+## Platform Support
 
-### Required Changes
-
-1. **Replace Docker SDK with libpod bindings**
-   - Add `github.com/containers/podman/v5/pkg/bindings` dependency
-   - Replace `*client.Client` with libpod connection
-
-2. **Update type mappings**
-   - Docker `container.Summary` -> Podman equivalent
-   - Docker `image.Summary` -> Podman equivalent
-   - All API response types need mapping
-
-3. **Socket-less mode**
-   - Implement direct libpod calls without socket
-   - Use `bindings.NewConnection()` with appropriate URI
-
-4. **Compose support**
-   - Detect `podman-compose` vs `docker-compose`
-   - Update command templates
-
-### Files NOT requiring changes
-- `pkg/gui/*` - UI layer is container-runtime agnostic
-- `pkg/config/*` - Configuration structure remains same
-- `pkg/i18n/*` - Translations unaffected
+| Platform | Socket Mode | Libpod Mode |
+|----------|-------------|-------------|
+| Linux    | ✅          | ✅ (requires CGO) |
+| macOS    | ✅          | ❌ (stub)    |
+| Windows  | ✅          | ❌ (stub)    |
 
 ## Development Guidelines
 
@@ -153,4 +158,11 @@ go test -mod=vendor ./pkg/gui/...
 ## Module Info
 - Module: `github.com/christophe-duc/lazypodman`
 - Go: 1.22+ (toolchain 1.23.6)
-- Key deps: gocui, docker/docker, logrus
+- Key deps: gocui, containers/podman/v5, logrus
+
+## Known Limitations
+
+- **Network Prune**: Libpod mode has a TODO for manual pruning implementation
+- **Event Streaming**: Libpod mode uses polling (2-second intervals) instead of true event streaming
+- **Libpod Availability**: Socket-less mode requires Linux + CGO compilation
+- **Docker SDK**: Present in go.mod as indirect transitive dependency (pulled by Podman itself, not used by application code)
