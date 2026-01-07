@@ -6,9 +6,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
 	"github.com/christophe-duc/lazypodman/pkg/i18n"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
@@ -17,7 +14,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-// Container : A docker Container
+// Container represents a Podman container
 type Container struct {
 	Name            string
 	ServiceName     string
@@ -27,24 +24,26 @@ type Container struct {
 	OneOff          bool
 	ProjectName     string
 	ID              string
-	Container       container.Summary
-	Client          *client.Client
+	Summary         ContainerSummary
+	Runtime         ContainerRuntime
 	OSCommand       *OSCommand
 	Log             *logrus.Entry
 	StatHistory     []*RecordedStats
-	Details         container.InspectResponse
+	Details         *ContainerDetails
 	MonitoringStats bool
-	DockerCommand   LimitedDockerCommand
+	PodmanCommand   LimitedPodmanCommand
 	Tr              *i18n.TranslationSet
 
 	StatsMutex deadlock.Mutex
 }
 
 // Remove removes the container
-func (c *Container) Remove(options container.RemoveOptions) error {
+func (c *Container) Remove(force bool, removeVolumes bool) error {
 	c.Log.Warn(fmt.Sprintf("removing container %s", c.Name))
-	if err := c.Client.ContainerRemove(context.Background(), c.ID, options); err != nil {
-		if strings.Contains(err.Error(), "Stop the container before attempting removal or force remove") {
+	ctx := context.Background()
+	if err := c.Runtime.RemoveContainer(ctx, c.ID, force, removeVolumes); err != nil {
+		if strings.Contains(err.Error(), "Stop the container before attempting removal or force remove") ||
+			strings.Contains(err.Error(), "container is running") {
 			return ComplexError{
 				Code:    MustStopContainer,
 				Message: err.Error(),
@@ -60,25 +59,29 @@ func (c *Container) Remove(options container.RemoveOptions) error {
 // Stop stops the container
 func (c *Container) Stop() error {
 	c.Log.Warn(fmt.Sprintf("stopping container %s", c.Name))
-	return c.Client.ContainerStop(context.Background(), c.ID, container.StopOptions{})
+	ctx := context.Background()
+	return c.Runtime.StopContainer(ctx, c.ID, nil)
 }
 
 // Pause pauses the container
 func (c *Container) Pause() error {
 	c.Log.Warn(fmt.Sprintf("pausing container %s", c.Name))
-	return c.Client.ContainerPause(context.Background(), c.ID)
+	ctx := context.Background()
+	return c.Runtime.PauseContainer(ctx, c.ID)
 }
 
 // Unpause unpauses the container
 func (c *Container) Unpause() error {
 	c.Log.Warn(fmt.Sprintf("unpausing container %s", c.Name))
-	return c.Client.ContainerUnpause(context.Background(), c.ID)
+	ctx := context.Background()
+	return c.Runtime.UnpauseContainer(ctx, c.ID)
 }
 
 // Restart restarts the container
 func (c *Container) Restart() error {
 	c.Log.Warn(fmt.Sprintf("restarting container %s", c.Name))
-	return c.Client.ContainerRestart(context.Background(), c.ID, container.StopOptions{})
+	ctx := context.Background()
+	return c.Runtime.RestartContainer(ctx, c.ID, nil)
 }
 
 // Attach attaches the container
@@ -88,44 +91,47 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 	}
 
 	// verify that we can in fact attach to this container
-	if !c.Details.Config.OpenStdin {
+	if c.Details.Config != nil && !c.Details.Config.OpenStdin {
 		return nil, errors.New(c.Tr.UnattachableContainerError)
 	}
 
-	if c.Container.State == "exited" {
+	if c.Summary.State == "exited" {
 		return nil, errors.New(c.Tr.CannotAttachStoppedContainerError)
 	}
 
 	c.Log.Warn(fmt.Sprintf("attaching to container %s", c.Name))
-	// TODO: use SDK
-	cmd := c.OSCommand.NewCmd("docker", "attach", "--sig-proxy=false", c.ID)
+	// Use podman attach command
+	cmd := c.OSCommand.NewCmd("podman", "attach", "--sig-proxy=false", c.ID)
 	return cmd, nil
 }
 
 // Top returns process information
-func (c *Container) Top(ctx context.Context) (container.TopResponse, error) {
-	detail, err := c.Inspect()
+func (c *Container) Top(ctx context.Context) (TopResponse, error) {
+	details, err := c.Inspect()
 	if err != nil {
-		return container.TopResponse{}, err
+		return TopResponse{}, err
 	}
 
 	// check container status
-	if !detail.State.Running {
-		return container.TopResponse{}, errors.New("container is not running")
+	if details.State == nil || !details.State.Running {
+		return TopResponse{}, errors.New("container is not running")
 	}
 
-	return c.Client.ContainerTop(ctx, c.ID, []string{})
-}
+	titles, processes, err := c.Runtime.ContainerTop(ctx, c.ID)
+	if err != nil {
+		return TopResponse{}, err
+	}
 
-// PruneContainers prunes containers
-func (c *DockerCommand) PruneContainers() error {
-	_, err := c.Client.ContainersPrune(context.Background(), filters.Args{})
-	return err
+	return TopResponse{
+		Titles:    titles,
+		Processes: processes,
+	}, nil
 }
 
 // Inspect returns details about the container
-func (c *Container) Inspect() (container.InspectResponse, error) {
-	return c.Client.ContainerInspect(context.Background(), c.ID)
+func (c *Container) Inspect() (*ContainerDetails, error) {
+	ctx := context.Background()
+	return c.Runtime.InspectContainer(ctx, c.ID)
 }
 
 // RenderTop returns details about the container
@@ -142,5 +148,10 @@ func (c *Container) RenderTop(ctx context.Context) (string, error) {
 // Sometimes it takes some time for a container to have its details loaded
 // after it starts.
 func (c *Container) DetailsLoaded() bool {
-	return c.Details.ContainerJSONBase != nil
+	return c.Details != nil
+}
+
+// GetState returns the container state from the Summary
+func (c *Container) GetState() string {
+	return c.Summary.State
 }

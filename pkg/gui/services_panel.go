@@ -78,7 +78,7 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 			return presentation.GetServiceDisplayStrings(&gui.Config.UserConfig.Gui, service)
 		},
 		Hide: func() bool {
-			return !gui.DockerCommand.InDockerComposeProject
+			return !gui.PodmanCommand.InDockerComposeProject
 		},
 	}
 }
@@ -292,7 +292,7 @@ func (gui *Gui) handleProjectUp(g *gocui.Gui, v *gocui.View) error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmUpProject, func(g *gocui.Gui, v *gocui.View) error {
 		cmdStr := utils.ApplyTemplate(
 			gui.Config.UserConfig.CommandTemplates.Up,
-			gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+			gui.PodmanCommand.NewCommandObject(commands.CommandObject{}),
 		)
 
 		return gui.WithWaitingStatus(gui.Tr.UppingProjectStatus, func() error {
@@ -307,12 +307,12 @@ func (gui *Gui) handleProjectUp(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) handleProjectDown(g *gocui.Gui, v *gocui.View) error {
 	downCommand := utils.ApplyTemplate(
 		gui.Config.UserConfig.CommandTemplates.Down,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+		gui.PodmanCommand.NewCommandObject(commands.CommandObject{}),
 	)
 
 	downWithVolumesCommand := utils.ApplyTemplate(
 		gui.Config.UserConfig.CommandTemplates.DownWithVolumes,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+		gui.PodmanCommand.NewCommandObject(commands.CommandObject{}),
 	)
 
 	options := []*commandOption{
@@ -363,12 +363,12 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 
 	rebuildCommand := utils.ApplyTemplate(
 		gui.Config.UserConfig.CommandTemplates.RebuildService,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+		gui.PodmanCommand.NewCommandObject(commands.CommandObject{Service: service}),
 	)
 
 	recreateCommand := utils.ApplyTemplate(
 		gui.Config.UserConfig.CommandTemplates.RecreateService,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+		gui.PodmanCommand.NewCommandObject(commands.CommandObject{Service: service}),
 	)
 
 	options := []*commandOption{
@@ -376,7 +376,7 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 			description: gui.Tr.Restart,
 			command: utils.ApplyTemplate(
 				gui.Config.UserConfig.CommandTemplates.RestartService,
-				gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+				gui.PodmanCommand.NewCommandObject(commands.CommandObject{Service: service}),
 			),
 			onPress: func() error {
 				return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
@@ -391,7 +391,7 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 			description: gui.Tr.Recreate,
 			command: utils.ApplyTemplate(
 				gui.Config.UserConfig.CommandTemplates.RecreateService,
-				gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+				gui.PodmanCommand.NewCommandObject(commands.CommandObject{Service: service}),
 			),
 			onPress: func() error {
 				return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
@@ -406,7 +406,7 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 			description: gui.Tr.Rebuild,
 			command: utils.ApplyTemplate(
 				gui.Config.UserConfig.CommandTemplates.RebuildService,
-				gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}),
+				gui.PodmanCommand.NewCommandObject(commands.CommandObject{Service: service}),
 			),
 			onPress: func() error {
 				return gui.runSubprocess(gui.OSCommand.RunCustomCommand(rebuildCommand))
@@ -433,7 +433,7 @@ func (gui *Gui) handleServicesCustomCommand(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.PodmanCommand.NewCommandObject(commands.CommandObject{
 		Service:   service,
 		Container: service.Container,
 	})
@@ -466,7 +466,7 @@ L:
 
 func (gui *Gui) handleServicesBulkCommand(g *gocui.Gui, v *gocui.View) error {
 	bulkCommands := gui.Config.UserConfig.BulkCommands.Services
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.PodmanCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }

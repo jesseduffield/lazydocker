@@ -4,37 +4,31 @@ import (
 	"context"
 	"strings"
 
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/client"
 	"github.com/fatih/color"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )
 
-// Image : A docker Image
+// Image represents a Podman image
 type Image struct {
 	Name          string
 	Tag           string
 	ID            string
-	Image         image.Summary
-	Client        *client.Client
+	Summary       ImageSummary
+	Runtime       ContainerRuntime
 	OSCommand     *OSCommand
 	Log           *logrus.Entry
-	DockerCommand LimitedDockerCommand
+	PodmanCommand LimitedPodmanCommand
 }
 
 // Remove removes the image
-func (i *Image) Remove(options image.RemoveOptions) error {
-	if _, err := i.Client.ImageRemove(context.Background(), i.ID, options); err != nil {
-		return err
-	}
-
-	return nil
+func (i *Image) Remove(force bool) error {
+	ctx := context.Background()
+	return i.Runtime.RemoveImage(ctx, i.ID, force)
 }
 
-func getHistoryResponseItemDisplayStrings(layer image.HistoryResponseItem) []string {
+func getHistoryResponseItemDisplayStrings(layer ImageHistoryEntry) []string {
 	tag := ""
 	if len(layer.Tags) > 0 {
 		tag = layer.Tags[0]
@@ -75,12 +69,13 @@ func getHistoryResponseItemDisplayStrings(layer image.HistoryResponseItem) []str
 
 // RenderHistory renders the history of the image
 func (i *Image) RenderHistory() (string, error) {
-	history, err := i.Client.ImageHistory(context.Background(), i.ID)
+	ctx := context.Background()
+	history, err := i.Runtime.ImageHistory(ctx, i.ID)
 	if err != nil {
 		return "", err
 	}
 
-	tableBody := lo.Map(history, func(layer image.HistoryResponseItem, _ int) []string {
+	tableBody := lo.Map(history, func(layer ImageHistoryEntry, _ int) []string {
 		return getHistoryResponseItemDisplayStrings(layer)
 	})
 
@@ -88,56 +83,4 @@ func (i *Image) RenderHistory() (string, error) {
 	table := append(headers, tableBody...)
 
 	return utils.RenderTable(table)
-}
-
-// RefreshImages returns a slice of docker images
-func (c *DockerCommand) RefreshImages() ([]*Image, error) {
-	images, err := c.Client.ImageList(context.Background(), image.ListOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	ownImages := make([]*Image, len(images))
-
-	for i, img := range images {
-		firstTag := ""
-		tags := img.RepoTags
-		if len(tags) > 0 {
-			firstTag = tags[0]
-		}
-
-		nameParts := strings.Split(firstTag, ":")
-		tag := ""
-		name := "none"
-		if len(nameParts) > 1 {
-			tag = nameParts[len(nameParts)-1]
-			name = strings.Join(nameParts[:len(nameParts)-1], ":")
-
-			for prefix, replacement := range c.Config.UserConfig.Replacements.ImageNamePrefixes {
-				if strings.HasPrefix(name, prefix) {
-					name = strings.Replace(name, prefix, replacement, 1)
-					break
-				}
-			}
-		}
-
-		ownImages[i] = &Image{
-			ID:            img.ID,
-			Name:          name,
-			Tag:           tag,
-			Image:         img,
-			Client:        c.Client,
-			OSCommand:     c.OSCommand,
-			Log:           c.Log,
-			DockerCommand: c,
-		}
-	}
-
-	return ownImages, nil
-}
-
-// PruneImages prunes images
-func (c *DockerCommand) PruneImages() error {
-	_, err := c.Client.ImagesPrune(context.Background(), filters.Args{})
-	return err
 }

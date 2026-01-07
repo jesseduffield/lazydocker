@@ -8,10 +8,10 @@ import (
 	"runtime"
 	"runtime/debug"
 
-	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
 	"github.com/integrii/flaggy"
 	"github.com/christophe-duc/lazypodman/pkg/app"
+	"github.com/christophe-duc/lazypodman/pkg/commands"
 	"github.com/christophe-duc/lazypodman/pkg/config"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
 	"github.com/jesseduffield/yaml"
@@ -88,7 +88,7 @@ func main() {
 			os.Exit(0)
 		}
 
-		if client.IsErrConnectionFailed(err) {
+		if commands.IsConnectionFailed(err) {
 			log.Println(app.Tr.ConnectionFailed)
 			os.Exit(0)
 		}

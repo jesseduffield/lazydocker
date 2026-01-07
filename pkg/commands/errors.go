@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/go-errors/errors"
 	"golang.org/x/xerrors"
@@ -11,6 +12,21 @@ const (
 	// MustStopContainer tells us that we must stop the container before removing it
 	MustStopContainer = iota
 )
+
+// IsConnectionFailed checks if the error indicates a connection failure to Podman
+func IsConnectionFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	errStr := err.Error()
+	return strings.Contains(errStr, "connection refused") ||
+		strings.Contains(errStr, "no such host") ||
+		strings.Contains(errStr, "socket not found") ||
+		strings.Contains(errStr, "cannot connect") ||
+		strings.Contains(errStr, "unable to connect") ||
+		strings.Contains(errStr, "dial unix") ||
+		strings.Contains(errStr, "permission denied")
+}
 
 // WrapError wraps an error for the sake of showing a stack trace at the top level
 // the go-errors package, for some reason, does not return nil when you try to wrap

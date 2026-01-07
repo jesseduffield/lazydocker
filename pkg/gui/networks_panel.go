@@ -89,7 +89,7 @@ func (gui *Gui) reloadNetworks() error {
 }
 
 func (gui *Gui) refreshStateNetworks() error {
-	networks, err := gui.DockerCommand.RefreshNetworks()
+	networks, err := gui.PodmanCommand.RefreshNetworks()
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func (gui *Gui) handleNetworksRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) handlePruneNetworks() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneNetworks, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
-			err := gui.DockerCommand.PruneNetworks()
+			err := gui.PodmanCommand.PruneNetworks()
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -155,7 +155,7 @@ func (gui *Gui) handleNetworksCustomCommand(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.PodmanCommand.NewCommandObject(commands.CommandObject{
 		Network: network,
 	})
 
@@ -173,7 +173,7 @@ func (gui *Gui) handleNetworksBulkCommand(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	bulkCommands := append(baseBulkCommands, gui.Config.UserConfig.BulkCommands.Networks...)
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.PodmanCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }

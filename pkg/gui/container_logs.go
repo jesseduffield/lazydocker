@@ -8,8 +8,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
 	"github.com/christophe-duc/lazypodman/pkg/commands"
 	"github.com/christophe-duc/lazypodman/pkg/tasks"
@@ -105,48 +103,42 @@ func (gui *Gui) promptToReturn() {
 }
 
 func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context, writer io.Writer) error {
-	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, ctr.ID, container.LogsOptions{
-		ShowStdout: true,
-		ShowStderr: true,
-		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
-		Since:      gui.Config.UserConfig.Logs.Since,
-		Tail:       gui.Config.UserConfig.Logs.Tail,
-		Follow:     true,
-	})
-	if err != nil {
+	// Build podman logs command
+	args := []string{"logs", "--follow"}
+
+	if gui.Config.UserConfig.Logs.Timestamps {
+		args = append(args, "--timestamps")
+	}
+	if gui.Config.UserConfig.Logs.Since != "" {
+		args = append(args, "--since", gui.Config.UserConfig.Logs.Since)
+	}
+	if gui.Config.UserConfig.Logs.Tail != "" {
+		args = append(args, "--tail", gui.Config.UserConfig.Logs.Tail)
+	}
+	args = append(args, ctr.ID)
+
+	cmd := ctr.OSCommand.NewCmd("podman", args...)
+	cmd.Stdout = writer
+	cmd.Stderr = writer
+
+	if err := cmd.Start(); err != nil {
 		gui.Log.Error(err)
 		return err
 	}
-	defer readCloser.Close()
 
-	if !ctr.DetailsLoaded() {
-		// loop until the details load or context is cancelled, using timer
-		ticker := time.NewTicker(time.Millisecond * 100)
-		defer ticker.Stop()
-	outer:
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-			case <-ticker.C:
-				if ctr.DetailsLoaded() {
-					break outer
-				}
-			}
+	// Wait for context cancellation or command completion
+	done := make(chan error, 1)
+	go func() {
+		done <- cmd.Wait()
+	}()
+
+	select {
+	case <-ctx.Done():
+		if err := ctr.OSCommand.Kill(cmd); err != nil {
+			gui.Log.Warn(err)
 		}
+		return nil
+	case err := <-done:
+		return err
 	}
-
-	if ctr.Details.Config.Tty {
-		_, err = io.Copy(writer, readCloser)
-		if err != nil {
-			return err
-		}
-	} else {
-		_, err = stdcopy.StdCopy(writer, writer, readCloser)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

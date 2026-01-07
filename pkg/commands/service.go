@@ -4,24 +4,23 @@ import (
 	"context"
 	"os/exec"
 
-	"github.com/docker/docker/api/types/container"
 	"github.com/christophe-duc/lazypodman/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
-// Service : A docker Service
+// Service represents a compose service
 type Service struct {
 	Name          string
 	ID            string
 	OSCommand     *OSCommand
 	Log           *logrus.Entry
 	Container     *Container
-	DockerCommand LimitedDockerCommand
+	PodmanCommand LimitedPodmanCommand
 }
 
 // Remove removes the service's containers
-func (s *Service) Remove(options container.RemoveOptions) error {
-	return s.Container.Remove(options)
+func (s *Service) Remove(force bool, removeVolumes bool) error {
+	return s.Container.Remove(force, removeVolumes)
 }
 
 // Stop stops the service's containers
@@ -47,7 +46,7 @@ func (s *Service) Start() error {
 func (s *Service) runCommand(templateCmdStr string) error {
 	command := utils.ApplyTemplate(
 		templateCmdStr,
-		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
+		s.PodmanCommand.NewCommandObject(CommandObject{Service: s}),
 	)
 	return s.OSCommand.RunCommand(command)
 }
@@ -62,7 +61,7 @@ func (s *Service) ViewLogs() (*exec.Cmd, error) {
 	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.ViewServiceLogs
 	command := utils.ApplyTemplate(
 		templateString,
-		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
+		s.PodmanCommand.NewCommandObject(CommandObject{Service: s}),
 	)
 
 	cmd := s.OSCommand.ExecutableFromString(command)
@@ -76,7 +75,7 @@ func (s *Service) RenderTop(ctx context.Context) (string, error) {
 	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.ServiceTop
 	command := utils.ApplyTemplate(
 		templateString,
-		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
+		s.PodmanCommand.NewCommandObject(CommandObject{Service: s}),
 	)
 
 	return s.OSCommand.RunCommandWithOutputContext(ctx, command)

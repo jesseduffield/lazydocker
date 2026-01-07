@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types/container"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
 	"github.com/christophe-duc/lazypodman/pkg/commands"
@@ -255,7 +254,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 	originalSelectedLineIdx := gui.Panels.Services.SelectedIdx
 	selectedService, isServiceSelected := gui.Panels.Services.List.TryGet(originalSelectedLineIdx)
 
-	containers, services, err := gui.DockerCommand.RefreshContainersAndServices(
+	containers, services, err := gui.PodmanCommand.RefreshContainersAndServices(
 		gui.Panels.Services.List.GetAllItems(),
 		gui.Panels.Containers.List.GetAllItems(),
 	)
@@ -283,7 +282,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 }
 
 func (gui *Gui) renderContainersAndServices() error {
-	if gui.DockerCommand.InDockerComposeProject {
+	if gui.PodmanCommand.InDockerComposeProject {
 		if err := gui.Panels.Services.RerenderList(); err != nil {
 			return err
 		}
@@ -308,14 +307,13 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	handleMenuPress := func(configOptions container.RemoveOptions) error {
+	handleMenuPress := func(force bool, removeVolumes bool) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
-			if err := ctr.Remove(configOptions); err != nil {
+			if err := ctr.Remove(force, removeVolumes); err != nil {
 				if commands.HasErrorCode(err, commands.MustStopContainer) {
 					return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.MustForceToRemoveContainer, func(g *gocui.Gui, v *gocui.View) error {
 						return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
-							configOptions.Force = true
-							return ctr.Remove(configOptions)
+							return ctr.Remove(true, removeVolumes)
 						})
 					}, nil)
 				}
@@ -327,12 +325,12 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 
 	menuItems := []*types.MenuItem{
 		{
-			LabelColumns: []string{gui.Tr.Remove, "docker rm " + ctr.ID[1:10]},
-			OnPress:      func() error { return handleMenuPress(container.RemoveOptions{}) },
+			LabelColumns: []string{gui.Tr.Remove, "podman rm " + ctr.ID[1:10]},
+			OnPress:      func() error { return handleMenuPress(false, false) },
 		},
 		{
-			LabelColumns: []string{gui.Tr.RemoveWithVolumes, "docker rm --volumes " + ctr.ID[1:10]},
-			OnPress:      func() error { return handleMenuPress(container.RemoveOptions{RemoveVolumes: true}) },
+			LabelColumns: []string{gui.Tr.RemoveWithVolumes, "podman rm --volumes " + ctr.ID[1:10]},
+			OnPress:      func() error { return handleMenuPress(false, true) },
 		},
 	}
 
@@ -416,7 +414,7 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) handlePruneContainers() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
-			err := gui.DockerCommand.PruneContainers()
+			err := gui.PodmanCommand.PruneContainers()
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -446,7 +444,7 @@ func (gui *Gui) handleContainersExecShell(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) containerExecShell(container *commands.Container) error {
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.PodmanCommand.NewCommandObject(commands.CommandObject{
 		Container: container,
 	})
 
@@ -463,7 +461,7 @@ func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.PodmanCommand.NewCommandObject(commands.CommandObject{
 		Container: ctr,
 	})
 
@@ -490,7 +488,7 @@ func (gui *Gui) handleRemoveContainers() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmRemoveContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 			for _, ctr := range gui.Panels.Containers.List.GetAllItems() {
-				if err := ctr.Remove(container.RemoveOptions{Force: true}); err != nil {
+				if err := ctr.Remove(true, false); err != nil {
 					gui.Log.Error(err)
 				}
 			}
@@ -517,7 +515,7 @@ func (gui *Gui) handleContainersBulkCommand(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	bulkCommands := append(baseBulkCommands, gui.Config.UserConfig.BulkCommands.Containers...)
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.PodmanCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }

@@ -20,7 +20,7 @@ type App struct {
 	Config        *config.AppConfig
 	Log           *logrus.Entry
 	OSCommand     *commands.OSCommand
-	DockerCommand *commands.DockerCommand
+	PodmanCommand *commands.PodmanCommand
 	Gui           *gui.Gui
 	Tr            *i18n.TranslationSet
 	ErrorChan     chan error
@@ -43,12 +43,12 @@ func NewApp(config *config.AppConfig) (*App, error) {
 
 	// here is the place to make use of the docker-compose.yml file in the current directory
 
-	app.DockerCommand, err = commands.NewDockerCommand(app.Log, app.OSCommand, app.Tr, app.Config, app.ErrorChan)
+	app.PodmanCommand, err = commands.NewPodmanCommand(app.Log, app.OSCommand, app.Tr, app.Config, app.ErrorChan)
 	if err != nil {
 		return app, err
 	}
-	app.closers = append(app.closers, app.DockerCommand)
-	app.Gui, err = gui.NewGui(app.Log, app.DockerCommand, app.OSCommand, app.Tr, config, app.ErrorChan)
+	app.closers = append(app.closers, app.PodmanCommand)
+	app.Gui, err = gui.NewGui(app.Log, app.PodmanCommand, app.OSCommand, app.Tr, config, app.ErrorChan)
 	if err != nil {
 		return app, err
 	}
@@ -75,6 +75,14 @@ func (app *App) KnownError(err error) (string, bool) {
 	mappings := []errorMapping{
 		{
 			originalError: "Got permission denied while trying to connect to the Docker daemon socket",
+			newError:      app.Tr.CannotAccessDockerSocketError,
+		},
+		{
+			originalError: "Got permission denied while trying to connect to the Podman",
+			newError:      app.Tr.CannotAccessDockerSocketError,
+		},
+		{
+			originalError: "permission denied while trying to connect",
 			newError:      app.Tr.CannotAccessDockerSocketError,
 		},
 	}

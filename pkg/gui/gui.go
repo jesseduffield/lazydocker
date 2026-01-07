@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types/events"
-
 	"github.com/go-errors/errors"
 
 	throttle "github.com/boz/go-throttle"
@@ -27,7 +25,7 @@ import (
 type Gui struct {
 	g             *gocui.Gui
 	Log           *logrus.Entry
-	DockerCommand *commands.DockerCommand
+	PodmanCommand *commands.PodmanCommand
 	OSCommand     *commands.OSCommand
 	State         guiState
 	Config        *config.AppConfig
@@ -125,7 +123,7 @@ func getScreenMode(config *config.AppConfig) WindowMaximisation {
 }
 
 // NewGui builds a new gui handler
-func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
+func NewGui(log *logrus.Entry, podmanCommand *commands.PodmanCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
 	initialState := guiState{
 		Platform: *oSCommand.Platform,
 		Panels: &panelStates{
@@ -141,7 +139,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 
 	gui := &Gui{
 		Log:           log,
-		DockerCommand: dockerCommand,
+		PodmanCommand: podmanCommand,
 		OSCommand:     oSCommand,
 		State:         initialState,
 		Config:        config,
@@ -292,7 +290,7 @@ func (gui *Gui) setPanels() {
 }
 
 func (gui *Gui) updateContainerDetails() error {
-	return gui.DockerCommand.RefreshContainerDetails(gui.Panels.Containers.List.GetAllItems())
+	return gui.PodmanCommand.RefreshContainerDetails(gui.Panels.Containers.List.GetAllItems())
 }
 
 func (gui *Gui) refresh() {
@@ -328,50 +326,38 @@ func (gui *Gui) listenForEvents(ctx context.Context, refresh func()) {
 
 	onError := func(err error) {
 		if err != nil {
-			gui.ErrorChan <- errors.Errorf("Docker event stream returned error: %s\nRetry count: %d", err.Error(), errorCount)
+			gui.ErrorChan <- errors.Errorf("Podman event stream returned error: %s\nRetry count: %d", err.Error(), errorCount)
 		}
 		errorCount++
 		time.Sleep(time.Second * 2)
 	}
 
-outer:
+	// Try to use the runtime's event stream if available
+	eventChan, errChan := gui.PodmanCommand.Runtime.Events(ctx)
+
 	for {
-		messageChan, errChan := gui.DockerCommand.Client.Events(context.Background(), events.ListOptions{})
-
-		if errorCount > 0 {
-			select {
-			case <-ctx.Done():
-				return
-			case err := <-errChan:
-				onError(err)
-				continue outer
-			default:
-				// If we're here then we lost connection to docker and we just got it back.
-				// The reason we do this refresh explicitly is because successfully
-				// reconnecting with docker does not mean it's going to send us a new
-				// event any time soon.
-
-				// Assuming the confirmation prompt currently holds the given error
-				_ = gui.closeConfirmationPrompt()
-				refresh()
-				errorCount = 0
-			}
-		}
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case message := <-messageChan:
+		select {
+		case <-ctx.Done():
+			return
+		case event := <-eventChan:
+			if event.Type != "" {
 				// We could be more granular about what events should trigger which refreshes.
 				// At the moment it's pretty efficient though, and it might not be worth
 				// the maintenance burden of mapping specific events to specific refreshes
 				refresh()
-
-				gui.Log.Infof("received event of type: %s", message.Type)
-			case err := <-errChan:
+				gui.Log.Infof("received event of type: %s", event.Type)
+			}
+		case err := <-errChan:
+			if err != nil {
 				onError(err)
-				continue outer
+				// Attempt to reconnect
+				if errorCount > 0 {
+					_ = gui.closeConfirmationPrompt()
+					refresh()
+					errorCount = 0
+				}
+				// Re-establish event stream
+				eventChan, errChan = gui.PodmanCommand.Runtime.Events(ctx)
 			}
 		}
 	}
@@ -459,7 +445,7 @@ func (gui *Gui) ShouldRefresh(key string) bool {
 }
 
 func (gui *Gui) initiallyFocusedViewName() string {
-	if gui.DockerCommand.InDockerComposeProject {
+	if gui.PodmanCommand.InDockerComposeProject {
 		return "services"
 	}
 	return "containers"
@@ -485,7 +471,7 @@ func (gui *Gui) monitorContainerStats(ctx context.Context) {
 		case <-ticker.C:
 			for _, container := range gui.Panels.Containers.List.GetAllItems() {
 				if !container.MonitoringStats {
-					go gui.DockerCommand.CreateClientStatMonitor(container)
+					go gui.PodmanCommand.CreateClientStatMonitor(container)
 				}
 			}
 		}

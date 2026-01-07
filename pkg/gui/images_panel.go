@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types/image"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
 	"github.com/christophe-duc/lazypodman/pkg/commands"
@@ -101,7 +100,7 @@ func (gui *Gui) reloadImages() error {
 }
 
 func (gui *Gui) refreshStateImages() error {
-	images, err := gui.DockerCommand.RefreshImages()
+	images, err := gui.PodmanCommand.RefreshImages()
 	if err != nil {
 		return err
 	}
@@ -121,9 +120,9 @@ func (gui *Gui) FilterString(view *gocui.View) string {
 
 func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	type removeImageOption struct {
-		description   string
-		command       string
-		configOptions image.RemoveOptions
+		description string
+		command     string
+		force       bool
 	}
 
 	img, err := gui.Panels.Images.GetSelectedItem()
@@ -133,27 +132,17 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 
 	shortSha := img.ID[7:17]
 
-	// TODO: have a way of toggling in a menu instead of showing each permutation as a separate menu item
+	// Simplified menu - Podman's rmi handles pruning automatically
 	options := []*removeImageOption{
 		{
-			description:   gui.Tr.Remove,
-			command:       "docker image rm " + shortSha,
-			configOptions: image.RemoveOptions{PruneChildren: true, Force: false},
+			description: gui.Tr.Remove,
+			command:     "podman image rm " + shortSha,
+			force:       false,
 		},
 		{
-			description:   gui.Tr.RemoveWithoutPrune,
-			command:       "docker image rm --no-prune " + shortSha,
-			configOptions: image.RemoveOptions{PruneChildren: false, Force: false},
-		},
-		{
-			description:   gui.Tr.RemoveWithForce,
-			command:       "docker image rm --force " + shortSha,
-			configOptions: image.RemoveOptions{PruneChildren: true, Force: true},
-		},
-		{
-			description:   gui.Tr.RemoveWithoutPruneWithForce,
-			command:       "docker image rm --no-prune --force " + shortSha,
-			configOptions: image.RemoveOptions{PruneChildren: false, Force: true},
+			description: gui.Tr.RemoveWithForce,
+			command:     "podman image rm --force " + shortSha,
+			force:       true,
 		},
 	}
 
@@ -164,7 +153,7 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 				color.New(color.FgRed).Sprint(option.command),
 			},
 			OnPress: func() error {
-				if err := img.Remove(option.configOptions); err != nil {
+				if err := img.Remove(option.force); err != nil {
 					return gui.createErrorPanel(err.Error())
 				}
 
@@ -182,7 +171,7 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) handlePruneImages() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneImages, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
-			err := gui.DockerCommand.PruneImages()
+			err := gui.PodmanCommand.PruneImages()
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -197,7 +186,7 @@ func (gui *Gui) handleImagesCustomCommand(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.PodmanCommand.NewCommandObject(commands.CommandObject{
 		Image: img,
 	})
 
@@ -215,7 +204,7 @@ func (gui *Gui) handleImagesBulkCommand(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	bulkCommands := append(baseBulkCommands, gui.Config.UserConfig.BulkCommands.Images...)
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.PodmanCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }
