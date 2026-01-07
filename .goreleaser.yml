@@ -9,6 +9,7 @@ builds:
   - id: binary
     tags:
       - containers_image_openpgp
+      - exclude_graphdriver_btrfs
     goos:
       - darwin
       - linux
@@ -20,6 +21,7 @@ builds:
   - id: snap
     tags:
       - containers_image_openpgp
+      - exclude_graphdriver_btrfs
     goos:
       - linux
     goarch:

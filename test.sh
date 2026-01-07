@@ -6,7 +6,8 @@ echo "" > coverage.txt
 export GOFLAGS=-mod=vendor
 
 # Use pure Go PGP implementation to avoid CGO dependency on gpgme
-BUILD_TAGS="-tags=containers_image_openpgp"
+# Exclude btrfs driver to avoid CGO dependency on libbtrfs
+BUILD_TAGS="-tags=containers_image_openpgp,exclude_graphdriver_btrfs"
 
 use_go_test=false
 if command -v gotest; then

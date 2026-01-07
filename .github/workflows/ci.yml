@@ -63,7 +63,7 @@ jobs:
           podman info
       - name: Run integration tests
         run: |
-          go test -tags=integration,containers_image_openpgp -v ./pkg/commands/...
+          go test -tags=integration,containers_image_openpgp,exclude_graphdriver_btrfs -v ./pkg/commands/...
   build:
     runs-on: ubuntu-latest
     env:
@@ -85,10 +85,10 @@ jobs:
             ${{runner.os}}-go-
       - name: Build linux binary
         run: |
-          GOOS=linux go build -tags=containers_image_openpgp
+          GOOS=linux go build -tags=containers_image_openpgp,exclude_graphdriver_btrfs
       - name: Build darwin binary
         run: |
-          GOOS=darwin go build -tags=containers_image_openpgp
+          GOOS=darwin go build -tags=containers_image_openpgp,exclude_graphdriver_btrfs
   check-codebase:
     runs-on: ubuntu-latest
     env:
