@@ -50,9 +50,9 @@ func polishSet() TranslationSet {
 		PruneVolumes:       "wyczyść nieużywane wolumeny",
 		PruneNetworks:      "wyczyść nieużywane sieci",
 		PruneImages:        "wyczyść nieużywane obrazy",
-		ViewRestartOptions:    "pokaż opcje restartu",
-		RunCustomCommand:      "wykonaj predefiniowaną własną komende",
-		TogglePodExpansion:    "rozwiń/zwiń pod",
+		ViewRestartOptions: "pokaż opcje restartu",
+		RunCustomCommand:   "wykonaj predefiniowaną własną komende",
+		TogglePodExpansion: "rozwiń/zwiń pod",
 
 		GlobalTitle:               "Globalne",
 		MainTitle:                 "Główne",

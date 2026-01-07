@@ -50,9 +50,9 @@ func turkishSet() TranslationSet {
 		PruneVolumes:       "kullanılmayan alanları temizle",
 		PruneNetworks:      "kullanılmayan ağları temizle",
 		PruneImages:        "kullanılmayan imajları temizle",
-		ViewRestartOptions:    "yeniden başlatma seçeneklerini görüntüle",
-		RunCustomCommand:      "önceden tanımlanmış özel komutu çalıştır",
-		TogglePodExpansion:    "pod'u genişlet/daralt",
+		ViewRestartOptions: "yeniden başlatma seçeneklerini görüntüle",
+		RunCustomCommand:   "önceden tanımlanmış özel komutu çalıştır",
+		TogglePodExpansion: "pod'u genişlet/daralt",
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Ana",
