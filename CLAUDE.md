@@ -149,15 +149,22 @@ GetEvents() - Streaming (socket) or polling (libpod)
 - Custom commands configurable via YAML
 - Command templates use Go template syntax
 
+### GUI Features
+- **Pod expand/collapse**: Pods can be expanded/collapsed in the containers panel. State tracked in `gui.State.ExpandedPods` map
+- **Container sorting**: Controlled by `LegacySortContainers` config option:
+  - `false` (default): Sort by state (running → exited → created), then alphabetically
+  - `true`: Sort alphabetically by name only
+- **Container list items**: `ContainerListItem` wraps both pods and containers for unified list display
+
 ## Testing
 
 ```bash
 # Run all tests with coverage
 ./test.sh
 
-# Run specific package tests
-go test -mod=vendor ./pkg/commands/...
-go test -mod=vendor ./pkg/gui/...
+# Run specific package tests (requires build tags to avoid CGO dependencies)
+go test -tags=containers_image_openpgp,exclude_graphdriver_btrfs -mod=vendor ./pkg/gui/...
+go test -tags=containers_image_openpgp,exclude_graphdriver_btrfs -mod=vendor ./pkg/commands/...
 ```
 
 ## Module Info

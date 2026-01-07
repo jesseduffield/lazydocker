@@ -138,7 +138,7 @@ func sortContainers(a *commands.Container, b *commands.Container, legacySort boo
 // sortContainerListItems sorts items to group pods with their containers.
 // Order: pods first (sorted alphabetically), then their containers indented (sorted alphabetically),
 // then standalone containers (sorted alphabetically).
-func sortContainerListItems(a *commands.ContainerListItem, b *commands.ContainerListItem, _ bool) bool {
+func sortContainerListItems(a *commands.ContainerListItem, b *commands.ContainerListItem, legacySort bool) bool {
 	// Pods and their containers sort before standalone containers
 	aInPod := a.IsPod || a.PodID() != ""
 	bInPod := b.IsPod || b.PodID() != ""
@@ -181,8 +181,17 @@ func sortContainerListItems(a *commands.ContainerListItem, b *commands.Container
 		return a.Name() < b.Name()
 	}
 
-	// Both are standalone containers: sort alphabetically
-	return a.Name() < b.Name()
+	// Both are standalone containers
+	if legacySort {
+		return a.Name() < b.Name()
+	}
+	// Sort by state, then by name
+	stateA := containerStates[a.State()]
+	stateB := containerStates[b.State()]
+	if stateA == stateB {
+		return a.Name() < b.Name()
+	}
+	return stateA < stateB
 }
 
 // Wrapper functions that delegate to container or pod rendering

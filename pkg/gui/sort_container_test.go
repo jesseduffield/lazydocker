@@ -250,17 +250,17 @@ func TestSortContainerListItems(t *testing.T) {
 		return sortContainerListItems(items[i], items[j], false)
 	})
 
-	// Expected order:
+	// Expected order (with legacySort=false, sorts by state then name):
 	// 1. pod alpha (alphabetically first pod)
 	// 2.   ant (container in alpha, alphabetically first)
 	// 3.   bear (container in alpha)
 	// 4. pod beta (alphabetically second pod)
 	// 5.   xray (container in beta, alphabetically first)
 	// 6.   yak (container in beta)
-	// 7. apple (standalone, alphabetically first)
-	// 8. zebra (standalone)
+	// 7. zebra (standalone, running - state 1)
+	// 8. apple (standalone, exited - state 2)
 
-	expectedOrder := []string{"alpha", "ant", "bear", "beta", "xray", "yak", "apple", "zebra"}
+	expectedOrder := []string{"alpha", "ant", "bear", "beta", "xray", "yak", "zebra", "apple"}
 
 	assert.Equal(t, len(expectedOrder), len(items))
 	for i, item := range items {
