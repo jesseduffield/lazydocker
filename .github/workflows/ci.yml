@@ -1,7 +1,7 @@
 name: Continuous Integration
 
 env:
-  GO_VERSION: 1.24
+  GO_VERSION: '1.23'
 
 on:
   push:
@@ -11,23 +11,17 @@ on:
 
 jobs:
   ci:
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-    name: ci - ${{matrix.os}}
-    runs-on: ${{matrix.os}}
+    name: ci - ubuntu
+    runs-on: ubuntu-latest
     env:
       GOFLAGS: -mod=vendor
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.24.x
+          go-version: '1.23'
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -46,11 +40,11 @@ jobs:
       GOFLAGS: -mod=vendor
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.24.x
+          go-version: '1.23'
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -69,7 +63,7 @@ jobs:
           podman info
       - name: Run integration tests
         run: |
-          go test -tags=integration -v ./pkg/commands/...
+          go test -tags=integration,containers_image_openpgp -v ./pkg/commands/...
   build:
     runs-on: ubuntu-latest
     env:
@@ -77,11 +71,11 @@ jobs:
       GOARCH: amd64
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.24.x
+          go-version: '1.23'
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -91,13 +85,10 @@ jobs:
             ${{runner.os}}-go-
       - name: Build linux binary
         run: |
-          GOOS=linux go build
-      - name: Build windows binary
-        run: |
-          GOOS=windows go build
+          GOOS=linux go build -tags=containers_image_openpgp
       - name: Build darwin binary
         run: |
-          GOOS=darwin go build
+          GOOS=darwin go build -tags=containers_image_openpgp
   check-codebase:
     runs-on: ubuntu-latest
     env:
@@ -105,11 +96,11 @@ jobs:
       GOARCH: amd64
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.24.x
+          go-version: '1.23'
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -132,11 +123,11 @@ jobs:
       GOFLAGS: -mod=vendor
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.24.x
+          go-version: '1.23'
       - name: Cache build
         uses: actions/cache@v4
         with:

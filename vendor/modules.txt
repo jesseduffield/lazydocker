@@ -706,6 +706,7 @@ github.com/stefanberger/go-pkcs11uri
 ## explicit; go 1.17
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/assert/yaml
+github.com/stretchr/testify/require
 # github.com/sylabs/sif/v2 v2.22.0
 ## explicit; go 1.24.0
 github.com/sylabs/sif/v2/pkg/sif

@@ -24,6 +24,10 @@ func NewDummyAppConfig() *config.AppConfig {
 		BuildDate:   "",
 		Debug:       false,
 		BuildSource: "",
+		UserConfig: &config.UserConfig{
+			Gui:              config.GuiConfig{Language: "en"},
+			CommandTemplates: config.CommandTemplatesConfig{PodmanCompose: "podman-compose"},
+		},
 	}
 	return appConfig
 }

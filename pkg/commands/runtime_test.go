@@ -105,9 +105,9 @@ func TestMockRuntimeContainerLifecycle(t *testing.T) {
 
 	t.Run("StopContainer", func(t *testing.T) {
 		timeout := 10
-		mock.StopContainerFunc = func(ctx context.Context, id string, t *int) error {
+		mock.StopContainerFunc = func(ctx context.Context, id string, timeoutPtr *int) error {
 			assert.Equal(t, "container1", id)
-			assert.Equal(t, 10, *t)
+			assert.Equal(t, 10, *timeoutPtr)
 			return nil
 		}
 

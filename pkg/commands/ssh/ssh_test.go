@@ -42,11 +42,15 @@ func TestSSHHandlerHandleSSHDockerHost(t *testing.T) {
 		s := s
 		t.Run(s.testName, func(t *testing.T) {
 			getenv := func(key string) string {
-				if key != "DOCKER_HOST" {
-					t.Errorf("Expected key to be DOCKER_HOST, got %s", key)
+				// Code checks CONTAINER_HOST first, then DOCKER_HOST as fallback
+				if key == "CONTAINER_HOST" {
+					return s.envVarValue
 				}
-
-				return s.envVarValue
+				if key == "DOCKER_HOST" {
+					return "" // Fallback not used when CONTAINER_HOST is set
+				}
+				t.Errorf("Unexpected key: %s", key)
+				return ""
 			}
 
 			tempDir := func(dir string, pattern string) (string, error) {
@@ -57,14 +61,14 @@ func TestSSHHandlerHandleSSHDockerHost(t *testing.T) {
 			}
 
 			setenv := func(key, value string) error {
-				assert.Equal(t, "DOCKER_HOST", key)
-				assert.Equal(t, "unix:///tmp/lazypodman-ssh-tunnel-12345/dockerhost.sock", value)
+				assert.Equal(t, "CONTAINER_HOST", key)
+				assert.Equal(t, "unix:///tmp/lazypodman-ssh-tunnel-12345/podman.sock", value)
 				return nil
 			}
 
 			startCmdCount := 0
 			startCmd := func(cmd *exec.Cmd) error {
-				assert.EqualValues(t, []string{"ssh", "-L", "/tmp/lazypodman-ssh-tunnel-12345/dockerhost.sock:/var/run/docker.sock", "192.168.5.178", "-N"}, cmd.Args)
+				assert.EqualValues(t, []string{"ssh", "-L", "/tmp/lazypodman-ssh-tunnel-12345/podman.sock:/run/podman/podman.sock", "192.168.5.178", "-N"}, cmd.Args)
 
 				startCmdCount++
 
@@ -74,7 +78,7 @@ func TestSSHHandlerHandleSSHDockerHost(t *testing.T) {
 			dialContextCount := 0
 			dialContext := func(ctx context.Context, network string, address string) (io.Closer, error) {
 				assert.Equal(t, "unix", network)
-				assert.Equal(t, "/tmp/lazypodman-ssh-tunnel-12345/dockerhost.sock", address)
+				assert.Equal(t, "/tmp/lazypodman-ssh-tunnel-12345/podman.sock", address)
 
 				dialContextCount++
 
