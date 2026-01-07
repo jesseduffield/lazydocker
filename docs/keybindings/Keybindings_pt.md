@@ -27,6 +27,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>c</kbd>: executar comando personalizado predefinido
   <kbd>b</kbd>: ver comandos em massa
   <kbd>w</kbd>: abrir no navegador (primeira porta é http)
+  <kbd>space</kbd>: expandir/recolher pod
   <kbd>enter</kbd>: focar no painel principal
   <kbd>[</kbd>: aba anterior
   <kbd>]</kbd>: próxima aba

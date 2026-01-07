@@ -25,9 +25,9 @@ func GetContainerDisplayStrings(guiConfig *config.GuiConfig, container *commands
 }
 
 // GetContainerListItemDisplayStrings returns display strings for a ContainerListItem (pod or container)
-func GetContainerListItemDisplayStrings(guiConfig *config.GuiConfig, item *commands.ContainerListItem) []string {
+func GetContainerListItemDisplayStrings(guiConfig *config.GuiConfig, item *commands.ContainerListItem, expanded bool) []string {
 	if item.IsPod && item.Pod != nil {
-		return GetPodDisplayStrings(guiConfig, item.Pod)
+		return GetPodDisplayStrings(guiConfig, item.Pod, expanded)
 	}
 
 	if item.Container == nil {
@@ -44,11 +44,21 @@ func GetContainerListItemDisplayStrings(guiConfig *config.GuiConfig, item *comma
 }
 
 // GetPodDisplayStrings returns display strings for a pod
-func GetPodDisplayStrings(guiConfig *config.GuiConfig, pod *commands.Pod) []string {
+func GetPodDisplayStrings(guiConfig *config.GuiConfig, pod *commands.Pod, expanded bool) []string {
+	// Add expand/collapse indicator to pod name
+	var indicator string
+	if len(pod.Containers) > 0 {
+		if expanded {
+			indicator = "- "
+		} else {
+			indicator = "+ "
+		}
+	}
+
 	return []string{
 		getPodDisplayStatus(guiConfig, pod),
 		"", // No substatus for pods
-		utils.ColoredString(pod.Name, color.FgCyan),
+		utils.ColoredString(indicator+pod.Name, color.FgCyan),
 		"", // No CPU% for pods
 		"", // No ports for pods
 		utils.ColoredString(fmt.Sprintf("(%d containers)", len(pod.Containers)), color.FgMagenta),

@@ -27,6 +27,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>b</kbd>: view bulk commands
   <kbd>w</kbd>: open in browser (first port is http)
+  <kbd>space</kbd>: pod uitvouwen/invouwen
   <kbd>enter</kbd>: focus hoofdpaneel
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab

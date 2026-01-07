@@ -52,6 +52,7 @@ func germanSet() TranslationSet {
 		PruneImages:        "entferne unbenutzte Images",
 		ViewRestartOptions: "zeige Neustartoptionen",
 		RunCustomCommand:   "führe vordefinierten benutzerdefinierten Befehl aus",
+		TogglePodExpansion: "Pod erweitern/reduzieren",
 
 		GlobalTitle:               "Global",
 		MainTitle:                 "Haupt",

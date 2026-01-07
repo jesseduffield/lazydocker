@@ -73,6 +73,7 @@ func spanishSet() TranslationSet {
 		ViewBulkCommands:            "ver comandos masivos",
 		FilterList:                  "filtar list",
 		OpenInBrowser:               "abrir en navegador (first port is http)",
+		TogglePodExpansion:          "expandir/colapsar pod",
 		SortContainersByState:       "ordenar contenedores por estado",
 
 		GlobalTitle:               "Global",

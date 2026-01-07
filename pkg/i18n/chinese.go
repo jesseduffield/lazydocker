@@ -78,6 +78,7 @@ func chineseSet() TranslationSet {
 		ViewBulkCommands:            "查看批量命令",
 		FilterList:                  "过滤列表",
 		OpenInBrowser:               "在浏览器中打开(第一个端口为http)",
+		TogglePodExpansion:          "展开/折叠 pod",
 		SortContainersByState:       "按状态排序容器",
 
 		GlobalTitle:               "全局",

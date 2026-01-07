@@ -19,6 +19,8 @@ A simple terminal UI for Podman and podman-compose, written in Go with the [gocu
 
 Again, this is a fork! and probably with reduced functionality as the original from Jesse Duffield. It was created to resolve a simple problem, work fully with podman and don't depend on how docker works and the socket.
 
+Lazypodman DOES support pods
+
 This is published as is. Compilation works and lazypodman runs on Linux without needing a socket present to monitor your containers.
 
 Original elevator pitch below:

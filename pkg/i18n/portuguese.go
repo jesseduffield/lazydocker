@@ -78,6 +78,7 @@ func portugueseSet() TranslationSet {
 		ViewBulkCommands:            "ver comandos em massa",
 		FilterList:                  "filtrar lista",
 		OpenInBrowser:               "abrir no navegador (primeira porta é http)",
+		TogglePodExpansion:          "expandir/recolher pod",
 		SortContainersByState:       "ordenar contêineres por estado",
 
 		GlobalTitle:               "Global",
