@@ -3,8 +3,6 @@
 set -e
 echo "" > coverage.txt
 
-export GOFLAGS=-mod=vendor
-
 # Use pure Go PGP implementation to avoid CGO dependency on gpgme
 # Exclude btrfs driver to avoid CGO dependency on libbtrfs
 BUILD_TAGS="-tags=containers_image_openpgp,exclude_graphdriver_btrfs"
@@ -14,7 +12,7 @@ if command -v gotest; then
     use_go_test=true
 fi
 
-for d in $( find ./* -maxdepth 10 ! -path "./vendor*" ! -path "./.git*" ! -path "./scripts*" -type d); do
+for d in $( find ./* -maxdepth 10 ! -path "./.git*" ! -path "./scripts*" -type d); do
     if ls $d/*.go &> /dev/null; then
         args="$BUILD_TAGS -coverprofile=profile.out -covermode=atomic $d"
         if [ "$use_go_test" == true ]; then
