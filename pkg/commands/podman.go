@@ -348,6 +348,35 @@ func calculateMemoryPercentageFromEntry(stats ContainerStatsEntry) float64 {
 	return 0.0
 }
 
+// CreatePodStatMonitor starts monitoring stats for a pod
+func (c *PodmanCommand) CreatePodStatMonitor(pod *Pod) {
+	pod.MonitoringStats = true
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	statsChan, errChan := c.Runtime.PodStats(ctx, pod.ID, true)
+
+	go func() {
+		for err := range errChan {
+			if err != nil {
+				c.Log.Error(err)
+			}
+		}
+	}()
+
+	for stats := range statsChan {
+		recordedStats := &RecordedPodStats{
+			Stats:      stats,
+			RecordedAt: time.Now(),
+		}
+
+		pod.appendStats(recordedStats, c.Config.UserConfig.Stats.MaxDuration)
+	}
+
+	pod.MonitoringStats = false
+}
+
 func (c *PodmanCommand) RefreshContainersAndServices(currentServices []*Service, currentItems []*ContainerListItem) ([]*ContainerListItem, []*Service, error) {
 	c.ServiceMutex.Lock()
 	defer c.ServiceMutex.Unlock()
@@ -455,6 +484,7 @@ func (c *PodmanCommand) buildContainerListItems(containers []*Container, podSumm
 			Containers: podCtrs,
 			OSCommand:  c.OSCommand,
 			Log:        c.Log,
+			Runtime:    c.Runtime,
 		}
 
 		// Add pod item

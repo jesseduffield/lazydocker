@@ -205,10 +205,7 @@ func (gui *Gui) renderContainerListItemLogs(item *commands.ContainerListItem) ta
 
 func (gui *Gui) renderContainerListItemStats(item *commands.ContainerListItem) tasks.TaskFunc {
 	if item.IsPod {
-		return gui.NewSimpleRenderStringTask(func() string {
-			return fmt.Sprintf("Pod: %s\nStatus: %s\nContainers: %d\n\nStats not available for pods. Select a container to view stats.",
-				item.Pod.Name, item.Pod.State(), len(item.Pod.Containers))
-		})
+		return gui.renderPodStats(item.Pod)
 	}
 	return gui.renderContainerStats(item.Container)
 }
@@ -369,6 +366,28 @@ func (gui *Gui) renderContainerStats(container *commands.Container) tasks.TaskFu
 		Duration:   time.Second,
 		Before:     func(ctx context.Context) { gui.clearMainView() },
 		Wrap:       false, // wrapping looks bad here so we're overriding the config value
+		Autoscroll: false,
+	})
+}
+
+func (gui *Gui) renderPodStats(pod *commands.Pod) tasks.TaskFunc {
+	return gui.NewTickerTask(TickerTaskOpts{
+		Func: func(ctx context.Context, notifyStopped chan struct{}) {
+			// Start monitoring if not already
+			if !pod.MonitoringStats {
+				go gui.PodmanCommand.CreatePodStatMonitor(pod)
+			}
+
+			contents, err := presentation.RenderPodStats(pod, gui.Views.Main.Width())
+			if err != nil {
+				_ = gui.createErrorPanel(err.Error())
+			}
+
+			gui.reRenderStringMain(contents)
+		},
+		Duration:   time.Second,
+		Before:     func(ctx context.Context) { gui.clearMainView() },
+		Wrap:       false,
 		Autoscroll: false,
 	})
 }

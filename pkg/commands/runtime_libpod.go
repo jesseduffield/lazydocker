@@ -336,6 +336,106 @@ func (r *LibpodRuntime) ListPods(ctx context.Context) ([]PodSummary, error) {
 	return result, nil
 }
 
+// PodStats streams pod statistics by aggregating stats from all containers in the pod.
+func (r *LibpodRuntime) PodStats(ctx context.Context, id string, stream bool) (<-chan PodStatsEntry, <-chan error) {
+	statsChan := make(chan PodStatsEntry)
+	errChan := make(chan error, 1)
+
+	go func() {
+		defer close(statsChan)
+		defer close(errChan)
+
+		pod, err := r.runtime.LookupPod(id)
+		if err != nil {
+			errChan <- err
+			return
+		}
+
+		for {
+			entry, err := r.aggregatePodContainerStats(ctx, pod)
+			if err != nil {
+				errChan <- err
+				return
+			}
+
+			select {
+			case statsChan <- entry:
+			case <-ctx.Done():
+				return
+			}
+
+			if !stream {
+				return
+			}
+			time.Sleep(time.Second)
+		}
+	}()
+
+	return statsChan, errChan
+}
+
+// aggregatePodContainerStats collects and aggregates stats from all containers in a pod.
+func (r *LibpodRuntime) aggregatePodContainerStats(ctx context.Context, pod *libpod.Pod) (PodStatsEntry, error) {
+	ctrs, err := pod.AllContainers()
+	if err != nil {
+		return PodStatsEntry{}, err
+	}
+
+	var entry PodStatsEntry
+	entry.PodID = pod.ID()
+	entry.PodName = pod.Name()
+
+	var totalMemUsage, totalMemLimit uint64
+	var totalNetIn, totalNetOut uint64
+	var totalBlockIn, totalBlockOut uint64
+	var totalPIDs uint64
+	var totalCPU float64
+
+	for _, ctr := range ctrs {
+		// Skip infra containers
+		if ctr.IsInfra() {
+			continue
+		}
+
+		state, err := ctr.State()
+		if err != nil || state != define.ContainerStateRunning {
+			continue
+		}
+
+		stats, err := ctr.GetContainerStats(nil)
+		if err != nil {
+			continue // Skip containers that fail to get stats
+		}
+
+		totalCPU += stats.CPU
+		totalMemUsage += stats.MemUsage
+		totalMemLimit += stats.MemLimit
+		totalPIDs += stats.PIDs
+
+		// Aggregate network stats
+		totalNetIn += stats.NetInput
+		totalNetOut += stats.NetOutput
+
+		// Aggregate block I/O stats
+		totalBlockIn += stats.BlockInput
+		totalBlockOut += stats.BlockOutput
+	}
+
+	entry.CPU = totalCPU
+	entry.MemUsage = totalMemUsage
+	entry.MemLimit = totalMemLimit
+	if totalMemLimit > 0 {
+		entry.Memory = float64(totalMemUsage) / float64(totalMemLimit) * 100
+	}
+	entry.NetInput = totalNetIn
+	entry.NetOutput = totalNetOut
+	entry.BlockInput = totalBlockIn
+	entry.BlockOutput = totalBlockOut
+	entry.PIDs = totalPIDs
+
+	return entry, nil
+}
+
 // Events streams container runtime events.
 // For libpod, we use a polling approach since direct event streaming requires more setup.
 func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {

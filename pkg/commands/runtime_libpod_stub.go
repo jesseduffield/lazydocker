@@ -134,6 +134,13 @@ func (r *LibpodRuntime) ListPods(ctx context.Context) ([]PodSummary, error) {
 	return nil, ErrLibpodNotAvailable
 }
 
+func (r *LibpodRuntime) PodStats(ctx context.Context, id string, stream bool) (<-chan PodStatsEntry, <-chan error) {
+	errChan := make(chan error, 1)
+	errChan <- ErrLibpodNotAvailable
+	close(errChan)
+	return nil, errChan
+}
+
 // Events returns an error channel on non-Linux platforms.
 func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
 	errChan := make(chan error, 1)
