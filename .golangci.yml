@@ -23,5 +23,5 @@ linters-settings:
     max-func-lines: 0
 
 run:
-  go: '1.25'
+  go: '1.24'
   timeout: 10m
