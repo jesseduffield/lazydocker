@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"context"
+	"fmt"
 	"time"
 
 	"github.com/sasha-s/go-deadlock"
@@ -30,6 +32,13 @@ type RecordedPodStats struct {
 // State returns the pod state.
 func (p *Pod) State() string {
 	return p.Summary.Status
+}
+
+// Restart restarts the pod
+func (p *Pod) Restart() error {
+	p.Log.Warn(fmt.Sprintf("restarting pod %s", p.Name))
+	ctx := context.Background()
+	return p.Runtime.RestartPod(ctx, p.ID, nil)
 }
 
 // HasContainers returns true if the pod has non-infra containers.

@@ -40,8 +40,9 @@ type MockRuntime struct {
 	PruneNetworksFunc func(ctx context.Context) error
 
 	// Pod operation mocks
-	ListPodsFunc func(ctx context.Context) ([]PodSummary, error)
-	PodStatsFunc func(ctx context.Context, id string, stream bool) (<-chan PodStatsEntry, <-chan error)
+	ListPodsFunc   func(ctx context.Context) ([]PodSummary, error)
+	PodStatsFunc   func(ctx context.Context, id string, stream bool) (<-chan PodStatsEntry, <-chan error)
+	RestartPodFunc func(ctx context.Context, id string, timeout *int) error
 
 	// Event mock
 	EventsFunc func(ctx context.Context) (<-chan Event, <-chan error)
@@ -278,6 +279,14 @@ func (m *MockRuntime) PodStats(ctx context.Context, id string, stream bool) (<-c
 	errCh <- ErrMockNotImplemented
 	close(errCh)
 	return statsCh, errCh
+}
+
+func (m *MockRuntime) RestartPod(ctx context.Context, id string, timeout *int) error {
+	m.recordCall("RestartPod", id, timeout)
+	if m.RestartPodFunc != nil {
+		return m.RestartPodFunc(ctx, id, timeout)
+	}
+	return ErrMockNotImplemented
 }
 
 // Events

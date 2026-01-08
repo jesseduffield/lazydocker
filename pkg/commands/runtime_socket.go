@@ -340,6 +340,12 @@ func (r *SocketRuntime) PodStats(ctx context.Context, id string, stream bool) (<
 	return statsChan, errChan
 }
 
+// RestartPod restarts a pod.
+func (r *SocketRuntime) RestartPod(ctx context.Context, id string, timeout *int) error {
+	_, err := pods.Restart(r.conn, id, nil)
+	return err
+}
+
 // aggregatePodStats combines stats from all containers in a pod into a single entry.
 func aggregatePodStats(reports []*types.PodStatsReport) PodStatsEntry {
 	if len(reports) == 0 {

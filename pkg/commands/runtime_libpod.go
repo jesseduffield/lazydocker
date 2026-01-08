@@ -438,6 +438,16 @@ func (r *LibpodRuntime) aggregatePodContainerStats(ctx context.Context, pod *lib
 	return entry, nil
 }
 
+// RestartPod restarts a pod.
+func (r *LibpodRuntime) RestartPod(ctx context.Context, id string, timeout *int) error {
+	pod, err := r.runtime.LookupPod(id)
+	if err != nil {
+		return err
+	}
+	_, err = pod.Restart(ctx)
+	return err
+}
+
 // Events streams container runtime events.
 // For libpod, we use a polling approach since direct event streaming requires more setup.
 func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
