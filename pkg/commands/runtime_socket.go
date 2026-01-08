@@ -346,6 +346,34 @@ func (r *SocketRuntime) RestartPod(ctx context.Context, id string, timeout *int)
 	return err
 }
 
+// StartPod starts a stopped pod.
+func (r *SocketRuntime) StartPod(ctx context.Context, id string) error {
+	_, err := pods.Start(r.conn, id, nil)
+	return err
+}
+
+// StopPod stops a running pod.
+func (r *SocketRuntime) StopPod(ctx context.Context, id string, timeout *int) error {
+	opts := &pods.StopOptions{}
+	if timeout != nil {
+		opts.Timeout = timeout
+	}
+	_, err := pods.Stop(r.conn, id, opts)
+	return err
+}
+
+// PausePod pauses all running containers in a pod.
+func (r *SocketRuntime) PausePod(ctx context.Context, id string) error {
+	_, err := pods.Pause(r.conn, id, nil)
+	return err
+}
+
+// UnpausePod unpauses all paused containers in a pod.
+func (r *SocketRuntime) UnpausePod(ctx context.Context, id string) error {
+	_, err := pods.Unpause(r.conn, id, nil)
+	return err
+}
+
 // aggregatePodStats combines stats from all containers in a pod into a single entry.
 func aggregatePodStats(reports []*types.PodStatsReport) PodStatsEntry {
 	if len(reports) == 0 {

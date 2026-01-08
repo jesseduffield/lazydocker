@@ -149,6 +149,22 @@ func (r *LibpodRuntime) RestartPod(ctx context.Context, id string, timeout *int)
 	return ErrLibpodNotAvailable
 }
 
+func (r *LibpodRuntime) StartPod(ctx context.Context, id string) error {
+	return ErrLibpodNotAvailable
+}
+
+func (r *LibpodRuntime) StopPod(ctx context.Context, id string, timeout *int) error {
+	return ErrLibpodNotAvailable
+}
+
+func (r *LibpodRuntime) PausePod(ctx context.Context, id string) error {
+	return ErrLibpodNotAvailable
+}
+
+func (r *LibpodRuntime) UnpausePod(ctx context.Context, id string) error {
+	return ErrLibpodNotAvailable
+}
+
 // Events returns an error channel on non-Linux platforms.
 func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
 	eventsChan := make(chan Event)

@@ -289,6 +289,26 @@ func (m *MockRuntime) RestartPod(ctx context.Context, id string, timeout *int) e
 	return ErrMockNotImplemented
 }
 
+func (m *MockRuntime) StartPod(ctx context.Context, id string) error {
+	m.recordCall("StartPod", id)
+	return ErrMockNotImplemented
+}
+
+func (m *MockRuntime) StopPod(ctx context.Context, id string, timeout *int) error {
+	m.recordCall("StopPod", id, timeout)
+	return ErrMockNotImplemented
+}
+
+func (m *MockRuntime) PausePod(ctx context.Context, id string) error {
+	m.recordCall("PausePod", id)
+	return ErrMockNotImplemented
+}
+
+func (m *MockRuntime) UnpausePod(ctx context.Context, id string) error {
+	m.recordCall("UnpausePod", id)
+	return ErrMockNotImplemented
+}
+
 // Events
 
 func (m *MockRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
