@@ -3,10 +3,12 @@ package commands
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 )
 
 // Pod represents a Podman pod with its containers.
@@ -67,6 +69,24 @@ func (p *Pod) Unpause() error {
 	p.Log.Warn(fmt.Sprintf("unpausing pod %s", p.Name))
 	ctx := context.Background()
 	return p.Runtime.UnpausePod(ctx, p.ID)
+}
+
+// Remove removes the pod
+func (p *Pod) Remove(force bool) error {
+	p.Log.Warn(fmt.Sprintf("removing pod %s", p.Name))
+	ctx := context.Background()
+	if err := p.Runtime.RemovePod(ctx, p.ID, force); err != nil {
+		if strings.Contains(err.Error(), "pod is running") ||
+			strings.Contains(err.Error(), "stop the pod before attempting removal") {
+			return ComplexError{
+				Code:    MustStopContainer,
+				Message: err.Error(),
+				frame:   xerrors.Caller(1),
+			}
+		}
+		return err
+	}
+	return nil
 }
 
 // HasContainers returns true if the pod has non-infra containers.

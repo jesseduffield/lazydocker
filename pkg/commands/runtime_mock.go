@@ -309,6 +309,11 @@ func (m *MockRuntime) UnpausePod(ctx context.Context, id string) error {
 	return ErrMockNotImplemented
 }
 
+func (m *MockRuntime) RemovePod(ctx context.Context, id string, force bool) error {
+	m.recordCall("RemovePod", id, force)
+	return ErrMockNotImplemented
+}
+
 // Events
 
 func (m *MockRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {

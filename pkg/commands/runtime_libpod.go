@@ -493,6 +493,16 @@ func (r *LibpodRuntime) UnpausePod(ctx context.Context, id string) error {
 	return err
 }
 
+// RemovePod removes a pod from the system.
+func (r *LibpodRuntime) RemovePod(ctx context.Context, id string, force bool) error {
+	pod, err := r.runtime.LookupPod(id)
+	if err != nil {
+		return err
+	}
+	_, err = r.runtime.RemovePod(ctx, pod, true, force, nil)
+	return err
+}
+
 // Events streams container runtime events.
 // For libpod, we use a polling approach since direct event streaming requires more setup.
 func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
