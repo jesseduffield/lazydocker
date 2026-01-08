@@ -534,8 +534,15 @@ func (gui *Gui) handleContainerPause(g *gocui.Gui, v *gocui.View) error {
 
 	if item.IsPod {
 		return gui.WithWaitingStatus(gui.Tr.PausingStatus, func() error {
-			if err := item.Pod.Pause(); err != nil {
-				return gui.createErrorPanel(err.Error())
+			// Toggle between pause/unpause based on pod state
+			if item.Pod.State() == "Paused" {
+				if err := item.Pod.Unpause(); err != nil {
+					return gui.createErrorPanel(err.Error())
+				}
+			} else {
+				if err := item.Pod.Pause(); err != nil {
+					return gui.createErrorPanel(err.Error())
+				}
 			}
 			return gui.refreshContainersAndServices()
 		})
@@ -556,7 +563,7 @@ func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
 				if err := item.Pod.Stop(); err != nil {
 					return gui.createErrorPanel(err.Error())
 				}
-				return nil
+				return gui.refreshContainersAndServices()
 			})
 		}, nil)
 	}
