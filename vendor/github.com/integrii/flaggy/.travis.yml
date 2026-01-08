@@ -1,7 +1,0 @@
-{
-  "language": "go",
-  "os": "linux",
-  "group": "stable",
-  "dist": "trusty",
-  "script": "go get -v && go test -v"
-}
