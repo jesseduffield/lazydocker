@@ -45,6 +45,7 @@ type ContainerRuntime interface {
 	StopPod(ctx context.Context, id string, timeout *int) error
 	PausePod(ctx context.Context, id string) error
 	UnpausePod(ctx context.Context, id string) error
+	RemovePod(ctx context.Context, id string, force bool) error
 
 	// Events streams container/image/volume/network events
 	Events(ctx context.Context) (<-chan Event, <-chan error)

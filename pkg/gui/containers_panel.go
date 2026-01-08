@@ -473,7 +473,38 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	if item.IsPod {
-		return gui.createErrorPanel("Remove not yet supported for pods")
+		pod := item.Pod
+		handleMenuPress := func(force bool) error {
+			return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
+				if err := pod.Remove(force); err != nil {
+					if commands.HasErrorCode(err, commands.MustStopContainer) {
+						return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.MustForceToRemoveContainer, func(g *gocui.Gui, v *gocui.View) error {
+							return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
+								return pod.Remove(true)
+							})
+						}, nil)
+					}
+					return gui.createErrorPanel(err.Error())
+				}
+				return nil
+			})
+		}
+
+		menuItems := []*types.MenuItem{
+			{
+				LabelColumns: []string{gui.Tr.Remove, "podman pod rm " + pod.ID[1:10]},
+				OnPress:      func() error { return handleMenuPress(false) },
+			},
+			{
+				LabelColumns: []string{gui.Tr.ForceRemove, "podman pod rm -f " + pod.ID[1:10]},
+				OnPress:      func() error { return handleMenuPress(true) },
+			},
+		}
+
+		return gui.Menu(CreateMenuOptions{
+			Title: "",
+			Items: menuItems,
+		})
 	}
 
 	ctr := item.Container

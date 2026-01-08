@@ -374,6 +374,13 @@ func (r *SocketRuntime) UnpausePod(ctx context.Context, id string) error {
 	return err
 }
 
+// RemovePod removes a pod from the system.
+func (r *SocketRuntime) RemovePod(ctx context.Context, id string, force bool) error {
+	opts := &pods.RemoveOptions{Force: &force}
+	_, err := pods.Remove(r.conn, id, opts)
+	return err
+}
+
 // aggregatePodStats combines stats from all containers in a pod into a single entry.
 func aggregatePodStats(reports []*types.PodStatsReport) PodStatsEntry {
 	if len(reports) == 0 {
