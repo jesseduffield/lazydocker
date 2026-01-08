@@ -145,6 +145,10 @@ func (r *LibpodRuntime) PodStats(ctx context.Context, id string, stream bool) (<
 	return statsChan, errChan
 }
 
+func (r *LibpodRuntime) RestartPod(ctx context.Context, id string, timeout *int) error {
+	return ErrLibpodNotAvailable
+}
+
 // Events returns an error channel on non-Linux platforms.
 func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
 	eventsChan := make(chan Event)

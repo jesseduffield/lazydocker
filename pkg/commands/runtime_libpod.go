@@ -375,7 +375,7 @@ func (r *LibpodRuntime) PodStats(ctx context.Context, id string, stream bool) (<
 }
 
 // aggregatePodContainerStats collects and aggregates stats from all containers in a pod.
-func (r *LibpodRuntime) aggregatePodContainerStats(ctx context.Context, pod *libpod.Pod) (PodStatsEntry, error) {
+func (r *LibpodRuntime) aggregatePodContainerStats(_ context.Context, pod *libpod.Pod) (PodStatsEntry, error) {
 	ctrs, err := pod.AllContainers()
 	if err != nil {
 		return PodStatsEntry{}, err
@@ -436,6 +436,16 @@ func (r *LibpodRuntime) aggregatePodContainerStats(ctx context.Context, pod *lib
 	entry.PIDs = totalPIDs
 
 	return entry, nil
+}
+
+// RestartPod restarts a pod.
+func (r *LibpodRuntime) RestartPod(ctx context.Context, id string, timeout *int) error {
+	pod, err := r.runtime.LookupPod(id)
+	if err != nil {
+		return err
+	}
+	_, err = pod.Restart(ctx)
+	return err
 }
 
 // Events streams container runtime events.

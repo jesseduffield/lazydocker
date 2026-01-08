@@ -568,7 +568,12 @@ func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	if item.IsPod {
-		return gui.createErrorPanel("Restart not yet supported for pods")
+		return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
+			if err := item.Pod.Restart(); err != nil {
+				return gui.createErrorPanel(err.Error())
+			}
+			return nil
+		})
 	}
 
 	ctr := item.Container

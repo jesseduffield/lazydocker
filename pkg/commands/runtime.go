@@ -40,6 +40,7 @@ type ContainerRuntime interface {
 	// Pod operations
 	ListPods(ctx context.Context) ([]PodSummary, error)
 	PodStats(ctx context.Context, id string, stream bool) (<-chan PodStatsEntry, <-chan error)
+	RestartPod(ctx context.Context, id string, timeout *int) error
 
 	// Events streams container/image/volume/network events
 	Events(ctx context.Context) (<-chan Event, <-chan error)

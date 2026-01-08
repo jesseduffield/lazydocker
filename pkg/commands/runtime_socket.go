@@ -340,6 +340,12 @@ func (r *SocketRuntime) PodStats(ctx context.Context, id string, stream bool) (<
 	return statsChan, errChan
 }
 
+// RestartPod restarts a pod.
+func (r *SocketRuntime) RestartPod(ctx context.Context, id string, timeout *int) error {
+	_, err := pods.Restart(r.conn, id, nil)
+	return err
+}
+
 // aggregatePodStats combines stats from all containers in a pod into a single entry.
 func aggregatePodStats(reports []*types.PodStatsReport) PodStatsEntry {
 	if len(reports) == 0 {
@@ -405,30 +411,30 @@ func aggregatePodStats(reports []*types.PodStatsReport) PodStatsEntry {
 func parsePercentage(s string) float64 {
 	s = strings.TrimSuffix(strings.TrimSpace(s), "%")
 	var val float64
-	fmt.Sscanf(s, "%f", &val)
+	_, _ = fmt.Sscanf(s, "%f", &val)
 	return val
 }
 
 // parseMemoryBytes parses memory usage string like "1000000 / 4000000" into usage and limit.
-func parseMemoryBytes(s string) (usage, limit uint64) {
+func parseMemoryBytes(s string) (uint64, uint64) {
 	parts := strings.Split(s, "/")
 	if len(parts) != 2 {
 		return 0, 0
 	}
-	usage = parseByteValue(strings.TrimSpace(parts[0]))
-	limit = parseByteValue(strings.TrimSpace(parts[1]))
-	return
+	usage := parseByteValue(strings.TrimSpace(parts[0]))
+	limit := parseByteValue(strings.TrimSpace(parts[1]))
+	return usage, limit
 }
 
 // parseIOBytes parses I/O string like "1.5kB / 2.3kB" into input and output bytes.
-func parseIOBytes(s string) (input, output uint64) {
+func parseIOBytes(s string) (uint64, uint64) {
 	parts := strings.Split(s, "/")
 	if len(parts) != 2 {
 		return 0, 0
 	}
-	input = parseByteValue(strings.TrimSpace(parts[0]))
-	output = parseByteValue(strings.TrimSpace(parts[1]))
-	return
+	input := parseByteValue(strings.TrimSpace(parts[0]))
+	output := parseByteValue(strings.TrimSpace(parts[1]))
+	return input, output
 }
 
 // parseByteValue parses a byte value string with optional unit (e.g., "1.5kB", "10MB", "1000000").
@@ -469,7 +475,7 @@ func parseByteValue(s string) uint64 {
 func parseUint(s string) uint64 {
 	s = strings.TrimSpace(s)
 	var val uint64
-	fmt.Sscanf(s, "%d", &val)
+	_, _ = fmt.Sscanf(s, "%d", &val)
 	return val
 }
 
