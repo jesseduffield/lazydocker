@@ -175,6 +175,9 @@ func (c *Container) eraseOldHistory(maxDuration time.Duration) {
 			return
 		}
 	}
+
+	// All entries are older than maxDuration, clear the history
+	c.StatHistory = nil
 }
 
 func (c *Container) GetLastStats() (*RecordedStats, bool) {

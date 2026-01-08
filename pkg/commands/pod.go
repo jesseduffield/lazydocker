@@ -69,6 +69,9 @@ func (p *Pod) eraseOldHistory(maxDuration time.Duration) {
 			return
 		}
 	}
+
+	// All entries are older than maxDuration, clear the history
+	p.StatHistory = nil
 }
 
 // GetLastStats returns the most recent stats entry.
