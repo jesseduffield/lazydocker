@@ -375,7 +375,7 @@ func (r *LibpodRuntime) PodStats(ctx context.Context, id string, stream bool) (<
 }
 
 // aggregatePodContainerStats collects and aggregates stats from all containers in a pod.
-func (r *LibpodRuntime) aggregatePodContainerStats(ctx context.Context, pod *libpod.Pod) (PodStatsEntry, error) {
+func (r *LibpodRuntime) aggregatePodContainerStats(_ context.Context, pod *libpod.Pod) (PodStatsEntry, error) {
 	ctrs, err := pod.AllContainers()
 	if err != nil {
 		return PodStatsEntry{}, err

@@ -2319,12 +2319,12 @@ github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:362.28,391.2
 github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:391.24,394.4 2 0
 github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:397.2,407.14 10 0
 github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:411.40,416.2 4 0
-github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:419.55,421.21 2 0
+github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:419.50,421.21 2 0
 github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:421.21,423.3 1 0
-github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:424.2,426.8 3 0
-github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:430.52,432.21 2 0
+github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:424.2,426.21 3 0
+github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:430.46,432.21 2 0
 github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:432.21,434.3 1 0
-github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:435.2,437.8 3 0
+github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:435.2,437.22 3 0
 github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:441.38,443.26 2 0
 github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:443.26,445.3 1 0
 github.com/christophe-duc/lazypodman/pkg/commands/runtime_socket.go:448.2,453.12 5 0
