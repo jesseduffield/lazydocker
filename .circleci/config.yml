@@ -41,20 +41,20 @@ build-shared: &build-shared
           - /go/pkg/mod
 
 jobs:
-  "golang:1.21":
+  "golang:1.24":
     <<: *env-shared
     <<: *build-shared
     docker:
-      - image: cimg/go:1.21
+      - image: cimg/go:1.24
   "golang:latest":
     <<: *env-shared
     <<: *build-shared
     docker:
-      - image: cimg/go:1.23
+      - image: cimg/go:1.25
   release:
     <<: *env-shared
     docker:
-      - image: cimg/go:1.21
+      - image: cimg/go:1.25
     steps:
       - checkout
       - run:
@@ -70,7 +70,7 @@ workflows:
   version: 2
   build:
     jobs:
-      - "golang:1.21"
+      - "golang:1.24"
       - "golang:latest"
   release:
     jobs:
