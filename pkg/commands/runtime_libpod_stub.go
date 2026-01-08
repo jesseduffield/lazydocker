@@ -72,10 +72,12 @@ func (r *LibpodRuntime) PruneContainers(ctx context.Context) error {
 }
 
 func (r *LibpodRuntime) ContainerStats(ctx context.Context, id string, stream bool) (<-chan ContainerStatsEntry, <-chan error) {
+	statsChan := make(chan ContainerStatsEntry)
+	close(statsChan)
 	errChan := make(chan error, 1)
 	errChan <- ErrLibpodNotAvailable
 	close(errChan)
-	return nil, errChan
+	return statsChan, errChan
 }
 
 // Image operations - all return ErrLibpodNotAvailable
@@ -134,10 +136,21 @@ func (r *LibpodRuntime) ListPods(ctx context.Context) ([]PodSummary, error) {
 	return nil, ErrLibpodNotAvailable
 }
 
-// Events returns an error channel on non-Linux platforms.
-func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
+func (r *LibpodRuntime) PodStats(ctx context.Context, id string, stream bool) (<-chan PodStatsEntry, <-chan error) {
+	statsChan := make(chan PodStatsEntry)
+	close(statsChan)
 	errChan := make(chan error, 1)
 	errChan <- ErrLibpodNotAvailable
 	close(errChan)
-	return nil, errChan
+	return statsChan, errChan
+}
+
+// Events returns an error channel on non-Linux platforms.
+func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
+	eventsChan := make(chan Event)
+	close(eventsChan)
+	errChan := make(chan error, 1)
+	errChan <- ErrLibpodNotAvailable
+	close(errChan)
+	return eventsChan, errChan
 }

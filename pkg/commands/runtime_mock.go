@@ -41,6 +41,7 @@ type MockRuntime struct {
 
 	// Pod operation mocks
 	ListPodsFunc func(ctx context.Context) ([]PodSummary, error)
+	PodStatsFunc func(ctx context.Context, id string, stream bool) (<-chan PodStatsEntry, <-chan error)
 
 	// Event mock
 	EventsFunc func(ctx context.Context) (<-chan Event, <-chan error)
@@ -154,10 +155,12 @@ func (m *MockRuntime) ContainerStats(ctx context.Context, id string, stream bool
 	if m.ContainerStatsFunc != nil {
 		return m.ContainerStatsFunc(ctx, id, stream)
 	}
+	statsCh := make(chan ContainerStatsEntry)
+	close(statsCh)
 	errCh := make(chan error, 1)
 	errCh <- ErrMockNotImplemented
 	close(errCh)
-	return nil, errCh
+	return statsCh, errCh
 }
 
 // Image operations
@@ -264,6 +267,19 @@ func (m *MockRuntime) ListPods(ctx context.Context) ([]PodSummary, error) {
 	return nil, ErrMockNotImplemented
 }
 
+func (m *MockRuntime) PodStats(ctx context.Context, id string, stream bool) (<-chan PodStatsEntry, <-chan error) {
+	m.recordCall("PodStats", id, stream)
+	if m.PodStatsFunc != nil {
+		return m.PodStatsFunc(ctx, id, stream)
+	}
+	statsCh := make(chan PodStatsEntry)
+	close(statsCh)
+	errCh := make(chan error, 1)
+	errCh <- ErrMockNotImplemented
+	close(errCh)
+	return statsCh, errCh
+}
+
 // Events
 
 func (m *MockRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
@@ -271,10 +287,12 @@ func (m *MockRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
 	if m.EventsFunc != nil {
 		return m.EventsFunc(ctx)
 	}
+	eventsCh := make(chan Event)
+	close(eventsCh)
 	errCh := make(chan error, 1)
 	errCh <- ErrMockNotImplemented
 	close(errCh)
-	return nil, errCh
+	return eventsCh, errCh
 }
 
 // Lifecycle

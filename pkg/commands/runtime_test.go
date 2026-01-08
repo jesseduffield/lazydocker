@@ -196,7 +196,11 @@ func TestMockRuntimeContainerStats(t *testing.T) {
 
 	t.Run("returns error channel when not implemented", func(t *testing.T) {
 		statsChan, errChan := mock.ContainerStats(ctx, "container1", false)
-		assert.Nil(t, statsChan)
+		assert.NotNil(t, statsChan)
+
+		// Stats channel should be closed (empty)
+		_, ok := <-statsChan
+		assert.False(t, ok, "stats channel should be closed")
 
 		err := <-errChan
 		assert.Equal(t, ErrMockNotImplemented, err)
@@ -392,7 +396,11 @@ func TestMockRuntimeEvents(t *testing.T) {
 
 	t.Run("returns error when not implemented", func(t *testing.T) {
 		eventChan, errChan := mock.Events(ctx)
-		assert.Nil(t, eventChan)
+		assert.NotNil(t, eventChan)
+
+		// Events channel should be closed (empty)
+		_, ok := <-eventChan
+		assert.False(t, ok, "events channel should be closed")
 
 		err := <-errChan
 		assert.Equal(t, ErrMockNotImplemented, err)

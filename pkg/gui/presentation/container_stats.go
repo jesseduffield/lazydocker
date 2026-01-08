@@ -105,6 +105,102 @@ func plotGraph(container *commands.Container, spec config.GraphConfig, width int
 	), nil
 }
 
+// RenderPodStats renders pod statistics as a string
+func RenderPodStats(pod *commands.Pod, viewWidth int) (string, error) {
+	stats, ok := pod.GetLastStats()
+	if !ok {
+		return "Collecting pod stats...", nil
+	}
+
+	s := stats.Stats
+
+	// Format stats display
+	var output strings.Builder
+
+	output.WriteString(utils.ColoredString("\nPod Statistics\n\n", color.FgCyan))
+
+	// CPU usage
+	output.WriteString(fmt.Sprintf("CPU Usage:     %.2f%%\n", s.CPU))
+
+	// Memory usage
+	memUsed := utils.FormatBinaryBytes(int(s.MemUsage))
+	memLimit := utils.FormatBinaryBytes(int(s.MemLimit))
+	output.WriteString(fmt.Sprintf("Memory Usage:  %s / %s (%.2f%%)\n", memUsed, memLimit, s.Memory))
+
+	// Network I/O
+	netIn := utils.FormatDecimalBytes(int(s.NetInput))
+	netOut := utils.FormatDecimalBytes(int(s.NetOutput))
+	output.WriteString(fmt.Sprintf("Network I/O:   %s / %s\n", netIn, netOut))
+
+	// Block I/O
+	blockIn := utils.FormatDecimalBytes(int(s.BlockInput))
+	blockOut := utils.FormatDecimalBytes(int(s.BlockOutput))
+	output.WriteString(fmt.Sprintf("Block I/O:     %s / %s\n", blockIn, blockOut))
+
+	// PIDs
+	output.WriteString(fmt.Sprintf("PIDs:          %d\n", s.PIDs))
+
+	// Render graphs if there's history
+	pod.StatsMutex.Lock()
+	historyLen := len(pod.StatHistory)
+	pod.StatsMutex.Unlock()
+
+	if historyLen > 1 {
+		output.WriteString("\n")
+
+		// CPU graph
+		cpuGraph := plotPodGraph(pod, "Stats.CPU", "CPU %", viewWidth-10, 0, 100)
+		output.WriteString(utils.ColoredString(cpuGraph, color.FgGreen))
+		output.WriteString("\n\n")
+
+		// Memory graph
+		memGraph := plotPodGraph(pod, "Stats.Memory", "Memory %", viewWidth-10, 0, 100)
+		output.WriteString(utils.ColoredString(memGraph, color.FgBlue))
+	}
+
+	return output.String(), nil
+}
+
+// plotPodGraph plots a graph for pod statistics
+func plotPodGraph(pod *commands.Pod, statPath, caption string, width int, min, max float64) string {
+	pod.StatsMutex.Lock()
+	defer pod.StatsMutex.Unlock()
+
+	if len(pod.StatHistory) == 0 {
+		return ""
+	}
+
+	data := make([]float64, len(pod.StatHistory))
+
+	for i, stats := range pod.StatHistory {
+		value, err := lookup.LookupString(stats, statPath)
+		if err != nil {
+			continue
+		}
+		floatValue, err := getFloat(value.Interface())
+		if err != nil {
+			continue
+		}
+		data[i] = floatValue
+	}
+
+	captionStr := fmt.Sprintf(
+		"%s: %0.2f (%v)",
+		caption,
+		data[len(data)-1],
+		time.Since(pod.StatHistory[0].RecordedAt).Round(time.Second),
+	)
+
+	return asciigraph.Plot(
+		data,
+		asciigraph.Height(10),
+		asciigraph.Width(width),
+		asciigraph.Min(min),
+		asciigraph.Max(max),
+		asciigraph.Caption(captionStr),
+	)
+}
+
 // from Dave C's answer at https://stackoverflow.com/questions/20767724/converting-unknown-interface-to-float64-in-golang
 func getFloat(unk interface{}) (float64, error) {
 	floatType := reflect.TypeOf(float64(0))

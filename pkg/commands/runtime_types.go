@@ -435,3 +435,19 @@ type PodSummary struct {
 	InfraID string
 	Labels  map[string]string
 }
+
+// PodStatsEntry provides runtime-agnostic pod stats.
+// This aggregates stats from all containers in a pod.
+type PodStatsEntry struct {
+	CPU         float64 // CPU percentage
+	Memory      float64 // Memory percentage
+	MemUsage    uint64  // Memory usage in bytes
+	MemLimit    uint64  // Memory limit in bytes
+	NetInput    uint64  // Network bytes received
+	NetOutput   uint64  // Network bytes sent
+	BlockInput  uint64  // Block I/O read bytes
+	BlockOutput uint64  // Block I/O write bytes
+	PIDs        uint64  // Total PIDs
+	PodID       string
+	PodName     string
+}

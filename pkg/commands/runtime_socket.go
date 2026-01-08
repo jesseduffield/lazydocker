@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -295,6 +296,181 @@ func (r *SocketRuntime) ListPods(ctx context.Context) ([]PodSummary, error) {
 		}
 	}
 	return result, nil
+}
+
+// PodStats streams pod statistics. The Podman API returns stats for each container
+// in the pod, so we aggregate them into a single PodStatsEntry.
+func (r *SocketRuntime) PodStats(ctx context.Context, id string, stream bool) (<-chan PodStatsEntry, <-chan error) {
+	statsChan := make(chan PodStatsEntry)
+	errChan := make(chan error, 1)
+
+	go func() {
+		defer close(statsChan)
+		defer close(errChan)
+
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+
+		for {
+			reports, err := pods.Stats(r.conn, []string{id}, nil)
+			if err != nil {
+				errChan <- err
+				return
+			}
+
+			entry := aggregatePodStats(reports)
+			select {
+			case statsChan <- entry:
+			case <-ctx.Done():
+				return
+			}
+
+			if !stream {
+				return
+			}
+
+			select {
+			case <-ticker.C:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
+	return statsChan, errChan
+}
+
+// aggregatePodStats combines stats from all containers in a pod into a single entry.
+func aggregatePodStats(reports []*types.PodStatsReport) PodStatsEntry {
+	if len(reports) == 0 {
+		return PodStatsEntry{}
+	}
+
+	var entry PodStatsEntry
+	var totalCPU, totalMem float64
+	var totalMemUsage, totalMemLimit uint64
+	var totalNetIn, totalNetOut uint64
+	var totalBlockIn, totalBlockOut uint64
+	var totalPIDs uint64
+
+	for _, r := range reports {
+		// Parse CPU percentage (e.g., "75.5%" -> 75.5)
+		cpu := parsePercentage(r.CPU)
+		totalCPU += cpu
+
+		// Parse memory percentage
+		mem := parsePercentage(r.Mem)
+		totalMem += mem
+
+		// Parse memory usage bytes (e.g., "1000000 / 4000000")
+		memUsage, memLimit := parseMemoryBytes(r.MemUsageBytes)
+		totalMemUsage += memUsage
+		totalMemLimit += memLimit
+
+		// Parse network I/O (e.g., "1.5kB / 2.3kB")
+		netIn, netOut := parseIOBytes(r.NetIO)
+		totalNetIn += netIn
+		totalNetOut += netOut
+
+		// Parse block I/O
+		blockIn, blockOut := parseIOBytes(r.BlockIO)
+		totalBlockIn += blockIn
+		totalBlockOut += blockOut
+
+		// Parse PIDs
+		pids := parseUint(r.PIDS)
+		totalPIDs += pids
+
+		// Use the first report's pod info
+		if entry.PodID == "" {
+			entry.PodID = r.Pod
+			entry.PodName = r.Name
+		}
+	}
+
+	entry.CPU = totalCPU
+	entry.Memory = totalMem
+	entry.MemUsage = totalMemUsage
+	entry.MemLimit = totalMemLimit
+	entry.NetInput = totalNetIn
+	entry.NetOutput = totalNetOut
+	entry.BlockInput = totalBlockIn
+	entry.BlockOutput = totalBlockOut
+	entry.PIDs = totalPIDs
+
+	return entry
+}
+
+// parsePercentage parses a percentage string like "75.5%" into a float64.
+func parsePercentage(s string) float64 {
+	s = strings.TrimSuffix(strings.TrimSpace(s), "%")
+	var val float64
+	fmt.Sscanf(s, "%f", &val)
+	return val
+}
+
+// parseMemoryBytes parses memory usage string like "1000000 / 4000000" into usage and limit.
+func parseMemoryBytes(s string) (usage, limit uint64) {
+	parts := strings.Split(s, "/")
+	if len(parts) != 2 {
+		return 0, 0
+	}
+	usage = parseByteValue(strings.TrimSpace(parts[0]))
+	limit = parseByteValue(strings.TrimSpace(parts[1]))
+	return
+}
+
+// parseIOBytes parses I/O string like "1.5kB / 2.3kB" into input and output bytes.
+func parseIOBytes(s string) (input, output uint64) {
+	parts := strings.Split(s, "/")
+	if len(parts) != 2 {
+		return 0, 0
+	}
+	input = parseByteValue(strings.TrimSpace(parts[0]))
+	output = parseByteValue(strings.TrimSpace(parts[1]))
+	return
+}
+
+// parseByteValue parses a byte value string with optional unit (e.g., "1.5kB", "10MB", "1000000").
+func parseByteValue(s string) uint64 {
+	s = strings.TrimSpace(s)
+	if s == "" || s == "--" {
+		return 0
+	}
+
+	// Remove commas from numbers
+	s = strings.ReplaceAll(s, ",", "")
+
+	var val float64
+	var unit string
+	n, _ := fmt.Sscanf(s, "%f%s", &val, &unit)
+	if n == 0 {
+		return 0
+	}
+
+	unit = strings.ToLower(strings.TrimSpace(unit))
+	switch unit {
+	case "b", "":
+		return uint64(val)
+	case "kb", "kib":
+		return uint64(val * 1024)
+	case "mb", "mib":
+		return uint64(val * 1024 * 1024)
+	case "gb", "gib":
+		return uint64(val * 1024 * 1024 * 1024)
+	case "tb", "tib":
+		return uint64(val * 1024 * 1024 * 1024 * 1024)
+	default:
+		return uint64(val)
+	}
+}
+
+// parseUint parses a string to uint64.
+func parseUint(s string) uint64 {
+	s = strings.TrimSpace(s)
+	var val uint64
+	fmt.Sscanf(s, "%d", &val)
+	return val
 }
 
 // Events streams container runtime events.
