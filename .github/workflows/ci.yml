@@ -1,7 +1,7 @@
 name: Continuous Integration
 
 env:
-  GO_VERSION: '1.23'
+  GO_VERSION: '1.25'
 
 on:
   push:
@@ -13,19 +13,19 @@ jobs:
   ci:
     name: ci - ubuntu
     runs-on: ubuntu-latest
-    env:
-      GOFLAGS: -mod=vendor
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.25'
       - name: Cache build
         uses: actions/cache@v4
         with:
-          path: ~/.cache/go-build
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-test
           restore-keys: |
             ${{runner.os}}-go-
@@ -36,19 +36,19 @@ jobs:
   integration:
     name: integration-tests
     runs-on: ubuntu-latest
-    env:
-      GOFLAGS: -mod=vendor
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.25'
       - name: Cache build
         uses: actions/cache@v4
         with:
-          path: ~/.cache/go-build
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-integration
           restore-keys: |
             ${{runner.os}}-go-
@@ -59,15 +59,14 @@ jobs:
       - name: Start Podman socket
         run: |
           systemctl --user start podman.socket
-          # Verify socket is available
           podman info
       - name: Run integration tests
         run: |
           go test -tags=integration,containers_image_openpgp,exclude_graphdriver_btrfs -v ./pkg/commands/...
+
   build:
     runs-on: ubuntu-latest
     env:
-      GOFLAGS: -mod=vendor
       GOARCH: amd64
     steps:
       - name: Checkout code
@@ -75,11 +74,13 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.25'
       - name: Cache build
         uses: actions/cache@v4
         with:
-          path: ~/.cache/go-build
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-build
           restore-keys: |
             ${{runner.os}}-go-
@@ -89,10 +90,10 @@ jobs:
       - name: Build darwin binary
         run: |
           GOOS=darwin go build -tags=containers_image_openpgp,exclude_graphdriver_btrfs
+
   check-codebase:
     runs-on: ubuntu-latest
     env:
-      GOFLAGS: -mod=vendor
       GOARCH: amd64
     steps:
       - name: Checkout code
@@ -100,7 +101,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.25'
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -113,25 +114,25 @@ jobs:
       - name: Check Cheatsheet
         run: |
           go run -tags=containers_image_openpgp,exclude_graphdriver_btrfs scripts/cheatsheet/main.go check
-      - name: Check Vendor Directory
-        # ensure our vendor directory matches up with our go modules
+      - name: Check go.mod is tidy
         run: |
-          go mod vendor && git diff --exit-code || (echo "Unexpected change to vendor directory. Run 'go mod vendor' locally and commit the changes" && exit 1)
+          go mod tidy && git diff --exit-code go.mod go.sum || (echo "go.mod/go.sum not tidy. Run 'go mod tidy' locally and commit the changes" && exit 1)
+
   lint:
     runs-on: ubuntu-latest
-    env:
-      GOFLAGS: -mod=vendor
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.25'
       - name: Cache build
         uses: actions/cache@v4
         with:
-          path: ~/.cache/go-build
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-test
           restore-keys: |
             ${{runner.os}}-go-
@@ -142,7 +143,7 @@ jobs:
           args: --build-tags=containers_image_openpgp,exclude_graphdriver_btrfs
       - name: Format code
         run: |
-          if [ $(find . ! -path "./vendor/*" -name "*.go" -exec gofmt -s -d {} \;|wc -l) -gt 0 ]; then
-           find . ! -path "./vendor/*" -name "*.go" -exec gofmt -s -d {} \;
+          if [ $(find . -name "*.go" -exec gofmt -s -d {} \;|wc -l) -gt 0 ]; then
+           find . -name "*.go" -exec gofmt -s -d {} \;
            exit 1
           fi
