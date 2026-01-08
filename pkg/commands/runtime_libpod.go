@@ -499,7 +499,7 @@ func (r *LibpodRuntime) RemovePod(ctx context.Context, id string, force bool) er
 	if err != nil {
 		return err
 	}
-	_, err = r.runtime.RemovePod(ctx, pod, true, force, 0)
+	_, err = r.runtime.RemovePod(ctx, pod, true, force, nil)
 	return err
 }
 
