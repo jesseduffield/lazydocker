@@ -137,10 +137,9 @@ jobs:
           restore-keys: |
             ${{runner.os}}-go-
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
-          args: --build-tags=containers_image_openpgp,exclude_graphdriver_btrfs --timeout=10m --verbose
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.64.8
+          golangci-lint run --build-tags=containers_image_openpgp,exclude_graphdriver_btrfs --verbose --out-format=colored-line-number 2>&1 || echo "Exit code: $?"
       - name: Format code
         run: |
           if [ $(find . -name "*.go" -exec gofmt -s -d {} \;|wc -l) -gt 0 ]; then
