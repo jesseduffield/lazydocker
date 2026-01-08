@@ -140,7 +140,8 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
-          args: --build-tags=containers_image_openpgp,exclude_graphdriver_btrfs
+          args: --build-tags=containers_image_openpgp,exclude_graphdriver_btrfs --timeout=15m
+          skip-cache: true
       - name: Format code
         run: |
           if [ $(find . -name "*.go" -exec gofmt -s -d {} \;|wc -l) -gt 0 ]; then
