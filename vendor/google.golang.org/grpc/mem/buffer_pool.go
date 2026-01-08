@@ -32,6 +32,9 @@ type BufferPool interface {
 	Get(length int) *[]byte
 
 	// Put returns a buffer to the pool.
+	//
+	// The provided pointer must hold a prefix of the buffer obtained via
+	// BufferPool.Get to ensure the buffer's entire capacity can be re-used.
 	Put(*[]byte)
 }
 
@@ -118,7 +121,11 @@ type sizedBufferPool struct {
 }
 
 func (p *sizedBufferPool) Get(size int) *[]byte {
-	buf := p.pool.Get().(*[]byte)
+	buf, ok := p.pool.Get().(*[]byte)
+	if !ok {
+		buf := make([]byte, size, p.defaultSize)
+		return &buf
+	}
 	b := *buf
 	clear(b[:cap(b)])
 	*buf = b[:size]
@@ -137,12 +144,6 @@ func (p *sizedBufferPool) Put(buf *[]byte) {
 
 func newSizedBufferPool(size int) *sizedBufferPool {
 	return &sizedBufferPool{
-		pool: sync.Pool{
-			New: func() any {
-				buf := make([]byte, size)
-				return &buf
-			},
-		},
 		defaultSize: size,
 	}
 }
@@ -160,6 +161,7 @@ type simpleBufferPool struct {
 func (p *simpleBufferPool) Get(size int) *[]byte {
 	bs, ok := p.pool.Get().(*[]byte)
 	if ok && cap(*bs) >= size {
+		clear((*bs)[:cap(*bs)])
 		*bs = (*bs)[:size]
 		return bs
 	}

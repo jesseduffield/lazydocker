@@ -38,6 +38,9 @@ type MetricsRecorder interface {
 	// RecordInt64Gauge records the measurement alongside labels on the int
 	// gauge associated with the provided handle.
 	RecordInt64Gauge(handle *Int64GaugeHandle, incr int64, labels ...string)
+	// RecordInt64UpDownCounter records the measurement alongside labels on the int
+	// count associated with the provided handle.
+	RecordInt64UpDownCount(handle *Int64UpDownCountHandle, incr int64, labels ...string)
 }
 
 // Metrics is an experimental legacy alias of the now-stable stats.MetricSet.

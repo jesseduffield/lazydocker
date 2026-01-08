@@ -203,6 +203,9 @@ func parseConstraints(constraints []byte) (lifetimeSecs uint32, confirmBeforeUse
 	for len(constraints) != 0 {
 		switch constraints[0] {
 		case agentConstrainLifetime:
+			if len(constraints) < 5 {
+				return 0, false, nil, io.ErrUnexpectedEOF
+			}
 			lifetimeSecs = binary.BigEndian.Uint32(constraints[1:5])
 			constraints = constraints[5:]
 		case agentConstrainConfirm:

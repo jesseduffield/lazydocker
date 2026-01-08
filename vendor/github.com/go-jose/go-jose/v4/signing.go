@@ -404,15 +404,23 @@ func (obj JSONWebSignature) DetachedVerify(payload []byte, verificationKey inter
 	}
 
 	signature := obj.Signatures[0]
-	headers := signature.mergedHeaders()
-	critical, err := headers.getCritical()
-	if err != nil {
-		return err
+
+	if signature.header != nil {
+		// Per https://www.rfc-editor.org/rfc/rfc7515.html#section-4.1.11,
+		// 4.1.11. "crit" (Critical) Header Parameter
+		// "When used, this Header Parameter MUST be integrity
+		// protected; therefore, it MUST occur only within the JWS
+		// Protected Header."
+		err = signature.header.checkNoCritical()
+		if err != nil {
+			return err
+		}
 	}
 
-	for _, name := range critical {
-		if !supportedCritical[name] {
-			return ErrCryptoFailure
+	if signature.protected != nil {
+		err = signature.protected.checkSupportedCritical(supportedCritical)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -421,6 +429,7 @@ func (obj JSONWebSignature) DetachedVerify(payload []byte, verificationKey inter
 		return ErrCryptoFailure
 	}
 
+	headers := signature.mergedHeaders()
 	alg := headers.getSignatureAlgorithm()
 	err = verifier.verifyPayload(input, signature.Signature, alg)
 	if err == nil {
@@ -469,14 +478,22 @@ func (obj JSONWebSignature) DetachedVerifyMulti(payload []byte, verificationKey 
 
 outer:
 	for i, signature := range obj.Signatures {
-		headers := signature.mergedHeaders()
-		critical, err := headers.getCritical()
-		if err != nil {
-			continue
+		if signature.header != nil {
+			// Per https://www.rfc-editor.org/rfc/rfc7515.html#section-4.1.11,
+			// 4.1.11. "crit" (Critical) Header Parameter
+			// "When used, this Header Parameter MUST be integrity
+			// protected; therefore, it MUST occur only within the JWS
+			// Protected Header."
+			err = signature.header.checkNoCritical()
+			if err != nil {
+				continue outer
+			}
 		}
 
-		for _, name := range critical {
-			if !supportedCritical[name] {
+		if signature.protected != nil {
+			// Check for only supported critical headers
+			err = signature.protected.checkSupportedCritical(supportedCritical)
+			if err != nil {
 				continue outer
 			}
 		}
@@ -486,6 +503,7 @@ outer:
 			continue
 		}
 
+		headers := signature.mergedHeaders()
 		alg := headers.getSignatureAlgorithm()
 		err = verifier.verifyPayload(input, signature.Signature, alg)
 		if err == nil {

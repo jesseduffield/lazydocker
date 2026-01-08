@@ -53,7 +53,7 @@ func (c *Config) hash() crypto.Hash {
 
 func (c *Config) encodedCount() uint8 {
 	if c == nil || c.S2KCount == 0 {
-		return 96 // The common case. Correspoding to 65536
+		return 96 // The common case. Corresponding to 65536
 	}
 
 	i := c.S2KCount

@@ -160,6 +160,7 @@ type callInfo struct {
 	codec                 baseCodec
 	maxRetryRPCBufferSize int
 	onFinish              []func(err error)
+	authority             string
 }
 
 func defaultCallInfo() *callInfo {
@@ -364,6 +365,36 @@ func (o MaxRecvMsgSizeCallOption) before(c *callInfo) error {
 	return nil
 }
 func (o MaxRecvMsgSizeCallOption) after(*callInfo, *csAttempt) {}
+
+// CallAuthority returns a CallOption that sets the HTTP/2 :authority header of
+// an RPC to the specified value. When using CallAuthority, the credentials in
+// use must implement the AuthorityValidator interface.
+//
+// # Experimental
+//
+// Notice: This API is EXPERIMENTAL and may be changed or removed in a later
+// release.
+func CallAuthority(authority string) CallOption {
+	return AuthorityOverrideCallOption{Authority: authority}
+}
+
+// AuthorityOverrideCallOption is a CallOption that indicates the HTTP/2
+// :authority header value to use for the call.
+//
+// # Experimental
+//
+// Notice: This type is EXPERIMENTAL and may be changed or removed in a later
+// release.
+type AuthorityOverrideCallOption struct {
+	Authority string
+}
+
+func (o AuthorityOverrideCallOption) before(c *callInfo) error {
+	c.authority = o.Authority
+	return nil
+}
+
+func (o AuthorityOverrideCallOption) after(*callInfo, *csAttempt) {}
 
 // MaxCallSendMsgSize returns a CallOption which sets the maximum message size
 // in bytes the client can send. If this is not set, gRPC uses the default
@@ -626,8 +657,20 @@ type streamReader interface {
 	Read(n int) (mem.BufferSlice, error)
 }
 
+// noCopy may be embedded into structs which must not be copied
+// after the first use.
+//
+// See https://golang.org/issues/8005#issuecomment-190753527
+// for details.
+type noCopy struct {
+}
+
+func (*noCopy) Lock()   {}
+func (*noCopy) Unlock() {}
+
 // parser reads complete gRPC messages from the underlying reader.
 type parser struct {
+	_ noCopy
 	// r is the underlying reader.
 	// See the comment on recvMsg for the permissible
 	// error types.
@@ -918,7 +961,7 @@ func recv(p *parser, c baseCodec, s recvCompressor, dc Decompressor, m any, maxR
 // Information about RPC
 type rpcInfo struct {
 	failfast      bool
-	preloaderInfo *compressorInfo
+	preloaderInfo compressorInfo
 }
 
 // Information about Preloader
@@ -937,7 +980,7 @@ type rpcInfoContextKey struct{}
 func newContextWithRPCInfo(ctx context.Context, failfast bool, codec baseCodec, cp Compressor, comp encoding.Compressor) context.Context {
 	return context.WithValue(ctx, rpcInfoContextKey{}, &rpcInfo{
 		failfast: failfast,
-		preloaderInfo: &compressorInfo{
+		preloaderInfo: compressorInfo{
 			codec: codec,
 			cp:    cp,
 			comp:  comp,

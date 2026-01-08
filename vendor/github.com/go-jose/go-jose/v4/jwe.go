@@ -274,7 +274,7 @@ func validateAlgEnc(headers rawHeader, keyAlgorithms []KeyAlgorithm, contentEncr
 	if alg != "" && !containsKeyAlgorithm(keyAlgorithms, alg) {
 		return fmt.Errorf("unexpected key algorithm %q; expected %q", alg, keyAlgorithms)
 	}
-	if alg != "" && !containsContentEncryption(contentEncryption, enc) {
+	if enc != "" && !containsContentEncryption(contentEncryption, enc) {
 		return fmt.Errorf("unexpected content encryption algorithm %q; expected %q", enc, contentEncryption)
 	}
 	return nil
@@ -288,11 +288,20 @@ func ParseEncryptedCompact(
 	keyAlgorithms []KeyAlgorithm,
 	contentEncryption []ContentEncryption,
 ) (*JSONWebEncryption, error) {
-	// Five parts is four separators
-	if strings.Count(input, ".") != 4 {
-		return nil, fmt.Errorf("go-jose/go-jose: compact JWE format must have five parts")
+	var parts [5]string
+	var ok bool
+
+	for i := range 4 {
+		parts[i], input, ok = strings.Cut(input, ".")
+		if !ok {
+			return nil, errors.New("go-jose/go-jose: compact JWE format must have five parts")
+		}
 	}
-	parts := strings.SplitN(input, ".", 5)
+	// Validate that the last part does not contain more dots
+	if strings.ContainsRune(input, '.') {
+		return nil, errors.New("go-jose/go-jose: compact JWE format must have five parts")
+	}
+	parts[4] = input
 
 	rawProtected, err := base64.RawURLEncoding.DecodeString(parts[0])
 	if err != nil {

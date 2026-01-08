@@ -53,6 +53,7 @@ var (
 	OIDBuildTrigger                        = asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 57264, 1, 20}
 	OIDRunInvocationURI                    = asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 57264, 1, 21}
 	OIDSourceRepositoryVisibilityAtSigning = asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 57264, 1, 22}
+	OIDDeploymentEnvironment               = asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 57264, 1, 23}
 )
 
 // Extensions contains all custom x509 extensions defined by Fulcio
@@ -132,6 +133,9 @@ type Extensions struct {
 
 	// Source repository visibility at the time of signing the certificate.
 	SourceRepositoryVisibilityAtSigning string `json:"SourceRepositoryVisibilityAtSigning,omitempty" yaml:"source-repository-visibility-at-signing,omitempty"` // 1.3.6.1.4.1.57264.1.22
+
+	// Deployment target for a workflow or job
+	DeploymentEnvironment string `json:"DeploymentEnvironment,omitempty" yaml:"deployment-environment,omitempty"` // 1.3.6.1.4.1.57264.1.23
 }
 
 func (e Extensions) Render() ([]pkix.Extension, error) {
@@ -334,6 +338,16 @@ func (e Extensions) Render() ([]pkix.Extension, error) {
 			Value: val,
 		})
 	}
+	if e.DeploymentEnvironment != "" {
+		val, err := asn1.MarshalWithParams(e.DeploymentEnvironment, "utf8")
+		if err != nil {
+			return nil, err
+		}
+		exts = append(exts, pkix.Extension{
+			Id:    OIDDeploymentEnvironment,
+			Value: val,
+		})
+	}
 
 	return exts, nil
 }
@@ -415,6 +429,10 @@ func ParseExtensions(ext []pkix.Extension) (Extensions, error) {
 			}
 		case e.Id.Equal(OIDSourceRepositoryVisibilityAtSigning):
 			if err := ParseDERString(e.Value, &out.SourceRepositoryVisibilityAtSigning); err != nil {
+				return Extensions{}, err
+			}
+		case e.Id.Equal(OIDDeploymentEnvironment):
+			if err := ParseDERString(e.Value, &out.DeploymentEnvironment); err != nil {
 				return Extensions{}, err
 			}
 		}

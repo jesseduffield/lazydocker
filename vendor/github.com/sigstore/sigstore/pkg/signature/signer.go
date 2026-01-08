@@ -31,9 +31,6 @@ import (
 
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
 	"github.com/sigstore/sigstore/pkg/signature/options"
-
-	// these ensure we have the implementations loaded
-	_ "golang.org/x/crypto/sha3"
 )
 
 // Signer creates digital signatures over a message using a specified key pair

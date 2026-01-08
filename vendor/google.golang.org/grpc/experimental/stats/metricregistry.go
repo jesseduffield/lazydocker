@@ -75,6 +75,7 @@ const (
 	MetricTypeIntHisto
 	MetricTypeFloatHisto
 	MetricTypeIntGauge
+	MetricTypeIntUpDownCount
 )
 
 // Int64CountHandle is a typed handle for a int count metric. This handle
@@ -91,6 +92,23 @@ func (h *Int64CountHandle) Descriptor() *MetricDescriptor {
 // Record records the int64 count value on the metrics recorder provided.
 func (h *Int64CountHandle) Record(recorder MetricsRecorder, incr int64, labels ...string) {
 	recorder.RecordInt64Count(h, incr, labels...)
+}
+
+// Int64UpDownCountHandle is a typed handle for an int up-down counter metric.
+// This handle is passed at the recording point in order to know which metric
+// to record on.
+type Int64UpDownCountHandle MetricDescriptor
+
+// Descriptor returns the int64 up-down counter handle typecast to a pointer to a
+// MetricDescriptor.
+func (h *Int64UpDownCountHandle) Descriptor() *MetricDescriptor {
+	return (*MetricDescriptor)(h)
+}
+
+// Record records the int64 up-down counter value on the metrics recorder provided.
+// The value 'v' can be positive to increment or negative to decrement.
+func (h *Int64UpDownCountHandle) Record(recorder MetricsRecorder, v int64, labels ...string) {
+	recorder.RecordInt64UpDownCount(h, v, labels...)
 }
 
 // Float64CountHandle is a typed handle for a float count metric. This handle is
@@ -247,6 +265,21 @@ func RegisterInt64Gauge(descriptor MetricDescriptor) *Int64GaugeHandle {
 	descPtr := &descriptor
 	metricsRegistry[descriptor.Name] = descPtr
 	return (*Int64GaugeHandle)(descPtr)
+}
+
+// RegisterInt64UpDownCount registers the metric description onto the global registry.
+// It returns a typed handle to use for recording data.
+//
+// NOTE: this function must only be called during initialization time (i.e. in
+// an init() function), and is not thread-safe. If multiple metrics are
+// registered with the same name, this function will panic.
+func RegisterInt64UpDownCount(descriptor MetricDescriptor) *Int64UpDownCountHandle {
+	registerMetric(descriptor.Name, descriptor.Default)
+	// Set the specific metric type for the up-down counter
+	descriptor.Type = MetricTypeIntUpDownCount
+	descPtr := &descriptor
+	metricsRegistry[descriptor.Name] = descPtr
+	return (*Int64UpDownCountHandle)(descPtr)
 }
 
 // snapshotMetricsRegistryForTesting snapshots the global data of the metrics

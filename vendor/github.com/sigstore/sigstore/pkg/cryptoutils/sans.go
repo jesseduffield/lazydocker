@@ -132,6 +132,9 @@ func UnmarshalOtherNameSAN(exts []pkix.Extension) (string, error) {
 // and OtherName SANs
 func GetSubjectAlternateNames(cert *x509.Certificate) []string {
 	sans := []string{}
+	if cert == nil {
+		return sans
+	}
 	sans = append(sans, cert.DNSNames...)
 	sans = append(sans, cert.EmailAddresses...)
 	for _, ip := range cert.IPAddresses {
