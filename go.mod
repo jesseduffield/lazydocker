@@ -1,6 +1,6 @@
 module github.com/christophe-duc/lazypodman
 
-go 1.25
+go 1.25.0
 
 require (
 	github.com/OpenPeeDeeP/xdg v0.2.1-0.20190312153938-4ba9e1eb294c
