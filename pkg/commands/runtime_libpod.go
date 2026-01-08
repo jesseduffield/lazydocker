@@ -412,9 +412,11 @@ func (r *LibpodRuntime) aggregatePodContainerStats(ctx context.Context, pod *lib
 		totalMemLimit += stats.MemLimit
 		totalPIDs += stats.PIDs
 
-		// Aggregate network stats
-		totalNetIn += stats.NetInput
-		totalNetOut += stats.NetOutput
+		// Aggregate network stats from all interfaces
+		for _, netStats := range stats.Network {
+			totalNetIn += netStats.RxBytes
+			totalNetOut += netStats.TxBytes
+		}
 
 		// Aggregate block I/O stats
 		totalBlockIn += stats.BlockInput
