@@ -448,6 +448,51 @@ func (r *LibpodRuntime) RestartPod(ctx context.Context, id string, timeout *int)
 	return err
 }
 
+// StartPod starts a stopped pod.
+func (r *LibpodRuntime) StartPod(ctx context.Context, id string) error {
+	pod, err := r.runtime.LookupPod(id)
+	if err != nil {
+		return err
+	}
+	_, err = pod.Start(ctx)
+	return err
+}
+
+// StopPod stops a running pod.
+func (r *LibpodRuntime) StopPod(ctx context.Context, id string, timeout *int) error {
+	pod, err := r.runtime.LookupPod(id)
+	if err != nil {
+		return err
+	}
+	cleanup := false
+	if timeout != nil {
+		_, err = pod.StopWithTimeout(ctx, cleanup, *timeout)
+	} else {
+		_, err = pod.Stop(ctx, cleanup)
+	}
+	return err
+}
+
+// PausePod pauses all running containers in a pod.
+func (r *LibpodRuntime) PausePod(ctx context.Context, id string) error {
+	pod, err := r.runtime.LookupPod(id)
+	if err != nil {
+		return err
+	}
+	_, err = pod.Pause(ctx)
+	return err
+}
+
+// UnpausePod unpauses all paused containers in a pod.
+func (r *LibpodRuntime) UnpausePod(ctx context.Context, id string) error {
+	pod, err := r.runtime.LookupPod(id)
+	if err != nil {
+		return err
+	}
+	_, err = pod.Unpause(ctx)
+	return err
+}
+
 // Events streams container runtime events.
 // For libpod, we use a polling approach since direct event streaming requires more setup.
 func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {

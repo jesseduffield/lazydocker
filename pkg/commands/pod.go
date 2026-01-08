@@ -41,6 +41,34 @@ func (p *Pod) Restart() error {
 	return p.Runtime.RestartPod(ctx, p.ID, nil)
 }
 
+// Start starts the pod
+func (p *Pod) Start() error {
+	p.Log.Warn(fmt.Sprintf("starting pod %s", p.Name))
+	ctx := context.Background()
+	return p.Runtime.StartPod(ctx, p.ID)
+}
+
+// Stop stops the pod
+func (p *Pod) Stop() error {
+	p.Log.Warn(fmt.Sprintf("stopping pod %s", p.Name))
+	ctx := context.Background()
+	return p.Runtime.StopPod(ctx, p.ID, nil)
+}
+
+// Pause pauses the pod
+func (p *Pod) Pause() error {
+	p.Log.Warn(fmt.Sprintf("pausing pod %s", p.Name))
+	ctx := context.Background()
+	return p.Runtime.PausePod(ctx, p.ID)
+}
+
+// Unpause unpauses the pod
+func (p *Pod) Unpause() error {
+	p.Log.Warn(fmt.Sprintf("unpausing pod %s", p.Name))
+	ctx := context.Background()
+	return p.Runtime.UnpausePod(ctx, p.ID)
+}
+
 // HasContainers returns true if the pod has non-infra containers.
 func (p *Pod) HasContainers() bool {
 	return len(p.Containers) > 0
