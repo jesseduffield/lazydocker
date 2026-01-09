@@ -21,9 +21,9 @@ linters-settings:
     max-func-lines: 0
 
 run:
-  timeout: 15m
-  skip-dirs-use-default: true
+  timeout: 10m
 
 issues:
+  exclude-dirs-use-default: true
   exclude-dirs:
     - vendor
