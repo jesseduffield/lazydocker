@@ -126,7 +126,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25'
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -136,12 +136,10 @@ jobs:
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-test
           restore-keys: |
             ${{runner.os}}-go-
+      - name: Install golangci-lint
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
-          args: --build-tags=containers_image_openpgp,exclude_graphdriver_btrfs --timeout=15m
-          skip-cache: true
+        run: golangci-lint run --build-tags=containers_image_openpgp,exclude_graphdriver_btrfs --timeout=10m
       - name: Format code
         run: |
           if [ $(find . -name "*.go" -exec gofmt -s -d {} \;|wc -l) -gt 0 ]; then
