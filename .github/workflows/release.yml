@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-20.04  # Uses glibc 2.31 for compatibility
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc \
+            gcc-aarch64-linux-gnu \
+            libc6-dev \
+            libc6-dev-arm64-cross
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
