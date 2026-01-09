@@ -124,7 +124,7 @@ func TestConvertLibpodEvent(t *testing.T) {
 			name: "container die event with attributes",
 			input: &events.Event{
 				Type:   events.Container,
-				Status: events.Died,
+				Status: events.Exited,
 				ID:     "ctr222",
 				Name:   "dying-container",
 				Time:   time.Unix(1234567895, 0),
@@ -198,7 +198,7 @@ func TestConvertLibpodEvent_AllEventStatuses(t *testing.T) {
 		events.Pause,
 		events.Unpause,
 		events.Kill,
-		events.Died,
+		events.Exited,
 		events.Pull,
 		events.Push,
 		events.Restart,
