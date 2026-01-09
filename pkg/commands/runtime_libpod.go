@@ -506,7 +506,8 @@ func (r *LibpodRuntime) RemovePod(ctx context.Context, id string, force bool) er
 }
 
 // Events streams container runtime events using native libpod event streaming.
-// This provides real-time event delivery with <100ms latency instead of polling.
+// This provides real-time event delivery with <100ms latency for actual events,
+// plus an initial synthetic event to trigger UI load and periodic heartbeat refreshes.
 func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error) {
 	eventChan := make(chan Event)
 	errChan := make(chan error, 1)
@@ -514,6 +515,18 @@ func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error)
 	go func() {
 		defer close(eventChan)
 		defer close(errChan)
+
+		// Send initial synthetic event immediately to trigger UI load
+		// This ensures the UI displays containers/pods even before any real events occur
+		select {
+		case eventChan <- Event{
+			Type:   "system",
+			Action: "refresh",
+			Time:   time.Now().Unix(),
+		}:
+		case <-ctx.Done():
+			return
+		}
 
 		// Create libpod event channel (buffered to prevent blocking during bursts)
 		libpodEventChan := make(chan events.ReadResult, 10)
@@ -539,11 +552,30 @@ func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error)
 			}
 		}()
 
+		// Periodic heartbeat ticker for UI refresh when no events occur
+		// This is much less frequent than the old 2-second polling (now 10 seconds)
+		// because real events provide immediate updates
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+
 		// Convert libpod events to ContainerRuntime Event format
 		for {
 			select {
 			case <-ctx.Done():
 				return
+
+			case <-ticker.C:
+				// Send periodic heartbeat to ensure UI updates even without real events
+				// This handles edge cases like containers dying without generating events
+				select {
+				case eventChan <- Event{
+					Type:   "system",
+					Action: "refresh",
+					Time:   time.Now().Unix(),
+				}:
+				case <-ctx.Done():
+					return
+				}
 
 			case result, ok := <-libpodEventChan:
 				if !ok {
