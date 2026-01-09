@@ -534,9 +534,9 @@ func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error)
 		// Configure event streaming
 		opts := events.ReadOptions{
 			EventChannel: libpodEventChan,
-			Stream:       true,          // Follow new events (tail -f mode)
-			FromStart:    false,         // Don't replay historical events
-			Filters:      []string{},    // Empty = all event types
+			Stream:       true,       // Follow new events (tail -f mode)
+			FromStart:    false,      // Don't replay historical events
+			Filters:      []string{}, // Empty = all event types
 		}
 
 		// Start libpod event reader in background goroutine
@@ -612,8 +612,8 @@ func (r *LibpodRuntime) Events(ctx context.Context) (<-chan Event, <-chan error)
 // convertLibpodEvent converts native libpod event to ContainerRuntime Event format.
 func convertLibpodEvent(e *events.Event) Event {
 	return Event{
-		Type:   string(e.Type),    // "Container", "Pod", "Image", "Volume", "Network"
-		Action: string(e.Status),  // "start", "stop", "create", "remove", etc.
+		Type:   string(e.Type),   // "Container", "Pod", "Image", "Volume", "Network"
+		Action: string(e.Status), // "start", "stop", "create", "remove", etc.
 		Actor: EventActor{
 			ID:         e.ID,
 			Attributes: e.Attributes,
