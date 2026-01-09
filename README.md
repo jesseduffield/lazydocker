@@ -4,12 +4,9 @@ A simple terminal UI for Podman and podman-compose, written in Go with the [gocu
 > **Fork Notice:** This project is a fork of [lazydocker](https://github.com/jesseduffield/lazydocker) by Jesse Duffield, converted to use Podman's native libpod library instead of the Docker SDK.
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/christophe-duc/lazypodman)](https://goreportcard.com/report/github.com/christophe-duc/lazypodman)
-[![GolangCI](https://golangci.com/badges/github.com/christophe-duc/lazypodman.svg)](https://golangci.com)
-[![GoDoc](https://godoc.org/github.com/christophe-duc/lazypodman?status.svg)](http://godoc.org/github.com/christophe-duc/lazypodman)
 ![GitHub repo size](https://img.shields.io/github/repo-size/christophe-duc/lazypodman)
 [![GitHub Releases](https://img.shields.io/github/downloads/christophe-duc/lazypodman/total)](https://github.com/christophe-duc/lazypodman/releases)
 [![GitHub tag](https://img.shields.io/github/tag/christophe-duc/lazypodman.svg)](https://github.com/christophe-duc/lazypodman/releases/latest)
-[![homebrew](https://img.shields.io/homebrew/v/lazypodman)](https://github.com/Homebrew/homebrew-core/blob/master/Formula/lazypodman.rb)
 
 ![Gif](/docs/resources/demo3.gif)
 
