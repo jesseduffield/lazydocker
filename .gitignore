@@ -4,3 +4,5 @@ TODO.md
 Lazydocker.code-workspace
 .vscode
 .idea
+.DS_Store
+vendor
