@@ -19,6 +19,10 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.25'
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross
       - name: Run goreleaser
         uses: goreleaser/goreleaser-action@v6
         with:
