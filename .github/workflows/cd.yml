@@ -7,7 +7,7 @@ on:
 
 jobs:
   goreleaser:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04  # Uses glibc 2.31 for better compatibility
     permissions:
       contents: write
     steps:
