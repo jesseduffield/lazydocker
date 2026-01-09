@@ -29,7 +29,7 @@ func TestConvertLibpodEvent(t *testing.T) {
 				},
 			},
 			expected: Event{
-				Type:   "Container",
+				Type:   "container",
 				Action: "start",
 				Actor: EventActor{
 					ID:         "abc123",
@@ -51,7 +51,7 @@ func TestConvertLibpodEvent(t *testing.T) {
 				},
 			},
 			expected: Event{
-				Type:   "Pod",
+				Type:   "pod",
 				Action: "stop",
 				Actor: EventActor{
 					ID:         "pod456",
@@ -73,7 +73,7 @@ func TestConvertLibpodEvent(t *testing.T) {
 				},
 			},
 			expected: Event{
-				Type:   "Image",
+				Type:   "image",
 				Action: "pull",
 				Actor: EventActor{
 					ID:         "img789",
@@ -92,7 +92,7 @@ func TestConvertLibpodEvent(t *testing.T) {
 				Time:   time.Unix(1234567893, 0),
 			},
 			expected: Event{
-				Type:   "Volume",
+				Type:   "volume",
 				Action: "create",
 				Actor: EventActor{
 					ID:         "vol999",
@@ -111,7 +111,7 @@ func TestConvertLibpodEvent(t *testing.T) {
 				Time:   time.Unix(1234567894, 0),
 			},
 			expected: Event{
-				Type:   "Network",
+				Type:   "network",
 				Action: "remove",
 				Actor: EventActor{
 					ID:         "net111",
@@ -136,7 +136,7 @@ func TestConvertLibpodEvent(t *testing.T) {
 				},
 			},
 			expected: Event{
-				Type:   "Container",
+				Type:   "container",
 				Action: "died",
 				Actor: EventActor{
 					ID: "ctr222",
