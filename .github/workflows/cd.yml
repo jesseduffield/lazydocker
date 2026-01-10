@@ -7,10 +7,17 @@ on:
 
 jobs:
   goreleaser:
-    runs-on: ubuntu-20.04  # Uses glibc 2.31 for better compatibility
+    runs-on: ubuntu-latest
     permissions:
       contents: write
+    container:
+      image: ubuntu:20.04  # Uses glibc 2.31 for better compatibility
+      options: --user root
     steps:
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y git curl gcc gcc-aarch64-linux-gnu libc6-dev libc6-dev-arm64-cross
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -19,10 +26,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.25'
-      - name: Install build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross
       - name: Run goreleaser
         uses: goreleaser/goreleaser-action@v6
         with:
