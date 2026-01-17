@@ -28,7 +28,7 @@ func NewTranslationSetFromConfig(log *logrus.Entry, configLanguage string) (*Tra
 		}
 	}
 
-	return NewTranslationSet(log, "en"), errors.New("Language not found: " + configLanguage)
+	return NewTranslationSet(log, "ru"), errors.New("Language not found: " + configLanguage)
 }
 
 func NewTranslationSet(log *logrus.Entry, language string) *TranslationSet {
@@ -57,6 +57,9 @@ func GetTranslationSets() map[string]TranslationSet {
 		"zh": chineseSet(),
 		"es": spanishSet(),
 		"pt": portugueseSet(),
+		"ru": russianSet(),
+		"it": italianSet(),
+		"ja": japaneseSet(),
 	}
 }
 

@@ -31,6 +31,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: 上一个选项卡
   <kbd>]</kbd>: 下一个选项卡
   <kbd>/</kbd>: 过滤列表
+  <kbd>f</kbd>: 过滤列表
 </pre>
 
 ## 服务
@@ -55,6 +56,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: 上一个选项卡
   <kbd>]</kbd>: 下一个选项卡
   <kbd>/</kbd>: 过滤列表
+  <kbd>f</kbd>: 过滤列表
 </pre>
 
 ## 镜像
@@ -67,6 +69,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: 上一个选项卡
   <kbd>]</kbd>: 下一个选项卡
   <kbd>/</kbd>: 过滤列表
+  <kbd>f</kbd>: 过滤列表
 </pre>
 
 ## 卷
@@ -79,6 +82,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: 上一个选项卡
   <kbd>]</kbd>: 下一个选项卡
   <kbd>/</kbd>: 过滤列表
+  <kbd>f</kbd>: 过滤列表
 </pre>
 
 ## 网络
@@ -91,6 +95,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: 上一个选项卡
   <kbd>]</kbd>: 下一个选项卡
   <kbd>/</kbd>: 过滤列表
+  <kbd>f</kbd>: 过滤列表
 </pre>
 
 ## 主要

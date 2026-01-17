@@ -31,6 +31,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: previous tab
   <kbd>]</kbd>: next tab
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Services
@@ -55,6 +56,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: previous tab
   <kbd>]</kbd>: next tab
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Images
@@ -67,6 +69,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: previous tab
   <kbd>]</kbd>: next tab
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Volumes
@@ -79,6 +82,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: previous tab
   <kbd>]</kbd>: next tab
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Networks
@@ -91,6 +95,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: previous tab
   <kbd>]</kbd>: next tab
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Main

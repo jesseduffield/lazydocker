@@ -31,6 +31,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Serwisy
@@ -55,6 +56,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Obrazy
@@ -67,6 +69,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Wolumeny
@@ -79,6 +82,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Sieci
@@ -91,6 +95,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Główne

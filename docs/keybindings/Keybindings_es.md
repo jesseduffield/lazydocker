@@ -31,6 +31,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: anterior pestaña
   <kbd>]</kbd>: siguiente pestaña
   <kbd>/</kbd>: filtrar lista
+  <kbd>f</kbd>: filtar list
 </pre>
 
 ## Servicios
@@ -55,6 +56,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: anterior pestaña
   <kbd>]</kbd>: siguiente pestaña
   <kbd>/</kbd>: filtrar lista
+  <kbd>f</kbd>: filtar list
 </pre>
 
 ## Imágenes
@@ -67,6 +69,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: anterior pestaña
   <kbd>]</kbd>: siguiente pestaña
   <kbd>/</kbd>: filtrar lista
+  <kbd>f</kbd>: filtar list
 </pre>
 
 ## Volúmenes
@@ -79,6 +82,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: anterior pestaña
   <kbd>]</kbd>: siguiente pestaña
   <kbd>/</kbd>: filtrar lista
+  <kbd>f</kbd>: filtar list
 </pre>
 
 ## Redes
@@ -91,6 +95,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: anterior pestaña
   <kbd>]</kbd>: siguiente pestaña
   <kbd>/</kbd>: filtrar lista
+  <kbd>f</kbd>: filtar list
 </pre>
 
 ## Inicio
