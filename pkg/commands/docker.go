@@ -70,6 +70,21 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	return defaultObj
 }
 
+// newDockerClient creates a Docker client with the given host.
+// We avoid using client.FromEnv because it includes WithVersionFromEnv() which
+// sets manualOverride=true when DOCKER_API_VERSION is set, preventing API version
+// negotiation even when WithAPIVersionNegotiation() is specified.
+// Instead, we explicitly configure only what we need, and rely on proper
+// API version negotiation to support older Docker daemons.
+// See https://github.com/jesseduffield/lazydocker/issues/715
+func newDockerClient(dockerHost string) (*client.Client, error) {
+	return client.NewClientWithOpts(
+		client.WithTLSClientConfigFromEnv(),
+		client.WithAPIVersionNegotiation(),
+		client.WithHost(dockerHost),
+	)
+}
+
 // NewDockerCommand it runs docker commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
 	dockerHost, err := determineDockerHost()
@@ -96,7 +111,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		dockerHost = dockerHostFromEnv
 	}
 
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation(), client.WithHost(dockerHost))
+	cli, err := newDockerClient(dockerHost)
 	if err != nil {
 		ogLog.Fatal(err)
 	}
