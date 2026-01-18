@@ -3,6 +3,7 @@ package gui
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -135,7 +136,12 @@ func (gui *Gui) containerEnv(container *commands.Container) string {
 		return gui.Tr.NothingToDisplay
 	}
 
-	envVarsList := lo.Map(container.Details.Config.Env, func(envVar string, _ int) []string {
+	// Create a sorted copy of the environment variables
+	sortedEnv := make([]string, len(container.Details.Config.Env))
+	copy(sortedEnv, container.Details.Config.Env)
+	sort.Strings(sortedEnv)
+
+	envVarsList := lo.Map(sortedEnv, func(envVar string, _ int) []string {
 		splitEnv := strings.SplitN(envVar, "=", 2)
 		key := splitEnv[0]
 		value := ""
