@@ -89,6 +89,33 @@ Memorising docker commands is hard. Memorising aliases is slightly less hard. Ke
 - Docker >= **29.0.0** (API >= **1.24**)
 - Docker-Compose >= **1.23.2** (optional)
 
+## Container Runtime Support
+
+Lazydocker automatically detects and works with multiple container runtimes:
+
+- **Docker** (standard, rootless, and Docker Desktop)
+- **Podman** (rootful and rootless)
+- **Colima, OrbStack, Lima, Rancher Desktop**
+
+No manual configuration needed—socket detection is automatic!
+
+### Using Podman
+
+If lazydocker can't connect to Podman automatically, enable the Podman socket:
+
+```sh
+# Enable Podman socket service
+systemctl --user enable --now podman.socket
+
+# Run lazydocker
+lazydocker
+```
+
+Alternatively, set `DOCKER_HOST`:
+```sh
+export DOCKER_HOST="unix://$XDG_RUNTIME_DIR/podman/podman.sock"
+```
+
 ## Installation
 
 ### Homebrew
