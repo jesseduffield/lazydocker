@@ -78,11 +78,75 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 // API version negotiation to support older Docker daemons.
 // See https://github.com/jesseduffield/lazydocker/issues/715
 func newDockerClient(dockerHost string) (*client.Client, error) {
-	return client.NewClientWithOpts(
-		client.WithTLSClientConfigFromEnv(),
+	opts := []client.Opt{
 		client.WithAPIVersionNegotiation(),
 		client.WithHost(dockerHost),
+	}
+
+	// Load TLS config from environment variables (for backward compatibility)
+	tlsOpts := []client.Opt{client.WithTLSClientConfigFromEnv()}
+
+	// Also try to load TLS config from the current Docker context
+	contextTLSOpts, err := getContextTLSOptions()
+	if err == nil && contextTLSOpts != nil {
+		// If we have context TLS config, use it instead of env config
+		tlsOpts = contextTLSOpts
+	}
+
+	opts = append(opts, tlsOpts...)
+
+	return client.NewClientWithOpts(opts...)
+}
+
+// getContextTLSOptions loads TLS configuration from the current Docker context
+func getContextTLSOptions() ([]client.Opt, error) {
+	currentContext := os.Getenv("DOCKER_CONTEXT")
+	if currentContext == "" {
+		cf, err := cliconfig.Load(cliconfig.Dir())
+		if err != nil {
+			return nil, err
+		}
+		currentContext = cf.CurrentContext
+	}
+
+	// Skip if no context or using default context
+	if currentContext == "" || currentContext == "default" {
+		return nil, nil
+	}
+
+	storeConfig := ctxstore.NewConfig(
+		func() interface{} { return &ddocker.EndpointMeta{} },
+		ctxstore.EndpointTypeGetter(ddocker.DockerEndpoint, func() interface{} { return &ddocker.EndpointMeta{} }),
 	)
+
+	st := ctxstore.New(cliconfig.ContextStoreDir(), storeConfig)
+
+	// First load the endpoint metadata
+	md, err := st.GetMetadata(currentContext)
+	if err != nil {
+		// Context doesn't exist or can't be read - not an error for our use case
+		return nil, nil
+	}
+
+	dockerEP, ok := md.Endpoints[ddocker.DockerEndpoint]
+	if !ok {
+		return nil, nil // No docker endpoint in this context
+	}
+
+	dockerEPMeta, ok := dockerEP.(ddocker.EndpointMeta)
+	if !ok {
+		return nil, fmt.Errorf("expected docker.EndpointMeta, got %T", dockerEP)
+	}
+
+	// Now load the endpoint with TLS data
+	endpoint, err := ddocker.WithTLSData(st, currentContext, dockerEPMeta)
+	if err != nil {
+		// If we can't load TLS data, that's okay - just return nil
+		return nil, nil
+	}
+
+	// Get client options from the endpoint (includes TLS config)
+	return endpoint.ClientOpts()
 }
 
 // NewDockerCommand it runs docker commands
