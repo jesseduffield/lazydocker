@@ -53,11 +53,38 @@ func TestNewDockerClientVersionNegotiation(t *testing.T) {
 		assert.NoError(t, err)
 		defer cli.Close()
 
-		// Version is NOT locked to the env var value (1.25).
-		// Instead, it uses the library's default version and will negotiate
-		// with the server on first request. This is the key difference that
-		// fixes the "version too old" error.
-		assert.NotEqual(t, "1.25", cli.ClientVersion(),
-			"client version should not be locked to DOCKER_API_VERSION env var")
+		// Version should still be negotiable (not locked to env var)
+		assert.NotEqual(t, "1.25", cli.ClientVersion())
 	})
+}
+
+// TestGetContextTLSOptions tests that TLS options can be loaded from Docker contexts
+func TestGetContextTLSOptions(t *testing.T) {
+	// Save original env vars and restore after test
+	originalContext := os.Getenv("DOCKER_CONTEXT")
+	defer func() {
+		if originalContext == "" {
+			os.Unsetenv("DOCKER_CONTEXT")
+		} else {
+			os.Setenv("DOCKER_CONTEXT", originalContext)
+		}
+	}()
+
+	// Test with no context set (should return nil)
+	os.Unsetenv("DOCKER_CONTEXT")
+	opts, err := getContextTLSOptions()
+	assert.NoError(t, err)
+	assert.Nil(t, opts)
+
+	// Test with default context (should return nil)
+	os.Setenv("DOCKER_CONTEXT", "default")
+	opts, err = getContextTLSOptions()
+	assert.NoError(t, err)
+	assert.Nil(t, opts)
+
+	// Test with non-existent context (should return nil, not error)
+	os.Setenv("DOCKER_CONTEXT", "nonexistent-context")
+	opts, err = getContextTLSOptions()
+	assert.NoError(t, err)
+	assert.Nil(t, opts)
 }
