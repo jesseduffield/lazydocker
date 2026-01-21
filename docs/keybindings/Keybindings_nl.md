@@ -19,7 +19,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>d</kbd>: verwijder
   <kbd>e</kbd>: verberg gestopte containers
   <kbd>p</kbd>: pause
-  <kbd>s</kbd>: stop
+  <kbd>s</kbd>: start/stop
   <kbd>r</kbd>: herstart
   <kbd>a</kbd>: verbinden
   <kbd>m</kbd>: bekijk logs
