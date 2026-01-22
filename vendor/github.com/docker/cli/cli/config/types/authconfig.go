@@ -6,11 +6,6 @@ type AuthConfig struct {
 	Password string `json:"password,omitempty"`
 	Auth     string `json:"auth,omitempty"`
 
-	// Email is an optional value associated with the username.
-	// This field is deprecated and will be removed in a later
-	// version of docker.
-	Email string `json:"email,omitempty"`
-
 	ServerAddress string `json:"serveraddress,omitempty"`
 
 	// IdentityToken is used to authenticate the user and get
