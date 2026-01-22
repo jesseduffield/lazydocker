@@ -14,3 +14,67 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config:/.config/jesseduffield/lazydocker
+
+
+
+# Define argumentos para as imagens base do builder.
+ARG BASE_IMAGE_BUILDER=golang
+ARG ALPINE_VERSION=3.20
+ARG GO_VERSION=1.21
+
+# --- Estágio 1: Builder do Lazydocker ---
+FROM ${BASE_IMAGE_BUILDER}:${GO_VERSION}-alpine${ALPINE_VERSION} AS builder
+ARG GOARCH=amd64
+ARG GOARM
+ARG VERSION
+ARG VCS_REF
+WORKDIR /tmp/gobuild
+COPY ./ .
+# Compila a aplicação Go, usando o diretório vendor para as dependências.
+# As flags ldflags injetam informações de versão, commit e data no binário.
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} GOARM=${GOARM} \
+    go build -a -mod=vendor \
+    -ldflags="-s -w \
+    -X main.commit=${VCS_REF} \
+    -X main.version=${VERSION} \
+    -X main.buildSource=Docker"
+
+# --- Estágio 2: Builder do cliente Docker ---
+# Este estágio constrói um binário do cliente Docker a partir do código fonte.
+FROM ${BASE_IMAGE_BUILDER}:${GO_VERSION}-alpine${ALPINE_VERSION} AS docker-builder
+ARG GOARCH=amd64
+ARG GOARM
+ARG DOCKER_VERSION=v27.0.3
+RUN apk add -U -q --progress --no-cache git bash coreutils gcc musl-dev
+WORKDIR /go/src/github.com/docker/cli
+RUN git clone --branch ${DOCKER_VERSION} --single-branch --depth 1 https://github.com/docker/cli.git . > /dev/null 2>&1
+ENV CGO_ENABLED=0 \
+    GOARCH=${GOARCH} \
+    GOARM=${GOARM} \
+    DISABLE_WARN_OUTSIDE_CONTAINER=1
+RUN ./scripts/build/binary
+RUN rm build/docker && mv build/docker-linux-* build/docker
+
+# --- Estágio 3: Imagem Final ---
+# Usa a imagem 'scratch', que é uma imagem mínima e vazia, para segurança e tamanho reduzido.
+FROM scratch
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
+# Metadados da imagem (labels).
+LABEL \
+    org.opencontainers.image.authors="jessedduffield@gmail.com" \
+    org.opencontainers.image.created=$BUILD_DATE \
+    org.opencontainers.image.version=$VERSION \
+    org.opencontainers.image.revision=$VCS_REF \
+    org.opencontainers.image.url="https://github.com/jesseduffield/lazydocker" \
+    org.opencontainers.image.documentation="https://github.com/jesseduffield/lazydocker" \
+    org.opencontainers.image.source="https://github.com/jesseduffield/lazydocker" \
+    org.opencontainers.image.title="lazydocker" \
+    org.opencontainers.image.description="A forma mais preguiçosa de gerir tudo relacionado ao docker"
+# Ponto de entrada do contentor.
+ENTRYPOINT [ "/bin/lazydocker" ]
+# Copia o binário do cliente Docker do estágio 'docker-builder'.
+COPY --from=docker-builder /go/src/github.com/docker/cli/build/docker /bin/docker
+# Copia o binário do lazydocker do estágio 'builder'.
+COPY --from=builder /tmp/gobuild/lazydocker /bin/lazydocker
