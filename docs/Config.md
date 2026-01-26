@@ -48,6 +48,13 @@ gui:
   wrapMainPanel: true
   # Side panel width as a ratio of the screen's width
   sidePanelWidth: 0.333
+  # Determines whether each side panel is shown or not
+  sidePanelVisibility:
+    services: true
+    containers: true
+    images: true
+    volumes: true
+    networks: true
   # Determines whether we show the bottom line (the one containing keybinding
   # info and the status of the app).
   showBottomLine: true

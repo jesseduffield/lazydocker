@@ -96,6 +96,7 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 
 			return true
 		},
+		ConfigHidden: !gui.Config.UserConfig.Gui.SidePanelVisibility.Containers,
 		GetTableCells: func(container *commands.Container) []string {
 			return presentation.GetContainerDisplayStrings(&gui.Config.UserConfig.Gui, container)
 		},
