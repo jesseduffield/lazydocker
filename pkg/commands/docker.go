@@ -39,6 +39,7 @@ type DockerCommand struct {
 	Config                 *config.AppConfig
 	Client                 *client.Client
 	InDockerComposeProject bool
+	HasProfiles            bool
 	ErrorChan              chan error
 	ContainerMutex         deadlock.Mutex
 	ServiceMutex           deadlock.Mutex
@@ -56,6 +57,7 @@ type LimitedDockerCommand interface {
 // CommandObject is what we pass to our template resolvers when we are running a custom command. We do not guarantee that all fields will be populated: just the ones that make sense for the current context
 type CommandObject struct {
 	DockerCompose string
+	Profile       string
 	Service       *Service
 	Container     *Container
 	Image         *Image
@@ -123,7 +125,8 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		Config:                 config,
 		Client:                 cli,
 		ErrorChan:              errorChan,
-		InDockerComposeProject: true,
+		InDockerComposeProject: false,
+		HasProfiles:            false,
 		Closers:                []io.Closer{tunnelCloser},
 	}
 
@@ -135,8 +138,20 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 			dockerCommand.NewCommandObject(CommandObject{}),
 		),
 	)
-	if err != nil {
-		dockerCommand.InDockerComposeProject = false
+	if err == nil {
+		dockerCommand.InDockerComposeProject = true
+		err = osCommand.RunCommand(
+			utils.ApplyTemplate(
+				config.UserConfig.CommandTemplates.CheckDockerComposeProfiles,
+				dockerCommand.NewCommandObject(CommandObject{}),
+			),
+		)
+		if err == nil {
+			dockerCommand.HasProfiles = true
+		} else {
+			log.Warn("No profiles found in docker-compose project")
+		}
+	} else {
 		log.Warn(err.Error())
 	}
 
@@ -231,6 +246,22 @@ L:
 	}
 }
 
+// GetProfiles gets the profiles defined in the compose file
+func (c *DockerCommand) GetProfiles() ([]string, error) {
+	if !c.InDockerComposeProject {
+		return nil, nil
+	}
+
+	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
+	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --profiles", composeCommand))
+	if err != nil {
+		return nil, err
+	}
+
+	profiles := utils.SplitLines(output)
+	return profiles, nil
+}
+
 // GetContainers gets the docker containers
 func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Container, error) {
 	c.ContainerMutex.Lock()
@@ -297,7 +328,7 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	}
 
 	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
-	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --services", composeCommand))
+	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s --profile=* config --services", composeCommand))
 	if err != nil {
 		return nil, err
 	}
@@ -370,6 +401,19 @@ func (c *DockerCommand) DockerComposeConfig() string {
 		utils.ApplyTemplate(
 			c.OSCommand.Config.UserConfig.CommandTemplates.DockerComposeConfig,
 			c.NewCommandObject(CommandObject{}),
+		),
+	)
+	if err != nil {
+		output = err.Error()
+	}
+	return output
+}
+
+func (c *DockerCommand) DockerComposeProfileConfig(profile string) string {
+	output, err := c.OSCommand.RunCommandWithOutput(
+		utils.ApplyTemplate(
+			c.OSCommand.Config.UserConfig.CommandTemplates.DockerComposeProfileConfig,
+			c.NewCommandObject(CommandObject{Profile: profile}),
 		),
 	)
 	if err != nil {

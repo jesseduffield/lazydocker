@@ -67,6 +67,14 @@ type TranslationSet struct {
 	ViewLogs                    string
 	UpProject                   string
 	DownProject                 string
+	RestartProject              string
+	UpProfile                   string
+	DownProfile                 string
+	DownProfileWithVolumes      string
+	RestartProfile              string
+	UpAllProfiles               string
+	DownAllProfiles             string
+	DownAllProfilesWithVolumes  string
 	ServicesTitle               string
 	ContainersTitle             string
 	StandaloneContainersTitle   string
@@ -197,6 +205,14 @@ func englishSet() TranslationSet {
 		ViewLogs:                    "view logs",
 		UpProject:                   "up project",
 		DownProject:                 "down project",
+		RestartProject:              "restart project",
+		UpProfile:                   "up profile",
+		DownProfile:                 "down profile",
+		DownProfileWithVolumes:      "down profile with volumes",
+		RestartProfile:              "restart profile",
+		UpAllProfiles:               "up all profiles",
+		DownAllProfiles:             "down all profiles",
+		DownAllProfilesWithVolumes:  "down all profiles with volumes",
 		RemoveImage:                 "remove image",
 		RemoveVolume:                "remove volume",
 		RemoveNetwork:               "remove network",
