@@ -8,7 +8,7 @@ func germanSet() TranslationSet {
 		StoppingStatus:             "anhalten",
 		RunningCustomCommandStatus: "führt benutzerdefinierten Befehl aus",
 
-		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
+		NoViewMachingNewLineFocusedSwitchStatement: "Keine Anzeige passt zu newLineFocused switch statement",
 
 		ErrorOccurred:                     "Es ist ein Fehler aufgetreten! Bitte erstelle ein Issue hier: https://github.com/jesseduffield/lazydocker/issues",
 		ConnectionFailed:                  "Verbindung zum Docker Client fehlgeschlagen. Du musst ggf. den Docker Client neustarten.",
@@ -73,8 +73,8 @@ func germanSet() TranslationSet {
 		CreditsTitle:              "Über Uns",
 		ContainerConfigTitle:      "Container Konfiguration",
 		ContainerEnvTitle:         "Container Env",
-		NothingToDisplay:          "Nothing to display",
-		CannotDisplayEnvVariables: "Something went wrong while displaying environment variables",
+		NothingToDisplay:          "Nichts anzuzeigen",
+		CannotDisplayEnvVariables: "Etwas ging schief beim Anzeigen der Umgebungsvariable",
 
 		NoContainers: "Keine Container",
 		NoContainer:  "Kein Container",
@@ -93,5 +93,20 @@ func germanSet() TranslationSet {
 		StopContainer:               "Bist du dir sicher, dass du den Container anhalten möchtest?",
 		PressEnterToReturn:          "Drücke Eingabe um zu lazydocker zurückzukehren. (Diese Nachfrage kann in Deiner Konfiguration deaktiviert werden, indem du folgenden Wert setzt: `gui.returnImmediately: true`)",
 		DetachFromContainerShortCut: "Um sich vom Container zu trennen, drücken Sie standardmäßig ctrl-p ​​und dann ctrl-q",
+		ViewBulkCommands:            "zeige Bulk Kommandos",
+		ExecShell:                   "Shell ausführen",
+		OpenInBrowser:               "Im Browser öffnen (Erster Port ist HTTP)",
+		LcFilter:                    "Liste filtern",
+		HideStopped:                 "zeige/verstecke gestoppte Container",
+		UpService:                   "Service starten",
+		UpProject:                   "Projekt starten",
+		DownProject:                 "Projekt runterfahren",
+
+		FocusProjects:   "Fokus Projekt Panel",
+		FocusServices:   "Fokus Service Panel",
+		FocusContainers: "Fokus Container Panel",
+		FocusImages:     "Fokus Images Panel",
+		FocusVolumes:    "Fokus Volumes Panel",
+		FocusNetworks:   "Fokus Network Panel",
 	}
 }

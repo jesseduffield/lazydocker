@@ -17,26 +17,26 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>d</kbd>: entfernen
-  <kbd>e</kbd>: hide/show stopped containers
+  <kbd>e</kbd>: zeige/verstecke gestoppte Container
   <kbd>p</kbd>: pause
   <kbd>s</kbd>: anhalten
   <kbd>r</kbd>: neustarten
   <kbd>a</kbd>: anbinden
   <kbd>m</kbd>: zeige Protokolle
-  <kbd>E</kbd>: exec shell
+  <kbd>E</kbd>: Shell ausführen
   <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
-  <kbd>b</kbd>: view bulk commands
-  <kbd>w</kbd>: open in browser (first port is http)
+  <kbd>b</kbd>: zeige Bulk Kommandos
+  <kbd>w</kbd>: Im Browser öffnen (Erster Port ist HTTP)
   <kbd>enter</kbd>: fokussieren aufs Hauptpanel
   <kbd>[</kbd>: vorheriges Tab
   <kbd>]</kbd>: nächstes Tab
-  <kbd>/</kbd>: filter list
+  <kbd>/</kbd>: Liste filtern
 </pre>
 
 ## Dienste
 
 <pre>
-  <kbd>u</kbd>: up service
+  <kbd>u</kbd>: Service starten
   <kbd>d</kbd>: entferne Container
   <kbd>s</kbd>: anhalten
   <kbd>p</kbd>: pause
@@ -44,17 +44,17 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>S</kbd>: start
   <kbd>a</kbd>: anbinden
   <kbd>m</kbd>: zeige Protokolle
-  <kbd>U</kbd>: up project
-  <kbd>D</kbd>: down project
+  <kbd>U</kbd>: Projekt starten
+  <kbd>D</kbd>: Projekt runterfahren
   <kbd>R</kbd>: zeige Neustartoptionen
   <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
-  <kbd>b</kbd>: view bulk commands
-  <kbd>E</kbd>: exec shell
-  <kbd>w</kbd>: open in browser (first port is http)
+  <kbd>b</kbd>: zeige Bulk Kommandos
+  <kbd>E</kbd>: Shell ausführen
+  <kbd>w</kbd>: Im Browser öffnen (Erster Port ist HTTP)
   <kbd>enter</kbd>: fokussieren aufs Hauptpanel
   <kbd>[</kbd>: vorheriges Tab
   <kbd>]</kbd>: nächstes Tab
-  <kbd>/</kbd>: filter list
+  <kbd>/</kbd>: Liste filtern
 </pre>
 
 ## Images
@@ -62,11 +62,11 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
   <kbd>d</kbd>: entferne Image
-  <kbd>b</kbd>: view bulk commands
+  <kbd>b</kbd>: zeige Bulk Kommandos
   <kbd>enter</kbd>: fokussieren aufs Hauptpanel
   <kbd>[</kbd>: vorheriges Tab
   <kbd>]</kbd>: nächstes Tab
-  <kbd>/</kbd>: filter list
+  <kbd>/</kbd>: Liste filtern
 </pre>
 
 ## Volumes
@@ -74,11 +74,11 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
   <kbd>d</kbd>: entferne Volume
-  <kbd>b</kbd>: view bulk commands
+  <kbd>b</kbd>: zeige Bulk Kommandos
   <kbd>enter</kbd>: fokussieren aufs Hauptpanel
   <kbd>[</kbd>: vorheriges Tab
   <kbd>]</kbd>: nächstes Tab
-  <kbd>/</kbd>: filter list
+  <kbd>/</kbd>: Liste filtern
 </pre>
 
 ## Netzwerk
@@ -86,11 +86,11 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
   <kbd>d</kbd>: entferne Netzwerk
-  <kbd>b</kbd>: view bulk commands
+  <kbd>b</kbd>: zeige Bulk Kommandos
   <kbd>enter</kbd>: fokussieren aufs Hauptpanel
   <kbd>[</kbd>: vorheriges Tab
   <kbd>]</kbd>: nächstes Tab
-  <kbd>/</kbd>: filter list
+  <kbd>/</kbd>: Liste filtern
 </pre>
 
 ## Haupt
@@ -104,10 +104,10 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>+</kbd>: next screen mode (normal/half/fullscreen)
   <kbd>_</kbd>: prev screen mode
-  <kbd>1</kbd>: focus projects panel
-  <kbd>2</kbd>: focus services panel
-  <kbd>3</kbd>: focus containers panel
-  <kbd>4</kbd>: focus images panel
-  <kbd>5</kbd>: focus volumes panel
-  <kbd>6</kbd>: focus networks panel
+  <kbd>1</kbd>: Fokus Projekt Panel
+  <kbd>2</kbd>: Fokus Service Panel
+  <kbd>3</kbd>: Fokus Container Panel
+  <kbd>4</kbd>: Fokus Images Panel
+  <kbd>5</kbd>: Fokus Volumes Panel
+  <kbd>6</kbd>: Fokus Network Panel
 </pre>
