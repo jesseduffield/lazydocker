@@ -81,7 +81,7 @@ brews:
 #      386: x86
 #      amd64: x86_64
 #
-#    # Wether to publish the snap to the snapcraft store.
+#    # Whether to publish the snap to the snapcraft store.
 #    # Remember you need to `snapcraft login` first.
 #    # Defaults to false.
 #    publish: false
