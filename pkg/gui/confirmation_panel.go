@@ -104,7 +104,7 @@ func (gui *Gui) createPopupPanel(title, prompt string, handleConfirm, handleClos
 	gui.g.Update(func(g *gocui.Gui) error {
 		if gui.currentViewName() == "confirmation" {
 			if err := gui.closeConfirmationPrompt(); err != nil {
-				gui.Log.Error(err.Error())
+				gui.Log.Error(err)
 			}
 		}
 		err := gui.prepareConfirmationPanel(title, prompt)

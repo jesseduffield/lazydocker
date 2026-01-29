@@ -60,7 +60,7 @@ func (c *OSCommand) RunCommandWithOutput(command string) (string, error) {
 	cmd := c.ExecutableFromString(command)
 	before := time.Now()
 	output, err := sanitisedCommandOutput(cmd.Output())
-	c.Log.Warn(fmt.Sprintf("'%s': %s", command, time.Since(before)))
+	c.Log.Warnf("'%s': %s", command, time.Since(before))
 	return output, err
 }
 
@@ -69,7 +69,7 @@ func (c *OSCommand) RunCommandWithOutputContext(ctx context.Context, command str
 	cmd := c.ExecutableFromStringContext(ctx, command)
 	before := time.Now()
 	output, err := sanitisedCommandOutput(cmd.Output())
-	c.Log.Warn(fmt.Sprintf("'%s': %s", command, time.Since(before)))
+	c.Log.Warnf("'%s': %s", command, time.Since(before))
 	return output, err
 }
 
