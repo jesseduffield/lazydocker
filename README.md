@@ -223,6 +223,15 @@ yay -S lazydocker
         echo "alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'" >> ~/.zshrc
         ```
 
+### `.deb` Package
+
+You can also install `lazydocker` using a `.deb` package. This allows you to easily add it to any deb-based distribution, including Ubuntu.
+
+To do that, just download the latest `.deb` package from the releases page and install the package using `dpkg`:
+
+```sh
+sudo dpkg -i lazydocker_<version>_amd64.deb
+```
 
 
 For development, you can build the image using:
