@@ -32,6 +32,7 @@ func germanSet() TranslationSet {
 		Cancel:             "abbrechen",
 		Remove:             "entfernen",
 		ForceRemove:        "Entfernen erzwingen",
+		ForceRemoveWithVolumes: "Entfernen erzwingen mit Volumes",
 		RemoveWithVolumes:  "entferne mit Volumes",
 		RemoveService:      "entferne Container",
 		Stop:               "anhalten",
