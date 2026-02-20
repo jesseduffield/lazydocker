@@ -161,8 +161,12 @@ func (c *OSCommand) OpenFile(filename string) error {
 	}
 
 	command := utils.ResolvePlaceholderString(commandTemplate, templateValues)
-	err := c.RunCommand(command)
-	return err
+	cmd := c.ExecutableFromString(command)
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	go cmd.Wait()
+	return nil
 }
 
 // OpenLink opens a file with the given
@@ -173,8 +177,12 @@ func (c *OSCommand) OpenLink(link string) error {
 	}
 
 	command := utils.ResolvePlaceholderString(commandTemplate, templateValues)
-	err := c.RunCommand(command)
-	return err
+	cmd := c.ExecutableFromString(command)
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	go cmd.Wait()
+	return nil
 }
 
 // EditFile opens a file in a subprocess using whatever editor is available,
