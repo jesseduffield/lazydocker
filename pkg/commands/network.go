@@ -48,6 +48,11 @@ func (c *DockerCommand) PruneNetworks() error {
 	return err
 }
 
+// Inspect fetches the full network details including containers
+func (v *Network) Inspect() (network.Inspect, error) {
+	return v.Client.NetworkInspect(context.Background(), v.Network.ID, network.InspectOptions{})
+}
+
 // Remove removes the network
 func (v *Network) Remove() error {
 	return v.Client.NetworkRemove(context.Background(), v.Name)
