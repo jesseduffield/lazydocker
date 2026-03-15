@@ -47,6 +47,9 @@ type SideListPanel[T comparable] struct {
 	// a callback to invoke when the item is clicked
 	OnClick func(T) error
 
+	// a callback to invoke when a new item is selected (e.g. keyboard navigation)
+	OnSelect func(T) error
+
 	// returns the cells that we render to the view in a table format. The cells will
 	// be rendered with padding.
 	GetTableCells func(T) []string
@@ -115,6 +118,12 @@ func (self *SideListPanel[T]) HandleSelect() error {
 	}
 
 	self.Refocus()
+
+	if self.OnSelect != nil {
+		if err := self.OnSelect(item); err != nil {
+			return err
+		}
+	}
 
 	return self.renderContext(item)
 }

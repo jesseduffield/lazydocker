@@ -74,11 +74,24 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 
 			return a.Name < b.Name
 		},
+		Filter: func(service *commands.Service) bool {
+			selectedProject := gui.getSelectedProjectName()
+			if selectedProject == "" {
+				// Before any project is selected (e.g. startup), default to
+				// the local project so we don't briefly flash all services.
+				selectedProject = gui.DockerCommand.LocalProjectName
+			}
+			if selectedProject == "" {
+				return true
+			}
+			return service.ProjectName == selectedProject
+		},
 		GetTableCells: func(service *commands.Service) []string {
 			return presentation.GetServiceDisplayStrings(&gui.Config.UserConfig.Gui, service)
 		},
 		Hide: func() bool {
-			return !gui.DockerCommand.InDockerComposeProject
+			// Show services panel if there are any compose projects (local or discovered)
+			return !gui.DockerCommand.InDockerComposeProject && len(gui.Panels.Services.List.GetAllItems()) == 0
 		},
 	}
 }
@@ -142,13 +155,24 @@ func (r *commandOption) getDisplayStrings() []string {
 	return []string{r.description, color.New(color.FgCyan).Sprint(r.command)}
 }
 
+// isServiceFromLocalProject returns true if the given service belongs to the
+// local compose project (the one whose compose file is in the current directory).
+// Compose commands like up/stop/restart only work for local project services.
+func (gui *Gui) isServiceFromLocalProject(service *commands.Service) bool {
+	return service.ProjectName == gui.DockerCommand.LocalProjectName
+}
+
 func (gui *Gui) handleServiceRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	service, err := gui.Panels.Services.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
-	composeCommand := gui.Config.UserConfig.CommandTemplates.DockerCompose
+	if !gui.isServiceFromLocalProject(service) {
+		return gui.createErrorPanel(gui.Tr.CannotManageNonLocalService)
+	}
+
+	composeCommand := gui.DockerCommand.NewCommandObject(commands.CommandObject{Service: service}).DockerCompose
 
 	options := []*commandOption{
 		{
@@ -202,10 +226,15 @@ func (gui *Gui) handleServiceStop(g *gocui.Gui, v *gocui.View) error {
 
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.StopService, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.StoppingStatus, func() error {
+			if !gui.isServiceFromLocalProject(service) {
+				if service.Container == nil {
+					return gui.createErrorPanel(gui.Tr.CannotManageNonLocalService)
+				}
+				return service.Container.Stop()
+			}
 			if err := service.Stop(); err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
-
 			return nil
 		})
 	}, nil)
@@ -215,6 +244,10 @@ func (gui *Gui) handleServiceUp(g *gocui.Gui, v *gocui.View) error {
 	service, err := gui.Panels.Services.GetSelectedItem()
 	if err != nil {
 		return nil
+	}
+
+	if !gui.isServiceFromLocalProject(service) {
+		return gui.createErrorPanel(gui.Tr.CannotManageNonLocalService)
 	}
 
 	return gui.WithWaitingStatus(gui.Tr.UppingServiceStatus, func() error {
@@ -233,10 +266,15 @@ func (gui *Gui) handleServiceRestart(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	return gui.WithWaitingStatus(gui.Tr.RestartingStatus, func() error {
+		if !gui.isServiceFromLocalProject(service) {
+			if service.Container == nil {
+				return gui.createErrorPanel(gui.Tr.CannotManageNonLocalService)
+			}
+			return service.Container.Restart()
+		}
 		if err := service.Restart(); err != nil {
 			return gui.createErrorPanel(err.Error())
 		}
-
 		return nil
 	})
 }
@@ -247,11 +285,19 @@ func (gui *Gui) handleServiceStart(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
+	if !gui.isServiceFromLocalProject(service) {
+		if service.Container == nil {
+			return gui.createErrorPanel(gui.Tr.CannotManageNonLocalService)
+		}
+		return gui.WithWaitingStatus(gui.Tr.StartingStatus, func() error {
+			return service.Container.Start()
+		})
+	}
+
 	return gui.WithWaitingStatus(gui.Tr.StartingStatus, func() error {
 		if err := service.Start(); err != nil {
 			return gui.createErrorPanel(err.Error())
 		}
-
 		return nil
 	})
 }
@@ -289,10 +335,14 @@ func (gui *Gui) handleServiceRenderLogsToMain(g *gocui.Gui, v *gocui.View) error
 }
 
 func (gui *Gui) handleProjectUp(g *gocui.Gui, v *gocui.View) error {
+	project, _ := gui.Panels.Projects.GetSelectedItem()
+	if project != nil && project.Name != gui.DockerCommand.LocalProjectName {
+		return gui.createErrorPanel(gui.Tr.CannotManageNonLocalService)
+	}
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmUpProject, func(g *gocui.Gui, v *gocui.View) error {
 		cmdStr := utils.ApplyTemplate(
 			gui.Config.UserConfig.CommandTemplates.Up,
-			gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+			gui.DockerCommand.NewCommandObject(commands.CommandObject{Project: project}),
 		)
 
 		return gui.WithWaitingStatus(gui.Tr.UppingProjectStatus, func() error {
@@ -305,14 +355,18 @@ func (gui *Gui) handleProjectUp(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) handleProjectDown(g *gocui.Gui, v *gocui.View) error {
+	project, _ := gui.Panels.Projects.GetSelectedItem()
+	if project != nil && project.Name != gui.DockerCommand.LocalProjectName {
+		return gui.createErrorPanel(gui.Tr.CannotManageNonLocalService)
+	}
 	downCommand := utils.ApplyTemplate(
 		gui.Config.UserConfig.CommandTemplates.Down,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+		gui.DockerCommand.NewCommandObject(commands.CommandObject{Project: project}),
 	)
 
 	downWithVolumesCommand := utils.ApplyTemplate(
 		gui.Config.UserConfig.CommandTemplates.DownWithVolumes,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+		gui.DockerCommand.NewCommandObject(commands.CommandObject{Project: project}),
 	)
 
 	options := []*commandOption{
@@ -359,6 +413,10 @@ func (gui *Gui) handleServiceRestartMenu(g *gocui.Gui, v *gocui.View) error {
 	service, err := gui.Panels.Services.GetSelectedItem()
 	if err != nil {
 		return nil
+	}
+
+	if !gui.isServiceFromLocalProject(service) {
+		return gui.createErrorPanel(gui.Tr.CannotManageNonLocalService)
 	}
 
 	rebuildCommand := utils.ApplyTemplate(
@@ -465,8 +523,9 @@ L:
 }
 
 func (gui *Gui) handleServicesBulkCommand(g *gocui.Gui, v *gocui.View) error {
+	project, _ := gui.Panels.Projects.GetSelectedItem()
 	bulkCommands := gui.Config.UserConfig.BulkCommands.Services
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{Project: project})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }
