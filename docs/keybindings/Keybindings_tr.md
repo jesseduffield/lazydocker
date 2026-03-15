@@ -11,6 +11,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>enter</kbd>: ana panele odaklan
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Konteynerler

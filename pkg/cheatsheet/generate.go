@@ -33,7 +33,7 @@ func Generate() {
 }
 
 func generateAtDir(dir string) {
-	mConfig, err := config.NewAppConfig("lazydocker", "", "", "", "", true, nil, "")
+	mConfig, err := config.NewAppConfig("lazydocker", "", "", "", "", true, nil, "", "")
 	if err != nil {
 		panic(err)
 	}

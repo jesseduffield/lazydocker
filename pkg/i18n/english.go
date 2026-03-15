@@ -110,17 +110,18 @@ type TranslationSet struct {
 	OpenInBrowser               string
 	SortContainersByState       string
 
-	LogsTitle                 string
-	ConfigTitle               string
-	EnvTitle                  string
-	DockerComposeConfigTitle  string
-	StatsTitle                string
-	CreditsTitle              string
-	ContainerConfigTitle      string
-	ContainerEnvTitle         string
-	NothingToDisplay          string
-	NoContainerForService     string
-	CannotDisplayEnvVariables string
+	LogsTitle                   string
+	ConfigTitle                 string
+	EnvTitle                    string
+	DockerComposeConfigTitle    string
+	StatsTitle                  string
+	CreditsTitle                string
+	ContainerConfigTitle        string
+	ContainerEnvTitle           string
+	NothingToDisplay            string
+	NoContainerForService       string
+	CannotDisplayEnvVariables   string
+	CannotManageNonLocalService string
 
 	No  string
 	Yes string
@@ -217,30 +218,31 @@ func englishSet() TranslationSet {
 		OpenInBrowser:               "open in browser (first port is http)",
 		SortContainersByState:       "sort containers by state",
 
-		GlobalTitle:               "Global",
-		MainTitle:                 "Main",
-		ProjectTitle:              "Project",
-		ServicesTitle:             "Services",
-		ContainersTitle:           "Containers",
-		StandaloneContainersTitle: "Standalone Containers",
-		ImagesTitle:               "Images",
-		VolumesTitle:              "Volumes",
-		NetworksTitle:             "Networks",
-		CustomCommandTitle:        "Custom Command:",
-		BulkCommandTitle:          "Bulk Command:",
-		ErrorTitle:                "Error",
-		LogsTitle:                 "Logs",
-		ConfigTitle:               "Config",
-		EnvTitle:                  "Env",
-		DockerComposeConfigTitle:  "Docker-Compose Config",
-		TopTitle:                  "Top",
-		StatsTitle:                "Stats",
-		CreditsTitle:              "About",
-		ContainerConfigTitle:      "Container Config",
-		ContainerEnvTitle:         "Container Env",
-		NothingToDisplay:          "Nothing to display",
-		NoContainerForService:     "No logs to show; service is not associated with a container",
-		CannotDisplayEnvVariables: "Something went wrong while displaying environment variables",
+		GlobalTitle:                 "Global",
+		MainTitle:                   "Main",
+		ProjectTitle:                "Project",
+		ServicesTitle:               "Services",
+		ContainersTitle:             "Containers",
+		StandaloneContainersTitle:   "Standalone Containers",
+		ImagesTitle:                 "Images",
+		VolumesTitle:                "Volumes",
+		NetworksTitle:               "Networks",
+		CustomCommandTitle:          "Custom Command:",
+		BulkCommandTitle:            "Bulk Command:",
+		ErrorTitle:                  "Error",
+		LogsTitle:                   "Logs",
+		ConfigTitle:                 "Config",
+		EnvTitle:                    "Env",
+		DockerComposeConfigTitle:    "Docker-Compose Config",
+		TopTitle:                    "Top",
+		StatsTitle:                  "Stats",
+		CreditsTitle:                "About",
+		ContainerConfigTitle:        "Container Config",
+		ContainerEnvTitle:           "Container Env",
+		NothingToDisplay:            "Nothing to display",
+		NoContainerForService:       "No logs to show; service is not associated with a container",
+		CannotDisplayEnvVariables:   "Something went wrong while displaying environment variables",
+		CannotManageNonLocalService: "This service belongs to a different compose project. Run lazydocker from that project's directory to manage it.",
 
 		NoContainers: "No containers",
 		NoContainer:  "No container",

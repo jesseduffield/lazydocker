@@ -3,7 +3,6 @@ package gui
 import (
 	"bytes"
 	"context"
-	"path"
 	"strings"
 
 	"github.com/fatih/color"
@@ -16,34 +15,21 @@ import (
 	"github.com/jesseduffield/yaml"
 )
 
-// Although at the moment we'll only have one project, in future we could have
-// a list of projects in the project panel.
-
 func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 	return &panels.SideListPanel[*commands.Project]{
 		ContextState: &panels.ContextState[*commands.Project]{
 			GetMainTabs: func() []panels.MainTab[*commands.Project] {
-				if gui.DockerCommand.InDockerComposeProject {
-					return []panels.MainTab[*commands.Project]{
-						{
-							Key:    "logs",
-							Title:  gui.Tr.LogsTitle,
-							Render: gui.renderAllLogs,
-						},
-						{
-							Key:    "config",
-							Title:  gui.Tr.DockerComposeConfigTitle,
-							Render: gui.renderDockerComposeConfig,
-						},
-						{
-							Key:    "credits",
-							Title:  gui.Tr.CreditsTitle,
-							Render: gui.renderCredits,
-						},
-					}
-				}
-
 				return []panels.MainTab[*commands.Project]{
+					{
+						Key:    "logs",
+						Title:  gui.Tr.LogsTitle,
+						Render: gui.renderAllLogs,
+					},
+					{
+						Key:    "config",
+						Title:  gui.Tr.DockerComposeConfigTitle,
+						Render: gui.renderDockerComposeConfig,
+					},
 					{
 						Key:    "credits",
 						Title:  gui.Tr.CreditsTitle,
@@ -64,31 +50,87 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 		Gui:            gui.intoInterface(),
 
 		Sort: func(a *commands.Project, b *commands.Project) bool {
-			return false
+			return a.Name < b.Name
 		},
 		GetTableCells: presentation.GetProjectDisplayStrings,
-		// It doesn't make sense to filter a list of only one item.
-		DisableFilter: true,
+		OnSelect: func(project *commands.Project) error {
+			// When a different project is selected, re-filter services and
+			// containers to show only those belonging to the selected project.
+			return gui.renderContainersAndServices()
+		},
 	}
 }
 
 func (gui *Gui) refreshProject() error {
-	gui.Panels.Projects.SetItems([]*commands.Project{{Name: gui.getProjectName()}})
-	return gui.Panels.Projects.RerenderList()
-}
+	projects := gui.getDiscoveredProjects()
 
-func (gui *Gui) getProjectName() string {
-	projectName := path.Base(gui.Config.ProjectDir)
-	if gui.DockerCommand.InDockerComposeProject {
-		for _, service := range gui.Panels.Services.List.GetAllItems() {
-			container := service.Container
-			if container != nil && container.DetailsLoaded() {
-				return container.Details.Config.Labels["com.docker.compose.project"]
+	// Preserve the current selection across refreshes. On the first refresh,
+	// select the project specified via -p flag, or fall back to the local project.
+	selectedName := gui.getSelectedProjectName()
+	if selectedName == "" {
+		if gui.Config.ProjectName != "" {
+			selectedName = gui.Config.ProjectName
+		} else {
+			selectedName = gui.DockerCommand.LocalProjectName
+		}
+	}
+
+	gui.Panels.Projects.SetItems(projects)
+
+	if selectedName != "" {
+		for i, p := range gui.Panels.Projects.List.GetItems() {
+			if p.Name == selectedName {
+				gui.Panels.Projects.SetSelectedLineIdx(i)
+				gui.Panels.Projects.Refocus()
+				break
 			}
 		}
 	}
 
-	return projectName
+	return gui.Panels.Projects.RerenderList()
+}
+
+// getDiscoveredProjects returns all docker compose projects by examining container labels.
+// The local project (from docker-compose.yml in the current directory) is included if
+// it has running containers or if InDockerComposeProject is true.
+func (gui *Gui) getDiscoveredProjects() []*commands.Project {
+	containers := gui.Panels.Containers.List.GetAllItems()
+	projectNames := gui.DockerCommand.GetProjectNames(containers)
+
+	// If we're in a docker compose project but it has no running containers,
+	// still include it. We don't fall back to the directory name here to avoid
+	// briefly flashing the wrong project name on startup.
+	localName := gui.DockerCommand.LocalProjectName
+
+	if gui.DockerCommand.InDockerComposeProject && localName != "" {
+		found := false
+		for _, name := range projectNames {
+			if name == localName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			projectNames = append([]string{localName}, projectNames...)
+		}
+	}
+
+	projects := make([]*commands.Project, len(projectNames))
+	for i, name := range projectNames {
+		projects[i] = &commands.Project{Name: name}
+	}
+
+	return projects
+}
+
+// getSelectedProjectName returns the name of the currently selected project,
+// or empty string if none is selected.
+func (gui *Gui) getSelectedProjectName() string {
+	project, err := gui.Panels.Projects.GetSelectedItem()
+	if err != nil {
+		return ""
+	}
+	return project.Name
 }
 
 func (gui *Gui) renderCredits(_project *commands.Project) tasks.TaskFunc {
@@ -112,7 +154,7 @@ func (gui *Gui) creditsStr() string {
 		}, "\n\n")
 }
 
-func (gui *Gui) renderAllLogs(_project *commands.Project) tasks.TaskFunc {
+func (gui *Gui) renderAllLogs(project *commands.Project) tasks.TaskFunc {
 	return gui.NewTask(TaskOpts{
 		Autoscroll: true,
 		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
@@ -122,7 +164,7 @@ func (gui *Gui) renderAllLogs(_project *commands.Project) tasks.TaskFunc {
 			cmd := gui.OSCommand.RunCustomCommand(
 				utils.ApplyTemplate(
 					gui.Config.UserConfig.CommandTemplates.AllLogs,
-					gui.DockerCommand.NewCommandObject(commands.CommandObject{}),
+					gui.DockerCommand.NewCommandObject(commands.CommandObject{Project: project}),
 				),
 			)
 
@@ -144,9 +186,14 @@ func (gui *Gui) renderAllLogs(_project *commands.Project) tasks.TaskFunc {
 	})
 }
 
-func (gui *Gui) renderDockerComposeConfig(_project *commands.Project) tasks.TaskFunc {
+func (gui *Gui) renderDockerComposeConfig(project *commands.Project) tasks.TaskFunc {
+	if project != nil && project.Name != gui.DockerCommand.LocalProjectName {
+		return gui.NewSimpleRenderStringTask(func() string {
+			return "Compose config is not available for non-local projects"
+		})
+	}
 	return gui.NewSimpleRenderStringTask(func() string {
-		return utils.ColoredYamlString(gui.DockerCommand.DockerComposeConfig())
+		return utils.ColoredYamlString(gui.DockerCommand.DockerComposeConfigForProject(project))
 	})
 }
 
@@ -173,7 +220,8 @@ func lazydockerTitle() string {
 
 // handleViewAllLogs switches to a subprocess viewing all the logs from docker-compose
 func (gui *Gui) handleViewAllLogs(g *gocui.Gui, v *gocui.View) error {
-	c, err := gui.DockerCommand.ViewAllLogs()
+	project, _ := gui.Panels.Projects.GetSelectedItem()
+	c, err := gui.DockerCommand.ViewAllLogs(project)
 	if err != nil {
 		return gui.createErrorPanel(err.Error())
 	}

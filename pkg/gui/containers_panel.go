@@ -27,7 +27,7 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 		}
 
 		return !lo.SomeBy(gui.Panels.Services.List.GetAllItems(), func(service *commands.Service) bool {
-			return service.Name == container.ServiceName
+			return service.Name == container.ServiceName && service.ProjectName == container.ProjectName
 		})
 	}
 
@@ -91,6 +91,16 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 			}
 
 			if !gui.State.ShowExitedContainers && container.Container.State == "exited" {
+				return false
+			}
+
+			// Filter by selected project. Containers with no project (truly
+			// standalone, not from any compose project) are always shown.
+			selectedProject := gui.getSelectedProjectName()
+			if selectedProject == "" {
+				selectedProject = gui.DockerCommand.LocalProjectName
+			}
+			if selectedProject != "" && container.ProjectName != "" && container.ProjectName != selectedProject {
 				return false
 			}
 
@@ -256,7 +266,6 @@ func (gui *Gui) refreshContainersAndServices() error {
 	selectedService, isServiceSelected := gui.Panels.Services.List.TryGet(originalSelectedLineIdx)
 
 	containers, services, err := gui.DockerCommand.RefreshContainersAndServices(
-		gui.Panels.Services.List.GetAllItems(),
 		gui.Panels.Containers.List.GetAllItems(),
 	)
 	if err != nil {
@@ -283,10 +292,8 @@ func (gui *Gui) refreshContainersAndServices() error {
 }
 
 func (gui *Gui) renderContainersAndServices() error {
-	if gui.DockerCommand.InDockerComposeProject {
-		if err := gui.Panels.Services.RerenderList(); err != nil {
-			return err
-		}
+	if err := gui.Panels.Services.RerenderList(); err != nil {
+		return err
 	}
 
 	if err := gui.Panels.Containers.RerenderList(); err != nil {

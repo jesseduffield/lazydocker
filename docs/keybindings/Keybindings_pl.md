@@ -11,6 +11,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>enter</kbd>: skup na głównym panelu
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka
+  <kbd>/</kbd>: filter list
 </pre>
 
 ## Kontenery
