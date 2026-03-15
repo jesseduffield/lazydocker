@@ -94,14 +94,19 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 				return false
 			}
 
-			// Filter by selected project. Containers with no project (truly
-			// standalone, not from any compose project) are always shown.
-			selectedProject := gui.getSelectedProjectName()
-			if selectedProject == "" {
-				selectedProject = gui.DockerCommand.LocalProjectName
-			}
-			if selectedProject != "" && container.ProjectName != "" && container.ProjectName != selectedProject {
-				return false
+			// Only apply project filtering when we are inside a docker-compose
+			// project. Outside of a compose project all containers are shown in
+			// a flat list regardless of which compose project they belong to.
+			if gui.DockerCommand.InDockerComposeProject {
+				// Filter by selected project. Containers with no project (truly
+				// standalone, not from any compose project) are always shown.
+				selectedProject := gui.getSelectedProjectName()
+				if selectedProject == "" {
+					selectedProject = gui.DockerCommand.LocalProjectName
+				}
+				if selectedProject != "" && container.ProjectName != "" && container.ProjectName != selectedProject {
+					return false
+				}
 			}
 
 			return true

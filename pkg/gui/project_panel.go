@@ -58,6 +58,14 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 			// containers to show only those belonging to the selected project.
 			return gui.renderContainersAndServices()
 		},
+		Hide: func() bool {
+			// Only show the project panel when we are inside a docker-compose
+			// project directory. When launched outside of a compose project
+			// there is no meaningful local project to display, so we hide the
+			// panel and let the containers panel show all containers in a flat
+			// list (matching the behaviour from before v0.25).
+			return !gui.DockerCommand.InDockerComposeProject
+		},
 	}
 }
 
