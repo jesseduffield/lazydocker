@@ -1,7 +1,10 @@
 package presentation
 
-import "github.com/jesseduffield/lazydocker/pkg/commands"
+import (
+	"github.com/jesseduffield/lazycontainer/pkg/commands"
+	"github.com/jesseduffield/lazycontainer/pkg/utils"
+)
 
 func GetVolumeDisplayStrings(volume *commands.Volume) []string {
-	return []string{volume.Volume.Driver, volume.Name}
+	return []string{utils.FormatBinaryBytes(int(volume.AppleVolume.SizeInBytes)), volume.Name}
 }

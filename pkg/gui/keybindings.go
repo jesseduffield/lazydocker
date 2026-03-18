@@ -6,18 +6,14 @@ import (
 	"github.com/jesseduffield/gocui"
 )
 
-// Binding - a keybinding mapping a key and modifier to a handler. The keypress
-// is only handled if the given view has focus, or handled globally if the view
-// is ""
 type Binding struct {
 	ViewName    string
 	Handler     func(*gocui.Gui, *gocui.View) error
-	Key         interface{} // FIXME: find out how to get `gocui.Key | rune`
+	Key         interface{}
 	Modifier    gocui.Modifier
 	Description string
 }
 
-// GetKey is a function.
 func (b *Binding) GetKey() string {
 	key := 0
 
@@ -28,7 +24,6 @@ func (b *Binding) GetKey() string {
 		key = int(b.Key.(gocui.Key))
 	}
 
-	// special keys
 	switch key {
 	case 27:
 		return "esc"
@@ -53,7 +48,6 @@ func (b *Binding) GetKey() string {
 	return fmt.Sprintf("%c", key)
 }
 
-// GetInitialKeybindings is a function.
 func (gui *Gui) GetInitialKeybindings() []*Binding {
 	bindings := []*Binding{
 		{
@@ -129,27 +123,6 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:  gui.handleCustomCommand,
 		},
 		{
-			ViewName:    "project",
-			Key:         'e',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleEditConfig,
-			Description: gui.Tr.EditConfig,
-		},
-		{
-			ViewName:    "project",
-			Key:         'o',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleOpenConfig,
-			Description: gui.Tr.OpenConfig,
-		},
-		{
-			ViewName:    "project",
-			Key:         'm',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleViewAllLogs,
-			Description: gui.Tr.ViewLogs,
-		},
-		{
 			ViewName: "menu",
 			Key:      gocui.KeyEsc,
 			Modifier: gocui.ModNone,
@@ -198,13 +171,6 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleHideStoppedContainers,
 			Description: gui.Tr.HideStopped,
-		},
-		{
-			ViewName:    "containers",
-			Key:         'p',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleContainerPause,
-			Description: gui.Tr.Pause,
 		},
 		{
 			ViewName:    "containers",
@@ -263,109 +229,11 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.OpenInBrowser,
 		},
 		{
-			ViewName:    "services",
-			Key:         'u',
+			ViewName:    "containers",
+			Key:         'k',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServiceUp,
-			Description: gui.Tr.UpService,
-		},
-		{
-			ViewName:    "services",
-			Key:         'd',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServiceRemoveMenu,
-			Description: gui.Tr.RemoveService,
-		},
-		{
-			ViewName:    "services",
-			Key:         's',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServiceStop,
-			Description: gui.Tr.Stop,
-		},
-		{
-			ViewName:    "services",
-			Key:         'p',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServicePause,
-			Description: gui.Tr.Pause,
-		},
-		{
-			ViewName:    "services",
-			Key:         'r',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServiceRestart,
-			Description: gui.Tr.Restart,
-		},
-		{
-			ViewName:    "services",
-			Key:         'S',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServiceStart,
-			Description: gui.Tr.Start,
-		},
-		{
-			ViewName:    "services",
-			Key:         'a',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServiceAttach,
-			Description: gui.Tr.Attach,
-		},
-		{
-			ViewName:    "services",
-			Key:         'm',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServiceRenderLogsToMain,
-			Description: gui.Tr.ViewLogs,
-		},
-		{
-			ViewName:    "services",
-			Key:         'U',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleProjectUp,
-			Description: gui.Tr.UpProject,
-		},
-		{
-			ViewName:    "services",
-			Key:         'D',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleProjectDown,
-			Description: gui.Tr.DownProject,
-		},
-		{
-			ViewName:    "services",
-			Key:         'R',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServiceRestartMenu,
-			Description: gui.Tr.ViewRestartOptions,
-		},
-		{
-			ViewName:    "services",
-			Key:         'c',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServicesCustomCommand,
-			Description: gui.Tr.RunCustomCommand,
-		},
-		{
-			ViewName:    "services",
-			Key:         'b',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServicesBulkCommand,
-			Description: gui.Tr.ViewBulkCommands,
-		},
-		{
-			ViewName:    "services",
-			Key:         'E',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServicesExecShell,
-			Description: gui.Tr.ExecShell,
-		},
-		{
-			ViewName:    "services",
-			Key:         'w',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.handleServicesOpenInBrowserCommand,
-			Description: gui.Tr.OpenInBrowser,
+			Handler:     gui.handleContainerKill,
+			Description: gui.Tr.Kill,
 		},
 		{
 			ViewName:    "images",
@@ -535,12 +403,10 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	}
 
 	bindings = append(bindings, []*Binding{
-		{Handler: gui.handleGoTo(gui.Panels.Projects.View), Key: '1', Description: gui.Tr.FocusProjects},
-		{Handler: gui.handleGoTo(gui.Panels.Services.View), Key: '2', Description: gui.Tr.FocusServices},
-		{Handler: gui.handleGoTo(gui.Panels.Containers.View), Key: '3', Description: gui.Tr.FocusContainers},
-		{Handler: gui.handleGoTo(gui.Panels.Images.View), Key: '4', Description: gui.Tr.FocusImages},
-		{Handler: gui.handleGoTo(gui.Panels.Volumes.View), Key: '5', Description: gui.Tr.FocusVolumes},
-		{Handler: gui.handleGoTo(gui.Panels.Networks.View), Key: '6', Description: gui.Tr.FocusNetworks},
+		{Handler: gui.handleGoTo(gui.Panels.Containers.View), Key: '1', Description: gui.Tr.FocusContainers},
+		{Handler: gui.handleGoTo(gui.Panels.Images.View), Key: '2', Description: gui.Tr.FocusImages},
+		{Handler: gui.handleGoTo(gui.Panels.Volumes.View), Key: '3', Description: gui.Tr.FocusVolumes},
+		{Handler: gui.handleGoTo(gui.Panels.Networks.View), Key: '4', Description: gui.Tr.FocusNetworks},
 	}...)
 
 	for _, panel := range gui.allListPanels() {

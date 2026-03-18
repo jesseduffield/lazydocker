@@ -1,46 +1,42 @@
 package commands
 
 import (
-	"context"
 	"strings"
 
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/client"
 	"github.com/fatih/color"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
-	"github.com/samber/lo"
+	"github.com/jesseduffield/lazycontainer/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
-// Image : A docker Image
 type Image struct {
-	Name          string
-	Tag           string
-	ID            string
-	Image         image.Summary
-	Client        *client.Client
-	OSCommand     *OSCommand
-	Log           *logrus.Entry
-	DockerCommand LimitedDockerCommand
+	Name         string
+	Tag          string
+	ID           string
+	AppleImage   AppleImage
+	Client       *ContainerClient
+	OSCommand    *OSCommand
+	Log          *logrus.Entry
+	ContainerCmd LimitedContainerCommand
 }
 
-// Remove removes the image
-func (i *Image) Remove(options image.RemoveOptions) error {
-	if _, err := i.Client.ImageRemove(context.Background(), i.ID, options); err != nil {
-		return err
-	}
-
-	return nil
+func (i *Image) Remove(force bool) error {
+	return i.Client.RemoveImage(i.ID, force)
 }
 
-func getHistoryResponseItemDisplayStrings(layer image.HistoryResponseItem) []string {
-	tag := ""
-	if len(layer.Tags) > 0 {
-		tag = layer.Tags[0]
+func (i *Image) Pull() error {
+	return i.Client.PullImage(i.Name + ":" + i.Tag)
+}
+
+func getImageDisplayStrings(img *Image, replacements map[string]string) []string {
+	name := img.Name
+	for prefix, replacement := range replacements {
+		if strings.HasPrefix(name, prefix) {
+			name = strings.Replace(name, prefix, replacement, 1)
+			break
+		}
 	}
 
-	id := strings.TrimPrefix(layer.ID, "sha256:")
+	id := strings.TrimPrefix(img.AppleImage.Descriptor.Digest, "sha256:")
 	if len(id) > 10 {
 		id = id[0:10]
 	}
@@ -49,95 +45,56 @@ func getHistoryResponseItemDisplayStrings(layer image.HistoryResponseItem) []str
 		idColor = color.FgBlue
 	}
 
-	dockerFileCommandPrefix := "/bin/sh -c #(nop) "
-	createdBy := layer.CreatedBy
-	if strings.Contains(layer.CreatedBy, dockerFileCommandPrefix) {
-		createdBy = strings.Trim(strings.TrimPrefix(layer.CreatedBy, dockerFileCommandPrefix), " ")
-		split := strings.Split(createdBy, " ")
-		createdBy = utils.ColoredString(split[0], color.FgYellow) + " " + strings.Join(split[1:], " ")
-	}
-
-	createdBy = strings.Replace(createdBy, "\t", " ", -1)
-
-	size := utils.FormatBinaryBytes(int(layer.Size))
-	sizeColor := color.FgWhite
-	if size == "0B" {
-		sizeColor = color.FgBlue
+	size := img.AppleImage.FullSize
+	if size == "" {
+		size = utils.FormatBinaryBytes(int(img.AppleImage.Descriptor.Size))
 	}
 
 	return []string{
 		utils.ColoredString(id, idColor),
-		utils.ColoredString(tag, color.FgGreen),
-		utils.ColoredString(size, sizeColor),
-		createdBy,
+		utils.ColoredString(name, color.FgGreen),
+		utils.ColoredString(img.Tag, color.FgCyan),
+		utils.ColoredString(size, color.FgYellow),
 	}
 }
 
-// RenderHistory renders the history of the image
-func (i *Image) RenderHistory() (string, error) {
-	history, err := i.Client.ImageHistory(context.Background(), i.ID)
-	if err != nil {
-		return "", err
-	}
-
-	tableBody := lo.Map(history, func(layer image.HistoryResponseItem, _ int) []string {
-		return getHistoryResponseItemDisplayStrings(layer)
-	})
-
-	headers := [][]string{{"ID", "TAG", "SIZE", "COMMAND"}}
-	table := append(headers, tableBody...)
-
-	return utils.RenderTable(table)
-}
-
-// RefreshImages returns a slice of docker images
-func (c *DockerCommand) RefreshImages() ([]*Image, error) {
-	images, err := c.Client.ImageList(context.Background(), image.ListOptions{})
+func (c *ContainerClient) RefreshImages() ([]*Image, error) {
+	appleImages, err := c.ListImages()
 	if err != nil {
 		return nil, err
 	}
 
-	ownImages := make([]*Image, len(images))
+	ownImages := make([]*Image, len(appleImages))
 
-	for i, img := range images {
-		firstTag := ""
-		tags := img.RepoTags
-		if len(tags) > 0 {
-			firstTag = tags[0]
-		}
-
-		nameParts := strings.Split(firstTag, ":")
-		tag := ""
-		name := "none"
+	for i, img := range appleImages {
+		nameParts := strings.Split(img.Reference, ":")
+		name := ""
+		tag := "latest"
 		if len(nameParts) > 1 {
 			tag = nameParts[len(nameParts)-1]
 			name = strings.Join(nameParts[:len(nameParts)-1], ":")
+		} else if len(nameParts) == 1 {
+			name = nameParts[0]
+		}
 
-			for prefix, replacement := range c.Config.UserConfig.Replacements.ImageNamePrefixes {
-				if strings.HasPrefix(name, prefix) {
-					name = strings.Replace(name, prefix, replacement, 1)
-					break
-				}
+		for prefix, replacement := range c.Config.UserConfig.Replacements.ImageNamePrefixes {
+			if strings.HasPrefix(name, prefix) {
+				name = strings.Replace(name, prefix, replacement, 1)
+				break
 			}
 		}
 
 		ownImages[i] = &Image{
-			ID:            img.ID,
-			Name:          name,
-			Tag:           tag,
-			Image:         img,
-			Client:        c.Client,
-			OSCommand:     c.OSCommand,
-			Log:           c.Log,
-			DockerCommand: c,
+			ID:           img.Descriptor.Digest,
+			Name:         name,
+			Tag:          tag,
+			AppleImage:   img,
+			Client:       c,
+			OSCommand:    c.OSCommand,
+			Log:          c.Log,
+			ContainerCmd: c,
 		}
 	}
 
 	return ownImages, nil
-}
-
-// PruneImages prunes images
-func (c *DockerCommand) PruneImages() error {
-	_, err := c.Client.ImagesPrune(context.Background(), filters.Args{})
-	return err
 }

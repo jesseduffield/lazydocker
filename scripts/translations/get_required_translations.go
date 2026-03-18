@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
+	"github.com/jesseduffield/lazycontainer/pkg/i18n"
 )
 
 func main() {

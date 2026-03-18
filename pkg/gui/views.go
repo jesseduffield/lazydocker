@@ -8,9 +8,6 @@ import (
 	"github.com/samber/lo"
 )
 
-// See https://github.com/xtermjs/xterm.js/issues/4238
-// VSCode is soon to fix this in an upcoming update.
-// Once that's done, we can scrap the HIDE_UNDERSCORES variable
 var (
 	underscoreEnvChecked bool
 	hideUnderscores      bool
@@ -26,48 +23,33 @@ func hideUnderScores() bool {
 }
 
 type Views struct {
-	// side panels
-	Project    *gocui.View
-	Services   *gocui.View
 	Containers *gocui.View
 	Images     *gocui.View
 	Volumes    *gocui.View
 	Networks   *gocui.View
 
-	// main panel
 	Main *gocui.View
 
-	// bottom line
 	Options     *gocui.View
 	Information *gocui.View
 	AppStatus   *gocui.View
-	// text that prompts you to enter text in the Filter view
 	FilterPrefix *gocui.View
-	// appears next to the SearchPrefix view, it's where you type in the search string
 	Filter *gocui.View
 
-	// popups
 	Confirmation *gocui.View
 	Menu         *gocui.View
 
-	// will cover everything when it appears
 	Limit *gocui.View
 }
 
 type viewNameMapping struct {
 	viewPtr **gocui.View
 	name    string
-	// if true, we handle the position/size of the view in arrangement.go. Otherwise
-	// we handle it manually.
 	autoPosition bool
 }
 
 func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
 	return []viewNameMapping{
-		// first layer. Ordering within this layer does not matter because there are
-		// no overlapping views
-		{viewPtr: &gui.Views.Project, name: "project", autoPosition: true},
-		{viewPtr: &gui.Views.Services, name: "services", autoPosition: true},
 		{viewPtr: &gui.Views.Containers, name: "containers", autoPosition: true},
 		{viewPtr: &gui.Views.Images, name: "images", autoPosition: true},
 		{viewPtr: &gui.Views.Volumes, name: "volumes", autoPosition: true},
@@ -75,18 +57,15 @@ func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
 
 		{viewPtr: &gui.Views.Main, name: "main", autoPosition: true},
 
-		// bottom line
 		{viewPtr: &gui.Views.Options, name: "options", autoPosition: true},
 		{viewPtr: &gui.Views.AppStatus, name: "appStatus", autoPosition: true},
 		{viewPtr: &gui.Views.Information, name: "information", autoPosition: true},
 		{viewPtr: &gui.Views.Filter, name: "filter", autoPosition: true},
 		{viewPtr: &gui.Views.FilterPrefix, name: "filterPrefix", autoPosition: true},
 
-		// popups.
 		{viewPtr: &gui.Views.Menu, name: "menu", autoPosition: false},
 		{viewPtr: &gui.Views.Confirmation, name: "confirmation", autoPosition: false},
 
-		// this guy will cover everything else when it appears
 		{viewPtr: &gui.Views.Limit, name: "limit", autoPosition: true},
 	}
 }
@@ -115,41 +94,26 @@ func (gui *Gui) createAllViews() error {
 	selectedLineBgColor := GetGocuiStyle(gui.Config.UserConfig.Gui.Theme.SelectedLineBgColor)
 
 	gui.Views.Main.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
-	// when you run a docker container with the -it flags (interactive mode) it adds carriage returns for some reason. This is not docker's fault, it's an os-level default.
 	gui.Views.Main.IgnoreCarriageReturns = true
-
-	gui.Views.Project.Title = gui.Tr.ProjectTitle
-	gui.Views.Project.TitlePrefix = "[1]"
-	gui.Views.Project.Highlight = true
-	gui.Views.Project.SelBgColor = selectedLineBgColor
-
-	gui.Views.Services.Highlight = true
-	gui.Views.Services.Title = gui.Tr.ServicesTitle
-	gui.Views.Services.TitlePrefix = "[2]"
-	gui.Views.Services.SelBgColor = selectedLineBgColor
 
 	gui.Views.Containers.Highlight = true
 	gui.Views.Containers.SelBgColor = selectedLineBgColor
-	if gui.Config.UserConfig.Gui.ShowAllContainers || !gui.DockerCommand.InDockerComposeProject {
-		gui.Views.Containers.Title = gui.Tr.ContainersTitle
-	} else {
-		gui.Views.Containers.Title = gui.Tr.StandaloneContainersTitle
-	}
-	gui.Views.Containers.TitlePrefix = "[3]"
+	gui.Views.Containers.Title = gui.Tr.ContainersTitle
+	gui.Views.Containers.TitlePrefix = "[1]"
 
 	gui.Views.Images.Highlight = true
 	gui.Views.Images.Title = gui.Tr.ImagesTitle
 	gui.Views.Images.SelBgColor = selectedLineBgColor
-	gui.Views.Images.TitlePrefix = "[4]"
+	gui.Views.Images.TitlePrefix = "[2]"
 
 	gui.Views.Volumes.Highlight = true
 	gui.Views.Volumes.Title = gui.Tr.VolumesTitle
-	gui.Views.Volumes.TitlePrefix = "[5]"
+	gui.Views.Volumes.TitlePrefix = "[3]"
 	gui.Views.Volumes.SelBgColor = selectedLineBgColor
 
 	gui.Views.Networks.Highlight = true
 	gui.Views.Networks.Title = gui.Tr.NetworksTitle
-	gui.Views.Networks.TitlePrefix = "[6]"
+	gui.Views.Networks.TitlePrefix = "[4]"
 	gui.Views.Networks.SelBgColor = selectedLineBgColor
 
 	gui.Views.Options.Frame = false
@@ -212,7 +176,6 @@ func (gui *Gui) popupViewNames() []string {
 	return []string{"confirmation", "menu"}
 }
 
-// these views have their position and size determined by arrangement.go
 func (gui *Gui) autoPositionedViewNames() []string {
 	views := lo.Filter(gui.orderedViewNameMappings(), func(viewNameMapping viewNameMapping, _ int) bool {
 		return viewNameMapping.autoPosition

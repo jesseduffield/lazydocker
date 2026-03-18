@@ -4,29 +4,27 @@ import (
 	"io"
 	"strings"
 
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/gui"
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
-	"github.com/jesseduffield/lazydocker/pkg/log"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/jesseduffield/lazycontainer/pkg/commands"
+	"github.com/jesseduffield/lazycontainer/pkg/config"
+	"github.com/jesseduffield/lazycontainer/pkg/gui"
+	"github.com/jesseduffield/lazycontainer/pkg/i18n"
+	"github.com/jesseduffield/lazycontainer/pkg/log"
+	"github.com/jesseduffield/lazycontainer/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
-// App struct
 type App struct {
 	closers []io.Closer
 
 	Config        *config.AppConfig
 	Log           *logrus.Entry
 	OSCommand     *commands.OSCommand
-	DockerCommand *commands.DockerCommand
+	ContainerCmd  *commands.ContainerCommand
 	Gui           *gui.Gui
 	Tr            *i18n.TranslationSet
 	ErrorChan     chan error
 }
 
-// NewApp bootstrap a new application
 func NewApp(config *config.AppConfig) (*App, error) {
 	app := &App{
 		closers:   []io.Closer{},
@@ -41,14 +39,12 @@ func NewApp(config *config.AppConfig) (*App, error) {
 	}
 	app.OSCommand = commands.NewOSCommand(app.Log, config)
 
-	// here is the place to make use of the docker-compose.yml file in the current directory
-
-	app.DockerCommand, err = commands.NewDockerCommand(app.Log, app.OSCommand, app.Tr, app.Config, app.ErrorChan)
+	app.ContainerCmd, err = commands.NewContainerCommand(app.Log, app.OSCommand, app.Tr, app.Config, app.ErrorChan)
 	if err != nil {
 		return app, err
 	}
-	app.closers = append(app.closers, app.DockerCommand)
-	app.Gui, err = gui.NewGui(app.Log, app.DockerCommand, app.OSCommand, app.Tr, config, app.ErrorChan)
+	app.closers = append(app.closers, app.ContainerCmd)
+	app.Gui, err = gui.NewGui(app.Log, app.ContainerCmd, app.OSCommand, app.Tr, config, app.ErrorChan)
 	if err != nil {
 		return app, err
 	}
@@ -68,14 +64,17 @@ type errorMapping struct {
 	newError      string
 }
 
-// KnownError takes an error and tells us whether it's an error that we know about where we can print a nicely formatted version of it rather than panicking with a stack trace
 func (app *App) KnownError(err error) (string, bool) {
 	errorMessage := err.Error()
 
 	mappings := []errorMapping{
 		{
-			originalError: "Got permission denied while trying to connect to the Docker daemon socket",
-			newError:      app.Tr.CannotAccessDockerSocketError,
+			originalError: "container: command not found",
+			newError:      "Apple Container is not installed. Please install it and try again.",
+		},
+		{
+			originalError: "container system is not running",
+			newError:      "Apple Container system is not running. Run 'container system start' first.",
 		},
 	}
 

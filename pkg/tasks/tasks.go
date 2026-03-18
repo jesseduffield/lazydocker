@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
+	"github.com/jesseduffield/lazycontainer/pkg/i18n"
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 )

@@ -3,14 +3,12 @@ package presentation
 import (
 	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 
-	"github.com/docker/docker/api/types/container"
 	"github.com/fatih/color"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/jesseduffield/lazycontainer/pkg/commands"
+	"github.com/jesseduffield/lazycontainer/pkg/config"
+	"github.com/jesseduffield/lazycontainer/pkg/utils"
 	"github.com/samber/lo"
 )
 
@@ -26,34 +24,36 @@ func GetContainerDisplayStrings(guiConfig *config.GuiConfig, container *commands
 }
 
 func displayContainerImage(container *commands.Container) string {
-	return strings.TrimPrefix(container.Container.Image, "sha256:")
+	return strings.TrimPrefix(container.GetImage(), "sha256:")
 }
 
 func displayPorts(c *commands.Container) string {
-	portStrings := lo.Map(c.Container.Ports, func(port container.Port, _ int) string {
-		if port.PublicPort == 0 {
-			return fmt.Sprintf("%d/%s", port.PrivatePort, port.Type)
+	ports := c.AppleContainer.Configuration.PublishedPorts
+	portStrings := lo.Map(ports, func(port struct {
+		HostIP        string `json:"hostIP"`
+		HostPort      int    `json:"hostPort"`
+		ContainerPort int    `json:"containerPort"`
+		Protocol      string `json:"protocol"`
+	}, _ int) string {
+		if port.HostPort == 0 {
+			return fmt.Sprintf("%d/%s", port.ContainerPort, port.Protocol)
 		}
 
-		// docker ps will show '0.0.0.0:80->80/tcp' but we'll show
-		// '80->80/tcp' instead to save space (unless the IP is something other than
-		// 0.0.0.0)
 		ipString := ""
-		if port.IP != "0.0.0.0" {
-			ipString = port.IP + ":"
+		if port.HostIP != "0.0.0.0" && port.HostIP != "" {
+			ipString = port.HostIP + ":"
 		}
-		return fmt.Sprintf("%s%d->%d/%s", ipString, port.PublicPort, port.PrivatePort, port.Type)
+		return fmt.Sprintf("%s%d->%d/%s", ipString, port.HostPort, port.ContainerPort, port.Protocol)
 	})
 
-	// sorting because the order of the ports is not deterministic
-	// and we don't want to have them constantly swapping
 	sort.Strings(portStrings)
 
 	return strings.Join(portStrings, ", ")
 }
 
-// getContainerDisplayStatus returns the colored status of the container
 func getContainerDisplayStatus(guiConfig *config.GuiConfig, c *commands.Container) string {
+	status := c.GetStatus()
+
 	shortStatusMap := map[string]string{
 		"paused":     "P",
 		"exited":     "X",
@@ -62,6 +62,7 @@ func getContainerDisplayStatus(guiConfig *config.GuiConfig, c *commands.Containe
 		"restarting": "RS",
 		"running":    "R",
 		"dead":       "D",
+		"stopped":    "S",
 	}
 
 	iconStatusMap := map[string]rune{
@@ -72,33 +73,34 @@ func getContainerDisplayStatus(guiConfig *config.GuiConfig, c *commands.Containe
 		"restarting": '⟳',
 		"running":    '▶',
 		"dead":       '!',
+		"stopped":    '■',
 	}
 
 	var containerState string
 	switch guiConfig.ContainerStatusHealthStyle {
 	case "short":
-		containerState = shortStatusMap[c.Container.State]
+		containerState = shortStatusMap[status]
 	case "icon":
-		containerState = string(iconStatusMap[c.Container.State])
+		containerState = string(iconStatusMap[status])
 	case "long":
 		fallthrough
 	default:
-		containerState = c.Container.State
+		containerState = status
 	}
 
 	return utils.ColoredString(containerState, getContainerColor(c))
 }
 
-// GetDisplayStatus returns the exit code if the container has exited, and the health status if the container is running (and has a health check)
 func getContainerDisplaySubstatus(guiConfig *config.GuiConfig, c *commands.Container) string {
 	if !c.DetailsLoaded() {
 		return ""
 	}
 
-	switch c.Container.State {
-	case "exited":
+	status := c.GetStatus()
+	switch status {
+	case "exited", "stopped":
 		return utils.ColoredString(
-			fmt.Sprintf("(%s)", strconv.Itoa(c.Details.State.ExitCode)), getContainerColor(c),
+			fmt.Sprintf("(%d)", 0), getContainerColor(c),
 		)
 	case "running":
 		return getHealthStatus(guiConfig, c)
@@ -108,51 +110,9 @@ func getContainerDisplaySubstatus(guiConfig *config.GuiConfig, c *commands.Conta
 }
 
 func getHealthStatus(guiConfig *config.GuiConfig, c *commands.Container) string {
-	if !c.DetailsLoaded() {
-		return ""
-	}
-
-	healthStatusColorMap := map[string]color.Attribute{
-		"healthy":   color.FgGreen,
-		"unhealthy": color.FgRed,
-		"starting":  color.FgYellow,
-	}
-
-	if c.Details.State.Health == nil {
-		return ""
-	}
-
-	shortHealthStatusMap := map[string]string{
-		"healthy":   "H",
-		"unhealthy": "U",
-		"starting":  "S",
-	}
-
-	iconHealthStatusMap := map[string]rune{
-		"healthy":   '✔',
-		"unhealthy": '?',
-		"starting":  '…',
-	}
-
-	var healthStatus string
-	switch guiConfig.ContainerStatusHealthStyle {
-	case "short":
-		healthStatus = shortHealthStatusMap[c.Details.State.Health.Status]
-	case "icon":
-		healthStatus = string(iconHealthStatusMap[c.Details.State.Health.Status])
-	case "long":
-		fallthrough
-	default:
-		healthStatus = c.Details.State.Health.Status
-	}
-
-	if healthStatusColor, ok := healthStatusColorMap[c.Details.State.Health.Status]; ok {
-		return utils.ColoredString(fmt.Sprintf("(%s)", healthStatus), healthStatusColor)
-	}
 	return ""
 }
 
-// getDisplayCPUPerc colors the cpu percentage based on how extreme it is
 func getDisplayCPUPerc(c *commands.Container) string {
 	stats, ok := c.GetLastStats()
 	if !ok {
@@ -174,16 +134,11 @@ func getDisplayCPUPerc(c *commands.Container) string {
 	return utils.ColoredString(formattedPercentage, clr)
 }
 
-// getContainerColor Container color
 func getContainerColor(c *commands.Container) color.Attribute {
-	switch c.Container.State {
-	case "exited":
-		// This means the colour may be briefly yellow and then switch to red upon starting
-		// Not sure what a better alternative is.
-		if !c.DetailsLoaded() || c.Details.State.ExitCode == 0 {
-			return color.FgYellow
-		}
-		return color.FgRed
+	status := c.GetStatus()
+	switch status {
+	case "exited", "stopped":
+		return color.FgYellow
 	case "created":
 		return color.FgCyan
 	case "running":

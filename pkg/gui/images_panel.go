@@ -1,21 +1,14 @@
 package gui
 
 import (
-	"fmt"
-	"strings"
-	"time"
-
-	"github.com/docker/docker/api/types/image"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
-	"github.com/jesseduffield/lazydocker/pkg/gui/types"
-	"github.com/jesseduffield/lazydocker/pkg/tasks"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
-	"github.com/samber/lo"
+	"github.com/jesseduffield/lazycontainer/pkg/commands"
+	"github.com/jesseduffield/lazycontainer/pkg/gui/panels"
+	"github.com/jesseduffield/lazycontainer/pkg/gui/presentation"
+	"github.com/jesseduffield/lazycontainer/pkg/gui/types"
+	"github.com/jesseduffield/lazycontainer/pkg/tasks"
+	"github.com/jesseduffield/lazycontainer/pkg/utils"
 )
 
 func (gui *Gui) getImagesPanel() *panels.SideListPanel[*commands.Image] {
@@ -42,23 +35,19 @@ func (gui *Gui) getImagesPanel() *panels.SideListPanel[*commands.Image] {
 		},
 		NoItemsMessage: gui.Tr.NoImages,
 		Gui:            gui.intoInterface(),
-		Sort: func(a *commands.Image, b *commands.Image) bool {
+		Sort: func(a, b *commands.Image) bool {
 			if a.Name == noneLabel && b.Name != noneLabel {
 				return false
 			}
-
 			if a.Name != noneLabel && b.Name == noneLabel {
 				return true
 			}
-
 			if a.Name != b.Name {
 				return a.Name < b.Name
 			}
-
 			if a.Tag != b.Tag {
 				return a.Tag < b.Tag
 			}
-
 			return a.ID < b.ID
 		},
 		GetTableCells: presentation.GetImageDisplayStrings,
@@ -69,7 +58,7 @@ func (gui *Gui) renderImageConfigTask(image *commands.Image) tasks.TaskFunc {
 	return gui.NewRenderStringTask(RenderStringTaskOpts{
 		GetStrContent: func() string { return gui.imageConfigStr(image) },
 		Autoscroll:    false,
-		Wrap:          false, // don't care what your config is this page is ugly without wrapping
+		Wrap:          false,
 	})
 }
 
@@ -77,18 +66,11 @@ func (gui *Gui) imageConfigStr(image *commands.Image) string {
 	padding := 10
 	output := ""
 	output += utils.WithPadding("Name: ", padding) + image.Name + "\n"
-	output += utils.WithPadding("ID: ", padding) + image.Image.ID + "\n"
-	output += utils.WithPadding("Tags: ", padding) + utils.ColoredString(strings.Join(image.Image.RepoTags, ", "), color.FgGreen) + "\n"
-	output += utils.WithPadding("Size: ", padding) + utils.FormatDecimalBytes(int(image.Image.Size)) + "\n"
-	output += utils.WithPadding("Created: ", padding) + fmt.Sprintf("%v", time.Unix(image.Image.Created, 0).Format(time.RFC1123)) + "\n"
-
-	history, err := image.RenderHistory()
-	if err != nil {
-		gui.Log.Error(err)
-	}
-
-	output += "\n\n" + history
-
+	output += utils.WithPadding("Tag: ", padding) + image.Tag + "\n"
+	output += utils.WithPadding("ID: ", padding) + image.ID + "\n"
+	output += utils.WithPadding("Reference: ", padding) + image.AppleImage.Reference + "\n"
+	output += utils.WithPadding("Digest: ", padding) + image.AppleImage.Descriptor.Digest + "\n"
+	output += utils.WithPadding("Size: ", padding) + image.AppleImage.FullSize + "\n"
 	return output
 }
 
@@ -96,82 +78,51 @@ func (gui *Gui) reloadImages() error {
 	if err := gui.refreshStateImages(); err != nil {
 		return err
 	}
-
 	return gui.Panels.Images.RerenderList()
 }
 
 func (gui *Gui) refreshStateImages() error {
-	images, err := gui.DockerCommand.RefreshImages()
+	images, err := gui.ContainerCmd.RefreshImages()
 	if err != nil {
 		return err
 	}
-
 	gui.Panels.Images.SetItems(images)
-
 	return nil
 }
 
-func (gui *Gui) FilterString(view *gocui.View) string {
-	if gui.State.Filter.panel != nil && gui.State.Filter.panel.GetView() != view {
-		return ""
-	}
-
-	return gui.State.Filter.needle
-}
-
 func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
-	type removeImageOption struct {
-		description   string
-		command       string
-		configOptions image.RemoveOptions
-	}
-
 	img, err := gui.Panels.Images.GetSelectedItem()
 	if err != nil {
 		return nil
 	}
 
-	shortSha := img.ID[7:17]
-
-	// TODO: have a way of toggling in a menu instead of showing each permutation as a separate menu item
-	options := []*removeImageOption{
-		{
-			description:   gui.Tr.Remove,
-			command:       "docker image rm " + shortSha,
-			configOptions: image.RemoveOptions{PruneChildren: true, Force: false},
-		},
-		{
-			description:   gui.Tr.RemoveWithoutPrune,
-			command:       "docker image rm --no-prune " + shortSha,
-			configOptions: image.RemoveOptions{PruneChildren: false, Force: false},
-		},
-		{
-			description:   gui.Tr.RemoveWithForce,
-			command:       "docker image rm --force " + shortSha,
-			configOptions: image.RemoveOptions{PruneChildren: true, Force: true},
-		},
-		{
-			description:   gui.Tr.RemoveWithoutPruneWithForce,
-			command:       "docker image rm --no-prune --force " + shortSha,
-			configOptions: image.RemoveOptions{PruneChildren: false, Force: true},
-		},
+	shortSha := img.ID
+	if len(img.ID) > 12 {
+		shortSha = img.ID[:12]
 	}
 
-	menuItems := lo.Map(options, func(option *removeImageOption, _ int) *types.MenuItem {
-		return &types.MenuItem{
-			LabelColumns: []string{
-				option.description,
-				color.New(color.FgRed).Sprint(option.command),
-			},
+	options := []struct {
+		description string
+		command     string
+		force       bool
+	}{
+		{description: gui.Tr.Remove, command: "container image rm " + shortSha, force: false},
+		{description: gui.Tr.RemoveWithForce, command: "container image rm --force " + shortSha, force: true},
+	}
+
+	menuItems := make([]*types.MenuItem, len(options))
+	for i, opt := range options {
+		opt := opt
+		menuItems[i] = &types.MenuItem{
+			LabelColumns: []string{opt.description, color.New(color.FgRed).Sprint(opt.command)},
 			OnPress: func() error {
-				if err := img.Remove(option.configOptions); err != nil {
+				if err := img.Remove(opt.force); err != nil {
 					return gui.createErrorPanel(err.Error())
 				}
-
 				return nil
 			},
 		}
-	})
+	}
 
 	return gui.Menu(CreateMenuOptions{
 		Title: "",
@@ -179,10 +130,11 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	})
 }
 
-func (gui *Gui) handlePruneImages() error {
-	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneImages, func(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) handlePruneImages(all bool) error {
+	title := gui.Tr.ConfirmPruneImages
+	return gui.createConfirmationPanel(gui.Tr.Confirm, title, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
-			err := gui.DockerCommand.PruneImages()
+			err := gui.ContainerCmd.Client.PruneImages(all)
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -197,25 +149,13 @@ func (gui *Gui) handleImagesCustomCommand(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
-		Image: img,
-	})
-
+	commandObject := gui.ContainerCmd.NewCommandObject(commands.CommandObject{Image: img})
 	customCommands := gui.Config.UserConfig.CustomCommands.Images
-
 	return gui.createCustomCommandMenu(customCommands, commandObject)
 }
 
 func (gui *Gui) handleImagesBulkCommand(g *gocui.Gui, v *gocui.View) error {
-	baseBulkCommands := []config.CustomCommand{
-		{
-			Name:             gui.Tr.PruneImages,
-			InternalFunction: gui.handlePruneImages,
-		},
-	}
-
-	bulkCommands := append(baseBulkCommands, gui.Config.UserConfig.BulkCommands.Images...)
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
-
+	bulkCommands := gui.Config.UserConfig.BulkCommands.Images
+	commandObject := gui.ContainerCmd.NewCommandObject(commands.CommandObject{})
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }

@@ -1,19 +1,19 @@
 package gui
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"os/signal"
 	"time"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/tasks"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/jesseduffield/lazycontainer/pkg/commands"
+	"github.com/jesseduffield/lazycontainer/pkg/tasks"
+	"github.com/jesseduffield/lazycontainer/pkg/utils"
 )
 
 func (gui *Gui) renderContainerLogsToMain(container *commands.Container) tasks.TaskFunc {
@@ -22,7 +22,6 @@ func (gui *Gui) renderContainerLogsToMain(container *commands.Container) tasks.T
 			gui.renderContainerLogsToMainAux(container, ctx, notifyStopped)
 		},
 		Duration: time.Millisecond * 200,
-		// TODO: see why this isn't working (when switching from Top tab to Logs tab in the services panel, the tops tab's content isn't removed)
 		Before:     func(ctx context.Context) { gui.clearMainView() },
 		Wrap:       gui.Config.UserConfig.Gui.WrapMainPanel,
 		Autoscroll: true,
@@ -41,8 +40,6 @@ func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, ctx 
 		gui.Log.Error(err)
 	}
 
-	// if we are here because the task has been stopped, we should return
-	// if we are here then the container must have exited, meaning we should wait until it's back again before
 	ticker := time.NewTicker(time.Millisecond * 100)
 	defer ticker.Stop()
 	for {
@@ -52,11 +49,10 @@ func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, ctx 
 		case <-ticker.C:
 			result, err := container.Inspect()
 			if err != nil {
-				// if we get an error, then the container has probably been removed so we'll get out of here
 				gui.Log.Error(err)
 				return
 			}
-			if result.State.Running {
+			if result.Status == "running" {
 				return
 			}
 		}
@@ -97,7 +93,6 @@ func (gui *Gui) promptToReturn() {
 	if !gui.Config.UserConfig.Gui.ReturnImmediately {
 		fmt.Fprintf(os.Stdout, "\n\n%s", utils.ColoredString(gui.Tr.PressEnterToReturn, color.FgGreen))
 
-		// wait for enter press
 		if _, err := fmt.Scanln(); err != nil {
 			gui.Log.Error(err)
 		}
@@ -105,48 +100,71 @@ func (gui *Gui) promptToReturn() {
 }
 
 func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context, writer io.Writer) error {
-	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, ctr.ID, container.LogsOptions{
-		ShowStdout: true,
-		ShowStderr: true,
-		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
-		Since:      gui.Config.UserConfig.Logs.Since,
-		Tail:       gui.Config.UserConfig.Logs.Tail,
-		Follow:     true,
-	})
+	tail := 100
+	if gui.Config.UserConfig.Logs.Tail != "" {
+		fmt.Sscanf(gui.Config.UserConfig.Logs.Tail, "%d", &tail)
+	}
+
+	cmd := gui.ContainerCmd.Client.LogsContainer(ctr.ID, true, tail)
+
+	stdoutPipe, err := cmd.StdoutPipe()
 	if err != nil {
 		gui.Log.Error(err)
 		return err
 	}
-	defer readCloser.Close()
+	stderrPipe, err := cmd.StderrPipe()
+	if err != nil {
+		gui.Log.Error(err)
+		return err
+	}
 
-	if !ctr.DetailsLoaded() {
-		// loop until the details load or context is cancelled, using timer
-		ticker := time.NewTicker(time.Millisecond * 100)
-		defer ticker.Stop()
-	outer:
-		for {
+	if err := cmd.Start(); err != nil {
+		gui.Log.Error(err)
+		return err
+	}
+
+	done := make(chan struct{})
+
+	go func() {
+		scanner := bufio.NewScanner(stdoutPipe)
+		for scanner.Scan() {
 			select {
 			case <-ctx.Done():
-				return nil
-			case <-ticker.C:
-				if ctr.DetailsLoaded() {
-					break outer
-				}
+				return
+			default:
+				fmt.Fprintln(writer, scanner.Text())
 			}
 		}
-	}
+	}()
 
-	if ctr.Details.Config.Tty {
-		_, err = io.Copy(writer, readCloser)
-		if err != nil {
-			return err
+	go func() {
+		scanner := bufio.NewScanner(stderrPipe)
+		for scanner.Scan() {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				fmt.Fprintln(writer, scanner.Text())
+			}
 		}
-	} else {
-		_, err = stdcopy.StdCopy(writer, writer, readCloser)
-		if err != nil {
-			return err
-		}
-	}
+	}()
 
-	return nil
+	go func() {
+		cmd.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-ctx.Done():
+		killCmd(cmd)
+		return nil
+	case <-done:
+		return nil
+	}
+}
+
+func killCmd(cmd *exec.Cmd) {
+	if cmd.Process != nil {
+		cmd.Process.Kill()
+	}
 }

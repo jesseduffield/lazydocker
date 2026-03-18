@@ -1,56 +1,39 @@
 package commands
 
 import (
-	"context"
-
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/volume"
-	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
 )
 
-// Volume : A docker Volume
 type Volume struct {
-	Name          string
-	Volume        *volume.Volume
-	Client        *client.Client
-	OSCommand     *OSCommand
-	Log           *logrus.Entry
-	DockerCommand LimitedDockerCommand
+	Name         string
+	AppleVolume  AppleVolume
+	Client       *ContainerClient
+	OSCommand    *OSCommand
+	Log          *logrus.Entry
+	ContainerCmd LimitedContainerCommand
 }
 
-// RefreshVolumes gets the volumes and stores them
-func (c *DockerCommand) RefreshVolumes() ([]*Volume, error) {
-	result, err := c.Client.VolumeList(context.Background(), volume.ListOptions{})
+func (v *Volume) Remove() error {
+	return v.Client.RemoveVolume(v.Name)
+}
+
+func (c *ContainerClient) RefreshVolumes() ([]*Volume, error) {
+	appleVolumes, err := c.ListVolumes()
 	if err != nil {
 		return nil, err
 	}
 
-	volumes := result.Volumes
+	ownVolumes := make([]*Volume, len(appleVolumes))
 
-	ownVolumes := make([]*Volume, len(volumes))
-
-	for i, vol := range volumes {
+	for i, vol := range appleVolumes {
 		ownVolumes[i] = &Volume{
-			Name:          vol.Name,
-			Volume:        vol,
-			Client:        c.Client,
-			OSCommand:     c.OSCommand,
-			Log:           c.Log,
-			DockerCommand: c,
+			Name:        vol.Name,
+			AppleVolume: vol,
+			Client:      c,
+			OSCommand:   c.OSCommand,
+			Log:         c.Log,
 		}
 	}
 
 	return ownVolumes, nil
-}
-
-// PruneVolumes prunes volumes
-func (c *DockerCommand) PruneVolumes() error {
-	_, err := c.Client.VolumesPrune(context.Background(), filters.Args{})
-	return err
-}
-
-// Remove removes the volume
-func (v *Volume) Remove(force bool) error {
-	return v.Client.VolumeRemove(context.Background(), v.Name, force)
 }

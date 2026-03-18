@@ -2,14 +2,11 @@ package gui
 
 import (
 	"github.com/jesseduffield/lazycore/pkg/boxlayout"
-	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/jesseduffield/lazycontainer/pkg/gui/panels"
+	"github.com/jesseduffield/lazycontainer/pkg/utils"
 	"github.com/mattn/go-runewidth"
 	"github.com/samber/lo"
 )
-
-// In this file we use the boxlayout package, along with knowledge about the app's state,
-// to arrange the windows (i.e. panels) on the screen.
 
 const INFO_SECTION_PADDING = " "
 
@@ -67,9 +64,7 @@ func (gui *Gui) getWindowDimensions(informationStr string, appStatus string) map
 func (gui *Gui) getMidSectionWeights() (int, int) {
 	currentWindow := gui.currentStaticWindowName()
 
-	// we originally specified this as a ratio i.e. .20 would correspond to a weight of 1 against 4
 	sidePanelWidthRatio := gui.Config.UserConfig.Gui.SidePanelWidth
-	// we could make this better by creating ratios like 2:3 rather than always 1:something
 	mainSectionWeight := int(1/sidePanelWidthRatio) - 1
 	sideSectionWeight := 1
 
@@ -120,7 +115,6 @@ func (gui *Gui) infoSectionChildren(informationStr string, appStatus string) []*
 			},
 			{
 				Window: "information",
-				// unlike appStatus, informationStr has various colors so we need to decolorise before taking the length
 				Size: runewidth.StringWidth(INFO_SECTION_PADDING) + runewidth.StringWidth(utils.Decolorise(informationStr)),
 			},
 		}...,
@@ -143,6 +137,10 @@ func (gui *Gui) sidePanelChildren(width int, height int) []*boxlayout.Box {
 	currentWindow := gui.currentSideWindowName()
 	sideWindowNames := gui.sideViewNames()
 
+	if len(sideWindowNames) == 0 {
+		return []*boxlayout.Box{}
+	}
+
 	if gui.State.ScreenMode == SCREEN_FULL || gui.State.ScreenMode == SCREEN_HALF {
 		fullHeightBox := func(window string) *boxlayout.Box {
 			if window == currentWindow {
@@ -162,7 +160,7 @@ func (gui *Gui) sidePanelChildren(width int, height int) []*boxlayout.Box {
 			return fullHeightBox(window)
 		})
 
-	} else if height >= 28 {
+	} else if height >= 20 {
 		accordionMode := gui.Config.UserConfig.Gui.ExpandFocusedSidePanel
 		accordionBox := func(defaultBox *boxlayout.Box) *boxlayout.Box {
 			if accordionMode && defaultBox.Window == currentWindow {
@@ -175,27 +173,12 @@ func (gui *Gui) sidePanelChildren(width int, height int) []*boxlayout.Box {
 			return defaultBox
 		}
 
-		// The project panel is compact (Size: 3) when not focused, but expands
-		// when focused to show the list of projects.
-		projectBox := &boxlayout.Box{
-			Window: sideWindowNames[0],
-			Size:   3,
-		}
-		if currentWindow == sideWindowNames[0] {
-			projectBox = &boxlayout.Box{
-				Window: sideWindowNames[0],
-				Weight: 2,
-			}
-		}
-
-		return append([]*boxlayout.Box{
-			projectBox,
-		}, lo.Map(sideWindowNames[1:], func(window string, _ int) *boxlayout.Box {
+		return lo.Map(sideWindowNames, func(window string, _ int) *boxlayout.Box {
 			return accordionBox(&boxlayout.Box{Window: window, Weight: 1})
-		})...)
+		})
 	} else {
 		squashedHeight := 1
-		if height >= 21 {
+		if height >= 12 {
 			squashedHeight = 3
 		}
 

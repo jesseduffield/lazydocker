@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/jesseduffield/lazycontainer/pkg/gui/panels"
+	"github.com/jesseduffield/lazycontainer/pkg/utils"
 	"github.com/samber/lo"
 	"github.com/spkg/bom"
 )
@@ -364,8 +364,6 @@ func (gui *Gui) currentListPanel() (panels.ISideListPanel, bool) {
 
 func (gui *Gui) allSidePanels() []panels.ISideListPanel {
 	return []panels.ISideListPanel{
-		gui.Panels.Projects,
-		gui.Panels.Services,
 		gui.Panels.Containers,
 		gui.Panels.Images,
 		gui.Panels.Volumes,

@@ -1,54 +1,39 @@
 package commands
 
 import (
-	"context"
-
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
 )
 
-// Network : A docker Network
 type Network struct {
 	Name          string
-	Network       network.Inspect
-	Client        *client.Client
+	AppleNetwork  AppleNetwork
+	Client        *ContainerClient
 	OSCommand     *OSCommand
 	Log           *logrus.Entry
-	DockerCommand LimitedDockerCommand
+	ContainerCmd  LimitedContainerCommand
 }
 
-// RefreshNetworks gets the networks and stores them
-func (c *DockerCommand) RefreshNetworks() ([]*Network, error) {
-	networks, err := c.Client.NetworkList(context.Background(), network.ListOptions{})
+func (n *Network) Remove() error {
+	return n.Client.RemoveNetwork(n.Name)
+}
+
+func (c *ContainerClient) RefreshNetworks() ([]*Network, error) {
+	appleNetworks, err := c.ListNetworks()
 	if err != nil {
 		return nil, err
 	}
 
-	ownNetworks := make([]*Network, len(networks))
+	ownNetworks := make([]*Network, len(appleNetworks))
 
-	for i, nw := range networks {
+	for i, net := range appleNetworks {
 		ownNetworks[i] = &Network{
-			Name:          nw.Name,
-			Network:       nw,
-			Client:        c.Client,
-			OSCommand:     c.OSCommand,
-			Log:           c.Log,
-			DockerCommand: c,
+			Name:         net.ID,
+			AppleNetwork: net,
+			Client:       c,
+			OSCommand:    c.OSCommand,
+			Log:          c.Log,
 		}
 	}
 
 	return ownNetworks, nil
-}
-
-// PruneNetworks prunes networks
-func (c *DockerCommand) PruneNetworks() error {
-	_, err := c.Client.NetworksPrune(context.Background(), filters.Args{})
-	return err
-}
-
-// Remove removes the network
-func (v *Network) Remove() error {
-	return v.Client.NetworkRemove(context.Background(), v.Name)
 }

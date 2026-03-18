@@ -8,12 +8,11 @@ import (
 	"runtime"
 	"runtime/debug"
 
-	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
 	"github.com/integrii/flaggy"
-	"github.com/jesseduffield/lazydocker/pkg/app"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/jesseduffield/lazycontainer/pkg/app"
+	"github.com/jesseduffield/lazycontainer/pkg/config"
+	"github.com/jesseduffield/lazycontainer/pkg/utils"
 	"github.com/jesseduffield/yaml"
 	"github.com/samber/lo"
 )
@@ -28,8 +27,6 @@ var (
 
 	configFlag    = false
 	debuggingFlag = false
-	composeFiles  []string
-	projectName   string
 )
 
 func main() {
@@ -45,14 +42,12 @@ func main() {
 		runtime.GOARCH,
 	)
 
-	flaggy.SetName("lazydocker")
-	flaggy.SetDescription("The lazier way to manage everything docker")
-	flaggy.DefaultParser.AdditionalHelpPrepend = "https://github.com/jesseduffield/lazydocker"
+	flaggy.SetName("lazyapple")
+	flaggy.SetDescription("The lazier way to manage Apple Containers")
+	flaggy.DefaultParser.AdditionalHelpPrepend = "https://github.com/g-battaglia/lazy-apple-container"
 
 	flaggy.Bool(&configFlag, "c", "config", "Print the current default config")
 	flaggy.Bool(&debuggingFlag, "d", "debug", "a boolean")
-	flaggy.StringSlice(&composeFiles, "f", "file", "Specify alternate compose files")
-	flaggy.String(&projectName, "p", "project", "Specify a docker compose project name")
 	flaggy.SetVersion(info)
 
 	flaggy.Parse()
@@ -73,7 +68,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, composeFiles, projectDir, projectName)
+	appConfig, err := config.NewAppConfig("lazyapple", version, commit, date, buildSource, debuggingFlag, nil, projectDir, "")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -87,11 +82,6 @@ func main() {
 	if err != nil {
 		if errMessage, known := app.KnownError(err); known {
 			log.Println(errMessage)
-			os.Exit(0)
-		}
-
-		if client.IsErrConnectionFailed(err) {
-			log.Println(app.Tr.ConnectionFailed)
 			os.Exit(0)
 		}
 
@@ -111,12 +101,9 @@ func updateBuildInfo() {
 			})
 			if ok {
 				commit = revision.Value
-				// if lazydocker was built from source we'll show the version as the
-				// abbreviated commit hash
 				version = utils.SafeTruncate(revision.Value, 7)
 			}
 
-			// if version hasn't been set we assume that neither has the date
 			time, ok := lo.Find(buildInfo.Settings, func(setting debug.BuildSetting) bool {
 				return setting.Key == "vcs.time"
 			})

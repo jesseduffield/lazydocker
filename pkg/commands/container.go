@@ -6,45 +6,32 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/jesseduffield/lazycontainer/pkg/i18n"
+	"github.com/jesseduffield/lazycontainer/pkg/utils"
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 )
 
-// Container : A docker Container
 type Container struct {
 	Name            string
-	ServiceName     string
-	ContainerNumber string // might make this an int in the future if need be
-
-	// OneOff tells us if the container is just a job container or is actually bound to the service
-	OneOff          bool
-	ProjectName     string
 	ID              string
-	Container       container.Summary
-	Client          *client.Client
+	AppleContainer  AppleContainer
+	Client          *ContainerClient
 	OSCommand       *OSCommand
 	Log             *logrus.Entry
 	StatHistory     []*RecordedStats
-	Details         container.InspectResponse
 	MonitoringStats bool
-	DockerCommand   LimitedDockerCommand
 	Tr              *i18n.TranslationSet
 
 	StatsMutex deadlock.Mutex
 }
 
-// Remove removes the container
-func (c *Container) Remove(options container.RemoveOptions) error {
+func (c *Container) Remove(force bool) error {
 	c.Log.Warn(fmt.Sprintf("removing container %s", c.Name))
-	if err := c.Client.ContainerRemove(context.Background(), c.ID, options); err != nil {
-		if strings.Contains(err.Error(), "Stop the container before attempting removal or force remove") {
+	if err := c.Client.RemoveContainer(c.ID, force); err != nil {
+		if strings.Contains(err.Error(), "Stop the container before attempting removal") {
 			return ComplexError{
 				Code:    MustStopContainer,
 				Message: err.Error(),
@@ -53,100 +40,146 @@ func (c *Container) Remove(options container.RemoveOptions) error {
 		}
 		return err
 	}
-
 	return nil
 }
 
-// Start starts the container
 func (c *Container) Start() error {
 	c.Log.Warn(fmt.Sprintf("starting container %s", c.Name))
-	return c.Client.ContainerStart(context.Background(), c.ID, container.StartOptions{})
+	return c.Client.StartContainer(c.ID)
 }
 
-// Stop stops the container
 func (c *Container) Stop() error {
 	c.Log.Warn(fmt.Sprintf("stopping container %s", c.Name))
-	return c.Client.ContainerStop(context.Background(), c.ID, container.StopOptions{})
+	return c.Client.StopContainer(c.ID)
 }
 
-// Pause pauses the container
 func (c *Container) Pause() error {
 	c.Log.Warn(fmt.Sprintf("pausing container %s", c.Name))
-	return c.Client.ContainerPause(context.Background(), c.ID)
+	return errors.New("pause is not supported by Apple Container")
 }
 
-// Unpause unpauses the container
 func (c *Container) Unpause() error {
 	c.Log.Warn(fmt.Sprintf("unpausing container %s", c.Name))
-	return c.Client.ContainerUnpause(context.Background(), c.ID)
+	return errors.New("unpause is not supported by Apple Container")
 }
 
-// Restart restarts the container
 func (c *Container) Restart() error {
 	c.Log.Warn(fmt.Sprintf("restarting container %s", c.Name))
-	return c.Client.ContainerRestart(context.Background(), c.ID, container.StopOptions{})
+	return c.Client.RestartContainer(c.ID)
 }
 
-// Attach attaches the container
+func (c *Container) Kill(signal string) error {
+	c.Log.Warn(fmt.Sprintf("killing container %s with signal %s", c.Name, signal))
+	return c.Client.KillContainer(c.ID, signal)
+}
+
 func (c *Container) Attach() (*exec.Cmd, error) {
-	if !c.DetailsLoaded() {
-		return nil, errors.New(c.Tr.WaitingForContainerInfo)
-	}
-
-	// verify that we can in fact attach to this container
-	if !c.Details.Config.OpenStdin {
-		return nil, errors.New(c.Tr.UnattachableContainerError)
-	}
-
-	if c.Container.State == "exited" {
+	c.Log.Warn(fmt.Sprintf("attaching to container %s", c.Name))
+	if c.AppleContainer.Status != "running" {
 		return nil, errors.New(c.Tr.CannotAttachStoppedContainerError)
 	}
-
-	c.Log.Warn(fmt.Sprintf("attaching to container %s", c.Name))
-	// TODO: use SDK
-	cmd := c.OSCommand.NewCmd("docker", "attach", "--sig-proxy=false", c.ID)
-	return cmd, nil
+	return c.Client.ExecContainer(c.ID, ExecOptions{
+		Command:     []string{c.getShell()},
+		Interactive: true,
+		TTY:         true,
+	}), nil
 }
 
-// Top returns process information
-func (c *Container) Top(ctx context.Context) (container.TopResponse, error) {
-	detail, err := c.Inspect()
+func (c *Container) getShell() string {
+	for _, env := range c.AppleContainer.Configuration.InitProcess.Environment {
+		if strings.HasPrefix(env, "PATH=") {
+			path := strings.TrimPrefix(env, "PATH=")
+			for _, dir := range strings.Split(path, ":") {
+				for _, shell := range []string{"/bin/sh", "/bin/bash", "/usr/bin/bash"} {
+					if dir == "/bin" || dir == "/usr/bin" {
+						return shell
+					}
+				}
+			}
+		}
+	}
+	return "/bin/sh"
+}
+
+func (c *Container) Top(ctx context.Context) ([][]string, []string, error) {
+	cmd := c.Client.ExecContainer(c.ID, ExecOptions{
+		Command: []string{"ps", "aux"},
+	})
+	output, err := cmd.Output()
 	if err != nil {
-		return container.TopResponse{}, err
+		return nil, nil, err
 	}
 
-	// check container status
-	if !detail.State.Running {
-		return container.TopResponse{}, errors.New("container is not running")
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	if len(lines) == 0 {
+		return nil, nil, nil
 	}
 
-	return c.Client.ContainerTop(ctx, c.ID, []string{})
+	titles := strings.Fields(lines[0])
+	var processes [][]string
+	for _, line := range lines[1:] {
+		if strings.TrimSpace(line) != "" {
+			processes = append(processes, strings.Fields(line))
+		}
+	}
+
+	return processes, titles, nil
 }
 
-// PruneContainers prunes containers
-func (c *DockerCommand) PruneContainers() error {
-	_, err := c.Client.ContainersPrune(context.Background(), filters.Args{})
-	return err
+func (c *Container) Inspect() (*AppleContainer, error) {
+	return c.Client.InspectContainer(c.ID)
 }
 
-// Inspect returns details about the container
-func (c *Container) Inspect() (container.InspectResponse, error) {
-	return c.Client.ContainerInspect(context.Background(), c.ID)
-}
-
-// RenderTop returns details about the container
 func (c *Container) RenderTop(ctx context.Context) (string, error) {
-	result, err := c.Top(ctx)
+	processes, titles, err := c.Top(ctx)
 	if err != nil {
 		return "", err
 	}
 
-	return utils.RenderTable(append([][]string{result.Titles}, result.Processes...))
+	return utils.RenderTable(append([][]string{titles}, processes...))
 }
 
-// DetailsLoaded tells us whether we have yet loaded the details for a container.
-// Sometimes it takes some time for a container to have its details loaded
-// after it starts.
 func (c *Container) DetailsLoaded() bool {
-	return c.Details.ContainerJSONBase != nil
+	return c.AppleContainer.Configuration.ID != ""
+}
+
+func (c *Container) GetStatus() string {
+	return c.AppleContainer.Status
+}
+
+func (c *Container) GetImage() string {
+	return c.AppleContainer.Configuration.Image.Reference
+}
+
+func (c *Container) GetIP() string {
+	for _, net := range c.AppleContainer.Networks {
+		if net.IPv4Address != "" {
+			return strings.Split(net.IPv4Address, "/")[0]
+		}
+	}
+	return ""
+}
+
+func (c *Container) GetPorts() []string {
+	var ports []string
+	for _, p := range c.AppleContainer.Configuration.PublishedPorts {
+		ports = append(ports, fmt.Sprintf("%s:%d->%d/%s", p.HostIP, p.HostPort, p.ContainerPort, p.Protocol))
+	}
+	return ports
+}
+
+func (c *Container) GetEnv() []string {
+	return c.AppleContainer.Configuration.InitProcess.Environment
+}
+
+func (c *Container) GetLabels() map[string]string {
+	return c.AppleContainer.Configuration.Labels
+}
+
+func (c *Container) GetCPUs() int {
+	return c.AppleContainer.Configuration.Resources.CPUS
+}
+
+func (c *Container) GetMemory() int64 {
+	return c.AppleContainer.Configuration.Resources.MemoryInBytes
 }

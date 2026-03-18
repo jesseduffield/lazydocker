@@ -1,17 +1,15 @@
 package gui
 
 import (
-	"strconv"
-
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
-	"github.com/jesseduffield/lazydocker/pkg/gui/types"
-	"github.com/jesseduffield/lazydocker/pkg/tasks"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/jesseduffield/lazycontainer/pkg/commands"
+	"github.com/jesseduffield/lazycontainer/pkg/config"
+	"github.com/jesseduffield/lazycontainer/pkg/gui/panels"
+	"github.com/jesseduffield/lazycontainer/pkg/gui/presentation"
+	"github.com/jesseduffield/lazycontainer/pkg/gui/types"
+	"github.com/jesseduffield/lazycontainer/pkg/tasks"
+	"github.com/jesseduffield/lazycontainer/pkg/utils"
 	"github.com/samber/lo"
 )
 
@@ -37,9 +35,6 @@ func (gui *Gui) getNetworksPanel() *panels.SideListPanel[*commands.Network] {
 		},
 		NoItemsMessage: gui.Tr.NoNetworks,
 		Gui:            gui.intoInterface(),
-		// we're sorting these networks based on whether they have labels defined,
-		// because those are the ones you typically care about.
-		// Within that, we also sort them alphabetically
 		Sort: func(a *commands.Network, b *commands.Network) bool {
 			return a.Name < b.Name
 		},
@@ -54,28 +49,14 @@ func (gui *Gui) renderNetworkConfig(network *commands.Network) tasks.TaskFunc {
 func (gui *Gui) networkConfigStr(network *commands.Network) string {
 	padding := 15
 	output := ""
-	output += utils.WithPadding("ID: ", padding) + network.Network.ID + "\n"
+	output += utils.WithPadding("ID: ", padding) + network.AppleNetwork.ID + "\n"
 	output += utils.WithPadding("Name: ", padding) + network.Name + "\n"
-	output += utils.WithPadding("Driver: ", padding) + network.Network.Driver + "\n"
-	output += utils.WithPadding("Scope: ", padding) + network.Network.Scope + "\n"
-	output += utils.WithPadding("EnabledIPV6: ", padding) + strconv.FormatBool(network.Network.EnableIPv6) + "\n"
-	output += utils.WithPadding("Internal: ", padding) + strconv.FormatBool(network.Network.Internal) + "\n"
-	output += utils.WithPadding("Attachable: ", padding) + strconv.FormatBool(network.Network.Attachable) + "\n"
-	output += utils.WithPadding("Ingress: ", padding) + strconv.FormatBool(network.Network.Ingress) + "\n"
-
-	output += utils.WithPadding("Containers: ", padding)
-	if len(network.Network.Containers) > 0 {
-		output += "\n"
-		for _, v := range network.Network.Containers {
-			output += utils.FormatMapItem(padding, v.Name, v.EndpointID)
-		}
-	} else {
-		output += "none\n"
-	}
-
+	output += utils.WithPadding("Mode: ", padding) + network.AppleNetwork.Config.Mode + "\n"
+	output += utils.WithPadding("State: ", padding) + network.AppleNetwork.State + "\n"
+	output += utils.WithPadding("IPv4 Subnet: ", padding) + network.AppleNetwork.Status.IPv4Subnet + "\n"
+	output += utils.WithPadding("IPv4 Gateway: ", padding) + network.AppleNetwork.Status.IPv4Gateway + "\n"
 	output += "\n"
-	output += utils.WithPadding("Labels: ", padding) + utils.FormatMap(padding, network.Network.Labels) + "\n"
-	output += utils.WithPadding("Options: ", padding) + utils.FormatMap(padding, network.Network.Options)
+	output += utils.WithPadding("Labels: ", padding) + utils.FormatMap(padding, network.AppleNetwork.Config.Labels)
 
 	return output
 }
@@ -89,7 +70,7 @@ func (gui *Gui) reloadNetworks() error {
 }
 
 func (gui *Gui) refreshStateNetworks() error {
-	networks, err := gui.DockerCommand.RefreshNetworks()
+	networks, err := gui.ContainerCmd.RefreshNetworks()
 	if err != nil {
 		return err
 	}
@@ -113,7 +94,7 @@ func (gui *Gui) handleNetworksRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	options := []*removeNetworkOption{
 		{
 			description: gui.Tr.Remove,
-			command:     utils.WithShortSha("docker network rm " + network.Name),
+			command:     utils.WithShortSha("container network rm " + network.Name),
 		},
 	}
 
@@ -140,7 +121,7 @@ func (gui *Gui) handleNetworksRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) handlePruneNetworks() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneNetworks, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
-			err := gui.DockerCommand.PruneNetworks()
+			err := gui.ContainerCmd.PruneNetworks()
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -155,7 +136,7 @@ func (gui *Gui) handleNetworksCustomCommand(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.ContainerCmd.Client.NewCommandObject(commands.CommandObject{
 		Network: network,
 	})
 
@@ -173,7 +154,7 @@ func (gui *Gui) handleNetworksBulkCommand(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	bulkCommands := append(baseBulkCommands, gui.Config.UserConfig.BulkCommands.Networks...)
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.ContainerCmd.Client.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }

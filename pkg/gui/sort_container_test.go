@@ -4,40 +4,31 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/jesseduffield/lazycontainer/pkg/commands"
 	"github.com/stretchr/testify/assert"
 )
 
 func sampleContainers() []*commands.Container {
 	return []*commands.Container{
 		{
-			ID:   "1",
-			Name: "1",
-			Container: container.Summary{
-				State: "exited",
-			},
+			ID:             "1",
+			Name:           "1",
+			AppleContainer: commands.AppleContainer{Status: "exited"},
 		},
 		{
-			ID:   "2",
-			Name: "2",
-			Container: container.Summary{
-				State: "running",
-			},
+			ID:             "2",
+			Name:           "2",
+			AppleContainer: commands.AppleContainer{Status: "running"},
 		},
 		{
-			ID:   "3",
-			Name: "3",
-			Container: container.Summary{
-				State: "running",
-			},
+			ID:             "3",
+			Name:           "3",
+			AppleContainer: commands.AppleContainer{Status: "running"},
 		},
 		{
-			ID:   "4",
-			Name: "4",
-			Container: container.Summary{
-				State: "created",
-			},
+			ID:             "4",
+			Name:           "4",
+			AppleContainer: commands.AppleContainer{Status: "created"},
 		},
 	}
 }
@@ -45,32 +36,24 @@ func sampleContainers() []*commands.Container {
 func expectedPerStatusContainers() []*commands.Container {
 	return []*commands.Container{
 		{
-			ID:   "2",
-			Name: "2",
-			Container: container.Summary{
-				State: "running",
-			},
+			ID:             "2",
+			Name:           "2",
+			AppleContainer: commands.AppleContainer{Status: "running"},
 		},
 		{
-			ID:   "3",
-			Name: "3",
-			Container: container.Summary{
-				State: "running",
-			},
+			ID:             "3",
+			Name:           "3",
+			AppleContainer: commands.AppleContainer{Status: "running"},
 		},
 		{
-			ID:   "1",
-			Name: "1",
-			Container: container.Summary{
-				State: "exited",
-			},
+			ID:             "1",
+			Name:           "1",
+			AppleContainer: commands.AppleContainer{Status: "exited"},
 		},
 		{
-			ID:   "4",
-			Name: "4",
-			Container: container.Summary{
-				State: "created",
-			},
+			ID:             "4",
+			Name:           "4",
+			AppleContainer: commands.AppleContainer{Status: "created"},
 		},
 	}
 }
@@ -78,40 +61,32 @@ func expectedPerStatusContainers() []*commands.Container {
 func expectedLegacySortedContainers() []*commands.Container {
 	return []*commands.Container{
 		{
-			ID:   "1",
-			Name: "1",
-			Container: container.Summary{
-				State: "exited",
-			},
+			ID:             "1",
+			Name:           "1",
+			AppleContainer: commands.AppleContainer{Status: "exited"},
 		},
 		{
-			ID:   "2",
-			Name: "2",
-			Container: container.Summary{
-				State: "running",
-			},
+			ID:             "2",
+			Name:           "2",
+			AppleContainer: commands.AppleContainer{Status: "running"},
 		},
 		{
-			ID:   "3",
-			Name: "3",
-			Container: container.Summary{
-				State: "running",
-			},
+			ID:             "3",
+			Name:           "3",
+			AppleContainer: commands.AppleContainer{Status: "running"},
 		},
 		{
-			ID:   "4",
-			Name: "4",
-			Container: container.Summary{
-				State: "created",
-			},
+			ID:             "4",
+			Name:           "4",
+			AppleContainer: commands.AppleContainer{Status: "created"},
 		},
 	}
 }
 
 func assertEqualContainers(t *testing.T, left *commands.Container, right *commands.Container) {
 	t.Helper()
-	assert.Equal(t, left.Container.State, right.Container.State)
-	assert.Equal(t, left.Container.ID, right.Container.ID)
+	assert.Equal(t, left.GetStatus(), right.GetStatus())
+	assert.Equal(t, left.ID, right.ID)
 	assert.Equal(t, left.Name, right.Name)
 }
 

@@ -3,7 +3,7 @@ package i18n
 import (
 	"strings"
 
-	"github.com/imdario/mergo"
+	"dario.cat/mergo"
 
 	"github.com/cloudfoundry/jibber_jabber"
 	"github.com/go-errors/errors"

@@ -136,6 +136,14 @@ type TranslationSet struct {
 	FocusImages     string
 	FocusVolumes    string
 	FocusNetworks   string
+
+	Kill              string
+	KillingStatus     string
+	RemoveContainer   string
+	ContainerNotRunning string
+	NoIp              string
+	NoPorts           string
+	NoStats           string
 }
 
 func englishSet() TranslationSet {
@@ -154,12 +162,12 @@ func englishSet() TranslationSet {
 
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
 
-		ErrorOccurred:                     "An error occurred! Please create an issue at https://github.com/jesseduffield/lazydocker/issues",
+		ErrorOccurred:                     "An error occurred! Please create an issue at https://github.com/g-battaglia/lazy-apple-container/issues",
 		ConnectionFailed:                  "connection to docker client failed. You may need to restart the docker client",
 		UnattachableContainerError:        "Container does not support attaching. You must either run the service with the '-it' flag or use `stdin_open: true, tty: true` in the docker-compose.yml file",
 		WaitingForContainerInfo:           "Cannot proceed until docker gives us more information about the container. Please retry in a few moments.",
 		CannotAttachStoppedContainerError: "You cannot attach to a stopped container, you need to start it first (which you can actually do with the 'r' key) (yes I'm too lazy to do this automatically for you) (pretty cool that I get to communicate one-on-one with you in the form of an error message though)",
-		CannotAccessDockerSocketError:     "Can't access docker socket at: unix:///var/run/docker.sock\nRun lazydocker as root or read https://docs.docker.com/install/linux/linux-postinstall/",
+		CannotAccessDockerSocketError:     "Can't access docker socket at: unix:///var/run/docker.sock\nRun lazyapple as root or read https://docs.docker.com/install/linux/linux-postinstall/",
 		CannotKillChildError:              "Waited three seconds for child process to stop. There may be an orphan process that continues to run on your system.",
 
 		Donate:  "Donate",
@@ -175,8 +183,8 @@ func englishSet() TranslationSet {
 		Menu:                        "menu",
 		MenuTitle:                   "Menu",
 		Scroll:                      "scroll",
-		OpenConfig:                  "open lazydocker config",
-		EditConfig:                  "edit lazydocker config",
+		OpenConfig:                  "open lazyapple config",
+		EditConfig:                  "edit lazyapple config",
 		Cancel:                      "cancel",
 		Remove:                      "remove",
 		HideStopped:                 "hide/show stopped containers",
@@ -242,7 +250,7 @@ func englishSet() TranslationSet {
 		NothingToDisplay:            "Nothing to display",
 		NoContainerForService:       "No logs to show; service is not associated with a container",
 		CannotDisplayEnvVariables:   "Something went wrong while displaying environment variables",
-		CannotManageNonLocalService: "This service belongs to a different compose project. Run lazydocker from that project's directory to manage it.",
+		CannotManageNonLocalService: "This service belongs to a different compose project. Run lazyapple from that project's directory to manage it.",
 
 		NoContainers: "No containers",
 		NoContainer:  "No container",
@@ -263,7 +271,7 @@ func englishSet() TranslationSet {
 		ConfirmPruneNetworks:        "Are you sure you want to prune all unused networks?",
 		StopService:                 "Are you sure you want to stop this service's containers?",
 		StopContainer:               "Are you sure you want to stop this container?",
-		PressEnterToReturn:          "Press enter to return to lazydocker (this prompt can be disabled in your config by setting `gui.returnImmediately: true`)",
+		PressEnterToReturn:          "Press enter to return to lazyapple (this prompt can be disabled in your config by setting `gui.returnImmediately: true`)",
 		DetachFromContainerShortCut: "By default, to detach from the container press ctrl-p then ctrl-q",
 
 		No:  "no",
@@ -279,5 +287,13 @@ func englishSet() TranslationSet {
 		FocusImages:     "focus images panel",
 		FocusVolumes:    "focus volumes panel",
 		FocusNetworks:   "focus networks panel",
+
+		Kill:               "kill",
+		KillingStatus:      "killing",
+		RemoveContainer:    "remove container",
+		ContainerNotRunning: "container is not running",
+		NoIp:               "n/a",
+		NoPorts:            "n/a",
+		NoStats:            "No stats available",
 	}
 }

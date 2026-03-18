@@ -6,40 +6,32 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types/events"
-
-	"github.com/go-errors/errors"
-
 	throttle "github.com/boz/go-throttle"
 	"github.com/jesseduffield/gocui"
 	lcUtils "github.com/jesseduffield/lazycore/pkg/utils"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/gui/types"
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
-	"github.com/jesseduffield/lazydocker/pkg/tasks"
+	"github.com/jesseduffield/lazycontainer/pkg/commands"
+	"github.com/jesseduffield/lazycontainer/pkg/config"
+	"github.com/jesseduffield/lazycontainer/pkg/gui/panels"
+	"github.com/jesseduffield/lazycontainer/pkg/gui/types"
+	"github.com/jesseduffield/lazycontainer/pkg/i18n"
+	"github.com/jesseduffield/lazycontainer/pkg/tasks"
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 )
 
-// Gui wraps the gocui Gui object which handles rendering and events
 type Gui struct {
-	g             *gocui.Gui
-	Log           *logrus.Entry
-	DockerCommand *commands.DockerCommand
-	OSCommand     *commands.OSCommand
-	State         guiState
-	Config        *config.AppConfig
-	Tr            *i18n.TranslationSet
-	statusManager *statusManager
-	taskManager   *tasks.TaskManager
-	ErrorChan     chan error
-	Views         Views
+	g               *gocui.Gui
+	Log             *logrus.Entry
+	ContainerCmd    *commands.ContainerCommand
+	OSCommand       *commands.OSCommand
+	State           guiState
+	Config          *config.AppConfig
+	Tr              *i18n.TranslationSet
+	statusManager   *statusManager
+	taskManager     *tasks.TaskManager
+	ErrorChan       chan error
+	Views           Views
 
-	// if we've suspended the gui (e.g. because we've switched to a subprocess)
-	// we typically want to pause some things that are running like background
-	// file refreshes
 	PauseBackgroundThreads bool
 
 	Mutexes
@@ -48,8 +40,6 @@ type Gui struct {
 }
 
 type Panels struct {
-	Projects   *panels.SideListPanel[*commands.Project]
-	Services   *panels.SideListPanel[*commands.Service]
 	Containers *panels.SideListPanel[*commands.Container]
 	Images     *panels.SideListPanel[*commands.Image]
 	Volumes    *panels.SideListPanel[*commands.Volume]
@@ -63,7 +53,6 @@ type Mutexes struct {
 }
 
 type mainPanelState struct {
-	// ObjectKey tells us what context we are in. For example, if we are looking at the logs of a particular service in the services panel this key might be 'services-<service id>-logs'. The key is made so that if something changes which might require us to re-run the logs command or run a different command, the key will be different, and we'll then know to do whatever is required. Object key probably isn't the best name for this but Context is already used to refer to tabs. Maybe I should just call them tabs.
 	ObjectKey string
 }
 
@@ -72,37 +61,25 @@ type panelStates struct {
 }
 
 type guiState struct {
-	// the names of views in the current focus stack (last item is the current view)
 	ViewStack        []string
 	Platform         commands.Platform
 	Panels           *panelStates
 	SubProcessOutput string
 	Stats            map[string]commands.ContainerStats
 
-	// if true, we show containers with an 'exited' status in the containers panel
 	ShowExitedContainers bool
 
 	ScreenMode WindowMaximisation
 
-	// Maintains the state of manual filtering i.e. typing in a substring
-	// to filter on in the current panel.
 	Filter filterState
 }
 
 type filterState struct {
-	// If true then we're either currently inside the filter view
-	// or we've committed the filter and we're back in the list view
 	active bool
-	// The panel that we're filtering.
-	panel panels.ISideListPanel
-	// The string that we're filtering on
+	panel  panels.ISideListPanel
 	needle string
 }
 
-// screen sizing determines how much space your selected window takes up (window
-// as in panel, not your terminal's window). Sometimes you want a bit more space
-// to see the contents of a panel, and this keeps track of how much maximisation
-// you've set
 type WindowMaximisation int
 
 const (
@@ -124,8 +101,7 @@ func getScreenMode(config *config.AppConfig) WindowMaximisation {
 	}
 }
 
-// NewGui builds a new gui handler
-func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
+func NewGui(log *logrus.Entry, containerCmd *commands.ContainerCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
 	initialState := guiState{
 		Platform: *oSCommand.Platform,
 		Panels: &panelStates{
@@ -141,7 +117,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 
 	gui := &Gui{
 		Log:           log,
-		DockerCommand: dockerCommand,
+		ContainerCmd:  containerCmd,
 		OSCommand:     oSCommand,
 		State:         initialState,
 		Config:        config,
@@ -168,7 +144,7 @@ func (gui *Gui) renderGlobalOptions() error {
 }
 
 func (gui *Gui) goEvery(interval time.Duration, function func() error) {
-	_ = function() // time.Tick doesn't run immediately so we'll do that here // TODO: maybe change
+	_ = function()
 	go func() {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
@@ -180,9 +156,7 @@ func (gui *Gui) goEvery(interval time.Duration, function func() error) {
 	}()
 }
 
-// Run setup the gui with keybindings and start the mainloop
 func (gui *Gui) Run() error {
-	// closing our task manager which in turn closes the current task if there is any, so we aren't leaving processes lying around after closing lazydocker
 	defer gui.taskManager.Close()
 
 	g, err := gocui.NewGui(gocui.NewGuiOpts{
@@ -194,15 +168,12 @@ func (gui *Gui) Run() error {
 	}
 	defer g.Close()
 
-	// forgive the double-negative, this is because of my yaml `omitempty` woes
 	if !gui.Config.UserConfig.Gui.IgnoreMouseEvents {
 		g.Mouse = true
 	}
 
-	gui.g = g // TODO: always use gui.g rather than passing g around everywhere
+	gui.g = g
 
-	// if the deadlock package wants to report a deadlock, we first need to
-	// close the gui so that we can actually read what it prints.
 	deadlock.Opts.LogBuf = lcUtils.NewOnceWriter(os.Stderr, func() {
 		gui.g.Close()
 	})
@@ -220,7 +191,6 @@ func (gui *Gui) Run() error {
 				continue
 			}
 			if strings.Contains(err.Error(), "No such container") {
-				// this happens all the time when e.g. restarting containers so we won't worry about it
 				gui.Log.Warn(err)
 				continue
 			}
@@ -237,7 +207,6 @@ func (gui *Gui) Run() error {
 		return err
 	}
 
-	// TODO: see if we can avoid the circular dependency
 	gui.setPanels()
 
 	if err = gui.keybindings(g); err != nil {
@@ -259,17 +228,14 @@ func (gui *Gui) Run() error {
 	ctx, finish := context.WithCancel(context.Background())
 	defer finish()
 
-	go gui.listenForEvents(ctx, throttledRefresh.Trigger)
 	go gui.monitorContainerStats(ctx)
 
 	go func() {
 		throttledRefresh.Trigger()
 
 		gui.goEvery(time.Millisecond*30, gui.reRenderMain)
-		gui.goEvery(time.Millisecond*1000, gui.updateContainerDetails)
+		gui.goEvery(time.Millisecond*1000, gui.renderContainers)
 		gui.goEvery(time.Millisecond*1000, gui.checkForContextChange)
-		// we need to regularly re-render these because their stats will be changed in the background
-		gui.goEvery(time.Millisecond*1000, gui.renderContainersAndServices)
 	}()
 
 	err = g.MainLoop()
@@ -281,8 +247,6 @@ func (gui *Gui) Run() error {
 
 func (gui *Gui) setPanels() {
 	gui.Panels = Panels{
-		Projects:   gui.getProjectPanel(),
-		Services:   gui.getServicesPanel(),
 		Containers: gui.getContainersPanel(),
 		Images:     gui.getImagesPanel(),
 		Volumes:    gui.getVolumesPanel(),
@@ -291,18 +255,13 @@ func (gui *Gui) setPanels() {
 	}
 }
 
-func (gui *Gui) updateContainerDetails() error {
-	return gui.DockerCommand.RefreshContainerDetails(gui.Panels.Containers.List.GetAllItems())
+func (gui *Gui) renderContainers() error {
+	return gui.Panels.Containers.RerenderList()
 }
 
 func (gui *Gui) refresh() {
 	go func() {
-		// Refresh containers/services first, then projects (which depend on
-		// container labels to discover projects).
-		if err := gui.refreshContainersAndServices(); err != nil {
-			gui.Log.Error(err)
-		}
-		if err := gui.refreshProject(); err != nil {
+		if err := gui.refreshContainers(); err != nil {
 			gui.Log.Error(err)
 		}
 	}()
@@ -323,61 +282,6 @@ func (gui *Gui) refresh() {
 	}()
 }
 
-func (gui *Gui) listenForEvents(ctx context.Context, refresh func()) {
-	errorCount := 0
-
-	onError := func(err error) {
-		if err != nil {
-			gui.ErrorChan <- errors.Errorf("Docker event stream returned error: %s\nRetry count: %d", err.Error(), errorCount)
-		}
-		errorCount++
-		time.Sleep(time.Second * 2)
-	}
-
-outer:
-	for {
-		messageChan, errChan := gui.DockerCommand.Client.Events(context.Background(), events.ListOptions{})
-
-		if errorCount > 0 {
-			select {
-			case <-ctx.Done():
-				return
-			case err := <-errChan:
-				onError(err)
-				continue outer
-			default:
-				// If we're here then we lost connection to docker and we just got it back.
-				// The reason we do this refresh explicitly is because successfully
-				// reconnecting with docker does not mean it's going to send us a new
-				// event any time soon.
-
-				// Assuming the confirmation prompt currently holds the given error
-				_ = gui.closeConfirmationPrompt()
-				refresh()
-				errorCount = 0
-			}
-		}
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case message := <-messageChan:
-				// We could be more granular about what events should trigger which refreshes.
-				// At the moment it's pretty efficient though, and it might not be worth
-				// the maintenance burden of mapping specific events to specific refreshes
-				refresh()
-
-				gui.Log.Infof("received event of type: %s", message.Type)
-			case err := <-errChan:
-				onError(err)
-				continue outer
-			}
-		}
-	}
-}
-
-// checkForContextChange runs the currently focused panel's 'select' function, simulating the current item having just been selected. This will then trigger a check to see if anything's changed (e.g. a service has a new container) and if so, the appropriate code will run. For example, if you're reading logs from a service and all of a sudden its container changes, this will trigger the 'select' function, which will work out that the context is not different because of the new container, and then it will re-attempt to get the logs, this time for the correct container. This 'context' is stored in the main panel's ObjectKey. I'm using the term 'context' here more broadly than just the different tabs you can view in a panel.
 func (gui *Gui) checkForContextChange() error {
 	return gui.newLineFocused(gui.g.CurrentView())
 }
@@ -404,8 +308,6 @@ func (gui *Gui) quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
 }
 
-// this handler is executed when we press escape when there is only one view
-// on the stack.
 func (gui *Gui) escape() error {
 	if gui.State.Filter.active {
 		return gui.clearFilter()
@@ -459,9 +361,6 @@ func (gui *Gui) ShouldRefresh(key string) bool {
 }
 
 func (gui *Gui) initiallyFocusedViewName() string {
-	if gui.DockerCommand.InDockerComposeProject {
-		return "services"
-	}
 	return "containers"
 }
 
@@ -474,8 +373,6 @@ func (gui *Gui) Update(f func() error) {
 }
 
 func (gui *Gui) monitorContainerStats(ctx context.Context) {
-	// periodically loop through running containers and see if we need to create a monitor goroutine for any
-	// every second we check if we need to spawn a new goroutine
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	for {
@@ -485,16 +382,13 @@ func (gui *Gui) monitorContainerStats(ctx context.Context) {
 		case <-ticker.C:
 			for _, container := range gui.Panels.Containers.List.GetAllItems() {
 				if !container.MonitoringStats {
-					go gui.DockerCommand.CreateClientStatMonitor(container)
+					go gui.ContainerCmd.CreateClientStatMonitor(container)
 				}
 			}
 		}
 	}
 }
 
-// this is used by our cheatsheet code to generate keybindings. We need some views
-// and panels to exist for us to know what keybindings there are, so we invoke
-// gocui in headless mode and create them.
 func (gui *Gui) SetupFakeGui() {
 	g, err := gocui.NewGui(gocui.NewGuiOpts{
 		OutputMode:       gocui.OutputTrue,

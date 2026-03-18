@@ -10,9 +10,9 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/jesseduffield/asciigraph"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/jesseduffield/lazycontainer/pkg/commands"
+	"github.com/jesseduffield/lazycontainer/pkg/config"
+	"github.com/jesseduffield/lazycontainer/pkg/utils"
 	"github.com/mcuadros/go-lookup"
 	"github.com/samber/lo"
 )
@@ -33,9 +33,9 @@ func RenderStats(userConfig *config.UserConfig, container *commands.Container, v
 		graphs[i] = utils.ColoredString(graph, utils.GetColorAttribute(spec.Color))
 	}
 
-	pidsCount := fmt.Sprintf("PIDs: %d", stats.ClientStats.PidsStats.Current)
-	dataReceived := fmt.Sprintf("Traffic received: %s", utils.FormatDecimalBytes(stats.ClientStats.Networks.Eth0.RxBytes))
-	dataSent := fmt.Sprintf("Traffic sent: %s", utils.FormatDecimalBytes(stats.ClientStats.Networks.Eth0.TxBytes))
+	pidsCount := fmt.Sprintf("Processes: %d", stats.ClientStats.NumProcesses)
+	dataReceived := fmt.Sprintf("Traffic received: %s", utils.FormatDecimalBytes(int(stats.ClientStats.NetworkRxBytes)))
+	dataSent := fmt.Sprintf("Traffic sent: %s", utils.FormatDecimalBytes(int(stats.ClientStats.NetworkTxBytes)))
 
 	originalStats, err := utils.MarshalIntoYaml(stats)
 	if err != nil {
@@ -53,7 +53,6 @@ func RenderStats(userConfig *config.UserConfig, container *commands.Container, v
 	return contents, nil
 }
 
-// plotGraph returns the plotted graph based on the graph spec and the stat history
 func plotGraph(container *commands.Container, spec config.GraphConfig, width int) (string, error) {
 	container.StatsMutex.Lock()
 	defer container.StatsMutex.Unlock()
@@ -105,7 +104,6 @@ func plotGraph(container *commands.Container, spec config.GraphConfig, width int
 	), nil
 }
 
-// from Dave C's answer at https://stackoverflow.com/questions/20767724/converting-unknown-interface-to-float64-in-golang
 func getFloat(unk interface{}) (float64, error) {
 	floatType := reflect.TypeOf(float64(0))
 	stringType := reflect.TypeOf("")
