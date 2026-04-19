@@ -91,10 +91,10 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 			// Otherwise all containers are shown in a flat list regardless
 			// of which compose project they belong to.
 			if gui.DockerCommand.IsProjectScoped() {
-				// This check must be inside the InDockerComposeProject guard:
-				// outside a compose project, services are still derived from
-				// container labels, so compose-managed containers from other
-				// projects would be incorrectly hidden.
+				// This check must be inside the IsProjectScoped guard: when
+				// not project-scoped, services are still derived from container
+				// labels, so compose-managed containers from other projects
+				// would be incorrectly hidden.
 				//
 				// Note that this is O(N*M) time complexity where N is the number of services
 				// and M is the number of containers. We expect N to be small but M may be large,
