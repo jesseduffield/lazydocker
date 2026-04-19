@@ -90,12 +90,7 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 			return presentation.GetServiceDisplayStrings(&gui.Config.UserConfig.Gui, service)
 		},
 		Hide: func() bool {
-			// Only show the services panel when we are inside a docker-compose
-			// project directory. When launched outside of a compose project
-			// there is no local project context, so the panel is hidden and
-			// all containers are shown in a flat list (matching pre-v0.25
-			// behaviour).
-			return !gui.DockerCommand.InDockerComposeProject
+			return !gui.DockerCommand.IsProjectScoped()
 		},
 	}
 }

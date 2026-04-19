@@ -59,12 +59,7 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 			return gui.renderContainersAndServices()
 		},
 		Hide: func() bool {
-			// Only show the project panel when we are inside a docker-compose
-			// project directory. When launched outside of a compose project
-			// there is no meaningful local project to display, so we hide the
-			// panel and let the containers panel show all containers in a flat
-			// list (matching the behaviour from before v0.25).
-			return !gui.DockerCommand.InDockerComposeProject
+			return !gui.DockerCommand.IsProjectScoped()
 		},
 	}
 }
@@ -99,18 +94,19 @@ func (gui *Gui) refreshProject() error {
 }
 
 // getDiscoveredProjects returns all docker compose projects by examining container labels.
-// The local project (from docker-compose.yml in the current directory) is included if
-// it has running containers or if InDockerComposeProject is true.
+// The local project (from docker-compose.yml in the current directory, or from -p) is
+// included even when it has no running containers, so the user always sees the project
+// they explicitly scoped to.
 func (gui *Gui) getDiscoveredProjects() []*commands.Project {
 	containers := gui.Panels.Containers.List.GetAllItems()
 	projectNames := gui.DockerCommand.GetProjectNames(containers)
 
-	// If we're in a docker compose project but it has no running containers,
-	// still include it. We don't fall back to the directory name here to avoid
+	// If we're scoped to a project but it has no running containers, still
+	// include it. We don't fall back to the directory name here to avoid
 	// briefly flashing the wrong project name on startup.
 	localName := gui.DockerCommand.LocalProjectName
 
-	if gui.DockerCommand.InDockerComposeProject && localName != "" {
+	if gui.DockerCommand.IsProjectScoped() && localName != "" {
 		found := false
 		for _, name := range projectNames {
 			if name == localName {
@@ -195,6 +191,11 @@ func (gui *Gui) renderAllLogs(project *commands.Project) tasks.TaskFunc {
 }
 
 func (gui *Gui) renderDockerComposeConfig(project *commands.Project) tasks.TaskFunc {
+	if !gui.DockerCommand.InDockerComposeProject {
+		return gui.NewSimpleRenderStringTask(func() string {
+			return "Compose config is only available when launched from a docker-compose project directory"
+		})
+	}
 	if project != nil && project.Name != gui.DockerCommand.LocalProjectName {
 		return gui.NewSimpleRenderStringTask(func() string {
 			return "Compose config is not available for non-local projects"
