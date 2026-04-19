@@ -6,6 +6,7 @@ FROM ${BASE_IMAGE_BUILDER}:${GO_VERSION}-alpine${ALPINE_VERSION} AS builder
 ARG GOARCH=amd64
 ARG GOARM
 ARG VERSION
+ARG BUILD_DATE
 ARG VCS_REF
 WORKDIR /tmp/gobuild
 COPY ./ .
@@ -13,6 +14,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} GOARM=${GOARM} \
     go build -a -mod=vendor \
     -ldflags="-s -w \
     -X main.commit=${VCS_REF} \
+    -X main.date=${BUILD_DATE} \
     -X main.version=${VERSION} \
     -X main.buildSource=Docker"
 
