@@ -13,7 +13,6 @@ import (
 	"github.com/docker/cli/cli/config/configfile"
 	"github.com/docker/cli/cli/config/credentials"
 	"github.com/docker/cli/cli/config/types"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -58,7 +57,7 @@ func resetConfigDir() {
 // getHomeDir is a copy of [pkg/homedir.Get] to prevent adding docker/docker
 // as dependency for consumers that only need to read the config-file.
 //
-// [pkg/homedir.Get]: https://pkg.go.dev/github.com/docker/docker@v26.1.4+incompatible/pkg/homedir#Get
+// [pkg/homedir.Get]: https://pkg.go.dev/github.com/docker/docker@v28.0.3+incompatible/pkg/homedir#Get
 func getHomeDir() string {
 	home, _ := os.UserHomeDir()
 	if home == "" && runtime.GOOS != "windows" {
@@ -67,6 +66,11 @@ func getHomeDir() string {
 		}
 	}
 	return home
+}
+
+// Provider defines an interface for providing the CLI config.
+type Provider interface {
+	ConfigFile() *configfile.ConfigFile
 }
 
 // Dir returns the directory the configuration file is stored in
@@ -96,7 +100,7 @@ func SetDir(dir string) {
 func Path(p ...string) (string, error) {
 	path := filepath.Join(append([]string{Dir()}, p...)...)
 	if !strings.HasPrefix(path, Dir()+string(filepath.Separator)) {
-		return "", errors.Errorf("path %q is outside of root config directory %q", path, Dir())
+		return "", fmt.Errorf("path %q is outside of root config directory %q", path, Dir())
 	}
 	return path, nil
 }
@@ -138,12 +142,12 @@ func load(configDir string) (*configfile.ConfigFile, error) {
 			return configFile, nil
 		}
 		// Any other error happening when failing to read the file must be returned.
-		return configFile, errors.Wrap(err, "loading config file")
+		return configFile, fmt.Errorf("loading config file: %w", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	err = configFile.LoadFromReader(file)
 	if err != nil {
-		err = errors.Wrapf(err, "loading config file: %s: ", filename)
+		err = fmt.Errorf("parsing config file (%s): %w", filename, err)
 	}
 	return configFile, err
 }
