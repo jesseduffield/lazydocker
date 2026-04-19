@@ -1546,7 +1546,18 @@ func (g *Gui) Resume() error {
 
 	g.suspended = false
 
-	return g.screen.Resume()
+	if err := g.screen.Resume(); err != nil {
+		return err
+	}
+
+	// Resume() re-engages the terminal but leaves tcell's internal
+	// "last drawn" cell cache stale. Without Sync(), the next redraw
+	// diffs against that stale cache, finds nothing changed, and
+	// writes nothing — leaving the screen blank. Sync() invalidates
+	// the cache so the next Show() forces a full repaint.
+	g.screen.Sync()
+
+	return nil
 }
 
 // matchView returns if the keybinding matches the current view (and the view's context)
