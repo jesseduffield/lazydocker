@@ -78,7 +78,7 @@ commandTemplates:
   rebuildService: '{{ .DockerCompose }} up -d --build {{ .Service.Name }}'
   recreateService: '{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}'
   allLogs: '{{ .DockerCompose }} logs --tail=300 --follow'
-  viewAlLogs: '{{ .DockerCompose }} logs'
+  viewAllLogs: '{{ .DockerCompose }} logs'
   dockerComposeConfig: '{{ .DockerCompose }} config'
   checkDockerComposeConfig: '{{ .DockerCompose }} config --quiet'
   serviceTop: '{{ .DockerCompose }} top {{ .Service.Name }}'

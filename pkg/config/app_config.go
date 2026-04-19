@@ -90,7 +90,7 @@ type GuiConfig struct {
 
 	// IgnoreMouseEvents is for when you do not want to use your mouse to interact
 	// with anything
-	IgnoreMouseEvents bool `yaml:"mouseEvents,omitempty"`
+	IgnoreMouseEvents bool `yaml:"ignoreMouseEvents,omitempty"`
 
 	// Theme determines what colors and color attributes your panel borders have.
 	// I always set inactiveBorderColor to black because in my terminal it's more
@@ -205,7 +205,7 @@ type CommandTemplatesConfig struct {
 	AllLogs string `yaml:"allLogs,omitempty"`
 
 	// ViewAllLogs is the command we use when you want to see all logs in a subprocess with no filtering
-	ViewAllLogs string `yaml:"viewAlLogs,omitempty"`
+	ViewAllLogs string `yaml:"viewAllLogs,omitempty"`
 
 	// DockerComposeConfig is the command for viewing the config of your docker
 	// compose. It basically prints out the yaml from your docker-compose.yml
