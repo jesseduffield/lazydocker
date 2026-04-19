@@ -158,6 +158,10 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 }
 
 func (c *DockerCommand) setDockerComposeCommand(config *config.AppConfig) {
+	if config.UserConfig.CommandTemplates.DockerComposeSetByUser {
+		return
+	}
+
 	if config.UserConfig.CommandTemplates.DockerCompose != "docker compose" {
 		return
 	}

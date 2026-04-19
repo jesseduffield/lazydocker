@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/jesseduffield/yaml"
@@ -95,4 +96,27 @@ func TestWritingToConfigFile(t *testing.T) {
 
 	// modifying an existing file that already has 'ConfirmOnQuit'
 	testFn(t, conf, false)
+}
+
+func TestLoadUserConfigMarksExplicitDockerComposeOverride(t *testing.T) {
+	configDir := t.TempDir()
+	configPath := filepath.Join(configDir, "config.yml")
+	content := []byte("commandTemplates:\n  dockerCompose: docker compose\n")
+
+	if err := os.WriteFile(configPath, content, 0o600); err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	conf, err := loadUserConfigWithDefaults(configDir)
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	if conf.CommandTemplates.DockerCompose != "docker compose" {
+		t.Fatalf("Expected docker compose but got %s", conf.CommandTemplates.DockerCompose)
+	}
+
+	if !conf.CommandTemplates.DockerComposeSetByUser {
+		t.Fatal("Expected dockerCompose override to be marked as user-set")
+	}
 }

@@ -174,6 +174,9 @@ type CommandTemplatesConfig struct {
 	// of whatever you've set in this value rather than you having to copy and
 	// paste it to all the other commands
 	DockerCompose string `yaml:"dockerCompose,omitempty"`
+	// DockerComposeSetByUser tracks whether dockerCompose was explicitly present
+	// in the user's config file so command auto-detection does not overwrite it.
+	DockerComposeSetByUser bool `yaml:"-"`
 
 	// StopService is the command for stopping a service
 	StopService string `yaml:"stopService,omitempty"`
@@ -579,9 +582,24 @@ func loadUserConfig(configDir string, base *UserConfig) (*UserConfig, error) {
 		return nil, err
 	}
 
+	type commandTemplatePresence struct {
+		DockerCompose *string `yaml:"dockerCompose,omitempty"`
+	}
+
+	type userConfigPresence struct {
+		CommandTemplates commandTemplatePresence `yaml:"commandTemplates,omitempty"`
+	}
+
+	presence := userConfigPresence{}
+	if err := yaml.Unmarshal(content, &presence); err != nil {
+		return nil, err
+	}
+
 	if err := yaml.Unmarshal(content, base); err != nil {
 		return nil, err
 	}
+
+	base.CommandTemplates.DockerComposeSetByUser = presence.CommandTemplates.DockerCompose != nil
 
 	return base, nil
 }
