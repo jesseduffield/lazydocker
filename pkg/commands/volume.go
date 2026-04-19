@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
@@ -21,7 +22,7 @@ type Volume struct {
 
 // RefreshVolumes gets the volumes and stores them
 func (c *DockerCommand) RefreshVolumes() ([]*Volume, error) {
-	result, err := c.Client.VolumeList(context.Background(), volume.ListOptions{})
+	result, err := c.Client.DiskUsage(context.Background(), types.DiskUsageOptions{Types: []types.DiskUsageObject{types.VolumeObject}})
 	if err != nil {
 		return nil, err
 	}
