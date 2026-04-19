@@ -29,9 +29,17 @@ func (c *DockerCommand) RefreshNetworks() ([]*Network, error) {
 	ownNetworks := make([]*Network, len(networks))
 
 	for i, nw := range networks {
+		// NetworkList returns network.Summary which doesn't include container
+		// details. We need to inspect each network to populate Containers.
+		inspected, err := c.Client.NetworkInspect(context.Background(), nw.ID, network.InspectOptions{})
+		if err != nil {
+			c.Log.WithError(err).Warn("failed to inspect network " + nw.Name)
+			inspected = nw
+		}
+
 		ownNetworks[i] = &Network{
 			Name:          nw.Name,
-			Network:       nw,
+			Network:       inspected,
 			Client:        c.Client,
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,
