@@ -23,6 +23,8 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 		return nil
 	case "filter":
 		return nil
+	case "logsfilter":
+		return nil
 	default:
 		panic(gui.Tr.NoViewMachingNewLineFocusedSwitchStatement)
 	}
@@ -54,6 +56,12 @@ func (gui *Gui) switchFocusAux(newView *gocui.View) error {
 
 	if gui.State.Filter.panel != nil && !lo.Contains(newViewStack, gui.State.Filter.panel.GetView().Name()) {
 		if err := gui.clearFilter(); err != nil {
+			return err
+		}
+	}
+
+	if gui.State.LogsFilter.panel != nil && !lo.Contains(newViewStack, gui.State.LogsFilter.panel.GetView().Name()) {
+		if err := gui.clearLogsFilter(); err != nil {
 			return err
 		}
 	}
@@ -95,8 +103,8 @@ func (gui *Gui) removeViewFromStack(view *gocui.View) {
 // Not to be called directly. Use `switchFocus` instead
 func (gui *Gui) pushView(name string) {
 	// No matter what view we're pushing, we first remove all popup panels from the stack
-	// (unless it's the search view because we may be searching the menu panel)
-	if name != "filter" {
+	// (unless it's the filter views because we may be filtering the panel or logs)
+	if name != "filter" && name != "logsfilter" {
 		gui.State.ViewStack = lo.Filter(gui.State.ViewStack, func(viewName string, _ int) bool {
 			return !gui.isPopupPanel(viewName)
 		})

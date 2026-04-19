@@ -1,11 +1,14 @@
 package gui
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types/container"
@@ -136,12 +139,26 @@ func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context,
 		}
 	}
 
+	var filterString string
+	var hasFilter bool
+
+	if gui.State.LogsFilter.active {
+		filterString = gui.State.LogsFilter.needle
+		hasFilter = filterString != ""
+	}
+
 	if ctr.Details.Config.Tty {
+		if hasFilter {
+			return gui.filterTTYLogs(readCloser, writer, filterString, ctx)
+		}
 		_, err = io.Copy(writer, readCloser)
 		if err != nil {
 			return err
 		}
 	} else {
+		if hasFilter {
+			return gui.filterNonTTYLogs(readCloser, writer, filterString, ctx)
+		}
 		_, err = stdcopy.StdCopy(writer, writer, readCloser)
 		if err != nil {
 			return err
@@ -149,4 +166,75 @@ func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context,
 	}
 
 	return nil
+}
+
+// filterTTYLogs filters TTY logs line by line based on the filter string
+func (gui *Gui) filterTTYLogs(reader io.Reader, writer io.Writer, filter string, ctx context.Context) error {
+	return streamFilterLines(reader, writer, filter, ctx)
+}
+
+// filterNonTTYLogs filters non-TTY logs (stdout/stderr) line by line
+func (gui *Gui) filterNonTTYLogs(reader io.Reader, writer io.Writer, filter string, ctx context.Context) error {
+	pipeReader, pipeWriter := io.Pipe()
+
+	go func() {
+		defer pipeWriter.Close()
+
+		done := make(chan struct{})
+		go func() {
+			select {
+			case <-ctx.Done():
+				pipeWriter.CloseWithError(ctx.Err())
+			case <-done:
+			}
+		}()
+
+		_, err := stdcopy.StdCopy(pipeWriter, pipeWriter, reader)
+		close(done)
+
+		if err != nil {
+			pipeWriter.CloseWithError(err)
+		}
+	}()
+
+	defer pipeReader.Close()
+	return streamFilterLines(pipeReader, writer, filter, ctx)
+}
+
+func streamFilterLines(reader io.Reader, writer io.Writer, filter string, ctx context.Context) error {
+	scanner := bufio.NewScanner(reader)
+	scanner.Buffer(make([]byte, 0, 4*1024), 10*1024*1024)
+
+	// Pre-convert filter to bytes for faster comparison when filter is ASCII
+	filterBytes := []byte(filter)
+	isASCIIFilter := len(filterBytes) == len(filter)
+
+	for scanner.Scan() {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+		}
+
+		line := scanner.Bytes()
+
+		var shouldWrite bool
+		if isASCIIFilter {
+			shouldWrite = bytes.Contains(line, filterBytes)
+		} else {
+			// For non-ASCII filters, we need string conversion for proper UTF-8 handling
+			shouldWrite = strings.Contains(string(line), filter)
+		}
+
+		if shouldWrite {
+			if _, err := writer.Write(line); err != nil {
+				return err
+			}
+			if _, err := writer.Write([]byte("\n")); err != nil {
+				return err
+			}
+		}
+	}
+
+	return scanner.Err()
 }

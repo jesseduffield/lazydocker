@@ -87,6 +87,9 @@ type guiState struct {
 	// Maintains the state of manual filtering i.e. typing in a substring
 	// to filter on in the current panel.
 	Filter filterState
+
+	// Maintains the state of container logs filtering
+	LogsFilter logsFilterState
 }
 
 type filterState struct {
@@ -96,6 +99,17 @@ type filterState struct {
 	// The panel that we're filtering.
 	panel panels.ISideListPanel
 	// The string that we're filtering on
+	needle string
+}
+
+type logsFilterState struct {
+	// If true then we're either currently inside the logs filter view
+	// or we've committed the logs filter and we're back
+	active bool
+
+	panel panels.ISideListPanel
+
+	// The string that we're filtering the logs
 	needle string
 }
 

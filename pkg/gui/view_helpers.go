@@ -349,6 +349,16 @@ func (gui *Gui) currentSidePanel() (panels.ISideListPanel, bool) {
 	return nil, false
 }
 
+func (gui *Gui) sidePanelByViewName(viewName string) (panels.ISideListPanel, bool) {
+	for _, sidePanel := range gui.allSidePanels() {
+		if sidePanel.GetView().Name() == viewName {
+			return sidePanel, true
+		}
+	}
+
+	return nil, false
+}
+
 // returns the current list panel. If no list panel is focused, returns false.
 func (gui *Gui) currentListPanel() (panels.ISideListPanel, bool) {
 	viewName := gui.currentViewName()
@@ -379,4 +389,14 @@ func (gui *Gui) allListPanels() []panels.ISideListPanel {
 
 func (gui *Gui) IsCurrentView(view *gocui.View) bool {
 	return view == gui.CurrentView()
+}
+
+func (gui *Gui) isMainTabActive(key string) bool {
+	objectKey := gui.State.Panels.Main.ObjectKey
+	if objectKey != "" {
+		if strings.HasSuffix(objectKey, key) {
+			return true
+		}
+	}
+	return false
 }
