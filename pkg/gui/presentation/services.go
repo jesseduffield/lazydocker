@@ -22,7 +22,7 @@ func GetServiceDisplayStrings(guiConfig *config.GuiConfig, service *commands.Ser
 		}
 
 		return []string{
-			utils.ColoredString(containerState, color.FgBlue),
+			utils.ColoredString(containerState, color.FgCyan),
 			"",
 			service.Name,
 			"",
