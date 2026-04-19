@@ -159,12 +159,12 @@ Required Go version >= **1.8**, <= **1.17**
 go get github.com/jesseduffield/lazydocker
 ```
 
-### Arch Linux AUR
+### Arch Linux
 
-You can install lazydocker using the [AUR](https://aur.archlinux.org/packages/lazydocker) by running:
+You can install lazydocker from the official Arch repositories by running:
 
 ```sh
-yay -S lazydocker
+sudo pacman -S lazydocker
 ```
 
 ### Docker
