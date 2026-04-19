@@ -363,6 +363,18 @@ outer:
 			case <-ctx.Done():
 				return
 			case message := <-messageChan:
+				switch message.Type {
+				case events.ContainerEventType:
+					switch message.Action {
+					case events.ActionPause, events.ActionUnPause:
+						// pause/unpause events are lonely events
+						// add tiny delay to allow state to stabilise
+						// other events don't need that as they are followed by other events
+						// which give time for state to stabilise and be picked up by our refreshes
+						time.Sleep(200 * time.Millisecond)
+					}
+				}
+
 				// We could be more granular about what events should trigger which refreshes.
 				// At the moment it's pretty efficient though, and it might not be worth
 				// the maintenance burden of mapping specific events to specific refreshes
