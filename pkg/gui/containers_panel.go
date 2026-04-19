@@ -83,25 +83,36 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 			return sortContainers(a, b, gui.Config.UserConfig.Gui.LegacySortContainers)
 		},
 		Filter: func(container *commands.Container) bool {
-			// Note that this is O(N*M) time complexity where N is the number of services
-			// and M is the number of containers. We expect N to be small but M may be large,
-			// so we will need to keep an eye on this.
-			if !gui.Config.UserConfig.Gui.ShowAllContainers && !isStandaloneContainer(container) {
-				return false
-			}
-
 			if !gui.State.ShowExitedContainers && container.Container.State == "exited" {
 				return false
 			}
 
-			// Filter by selected project. Containers with no project (truly
-			// standalone, not from any compose project) are always shown.
-			selectedProject := gui.getSelectedProjectName()
-			if selectedProject == "" {
-				selectedProject = gui.DockerCommand.LocalProjectName
-			}
-			if selectedProject != "" && container.ProjectName != "" && container.ProjectName != selectedProject {
-				return false
+			// Only apply project and standalone filtering when we are inside a
+			// docker-compose project. Outside of a compose project all
+			// containers are shown in a flat list regardless of which compose
+			// project they belong to.
+			if gui.DockerCommand.InDockerComposeProject {
+				// This check must be inside the InDockerComposeProject guard:
+				// outside a compose project, services are still derived from
+				// container labels, so compose-managed containers from other
+				// projects would be incorrectly hidden.
+				//
+				// Note that this is O(N*M) time complexity where N is the number of services
+				// and M is the number of containers. We expect N to be small but M may be large,
+				// so we will need to keep an eye on this.
+				if !gui.Config.UserConfig.Gui.ShowAllContainers && !isStandaloneContainer(container) {
+					return false
+				}
+
+				// Filter by selected project. Containers with no project (truly
+				// standalone, not from any compose project) are always shown.
+				selectedProject := gui.getSelectedProjectName()
+				if selectedProject == "" {
+					selectedProject = gui.DockerCommand.LocalProjectName
+				}
+				if selectedProject != "" && container.ProjectName != "" && container.ProjectName != selectedProject {
+					return false
+				}
 			}
 
 			return true
