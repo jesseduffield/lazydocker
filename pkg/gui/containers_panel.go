@@ -351,6 +351,14 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 			LabelColumns: []string{gui.Tr.RemoveWithVolumes, "docker rm --volumes " + ctr.ID[1:10]},
 			OnPress:      func() error { return handleMenuPress(container.RemoveOptions{RemoveVolumes: true}) },
 		},
+		{
+			LabelColumns: []string{gui.Tr.ForceRemove, "docker rm --force " + ctr.ID[1:10]},
+			OnPress:      func() error { return handleMenuPress(container.RemoveOptions{Force: true}) },
+		},
+		{
+			LabelColumns: []string{gui.Tr.ForceRemoveWithVolumes, "docker rm --force --volumes " + ctr.ID[1:10]},
+			OnPress:      func() error { return handleMenuPress(container.RemoveOptions{Force: true, RemoveVolumes: true}) },
+		},
 	}
 
 	return gui.Menu(CreateMenuOptions{
