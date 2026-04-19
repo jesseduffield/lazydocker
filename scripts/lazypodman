@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Run the lazy docker for podman installations. Auto starts as root.
+
+# Run as root
+if [[ $EUID -ne 0 ]]; then
+   exec sudo $0 "$@"
+   exit $?
+fi
+
+# Run and connect to podman host
+: "${DOCKER_HOST:="unix:///run/podman/podman.sock"}"
+export DOCKER_HOST
+lazydocker "$@"
