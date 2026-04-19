@@ -59,12 +59,7 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 			return gui.renderContainersAndServices()
 		},
 		Hide: func() bool {
-			// Only show the project panel when we are inside a docker-compose
-			// project directory. When launched outside of a compose project
-			// there is no meaningful local project to display, so we hide the
-			// panel and let the containers panel show all containers in a flat
-			// list (matching the behaviour from before v0.25).
-			return !gui.DockerCommand.InDockerComposeProject
+			return !gui.DockerCommand.IsProjectScoped()
 		},
 	}
 }
@@ -195,6 +190,11 @@ func (gui *Gui) renderAllLogs(project *commands.Project) tasks.TaskFunc {
 }
 
 func (gui *Gui) renderDockerComposeConfig(project *commands.Project) tasks.TaskFunc {
+	if !gui.DockerCommand.InDockerComposeProject {
+		return gui.NewSimpleRenderStringTask(func() string {
+			return "Compose config is only available when launched from a docker-compose project directory"
+		})
+	}
 	if project != nil && project.Name != gui.DockerCommand.LocalProjectName {
 		return gui.NewSimpleRenderStringTask(func() string {
 			return "Compose config is not available for non-local projects"

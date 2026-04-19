@@ -87,11 +87,10 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 				return false
 			}
 
-			// Only apply project and standalone filtering when we are inside a
-			// docker-compose project. Outside of a compose project all
-			// containers are shown in a flat list regardless of which compose
-			// project they belong to.
-			if gui.DockerCommand.InDockerComposeProject {
+			// When project-scoped, apply project and standalone filtering.
+			// Otherwise all containers are shown in a flat list regardless
+			// of which compose project they belong to.
+			if gui.DockerCommand.IsProjectScoped() {
 				// This check must be inside the InDockerComposeProject guard:
 				// outside a compose project, services are still derived from
 				// container labels, so compose-managed containers from other

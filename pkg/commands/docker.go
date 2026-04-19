@@ -154,7 +154,23 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		log.Warn(err.Error())
 	}
 
+	// When the user passes -p outside of a compose directory, treat it as the
+	// local project so the project/services panels still appear and filtering
+	// is applied. Inside a compose dir, LocalProjectName is derived from
+	// container labels later in RefreshContainersAndServices.
+	if !dockerCommand.InDockerComposeProject && config.ProjectName != "" {
+		dockerCommand.LocalProjectName = config.ProjectName
+	}
+
 	return dockerCommand, nil
+}
+
+// IsProjectScoped reports whether lazydocker should be scoped to a single
+// compose project — either because we're inside a compose directory or
+// because the user passed -p. When false, the project/services panels are
+// hidden and all containers are shown in a flat list.
+func (c *DockerCommand) IsProjectScoped() bool {
+	return c.InDockerComposeProject || c.Config.ProjectName != ""
 }
 
 func (c *DockerCommand) setDockerComposeCommand(config *config.AppConfig) {
