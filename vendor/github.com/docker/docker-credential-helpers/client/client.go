@@ -9,6 +9,16 @@ import (
 	"github.com/docker/docker-credential-helpers/credentials"
 )
 
+// validateServerURL checks that the serverURL does not contain characters that
+// could be used to inject additional protocol messages into the credential helper
+// stdin stream (e.g. newline characters used in line-delimited protocols).
+func validateServerURL(serverURL string) error {
+	if strings.ContainsAny(serverURL, "\n\r") {
+		return fmt.Errorf("invalid serverURL: must not contain newline characters")
+	}
+	return nil
+}
+
 // isValidCredsMessage checks if 'msg' contains invalid credentials error message.
 // It returns whether the logs are free of invalid credentials errors and the error if it isn't.
 // error values can be errCredentialsMissingServerURL or errCredentialsMissingUsername.
@@ -45,6 +55,9 @@ func Store(program ProgramFunc, creds *credentials.Credentials) error {
 
 // Get executes an external program to get the credentials from a native store.
 func Get(program ProgramFunc, serverURL string) (*credentials.Credentials, error) {
+	if err := validateServerURL(serverURL); err != nil {
+		return nil, err
+	}
 	cmd := program(credentials.ActionGet)
 	cmd.Input(strings.NewReader(serverURL))
 
@@ -74,6 +87,9 @@ func Get(program ProgramFunc, serverURL string) (*credentials.Credentials, error
 
 // Erase executes a program to remove the server credentials from the native store.
 func Erase(program ProgramFunc, serverURL string) error {
+	if err := validateServerURL(serverURL); err != nil {
+		return err
+	}
 	cmd := program(credentials.ActionErase)
 	cmd.Input(strings.NewReader(serverURL))
 	out, err := cmd.Output()
