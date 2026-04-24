@@ -527,9 +527,11 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			{ViewName: viewName, Key: 'k', Modifier: gocui.ModNone, Handler: wrappedHandler(onUp)},
 			{ViewName: viewName, Key: gocui.KeyArrowUp, Modifier: gocui.ModNone, Handler: wrappedHandler(onUp)},
 			{ViewName: viewName, Key: gocui.MouseWheelUp, Modifier: gocui.ModNone, Handler: wrappedHandler(onUp)},
+			{ViewName: viewName, Key: gocui.KeyCtrlP, Modifier: gocui.ModNone, Handler: wrappedHandler(onUp)},
 			{ViewName: viewName, Key: 'j', Modifier: gocui.ModNone, Handler: wrappedHandler(onDown)},
 			{ViewName: viewName, Key: gocui.KeyArrowDown, Modifier: gocui.ModNone, Handler: wrappedHandler(onDown)},
 			{ViewName: viewName, Key: gocui.MouseWheelDown, Modifier: gocui.ModNone, Handler: wrappedHandler(onDown)},
+			{ViewName: viewName, Key: gocui.KeyCtrlN, Modifier: gocui.ModNone, Handler: wrappedHandler(onDown)},
 			{ViewName: viewName, Key: gocui.MouseLeft, Modifier: gocui.ModNone, Handler: wrappedHandler(onClick)},
 		}...)
 	}
