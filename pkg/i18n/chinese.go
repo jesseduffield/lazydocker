@@ -60,6 +60,7 @@ func chineseSet() TranslationSet {
 		ViewLogs:                    "查看日志",
 		UpProject:                   "创建并启动容器",
 		DownProject:                 "停止并移除容器",
+		PullProject:                 "拉取项目",
 		RemoveImage:                 "移除镜像",
 		RemoveVolume:                "移除卷",
 		RemoveNetwork:               "移除网络",

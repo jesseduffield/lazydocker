@@ -43,6 +43,7 @@ func dutchSet() TranslationSet {
 		NextContext:        "volgende tab",
 		Attach:             "verbinden",
 		ViewLogs:           "bekijk logs",
+		PullProject:        "project ophalen",
 		RemoveImage:        "verwijder image",
 		RemoveVolume:       "verwijder volume",
 		RemoveNetwork:      "verwijder network",
