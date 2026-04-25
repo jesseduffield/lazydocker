@@ -179,6 +179,26 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	})
 }
 
+func (gui *Gui) handleImagePull(g *gocui.Gui, v *gocui.View) error {
+	type pullImageOption struct {
+		description string
+		command     string
+	}
+
+	img, err := gui.Panels.Images.GetSelectedItem()
+	if err != nil {
+		return nil
+	}
+
+	return gui.WithWaitingStatus(gui.Tr.PullImage, func() error {
+		err := img.Pull(image.PullOptions{})
+		if err != nil {
+			return gui.createErrorPanel(err.Error())
+		}
+		return gui.reloadImages()
+	})
+}
+
 func (gui *Gui) handlePruneImages() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneImages, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {

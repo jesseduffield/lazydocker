@@ -42,6 +42,7 @@ func polishSet() TranslationSet {
 		NextContext:        "następna zakładka",
 		Attach:             "przyczep",
 		ViewLogs:           "pokaż logi",
+		PullProject:        "pobierz projekt",
 		RemoveImage:        "usuń obraz",
 		RemoveVolume:       "usuń wolumen",
 		RemoveNetwork:      "usuń sieci",

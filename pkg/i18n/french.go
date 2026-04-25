@@ -51,6 +51,7 @@ func frenchSet() TranslationSet {
 		NextContext:                 "onglet suivant",
 		Attach:                      "attacher",
 		ViewLogs:                    "voir les enregistrements",
+		PullProject:                 "tirer le projet",
 		RemoveImage:                 "supprimer l'image",
 		RemoveVolume:                "supprimer le volume",
 		RemoveNetwork:               "supprimer le réseau",

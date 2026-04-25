@@ -25,6 +25,14 @@ type Image struct {
 	DockerCommand LimitedDockerCommand
 }
 
+func (i *Image) Pull(options image.PullOptions) error {
+	if _, err := i.Client.ImagePull(context.Background(), i.Name+":"+i.Tag, options); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Remove removes the image
 func (i *Image) Remove(options image.RemoveOptions) error {
 	if _, err := i.Client.ImageRemove(context.Background(), i.ID, options); err != nil {
