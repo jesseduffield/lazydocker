@@ -26,6 +26,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>m</kbd>: pokaż logi
   <kbd>E</kbd>: exec shell
   <kbd>c</kbd>: wykonaj predefiniowaną własną komende
+  <kbd>y</kbd>: Kopiuj identyfikator kontenera
   <kbd>b</kbd>: view bulk commands
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: skup na głównym panelu
@@ -62,6 +63,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>c</kbd>: wykonaj predefiniowaną własną komende
+  <kbd>y</kbd>: Kopiuj nazwę obrazu
   <kbd>d</kbd>: usuń obraz
   <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: skup na głównym panelu

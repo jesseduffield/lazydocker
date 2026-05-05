@@ -26,6 +26,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>m</kbd>: ver logs
   <kbd>E</kbd>: ejecutar shell
   <kbd>c</kbd>: ejecutar comando personalizado
+  <kbd>y</kbd>: Copiar ID del contenedor
   <kbd>b</kbd>: ver comandos masivos
   <kbd>w</kbd>: abrir en navegador (first port is http)
   <kbd>enter</kbd>: enfocar panel principal
@@ -62,6 +63,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>c</kbd>: ejecutar comando personalizado
+  <kbd>y</kbd>: Copiar nombre de la imagen
   <kbd>d</kbd>: limpiar imagen
   <kbd>b</kbd>: ver comandos masivos
   <kbd>enter</kbd>: enfocar panel principal

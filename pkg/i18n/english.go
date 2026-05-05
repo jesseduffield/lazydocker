@@ -136,6 +136,11 @@ type TranslationSet struct {
 	FocusImages     string
 	FocusVolumes    string
 	FocusNetworks   string
+
+	// new translations for copy actions
+	CopyContainerID string
+	CopyImageName   string
+	CopiedFmt       string // format string, e.g. "Copied: %s"
 }
 
 func englishSet() TranslationSet {
@@ -279,5 +284,10 @@ func englishSet() TranslationSet {
 		FocusImages:     "focus images panel",
 		FocusVolumes:    "focus volumes panel",
 		FocusNetworks:   "focus networks panel",
+
+		// copy action defaults
+		CopyContainerID: "Copy container id",
+		CopyImageName:   "Copy image name",
+		CopiedFmt:       "Copied: %s",
 	}
 }

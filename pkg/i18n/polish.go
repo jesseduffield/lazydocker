@@ -93,5 +93,10 @@ func polishSet() TranslationSet {
 		StopContainer:               "Na pewno zatrzymać ten kontener?",
 		PressEnterToReturn:          "Wciśnij enter aby powrócić do lazydockera (ten komunikat może być wyłączony w konfiguracji poprzez ustawienie `gui.returnImmediately: true`)",
 		DetachFromContainerShortCut: "Domyślnie, aby odłączyć się od kontenera, naciśnij ctrl-p, a następnie ctrl-q",
+
+		// copy action defaults
+		CopyContainerID: "Kopiuj identyfikator kontenera",
+		CopyImageName:   "Kopiuj nazwę obrazu",
+		CopiedFmt:       "Skopiowano: %s",
 	}
 }
