@@ -116,5 +116,10 @@ func frenchSet() TranslationSet {
 
 		No:  "non",
 		Yes: "oui",
+
+		// copy action defaults
+		CopyContainerID: "Copier l'ID du conteneur",
+		CopyImageName:   "Copier le nom de l'image",
+		CopiedFmt:       "Copié : %s",
 	}
 }

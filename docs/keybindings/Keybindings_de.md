@@ -26,6 +26,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>m</kbd>: zeige Protokolle
   <kbd>E</kbd>: exec shell
   <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
+  <kbd>y</kbd>: Container-ID kopieren
   <kbd>b</kbd>: view bulk commands
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: fokussieren aufs Hauptpanel
@@ -62,6 +63,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
+  <kbd>y</kbd>: Image-Namen kopieren
   <kbd>d</kbd>: entferne Image
   <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: fokussieren aufs Hauptpanel

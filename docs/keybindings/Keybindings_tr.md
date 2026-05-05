@@ -26,6 +26,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>m</kbd>: kayıt defterini görüntüle
   <kbd>E</kbd>: exec shell
   <kbd>c</kbd>: önceden tanımlanmış özel komutu çalıştır
+  <kbd>y</kbd>: Konteyner kimliğini kopyala
   <kbd>b</kbd>: view bulk commands
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: ana panele odaklan
@@ -62,6 +63,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>c</kbd>: önceden tanımlanmış özel komutu çalıştır
+  <kbd>y</kbd>: Görüntü adını kopyala
   <kbd>d</kbd>: imajı kaldır
   <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: ana panele odaklan

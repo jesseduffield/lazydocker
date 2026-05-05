@@ -130,6 +130,11 @@ func portugueseSet() TranslationSet {
 		No:  "não",
 		Yes: "sim",
 
+		// copy action defaults
+		CopyContainerID: "Copiar ID do contêiner",
+		CopyImageName:   "Copiar nome da imagem",
+		CopiedFmt:       "Copiado: %s",
+
 		LcNextScreenMode: "modo de tela seguinte (normal/meia/tela cheia)",
 		LcPrevScreenMode: "modo de tela anterior",
 		FilterPrompt:     "filtro",

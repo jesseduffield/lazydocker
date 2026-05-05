@@ -131,6 +131,11 @@ func chineseSet() TranslationSet {
 
 		LcNextScreenMode: "下一个屏幕模式（正常/半屏/全屏）",
 		LcPrevScreenMode: "上一个屏幕模式",
-		FilterPrompt:     "筛选",
+		// copy action defaults
+		CopyContainerID: "复制容器 ID",
+		CopyImageName:   "复制镜像名称",
+		CopiedFmt:       "已复制: %s",
+
+		FilterPrompt: "筛选",
 	}
 }

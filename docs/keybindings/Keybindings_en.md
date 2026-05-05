@@ -26,6 +26,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>m</kbd>: view logs
   <kbd>E</kbd>: exec shell
   <kbd>c</kbd>: run predefined custom command
+  <kbd>y</kbd>: copy container id
   <kbd>b</kbd>: view bulk commands
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: focus main panel
@@ -62,6 +63,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>c</kbd>: run predefined custom command
+  <kbd>y</kbd>: copy image name
   <kbd>d</kbd>: remove image
   <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: focus main panel

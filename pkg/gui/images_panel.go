@@ -219,3 +219,29 @@ func (gui *Gui) handleImagesBulkCommand(g *gocui.Gui, v *gocui.View) error {
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }
+
+func (gui *Gui) handleCopyImageName(g *gocui.Gui, v *gocui.View) error {
+	img, err := gui.Panels.Images.GetSelectedItem()
+	if err != nil {
+		return nil
+	}
+
+	name := img.Name
+	if img.Tag != "" {
+		name = name + ":" + img.Tag
+	}
+
+	if name == "none" || name == ":" {
+		if len(img.ID) >= 12 {
+			name = img.ID[:12]
+		} else {
+			name = img.ID
+		}
+	}
+
+	if err := gui.CopyToClipboard(name); err != nil {
+		return gui.createErrorPanel(err.Error())
+	}
+
+	return nil
+}
