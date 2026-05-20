@@ -75,6 +75,22 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 			return a.Name < b.Name
 		},
 		Filter: func(service *commands.Service) bool {
+			// Profile selected? scope to the local project AND to services
+			// declared in (or default-active for) that profile. Per docker
+			// compose semantics, `--profile X config --services` returns
+			// profile-X services plus default (no-profile) services.
+			if profile := gui.getSelectedProfile(); profile != "" {
+				if service.ProjectName != gui.DockerCommand.LocalProjectName {
+					return false
+				}
+				svcs, _ := gui.DockerCommand.GetProfileServices(profile)
+				for _, n := range svcs {
+					if n == service.Name {
+						return true
+					}
+				}
+				return false
+			}
 			selectedProject := gui.getSelectedProjectName()
 			if selectedProject == "" {
 				// Before any project is selected (e.g. startup), default to
@@ -335,16 +351,26 @@ func (gui *Gui) handleServiceRenderLogsToMain(g *gocui.Gui, v *gocui.View) error
 
 func (gui *Gui) handleProjectUp(g *gocui.Gui, v *gocui.View) error {
 	project, _ := gui.Panels.Projects.GetSelectedItem()
-	if project != nil && project.Name != gui.DockerCommand.LocalProjectName {
+	if project != nil && !project.IsProfile && project.Name != gui.DockerCommand.LocalProjectName {
 		return gui.createErrorPanel(gui.Tr.CannotManageNonLocalService)
 	}
-	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmUpProject, func(g *gocui.Gui, v *gocui.View) error {
+	obj := commands.CommandObject{}
+	confirmMsg := gui.Tr.ConfirmUpProject
+	status := gui.Tr.UppingProjectStatus
+	if project != nil && project.IsProfile {
+		obj.Profile = project.Name
+		confirmMsg = gui.Tr.ConfirmUpProfile
+		status = gui.Tr.UppingProfileStatus
+	} else {
+		obj.Project = project
+	}
+	return gui.createConfirmationPanel(gui.Tr.Confirm, confirmMsg, func(g *gocui.Gui, v *gocui.View) error {
 		cmdStr := utils.ApplyTemplate(
 			gui.Config.UserConfig.CommandTemplates.Up,
-			gui.DockerCommand.NewCommandObject(commands.CommandObject{Project: project}),
+			gui.DockerCommand.NewCommandObject(obj),
 		)
 
-		return gui.WithWaitingStatus(gui.Tr.UppingProjectStatus, func() error {
+		return gui.WithWaitingStatus(status, func() error {
 			if err := gui.OSCommand.RunCommand(cmdStr); err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -355,17 +381,25 @@ func (gui *Gui) handleProjectUp(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) handleProjectDown(g *gocui.Gui, v *gocui.View) error {
 	project, _ := gui.Panels.Projects.GetSelectedItem()
-	if project != nil && project.Name != gui.DockerCommand.LocalProjectName {
+	if project != nil && !project.IsProfile && project.Name != gui.DockerCommand.LocalProjectName {
 		return gui.createErrorPanel(gui.Tr.CannotManageNonLocalService)
+	}
+	obj := commands.CommandObject{}
+	status := gui.Tr.DowningStatus
+	if project != nil && project.IsProfile {
+		obj.Profile = project.Name
+		status = gui.Tr.DowningProfileStatus
+	} else {
+		obj.Project = project
 	}
 	downCommand := utils.ApplyTemplate(
 		gui.Config.UserConfig.CommandTemplates.Down,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{Project: project}),
+		gui.DockerCommand.NewCommandObject(obj),
 	)
 
 	downWithVolumesCommand := utils.ApplyTemplate(
 		gui.Config.UserConfig.CommandTemplates.DownWithVolumes,
-		gui.DockerCommand.NewCommandObject(commands.CommandObject{Project: project}),
+		gui.DockerCommand.NewCommandObject(obj),
 	)
 
 	options := []*commandOption{
@@ -373,7 +407,7 @@ func (gui *Gui) handleProjectDown(g *gocui.Gui, v *gocui.View) error {
 			description: gui.Tr.Down,
 			command:     downCommand,
 			onPress: func() error {
-				return gui.WithWaitingStatus(gui.Tr.DowningStatus, func() error {
+				return gui.WithWaitingStatus(status, func() error {
 					if err := gui.OSCommand.RunCommand(downCommand); err != nil {
 						return gui.createErrorPanel(err.Error())
 					}
@@ -385,7 +419,7 @@ func (gui *Gui) handleProjectDown(g *gocui.Gui, v *gocui.View) error {
 			description: gui.Tr.DownWithVolumes,
 			command:     downWithVolumesCommand,
 			onPress: func() error {
-				return gui.WithWaitingStatus(gui.Tr.DowningStatus, func() error {
+				return gui.WithWaitingStatus(status, func() error {
 					if err := gui.OSCommand.RunCommand(downWithVolumesCommand); err != nil {
 						return gui.createErrorPanel(err.Error())
 					}
@@ -405,6 +439,34 @@ func (gui *Gui) handleProjectDown(g *gocui.Gui, v *gocui.View) error {
 	return gui.Menu(CreateMenuOptions{
 		Title: "",
 		Items: menuItems,
+	})
+}
+
+// handleProjectRestart restarts the selected project (or the selected
+// profile's services within the local project). Not currently bound to a key
+// in keybindings.go — opt-in via custom-command config or a follow-up PR.
+func (gui *Gui) handleProjectRestart(g *gocui.Gui, v *gocui.View) error {
+	project, _ := gui.Panels.Projects.GetSelectedItem()
+	if project != nil && !project.IsProfile && project.Name != gui.DockerCommand.LocalProjectName {
+		return gui.createErrorPanel(gui.Tr.CannotManageNonLocalService)
+	}
+	obj := commands.CommandObject{}
+	status := gui.Tr.RestartingStatus
+	if project != nil && project.IsProfile {
+		obj.Profile = project.Name
+		status = gui.Tr.RestartingProfileStatus
+	} else {
+		obj.Project = project
+	}
+	cmdStr := utils.ApplyTemplate(
+		gui.Config.UserConfig.CommandTemplates.Restart,
+		gui.DockerCommand.NewCommandObject(obj),
+	)
+	return gui.WithWaitingStatus(status, func() error {
+		if err := gui.OSCommand.RunCommand(cmdStr); err != nil {
+			return gui.createErrorPanel(err.Error())
+		}
+		return nil
 	})
 }
 
@@ -524,7 +586,15 @@ L:
 func (gui *Gui) handleServicesBulkCommand(g *gocui.Gui, v *gocui.View) error {
 	project, _ := gui.Panels.Projects.GetSelectedItem()
 	bulkCommands := gui.Config.UserConfig.BulkCommands.Services
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{Project: project})
+	obj := commands.CommandObject{}
+	if project != nil && project.IsProfile {
+		// Profile selected: user-defined bulk commands that use
+		// {{ .DockerCompose }} get --profile X auto-injected.
+		obj.Profile = project.Name
+	} else {
+		obj.Project = project
+	}
+	commandObject := gui.DockerCommand.NewCommandObject(obj)
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }

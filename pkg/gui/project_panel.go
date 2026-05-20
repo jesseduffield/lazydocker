@@ -50,6 +50,10 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 		Gui:            gui.intoInterface(),
 
 		Sort: func(a *commands.Project, b *commands.Project) bool {
+			// Projects first (alphabetical), then profiles (alphabetical).
+			if a.IsProfile != b.IsProfile {
+				return !a.IsProfile
+			}
 			return a.Name < b.Name
 		},
 		GetTableCells: presentation.GetProjectDisplayStrings,
@@ -69,7 +73,10 @@ func (gui *Gui) refreshProject() error {
 
 	// Preserve the current selection across refreshes. On the first refresh,
 	// select the project specified via -p flag, or fall back to the local project.
+	// We match on (Name, IsProfile) so a profile that shares a project's name
+	// doesn't cross-select with the project row.
 	selectedName := gui.getSelectedProjectName()
+	selectedIsProfile := gui.isSelectedProjectAProfile()
 	if selectedName == "" {
 		if gui.Config.ProjectName != "" {
 			selectedName = gui.Config.ProjectName
@@ -82,7 +89,7 @@ func (gui *Gui) refreshProject() error {
 
 	if selectedName != "" {
 		for i, p := range gui.Panels.Projects.List.GetItems() {
-			if p.Name == selectedName {
+			if p.Name == selectedName && p.IsProfile == selectedIsProfile {
 				gui.Panels.Projects.SetSelectedLineIdx(i)
 				gui.Panels.Projects.Refocus()
 				break
@@ -119,9 +126,19 @@ func (gui *Gui) getDiscoveredProjects() []*commands.Project {
 		}
 	}
 
-	projects := make([]*commands.Project, len(projectNames))
-	for i, name := range projectNames {
-		projects[i] = &commands.Project{Name: name}
+	projects := make([]*commands.Project, 0, len(projectNames))
+	for _, name := range projectNames {
+		projects = append(projects, &commands.Project{Name: name})
+	}
+
+	// Append profile pseudo-projects for the local compose project. The Sort
+	// callback above places these after all regular project rows.
+	if gui.DockerCommand.InDockerComposeProject {
+		if profileNames, _ := gui.DockerCommand.GetProfiles(); len(profileNames) > 0 {
+			for _, p := range profileNames {
+				projects = append(projects, &commands.Project{Name: p, IsProfile: true})
+			}
+		}
 	}
 
 	return projects
@@ -132,6 +149,28 @@ func (gui *Gui) getDiscoveredProjects() []*commands.Project {
 func (gui *Gui) getSelectedProjectName() string {
 	project, err := gui.Panels.Projects.GetSelectedItem()
 	if err != nil {
+		return ""
+	}
+	return project.Name
+}
+
+// isSelectedProjectAProfile reports whether the currently selected project-panel
+// row is a profile pseudo-project. Used to disambiguate selection restore when
+// a profile name happens to equal a project name.
+func (gui *Gui) isSelectedProjectAProfile() bool {
+	project, err := gui.Panels.Projects.GetSelectedItem()
+	if err != nil {
+		return false
+	}
+	return project.IsProfile
+}
+
+// getSelectedProfile returns the selected profile name, or "" if the current
+// project-panel selection isn't a profile. Used by the services and containers
+// filters to scope to a profile's service set.
+func (gui *Gui) getSelectedProfile() string {
+	project, err := gui.Panels.Projects.GetSelectedItem()
+	if err != nil || project == nil || !project.IsProfile {
 		return ""
 	}
 	return project.Name
@@ -165,10 +204,16 @@ func (gui *Gui) renderAllLogs(project *commands.Project) tasks.TaskFunc {
 		Func: func(ctx context.Context) {
 			gui.clearMainView()
 
+			obj := commands.CommandObject{}
+			if project != nil && project.IsProfile {
+				obj.Profile = project.Name
+			} else {
+				obj.Project = project
+			}
 			cmd := gui.OSCommand.RunCustomCommand(
 				utils.ApplyTemplate(
 					gui.Config.UserConfig.CommandTemplates.AllLogs,
-					gui.DockerCommand.NewCommandObject(commands.CommandObject{Project: project}),
+					gui.DockerCommand.NewCommandObject(obj),
 				),
 			)
 
@@ -194,6 +239,11 @@ func (gui *Gui) renderDockerComposeConfig(project *commands.Project) tasks.TaskF
 	if !gui.DockerCommand.InDockerComposeProject {
 		return gui.NewSimpleRenderStringTask(func() string {
 			return "Compose config is only available when launched from a docker-compose project directory"
+		})
+	}
+	if project != nil && project.IsProfile {
+		return gui.NewSimpleRenderStringTask(func() string {
+			return utils.ColoredYamlString(gui.DockerCommand.DockerComposeConfigForProfile(project.Name))
 		})
 	}
 	if project != nil && project.Name != gui.DockerCommand.LocalProjectName {
@@ -230,7 +280,13 @@ func lazydockerTitle() string {
 // handleViewAllLogs switches to a subprocess viewing all the logs from docker-compose
 func (gui *Gui) handleViewAllLogs(g *gocui.Gui, v *gocui.View) error {
 	project, _ := gui.Panels.Projects.GetSelectedItem()
-	c, err := gui.DockerCommand.ViewAllLogs(project)
+	obj := commands.CommandObject{}
+	if project != nil && project.IsProfile {
+		obj.Profile = project.Name
+	} else {
+		obj.Project = project
+	}
+	c, err := gui.DockerCommand.ViewAllLogs(obj)
 	if err != nil {
 		return gui.createErrorPanel(err.Error())
 	}

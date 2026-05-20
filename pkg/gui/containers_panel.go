@@ -103,6 +103,25 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 					return false
 				}
 
+				// Profile selected? scope to the local project's containers
+				// whose service is in the profile's service set. Truly
+				// standalone containers (no compose project) are shown.
+				if profile := gui.getSelectedProfile(); profile != "" {
+					if container.ProjectName == "" {
+						return true
+					}
+					if container.ProjectName != gui.DockerCommand.LocalProjectName {
+						return false
+					}
+					svcs, _ := gui.DockerCommand.GetProfileServices(profile)
+					for _, n := range svcs {
+						if container.ServiceName == n {
+							return true
+						}
+					}
+					return false
+				}
+
 				// Filter by selected project. Containers with no project (truly
 				// standalone, not from any compose project) are always shown.
 				selectedProject := gui.getSelectedProjectName()

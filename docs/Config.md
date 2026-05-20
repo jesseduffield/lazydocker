@@ -70,6 +70,7 @@ commandTemplates:
   up:  '{{ .DockerCompose }} up -d'
   down: '{{ .DockerCompose }} down'
   downWithVolumes: '{{ .DockerCompose }} down --volumes'
+  restart: '{{ .DockerCompose }} restart'
   upService:  '{{ .DockerCompose }} up -d {{ .Service.Name }}'
   startService: '{{ .DockerCompose }} start {{ .Service.Name }}'
   stopService: '{{ .DockerCompose }} stop {{ .Service.Name }}'
@@ -94,6 +95,20 @@ stats:
       statPath: DerivedStats.MemoryPercentage
       color: green
 ```
+
+## Docker Compose profiles
+
+When a docker-compose profile is selected in the project panel, the project-scoped
+templates (`up`, `down`, `downWithVolumes`, `restart`, `allLogs`, `viewAlLogs`,
+`dockerComposeConfig`) automatically have `--profile <name>` appended via the
+`{{ .DockerCompose }}` substitution. There are no separate profile templates
+to configure — any custom override of those templates will pick up the profile
+flag for free.
+
+Selecting a profile row in the project panel also filters the services and
+containers panels to the services that activate with that profile (default
+services plus profile-tagged services, matching `docker compose --profile X
+config --services`).
 
 ## To see what all of the config options mean, and what other options you can set, see [here](https://godoc.org/github.com/jesseduffield/lazydocker/pkg/config)
 
