@@ -525,7 +525,7 @@ func NewAppConfig(name, version, commit, date string, buildSource string, debugg
 }
 
 func configDirForVendor(vendor string, projectName string) string {
-	envConfigDir := os.Getenv("CONFIG_DIR")
+	envConfigDir := os.Getenv("LAZYDOCKER_CONFIG_DIR")
 	if envConfigDir != "" {
 		return envConfigDir
 	}
