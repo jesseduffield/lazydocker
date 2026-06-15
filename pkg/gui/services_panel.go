@@ -333,6 +333,17 @@ func (gui *Gui) handleServiceRenderLogsToMain(g *gocui.Gui, v *gocui.View) error
 	return gui.runSubprocess(c)
 }
 
+func (gui *Gui) handleServiceViewLogsExternal(g *gocui.Gui, v *gocui.View) error {
+	service, err := gui.Panels.Services.GetSelectedItem()
+	if err != nil {
+		return nil
+	}
+	if service.Container == nil {
+		return gui.createErrorPanel("No container running for this service")
+	}
+	return gui.handleViewLogsExternal(service.Container)
+}
+
 func (gui *Gui) handleProjectUp(g *gocui.Gui, v *gocui.View) error {
 	project, _ := gui.Panels.Projects.GetSelectedItem()
 	if project != nil && project.Name != gui.DockerCommand.LocalProjectName {

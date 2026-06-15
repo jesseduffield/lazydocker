@@ -344,6 +344,7 @@ type LogsConfig struct {
 	Timestamps bool   `yaml:"timestamps,omitempty"`
 	Since      string `yaml:"since,omitempty"`
 	Tail       string `yaml:"tail,omitempty"`
+	Pager      string `yaml:"pager,omitempty"` // Configuration for external logs viewer (e.g. "lnav", "less -R")
 }
 
 // GetDefaultConfig returns the application default configuration NOTE (to
@@ -383,6 +384,7 @@ func GetDefaultConfig() UserConfig {
 			Timestamps: false,
 			Since:      "60m",
 			Tail:       "",
+			Pager:      "less -R",
 		},
 		CommandTemplates: CommandTemplatesConfig{
 			DockerCompose:            "docker compose",

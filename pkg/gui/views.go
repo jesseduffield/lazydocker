@@ -195,6 +195,13 @@ func (gui *Gui) setInitialViewContent() error {
 
 func (gui *Gui) getInformationContent() string {
 	informationStr := gui.Config.Version
+
+	mouseStatus := "Mouse: ON"
+	if !gui.g.Mouse {
+		mouseStatus = "Mouse: OFF (Drag to copy)"
+	}
+	informationStr = mouseStatus + " | " + informationStr
+
 	if !gui.g.Mouse {
 		return informationStr
 	}

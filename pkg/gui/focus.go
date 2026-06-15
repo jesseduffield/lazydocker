@@ -46,6 +46,23 @@ func (gui *Gui) switchFocusAux(newView *gocui.View) error {
 
 	gui.g.Cursor = newView.Editable
 
+	// Automatically control mouse capture mode depending on focus
+	if newView.Name() == "main" {
+		if gui.g.Mouse {
+			gui.g.Mouse = false
+			gocui.Screen.DisableMouse()
+		}
+	} else {
+		if !gui.Config.UserConfig.Gui.IgnoreMouseEvents {
+			if !gui.g.Mouse {
+				gui.g.Mouse = true
+				gocui.Screen.EnableMouse()
+			}
+		}
+	}
+	// Force refresh the bottom information panel with updated status text
+	_ = gui.renderString(gui.g, "information", gui.getInformationContent())
+
 	if err := gui.renderPanelOptions(); err != nil {
 		return err
 	}

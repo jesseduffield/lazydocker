@@ -64,6 +64,7 @@ logs:
   timestamps: false
   since: '60m' # set to '' to show all logs
   tail: '' # set to 200 to show last 200 lines of logs
+  pager: 'less -R' # command for external logs pager (e.g. 'less -R', 'lnav')
 commandTemplates:
   dockerCompose: docker compose # Determines the Docker Compose command to run, referred to as .DockerCompose in commandTemplates
   restartService: '{{ .DockerCompose }} restart {{ .Service.Name }}'
