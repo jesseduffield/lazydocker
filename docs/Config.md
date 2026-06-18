@@ -32,7 +32,7 @@ to the top of your config file or via [Visual Studio Code settings.json config][
 ```yml
 gui:
   scrollHeight: 2
-  language: "auto" # one of 'auto' | 'en' | 'pl' | 'nl' | 'de' | 'tr'
+  language: "auto" # one of 'auto' | 'en' | 'pl' | 'nl' | 'de' | 'tr' | 'fr' | 'zh' | 'es' | 'pt'
   border: "rounded" # one of 'rounded' | 'single' | 'double' | 'hidden'
   theme:
     activeBorderColor:
