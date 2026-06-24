@@ -87,6 +87,10 @@ type guiState struct {
 	// Maintains the state of manual filtering i.e. typing in a substring
 	// to filter on in the current panel.
 	Filter filterState
+
+	// Timestamp of the last 'g' key press in the main panel, used to detect
+	// the vim-style "gg" double press that jumps to the top.
+	lastGPressedAt time.Time
 }
 
 type filterState struct {
@@ -164,6 +168,16 @@ func (gui *Gui) renderGlobalOptions() error {
 		"q":         gui.Tr.Quit,
 		"b":         gui.Tr.ViewBulkCommands,
 		"x":         gui.Tr.Menu,
+	})
+}
+
+func (gui *Gui) renderMainOptions() error {
+	return gui.renderOptionsMap(map[string]string{
+		"PgUp/PgDn": gui.Tr.Scroll,
+		"← → ↑ ↓":   gui.Tr.Navigate,
+		"gg":        gui.Tr.GotoTop,
+		"G":         gui.Tr.GotoBottom,
+		"esc":       gui.Tr.Return,
 	})
 }
 
