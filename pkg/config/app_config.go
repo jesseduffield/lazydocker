@@ -142,6 +142,10 @@ type GuiConfig struct {
 	// Window border style.
 	// One of 'rounded' (default) | 'single' | 'double' | 'hidden'
 	Border string `yaml:"border"`
+
+	// SortEnv sorts the container Env panel alphabetically by key. Default false
+	// preserves the insertion order from the image / compose file.
+	SortEnv bool `yaml:"sortEnv,omitempty"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
