@@ -82,6 +82,12 @@ type guiState struct {
 	// if true, we show containers with an 'exited' status in the containers panel
 	ShowExitedContainers bool
 
+	// the number of lines to pass as `--tail` when reading a container's logs. Empty
+	// string means we show all of the logs. This starts out as whatever is configured
+	// in the user's config, and can be cycled through ContainerLogsTailPresets via a
+	// keybinding.
+	ContainerLogsTail string
+
 	ScreenMode WindowMaximisation
 
 	// Maintains the state of manual filtering i.e. typing in a substring
@@ -136,6 +142,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		ViewStack: []string{},
 
 		ShowExitedContainers: true,
+		ContainerLogsTail:    config.UserConfig.Logs.Tail,
 		ScreenMode:           getScreenMode(config),
 	}
 

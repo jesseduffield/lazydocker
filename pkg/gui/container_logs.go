@@ -6,15 +6,87 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
+	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
+
+// containerLogsTailPresets are the values we cycle through when the user asks to
+// change how many lines of logs are displayed. An empty string means 'show all logs'.
+var containerLogsTailPresets = []string{"", "50", "100", "200", "500"}
+
+func containerLogsTailLabel(tail string) string {
+	if tail == "" {
+		return "all"
+	}
+
+	return tail
+}
+
+// cycleContainerLogsTail moves to the next tail preset (wrapping back to the start)
+// and forces the logs tab to re-render with the new value.
+func (gui *Gui) cycleContainerLogsTail(g *gocui.Gui, v *gocui.View) error {
+	currentIdx := 0
+	for i, preset := range containerLogsTailPresets {
+		if preset == gui.State.ContainerLogsTail {
+			currentIdx = i
+			break
+		}
+	}
+
+	gui.State.ContainerLogsTail = containerLogsTailPresets[(currentIdx+1)%len(containerLogsTailPresets)]
+
+	if v != nil && v.Name() == "services" {
+		return gui.Panels.Services.HandleSelect()
+	}
+
+	return gui.Panels.Containers.HandleSelect()
+}
+
+// tailLimitingWriter wraps a writer and re-renders it on every line so that it only
+// ever displays the last maxLines lines, keeping a true sliding window rather than
+// just applying `--tail` to the initial snapshot and then growing forever as new
+// lines are followed in.
+type tailLimitingWriter struct {
+	view     *gocui.View
+	maxLines int
+	lines    []string
+	partial  string
+}
+
+func newTailLimitingWriter(view *gocui.View, maxLines int) *tailLimitingWriter {
+	return &tailLimitingWriter{view: view, maxLines: maxLines}
+}
+
+func (w *tailLimitingWriter) Write(p []byte) (int, error) {
+	w.partial += string(p)
+	split := strings.Split(w.partial, "\n")
+	w.partial = split[len(split)-1]
+	newLines := split[:len(split)-1]
+
+	if len(newLines) == 0 {
+		return len(p), nil
+	}
+
+	w.lines = append(w.lines, newLines...)
+	if excess := len(w.lines) - w.maxLines; excess > 0 {
+		w.lines = w.lines[excess:]
+	}
+
+	// SetContent clears and rewrites atomically, so the view never renders empty
+	// in between
+	w.view.SetContent(strings.Join(w.lines, "\n") + "\n")
+
+	return len(p), nil
+}
 
 func (gui *Gui) renderContainerLogsToMain(container *commands.Container) tasks.TaskFunc {
 	return gui.NewTickerTask(TickerTaskOpts{
@@ -36,8 +108,17 @@ func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, ctx 
 	}()
 
 	mainView := gui.Views.Main
+	tail := gui.State.ContainerLogsTail
+	mainView.Subtitle = fmt.Sprintf("tail: %s (%s to cycle)", containerLogsTailLabel(tail), "t")
 
-	if err := gui.writeContainerLogs(container, ctx, mainView); err != nil {
+	var writer io.Writer = mainView
+	if maxLines, err := strconv.Atoi(tail); err == nil && maxLines > 0 {
+		// keep re-truncating to the chosen number of lines as new ones stream in,
+		// instead of just limiting the initial snapshot and growing unbounded after that
+		writer = newTailLimitingWriter(mainView, maxLines)
+	}
+
+	if err := gui.writeContainerLogs(container, ctx, writer); err != nil {
 		gui.Log.Error(err)
 	}
 
@@ -110,7 +191,7 @@ func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context,
 		ShowStderr: true,
 		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
 		Since:      gui.Config.UserConfig.Logs.Since,
-		Tail:       gui.Config.UserConfig.Logs.Tail,
+		Tail:       gui.State.ContainerLogsTail,
 		Follow:     true,
 	})
 	if err != nil {

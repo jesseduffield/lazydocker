@@ -243,6 +243,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "containers",
+			Key:         't',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.cycleContainerLogsTail,
+			Description: gui.Tr.CycleContainerLogsTail,
+		},
+		{
+			ViewName:    "containers",
 			Key:         'c',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersCustomCommand,
@@ -317,6 +324,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceRenderLogsToMain,
 			Description: gui.Tr.ViewLogs,
+		},
+		{
+			ViewName:    "services",
+			Key:         't',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.cycleContainerLogsTail,
+			Description: gui.Tr.CycleContainerLogsTail,
 		},
 		{
 			ViewName:    "services",
