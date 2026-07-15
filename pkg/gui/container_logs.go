@@ -11,10 +11,39 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
+	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
+
+// containerLogsTailPresets are the values we cycle through when the user asks to
+// change how many lines of logs are displayed. An empty string means 'show all logs'.
+var containerLogsTailPresets = []string{"", "50", "100", "200", "500"}
+
+func containerLogsTailLabel(tail string) string {
+	if tail == "" {
+		return "all"
+	}
+
+	return tail
+}
+
+// cycleContainerLogsTail moves to the next tail preset (wrapping back to the start)
+// and forces the logs tab to re-render with the new value.
+func (gui *Gui) cycleContainerLogsTail(g *gocui.Gui, v *gocui.View) error {
+	currentIdx := 0
+	for i, preset := range containerLogsTailPresets {
+		if preset == gui.State.ContainerLogsTail {
+			currentIdx = i
+			break
+		}
+	}
+
+	gui.State.ContainerLogsTail = containerLogsTailPresets[(currentIdx+1)%len(containerLogsTailPresets)]
+
+	return gui.Panels.Containers.HandleSelect()
+}
 
 func (gui *Gui) renderContainerLogsToMain(container *commands.Container) tasks.TaskFunc {
 	return gui.NewTickerTask(TickerTaskOpts{
@@ -36,6 +65,7 @@ func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, ctx 
 	}()
 
 	mainView := gui.Views.Main
+	mainView.Subtitle = fmt.Sprintf("tail: %s (%s to cycle)", containerLogsTailLabel(gui.State.ContainerLogsTail), "t")
 
 	if err := gui.writeContainerLogs(container, ctx, mainView); err != nil {
 		gui.Log.Error(err)
@@ -110,7 +140,7 @@ func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context,
 		ShowStderr: true,
 		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
 		Since:      gui.Config.UserConfig.Logs.Since,
-		Tail:       gui.Config.UserConfig.Logs.Tail,
+		Tail:       gui.State.ContainerLogsTail,
 		Follow:     true,
 	})
 	if err != nil {
