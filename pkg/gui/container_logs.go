@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types/container"
@@ -45,6 +47,42 @@ func (gui *Gui) cycleContainerLogsTail(g *gocui.Gui, v *gocui.View) error {
 	return gui.Panels.Containers.HandleSelect()
 }
 
+// tailLimitingWriter wraps a writer and re-renders it on every line so that it only
+// ever displays the last maxLines lines, keeping a true sliding window rather than
+// just applying `--tail` to the initial snapshot and then growing forever as new
+// lines are followed in.
+type tailLimitingWriter struct {
+	view     *gocui.View
+	maxLines int
+	lines    []string
+	partial  string
+}
+
+func newTailLimitingWriter(view *gocui.View, maxLines int) *tailLimitingWriter {
+	return &tailLimitingWriter{view: view, maxLines: maxLines}
+}
+
+func (w *tailLimitingWriter) Write(p []byte) (int, error) {
+	w.partial += string(p)
+	split := strings.Split(w.partial, "\n")
+	w.partial = split[len(split)-1]
+	newLines := split[:len(split)-1]
+
+	if len(newLines) == 0 {
+		return len(p), nil
+	}
+
+	w.lines = append(w.lines, newLines...)
+	if excess := len(w.lines) - w.maxLines; excess > 0 {
+		w.lines = w.lines[excess:]
+	}
+
+	w.view.Clear()
+	fmt.Fprint(w.view, strings.Join(w.lines, "\n")+"\n")
+
+	return len(p), nil
+}
+
 func (gui *Gui) renderContainerLogsToMain(container *commands.Container) tasks.TaskFunc {
 	return gui.NewTickerTask(TickerTaskOpts{
 		Func: func(ctx context.Context, notifyStopped chan struct{}) {
@@ -65,9 +103,17 @@ func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, ctx 
 	}()
 
 	mainView := gui.Views.Main
-	mainView.Subtitle = fmt.Sprintf("tail: %s (%s to cycle)", containerLogsTailLabel(gui.State.ContainerLogsTail), "t")
+	tail := gui.State.ContainerLogsTail
+	mainView.Subtitle = fmt.Sprintf("tail: %s (%s to cycle)", containerLogsTailLabel(tail), "t")
 
-	if err := gui.writeContainerLogs(container, ctx, mainView); err != nil {
+	var writer io.Writer = mainView
+	if maxLines, err := strconv.Atoi(tail); err == nil && maxLines > 0 {
+		// keep re-truncating to the chosen number of lines as new ones stream in,
+		// instead of just limiting the initial snapshot and growing unbounded after that
+		writer = newTailLimitingWriter(mainView, maxLines)
+	}
+
+	if err := gui.writeContainerLogs(container, ctx, writer); err != nil {
 		gui.Log.Error(err)
 	}
 
