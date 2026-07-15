@@ -44,6 +44,10 @@ func (gui *Gui) cycleContainerLogsTail(g *gocui.Gui, v *gocui.View) error {
 
 	gui.State.ContainerLogsTail = containerLogsTailPresets[(currentIdx+1)%len(containerLogsTailPresets)]
 
+	if v != nil && v.Name() == "services" {
+		return gui.Panels.Services.HandleSelect()
+	}
+
 	return gui.Panels.Containers.HandleSelect()
 }
 
@@ -77,8 +81,9 @@ func (w *tailLimitingWriter) Write(p []byte) (int, error) {
 		w.lines = w.lines[excess:]
 	}
 
-	w.view.Clear()
-	fmt.Fprint(w.view, strings.Join(w.lines, "\n")+"\n")
+	// SetContent clears and rewrites atomically, so the view never renders empty
+	// in between
+	w.view.SetContent(strings.Join(w.lines, "\n") + "\n")
 
 	return len(p), nil
 }

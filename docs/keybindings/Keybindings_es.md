@@ -46,6 +46,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>S</kbd>: iniciar
   <kbd>a</kbd>: attach
   <kbd>m</kbd>: ver logs
+  <kbd>t</kbd>: cycle how many log lines are shown
   <kbd>U</kbd>: levantar proyecto
   <kbd>D</kbd>: dar de baja el proyecto
   <kbd>R</kbd>: ver opciones de reinicio

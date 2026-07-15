@@ -327,6 +327,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "services",
+			Key:         't',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.cycleContainerLogsTail,
+			Description: gui.Tr.CycleContainerLogsTail,
+		},
+		{
+			ViewName:    "services",
 			Key:         'U',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleProjectUp,

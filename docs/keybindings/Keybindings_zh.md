@@ -46,6 +46,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>S</kbd>: 启动项目
   <kbd>a</kbd>: attach
   <kbd>m</kbd>: 查看日志
+  <kbd>t</kbd>: cycle how many log lines are shown
   <kbd>U</kbd>: 创建并启动容器
   <kbd>D</kbd>: 停止并移除容器
   <kbd>R</kbd>: 查看重启选项
