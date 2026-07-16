@@ -61,6 +61,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 ## Images
 
 <pre>
+  <kbd>I</kbd>: search and pull image
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>d</kbd>: verwijder image
   <kbd>b</kbd>: view bulk commands

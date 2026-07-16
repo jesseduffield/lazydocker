@@ -267,6 +267,16 @@ echo "alias lzd='lazydocker'" >> ~/.zshrc
 - List of keybindings
   [here](/docs/keybindings).
 
+### Search and pull images
+
+Focus the **Images** panel and press <kbd>Shift</kbd>+<kbd>I</kbd> to search Docker Hub repositories as you type. Use <kbd>↑</kbd>/<kbd>↓</kbd> to select a repository and press <kbd>Enter</kbd> to browse its tags.
+
+<!-- Screenshot placeholder: live Docker Hub repository search -->
+
+The tag search shows the exact image reference, Docker Hub size, last-pushed time, supported platforms, digest, and media type. Press <kbd>Enter</kbd> on a tag to pull it and refresh the Images panel.
+
+<!-- Screenshot placeholder: live Docker Hub tag search and image metadata -->
+
 ## Cool features
 
 everything is one keypress away (or one click away! Mouse support FTW):

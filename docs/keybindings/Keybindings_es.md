@@ -61,6 +61,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 ## Imágenes
 
 <pre>
+  <kbd>I</kbd>: search and pull image
   <kbd>c</kbd>: ejecutar comando personalizado
   <kbd>d</kbd>: limpiar imagen
   <kbd>b</kbd>: ver comandos masivos

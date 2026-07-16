@@ -209,7 +209,13 @@ func (gui *Gui) getInformationContent() string {
 }
 
 func (gui *Gui) popupViewNames() []string {
-	return []string{"confirmation", "menu"}
+	return []string{
+		"confirmation",
+		"menu",
+		imageSearchResultsViewName,
+		imageSearchInputViewName,
+		imageSearchDetailsViewName,
+	}
 }
 
 // these views have their position and size determined by arrangement.go
