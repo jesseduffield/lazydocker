@@ -204,6 +204,9 @@ func (gui *Gui) currentViewName() string {
 
 func (gui *Gui) resizeCurrentPopupPanel(g *gocui.Gui) error {
 	v := g.CurrentView()
+	if v != nil && v.Name() == imageSearchInputViewName {
+		return gui.layoutImageSearchPanel(g)
+	}
 	if gui.isPopupPanel(v.Name()) {
 		return gui.resizePopupPanel(v)
 	}
@@ -230,6 +233,8 @@ func (gui *Gui) renderPanelOptions() error {
 		return gui.renderMenuOptions()
 	case "confirmation":
 		return gui.renderConfirmationOptions()
+	case imageSearchInputViewName:
+		return gui.renderImageSearchOptions()
 	}
 	return gui.renderGlobalOptions()
 }

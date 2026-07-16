@@ -109,6 +109,23 @@ type TranslationSet struct {
 	FilterList                  string
 	OpenInBrowser               string
 	SortContainersByState       string
+	SearchImages                string
+	SearchImagesTitle           string
+	SearchingImagesStatus       string
+	NoImageSearchResults        string
+	PullingImageStatus          string
+	OfficialImage               string
+	ImageSearchFailed           string
+	ImageSearchDetailsTitle     string
+	ImageSearchHint             string
+	SearchImageTagsTitle        string
+	SearchingImageTagsStatus    string
+	ImageTagSearchFailed        string
+	NoImageTagsFound            string
+	ImageTagsTitle              string
+	ImageTagDetailsTitle        string
+	SelectImage                 string
+	PullImage                   string
 
 	LogsTitle                   string
 	ConfigTitle                 string
@@ -217,6 +234,23 @@ func englishSet() TranslationSet {
 		FilterList:                  "filter list",
 		OpenInBrowser:               "open in browser (first port is http)",
 		SortContainersByState:       "sort containers by state",
+		SearchImages:                "search and pull image",
+		SearchImagesTitle:           "Search Docker Hub images",
+		SearchingImagesStatus:       "searching Docker Hub",
+		NoImageSearchResults:        "No images found",
+		PullingImageStatus:          "pulling image",
+		OfficialImage:               "official",
+		ImageSearchFailed:           "Docker Hub search failed",
+		ImageSearchDetailsTitle:     "Image details",
+		ImageSearchHint:             "Type an image name to search Docker Hub",
+		SearchImageTagsTitle:        "Search tags for",
+		SearchingImageTagsStatus:    "searching Docker Hub tags",
+		ImageTagSearchFailed:        "Docker Hub tag search failed",
+		NoImageTagsFound:            "No tags found",
+		ImageTagsTitle:              "Tags",
+		ImageTagDetailsTitle:        "Tag details",
+		SelectImage:                 "view tags",
+		PullImage:                   "pull image",
 
 		GlobalTitle:                 "Global",
 		MainTitle:                   "Main",

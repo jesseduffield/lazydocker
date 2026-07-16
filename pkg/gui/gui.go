@@ -87,6 +87,8 @@ type guiState struct {
 	// Maintains the state of manual filtering i.e. typing in a substring
 	// to filter on in the current panel.
 	Filter filterState
+
+	ImageSearch *imageSearchState
 }
 
 type filterState struct {
@@ -137,6 +139,7 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 
 		ShowExitedContainers: true,
 		ScreenMode:           getScreenMode(config),
+		ImageSearch:          &imageSearchState{},
 	}
 
 	gui := &Gui{

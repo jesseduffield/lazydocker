@@ -18,6 +18,8 @@ func (gui *Gui) newLineFocused(v *gocui.View) error {
 	switch v.Name() {
 	case "confirmation":
 		return nil
+	case imageSearchInputViewName:
+		return nil
 	case "main":
 		v.Highlight = false
 		return nil
