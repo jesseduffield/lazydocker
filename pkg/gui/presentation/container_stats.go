@@ -1,6 +1,7 @@
 package presentation
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
@@ -16,6 +17,22 @@ import (
 	"github.com/mcuadros/go-lookup"
 	"github.com/samber/lo"
 )
+
+var PATHS_TO_CONVERT_BIGMETRICS = []map[string]string{
+	{"ClientStats.cpu_stats.cpu_usage.total_usage": "nanoseconds"},
+	{"ClientStats.cpu_stats.cpu_usage.percpu_usage": "nanoseconds"},
+	{"ClientStats.cpu_stats.cpu_usage.usage_in_kernelmode": "nanoseconds"},
+	{"ClientStats.cpu_stats.cpu_usage.usage_in_usermode": "nanoseconds"},
+	{"ClientStats.cpu_stats.system_cpu_usage": "nanoseconds"},
+	{"ClientStats.precpu_stats.cpu_usage.total_usage": "nanoseconds"},
+	{"ClientStats.precpu_stats.cpu_usage.percpu_usage": "nanoseconds"},
+	{"ClientStats.precpu_stats.cpu_usage.usage_in_kernelmode": "nanoseconds"},
+	{"ClientStats.precpu_stats.cpu_usage.usage_in_usermode": "nanoseconds"},
+	{"ClientStats.precpu_stats.system_cpu_usage": "nanoseconds"},
+	{"ClientStats.memory_stats.limit": "bytes"},
+	{"ClientStats.memory_stats.stats.hierarchical_memory_limit": "bytes"},
+	{"ClientStats.memory_stats.stats.hierarchical_memsw_limit": "bytes"},
+}
 
 func RenderStats(userConfig *config.UserConfig, container *commands.Container, viewWidth int) (string, error) {
 	stats, ok := container.GetLastStats()
@@ -37,7 +54,23 @@ func RenderStats(userConfig *config.UserConfig, container *commands.Container, v
 	dataReceived := fmt.Sprintf("Traffic received: %s", utils.FormatDecimalBytes(stats.ClientStats.Networks.Eth0.RxBytes))
 	dataSent := fmt.Sprintf("Traffic sent: %s", utils.FormatDecimalBytes(stats.ClientStats.Networks.Eth0.TxBytes))
 
-	originalStats, err := utils.MarshalIntoYaml(stats)
+	statsJsonBytes, err := json.Marshal(stats)
+	if err != nil {
+		return "", err
+	}
+
+	var statsMap map[string]interface{}
+	err = json.Unmarshal(statsJsonBytes, &statsMap)
+	if err != nil {
+		return "", err
+	}
+
+	err = convertBigMetric(&statsMap)
+	if err != nil {
+		return "", err
+	}
+
+	originalStats, err := utils.MarshalIntoYaml(statsMap)
 	if err != nil {
 		return "", err
 	}
@@ -51,6 +84,7 @@ func RenderStats(userConfig *config.UserConfig, container *commands.Container, v
 	)
 
 	return contents, nil
+
 }
 
 // plotGraph returns the plotted graph based on the graph spec and the stat history
@@ -143,4 +177,79 @@ func getFloat(unk interface{}) (float64, error) {
 			return math.NaN(), fmt.Errorf("Can't convert %v to float64", v.Type())
 		}
 	}
+}
+
+func convertBigMetric(data *map[string]interface{}) error {
+	// switch value := schema.(type) {
+	// case map[string]interface{}:
+	// 	for key, val := range value {
+	// 		path = fmt.Sprintf("%s.%s", path, key)
+	// 		if err := convertBigMetricFromSchema(data, path, val); err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// case []string:
+	// 	// use path to translate from []int to []string
+	// 	fmt.Println("Converting []int64 to []string for path:", path)
+	// 	metric, err := lookup.LookupString(data, strings.TrimPrefix(path, "."))
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	if reflect.TypeOf(metric.Interface()) != reflect.TypeOf([]int64{}) {
+	// 		return fmt.Errorf("Can't convert non []int64 %v to []string", reflect.TypeOf(metric.Interface()))
+	// 	} else {
+	// 		longIntSlice := metric.Interface().([]int64)
+	// 		formattedMetric := lo.Map(longIntSlice, func(val int64, index int) string {
+	// 			return utils.FormatBigMetric(val, value[index])
+	// 		})
+	// 		return utils.SetObjectFieldByPath(data, path, formattedMetric)
+	// 	}
+	// case string:
+	// 	// use path to translate from int/int64 to string
+	// 	fmt.Println("Converting int64 to string for path:", path)
+	// 	metric, err := lookup.LookupString(data, strings.TrimPrefix(path, "."))
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	if reflect.TypeOf(metric.Interface()) != reflect.TypeOf(int64(0)) {
+	// 		return fmt.Errorf("Can't convert non int64 %v to string", reflect.TypeOf(metric.Interface()))
+	// 	} else {
+	// 		formattedMetric := utils.FormatBigMetric(metric.Interface().(int64), value)
+	// 		return utils.SetObjectFieldByPath(data, path, formattedMetric)
+	// 	}
+	// }
+	// return nil
+	for _, pathToConvert := range PATHS_TO_CONVERT_BIGMETRICS {
+		for path, metricType := range pathToConvert {
+			metric, err := lookup.LookupString(data, path)
+			if err != nil {
+				if err == lookup.ErrKeyNotFound {
+					continue
+				}
+				return err
+			}
+			if !metric.IsValid() {
+				continue
+			}
+			if reflect.TypeOf(metric.Interface()) == reflect.TypeOf(float64(0)) {
+				formattedMetric := utils.FormatBigMetric(int64(metric.Interface().(float64)), metricType)
+				err = utils.SetObjectFieldByPath(data, fmt.Sprintf(".%s", path), formattedMetric)
+				if err != nil {
+					return err
+				}
+			} else if reflect.TypeOf(metric.Interface()) == reflect.TypeOf([]float64{}) {
+				longIntSlice := lo.Map(metric.Interface().([]float64), func(val float64, index int) int64 {
+					return int64(val)
+				})
+				formattedMetric := lo.Map(longIntSlice, func(val int64, index int) string {
+					return utils.FormatBigMetric(val, metricType)
+				})
+				err = utils.SetObjectFieldByPath(data, fmt.Sprintf(".%s", path), formattedMetric)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
 }
