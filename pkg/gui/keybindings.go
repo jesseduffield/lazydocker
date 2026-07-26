@@ -548,6 +548,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	}
 
 	setUpDownClickBindings("main", gui.scrollUpMain, gui.scrollDownMain, gui.handleMainClick)
+	bindings = append(bindings, &Binding{
+		ViewName:    "main",
+		Key:         'c',
+		Modifier:    gocui.ModNone,
+		Handler:     gui.clearMainLogs,
+		Description: gui.Tr.ClearLogs,
+	})
 
 	for _, panel := range gui.allSidePanels() {
 		bindings = append(bindings,
