@@ -66,6 +66,15 @@ func (gui *Gui) autoScrollMain(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+func (gui *Gui) clearMainLogs(g *gocui.Gui, v *gocui.View) error {
+	if !gui.currentMainTabIsLogs() {
+		return nil
+	}
+
+	gui.clearMainView()
+	return nil
+}
+
 func (gui *Gui) jumpToTopMain(g *gocui.Gui, v *gocui.View) error {
 	gui.Views.Main.Autoscroll = false
 	_ = gui.Views.Main.SetOrigin(0, 0)
@@ -110,4 +119,16 @@ func (gui *Gui) handleMainClick() error {
 	}
 
 	return gui.switchFocus(gui.Views.Main)
+}
+
+func (gui *Gui) currentMainTabIsLogs() bool {
+	mainView := gui.Views.Main
+	if mainView == nil {
+		return false
+	}
+	if mainView.TabIndex < 0 || mainView.TabIndex >= len(mainView.Tabs) {
+		return false
+	}
+
+	return mainView.Tabs[mainView.TabIndex] == gui.Tr.LogsTitle
 }

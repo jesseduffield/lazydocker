@@ -106,6 +106,7 @@ type TranslationSet struct {
 	ExecShell                   string
 	RunCustomCommand            string
 	ViewBulkCommands            string
+	ClearLogs                   string
 	FilterList                  string
 	OpenInBrowser               string
 	SortContainersByState       string
@@ -214,6 +215,7 @@ func englishSet() TranslationSet {
 		ExecShell:                   "exec shell",
 		RunCustomCommand:            "run predefined custom command",
 		ViewBulkCommands:            "view bulk commands",
+		ClearLogs:                   "clear logs",
 		FilterList:                  "filter list",
 		OpenInBrowser:               "open in browser (first port is http)",
 		SortContainersByState:       "sort containers by state",
