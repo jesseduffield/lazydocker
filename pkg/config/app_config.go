@@ -105,6 +105,11 @@ type GuiConfig struct {
 	// of clutter
 	ShowAllContainers bool `yaml:"showAllContainers,omitempty"`
 
+	// ForceProjectView shows the Projects and Services panels even when lazydocker
+	// is not launched from a docker-compose directory (and -p was not passed).
+	// Projects/services are discovered from running container compose labels.
+	ForceProjectView bool `yaml:"forceProjectView,omitempty"`
+
 	// ReturnImmediately determines whether you get the 'press enter to return to
 	// lazydocker' message after a subprocess has completed. You would set this to
 	// true if you often want to see the output of subprocesses before returning
@@ -369,6 +374,7 @@ func GetDefaultConfig() UserConfig {
 				OptionsTextColor:    []string{"blue"},
 			},
 			ShowAllContainers:          false,
+			ForceProjectView:           false,
 			ReturnImmediately:          false,
 			WrapMainPanel:              true,
 			LegacySortContainers:       false,

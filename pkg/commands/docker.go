@@ -165,12 +165,16 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 	return dockerCommand, nil
 }
 
-// IsProjectScoped reports whether lazydocker should be scoped to a single
-// compose project — either because we're inside a compose directory or
-// because the user passed -p. When false, the project/services panels are
-// hidden and all containers are shown in a flat list.
+// IsProjectScoped reports whether lazydocker should show the project/services
+// panels and filter containers by project. True when inside a compose
+// directory, when -p was passed, or when gui.forceProjectView is enabled.
+// When false, the project/services panels are hidden and all containers are
+// shown in a flat list.
 func (c *DockerCommand) IsProjectScoped() bool {
-	return c.InDockerComposeProject || c.Config.ProjectName != ""
+	if c.InDockerComposeProject || c.Config.ProjectName != "" {
+		return true
+	}
+	return c.Config.UserConfig != nil && c.Config.UserConfig.Gui.ForceProjectView
 }
 
 func (c *DockerCommand) setDockerComposeCommand(config *config.AppConfig) {
