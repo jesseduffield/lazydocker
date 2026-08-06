@@ -15,6 +15,7 @@ import (
 	lcUtils "github.com/jesseduffield/lazycore/pkg/utils"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	"github.com/jesseduffield/lazydocker/pkg/gui/keybindings"
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/gui/types"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
@@ -155,6 +156,14 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 	deadlock.Opts.DeadlockTimeout = 10 * time.Second
 
 	return gui, nil
+}
+
+// KeybindingOpts creates the keybinding options for configurable keybindings
+func (gui *Gui) KeybindingOpts() types.KeybindingsOpts {
+	return types.KeybindingsOpts{
+		GetKey: keybindings.GetKey,
+		Config: gui.Config.UserConfig.Keybinding,
+	}
 }
 
 func (gui *Gui) renderGlobalOptions() error {
