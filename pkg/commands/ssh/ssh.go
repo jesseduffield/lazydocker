@@ -149,7 +149,20 @@ func (self *SSHHandler) tryDial(ctx context.Context, socketPath string) error {
 }
 
 func (self *SSHHandler) tunnelSSH(ctx context.Context, host, localSocket string) (*exec.Cmd, error) {
-	cmd := exec.CommandContext(ctx, "ssh", "-L", localSocket+":/var/run/docker.sock", host, "-N")
+	// Without keepalives, a long-lived idle connection through this tunnel
+	// (e.g. the Docker events stream, which can sit idle for a long time
+	// between events) can be silently dropped by an intermediate NAT or
+	// firewall, or go undetected as dead by ssh itself, surfacing as an EOF
+	// on the tunneled socket. Sending periodic keepalive probes ensures
+	// idle-but-live connections stay open, and dead ones are detected and
+	// torn down promptly instead of hanging indefinitely.
+	// See https://github.com/jesseduffield/lazydocker/issues/815
+	cmd := exec.CommandContext(
+		ctx, "ssh",
+		"-o", "ServerAliveInterval=15",
+		"-o", "ServerAliveCountMax=3",
+		"-L", localSocket+":/var/run/docker.sock", host, "-N",
+	)
 	self.oSCommand.PrepareForChildren(cmd)
 	err := self.startCmd(cmd)
 	if err != nil {
