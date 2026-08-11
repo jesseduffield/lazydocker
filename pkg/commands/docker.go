@@ -16,12 +16,12 @@ import (
 	"time"
 
 	cliconfig "github.com/docker/cli/cli/config"
+	"github.com/docker/cli/cli/connhelper"
 	ddocker "github.com/docker/cli/cli/context/docker"
 	ctxstore "github.com/docker/cli/cli/context/store"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/imdario/mergo"
-	"github.com/jesseduffield/lazydocker/pkg/commands/ssh"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
@@ -91,12 +91,34 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 // Instead, we explicitly configure only what we need, and rely on proper
 // API version negotiation to support older Docker daemons.
 // See https://github.com/jesseduffield/lazydocker/issues/715
+//
+// For ssh:// hosts we use the official Docker CLI connhelper (docker system
+// dial-stdio over SSH) rather than streamlocal-forwarding /var/run/docker.sock.
+// That matches the docker CLI and works with restricted SSH servers such as
+// Tailscale SSH that block unix socket forwards to the docker socket.
 func newDockerClient(dockerHost string) (*client.Client, error) {
-	return client.NewClientWithOpts(
+	opts := []client.Opt{
 		client.WithTLSClientConfigFromEnv(),
 		client.WithAPIVersionNegotiation(),
-		client.WithHost(dockerHost),
-	)
+	}
+
+	if strings.HasPrefix(dockerHost, "ssh://") {
+		helper, err := connhelper.GetConnectionHelper(dockerHost)
+		if err != nil {
+			return nil, fmt.Errorf("ssh docker host: %w", err)
+		}
+		if helper == nil {
+			return nil, fmt.Errorf("ssh docker host: no connection helper for %q", dockerHost)
+		}
+		opts = append(opts,
+			client.WithHost(helper.Host),
+			client.WithDialContext(helper.Dialer),
+		)
+	} else {
+		opts = append(opts, client.WithHost(dockerHost))
+	}
+
+	return client.NewClientWithOpts(opts...)
 }
 
 // NewDockerCommand it runs docker commands
@@ -106,23 +128,9 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		ogLog.Printf("> could not determine host %v", err)
 	}
 
-	// NOTE: Inject the determined docker host to the environment. This allows the
-	//       `SSHHandler.HandleSSHDockerHost()` to create a local unix socket tunneled
-	//       over SSH to the specified ssh host.
-	if strings.HasPrefix(dockerHost, "ssh://") {
-		os.Setenv(dockerHostEnvKey, dockerHost)
-	}
-
-	tunnelCloser, err := ssh.NewSSHHandler(osCommand).HandleSSHDockerHost()
-	if err != nil {
-		ogLog.Fatal(err)
-	}
-
-	// Retrieve the docker host from the environment which could have been set by
-	// the `SSHHandler.HandleSSHDockerHost()` and override `dockerHost`.
-	dockerHostFromEnv := os.Getenv(dockerHostEnvKey)
-	if dockerHostFromEnv != "" {
-		dockerHost = dockerHostFromEnv
+	// Ensure subprocess docker/compose invocations use the same host (incl. ssh://).
+	if dockerHost != "" && os.Getenv(dockerHostEnvKey) == "" {
+		_ = os.Setenv(dockerHostEnvKey, dockerHost)
 	}
 
 	cli, err := newDockerClient(dockerHost)
@@ -138,7 +146,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		Client:                 cli,
 		ErrorChan:              errorChan,
 		InDockerComposeProject: true,
-		Closers:                []io.Closer{tunnelCloser},
+		Closers:                []io.Closer{cli},
 	}
 
 	dockerCommand.setDockerComposeCommand(config)
