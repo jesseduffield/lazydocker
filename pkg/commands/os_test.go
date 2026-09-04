@@ -329,6 +329,50 @@ func TestOSCommandExecutableFromStringWithShellLinux(t *testing.T) {
 	}
 }
 
+func TestOSCommandClipboardCommandDarwin(t *testing.T) {
+	osCommand := NewDummyOSCommand()
+	osCommand.Platform.os = "darwin"
+
+	cmd, err := osCommand.clipboardCommand()
+
+	assert.NoError(t, err)
+	assert.Equal(t, "pbcopy", cmd.Args[0])
+}
+
+func TestOSCommandClipboardCommandWindows(t *testing.T) {
+	osCommand := NewDummyOSCommand()
+	osCommand.Platform.os = "windows"
+
+	cmd, err := osCommand.clipboardCommand()
+
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"cmd", "/c", "clip"}, cmd.Args)
+}
+
+func TestOSCommandClipboardCommandLinuxNoUtilityFound(t *testing.T) {
+	osCommand := NewDummyOSCommand()
+	osCommand.Platform.os = "linux"
+
+	// clear PATH so exec.LookPath can't find wl-copy/xclip/xsel, and make
+	// sure we're not on a Wayland session, so we exercise the "nothing
+	// available" error branch deterministically.
+	t.Setenv("WAYLAND_DISPLAY", "")
+	t.Setenv("PATH", "")
+
+	_, err := osCommand.clipboardCommand()
+
+	assert.Error(t, err)
+}
+
+func TestOSCommandClipboardCommandUnsupportedOS(t *testing.T) {
+	osCommand := NewDummyOSCommand()
+	osCommand.Platform.os = "plan9"
+
+	_, err := osCommand.clipboardCommand()
+
+	assert.Error(t, err)
+}
+
 func TestOSCommandNewCommandStringWithShellWindows(t *testing.T) {
 	osCommand := NewDummyOSCommand()
 

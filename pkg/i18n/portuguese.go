@@ -58,6 +58,8 @@ func portugueseSet() TranslationSet {
 		NextContext:                 "próxima aba",
 		Attach:                      "anexar",
 		ViewLogs:                    "ver logs",
+		CopyLogs:                    "copiar logs",
+		CopyContent:                 "copiar conteúdo",
 		UpProject:                   "subir projeto",
 		DownProject:                 "derrubar projeto",
 		RemoveImage:                 "remover imagem",
