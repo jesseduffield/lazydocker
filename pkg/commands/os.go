@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -94,6 +95,18 @@ func (c *OSCommand) ExecutableFromString(commandStr string) *exec.Cmd {
 func (c *OSCommand) ExecutableFromStringContext(ctx context.Context, commandStr string) *exec.Cmd {
 	splitCmd := str.ToArgv(commandStr)
 	return exec.CommandContext(ctx, splitCmd[0], splitCmd[1:]...)
+}
+
+// CopyToClipboard copies the given data to the system clipboard using
+// whatever clipboard utility is available on the current platform
+func (c *OSCommand) CopyToClipboard(data []byte) error {
+	cmd, err := c.clipboardCommand()
+	if err != nil {
+		return err
+	}
+
+	cmd.Stdin = bytes.NewReader(data)
+	return cmd.Run()
 }
 
 func (c *OSCommand) NewCmd(cmdName string, commandArgs ...string) *exec.Cmd {
@@ -372,4 +385,37 @@ func (c *OSCommand) Kill(cmd *exec.Cmd) error {
 // PrepareForChildren sets Setpgid to true on the cmd, so that when we run it as a subprocess, we can kill its group rather than the process itself. This is because some commands, like `docker-compose logs` spawn multiple children processes, and killing the parent process isn't sufficient for killing those child processes. We set the group id here, and then in subprocess.go we check if the group id is set and if so, we kill the whole group rather than just the one process.
 func (c *OSCommand) PrepareForChildren(cmd *exec.Cmd) {
 	kill.PrepareForChildren(cmd)
+}
+
+// clipboardCommand returns the platform-specific command used to write
+// stdin to the system clipboard, or an error if no such command is available
+func (c *OSCommand) clipboardCommand() (*exec.Cmd, error) {
+	switch c.Platform.os {
+	case "darwin":
+		return exec.Command("pbcopy"), nil
+
+	case "windows":
+		return exec.Command("cmd", "/c", "clip"), nil
+
+	case "linux":
+		if os.Getenv("WAYLAND_DISPLAY") != "" {
+			if _, err := exec.LookPath("wl-copy"); err == nil {
+				return exec.Command("wl-copy"), nil
+			}
+		}
+		if _, err := exec.LookPath("xclip"); err == nil {
+			return exec.Command("xclip", "-selection", "clipboard"), nil
+		}
+
+		if _, err := exec.LookPath("xsel"); err == nil {
+			return exec.Command("xsel", "--clipboard", "--input"), nil
+		}
+
+		return nil, errors.New(
+			"no clipboard utility found (install wl-clipboard, xclip, or xsel)",
+		)
+
+	default:
+		return nil, fmt.Errorf("clipboard is not supported on %s", c.Platform.os)
+	}
 }

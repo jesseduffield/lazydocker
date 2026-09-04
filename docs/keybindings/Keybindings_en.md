@@ -24,6 +24,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>r</kbd>: restart
   <kbd>a</kbd>: attach
   <kbd>m</kbd>: view logs
+  <kbd>C</kbd>: copy logs
   <kbd>E</kbd>: exec shell
   <kbd>c</kbd>: run predefined custom command
   <kbd>b</kbd>: view bulk commands
@@ -45,6 +46,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>S</kbd>: start
   <kbd>a</kbd>: attach
   <kbd>m</kbd>: view logs
+  <kbd>C</kbd>: copy logs
   <kbd>U</kbd>: up project
   <kbd>D</kbd>: down project
   <kbd>R</kbd>: view restart options
@@ -98,6 +100,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>esc</kbd>: return
+  <kbd>C</kbd>: copy content
 </pre>
 
 ## Global

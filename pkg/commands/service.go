@@ -72,6 +72,19 @@ func (s *Service) ViewLogs() (*exec.Cmd, error) {
 	return cmd, nil
 }
 
+// GetLogs returns a snapshot of the service's recent logs, unlike ViewLogs
+// which streams them as a subprocess
+func (s *Service) GetLogs() ([]byte, error) {
+	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.GetServiceLogs
+	command := utils.ApplyTemplate(
+		templateString,
+		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
+	)
+
+	cmd := s.OSCommand.ExecutableFromString(command)
+	return cmd.CombinedOutput()
+}
+
 // RenderTop renders the process list of the service
 func (s *Service) RenderTop(ctx context.Context) (string, error) {
 	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.ServiceTop
