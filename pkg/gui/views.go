@@ -113,6 +113,7 @@ func (gui *Gui) createAllViews() error {
 	}
 
 	selectedLineBgColor := GetGocuiStyle(gui.Config.UserConfig.Gui.Theme.SelectedLineBgColor)
+	selectedLineFgColor := GetGocuiStyle(gui.Config.UserConfig.Gui.Theme.SelectedLineFgColor)
 
 	gui.Views.Main.Wrap = gui.Config.UserConfig.Gui.WrapMainPanel
 	// when you run a docker container with the -it flags (interactive mode) it adds carriage returns for some reason. This is not docker's fault, it's an os-level default.
@@ -122,14 +123,17 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Project.TitlePrefix = "[1]"
 	gui.Views.Project.Highlight = true
 	gui.Views.Project.SelBgColor = selectedLineBgColor
+	gui.Views.Project.SelFgColor = selectedLineFgColor
 
 	gui.Views.Services.Highlight = true
 	gui.Views.Services.Title = gui.Tr.ServicesTitle
 	gui.Views.Services.TitlePrefix = "[2]"
 	gui.Views.Services.SelBgColor = selectedLineBgColor
+	gui.Views.Services.SelFgColor = selectedLineFgColor
 
 	gui.Views.Containers.Highlight = true
 	gui.Views.Containers.SelBgColor = selectedLineBgColor
+	gui.Views.Containers.SelFgColor = selectedLineFgColor
 	if gui.Config.UserConfig.Gui.ShowAllContainers || !gui.DockerCommand.IsProjectScoped() {
 		gui.Views.Containers.Title = gui.Tr.ContainersTitle
 	} else {
@@ -140,17 +144,20 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Images.Highlight = true
 	gui.Views.Images.Title = gui.Tr.ImagesTitle
 	gui.Views.Images.SelBgColor = selectedLineBgColor
+	gui.Views.Images.SelFgColor = selectedLineFgColor
 	gui.Views.Images.TitlePrefix = "[4]"
 
 	gui.Views.Volumes.Highlight = true
 	gui.Views.Volumes.Title = gui.Tr.VolumesTitle
 	gui.Views.Volumes.TitlePrefix = "[5]"
 	gui.Views.Volumes.SelBgColor = selectedLineBgColor
+	gui.Views.Volumes.SelFgColor = selectedLineFgColor
 
 	gui.Views.Networks.Highlight = true
 	gui.Views.Networks.Title = gui.Tr.NetworksTitle
 	gui.Views.Networks.TitlePrefix = "[6]"
 	gui.Views.Networks.SelBgColor = selectedLineBgColor
+	gui.Views.Networks.SelFgColor = selectedLineFgColor
 
 	gui.Views.Options.Frame = false
 	gui.Views.Options.FgColor = gui.GetOptionsPanelTextColor()
@@ -165,6 +172,7 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Confirmation.Wrap = true
 	gui.Views.Menu.Visible = false
 	gui.Views.Menu.SelBgColor = selectedLineBgColor
+	gui.Views.Menu.SelFgColor = selectedLineFgColor
 
 	gui.Views.Limit.Visible = false
 	gui.Views.Limit.Title = gui.Tr.NotEnoughSpace
