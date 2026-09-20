@@ -191,6 +191,18 @@ func (gui *Gui) handlePruneImages() error {
 	}, nil)
 }
 
+func (gui *Gui) handlePruneAllImages() error {
+	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneAllImages, func(g *gocui.Gui, v *gocui.View) error {
+		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
+			err := gui.DockerCommand.PruneUnusedImages()
+			if err != nil {
+				return gui.createErrorPanel(err.Error())
+			}
+			return gui.reloadImages()
+		})
+	}, nil)
+}
+
 func (gui *Gui) handleImagesCustomCommand(g *gocui.Gui, v *gocui.View) error {
 	img, err := gui.Panels.Images.GetSelectedItem()
 	if err != nil {
@@ -211,6 +223,10 @@ func (gui *Gui) handleImagesBulkCommand(g *gocui.Gui, v *gocui.View) error {
 		{
 			Name:             gui.Tr.PruneImages,
 			InternalFunction: gui.handlePruneImages,
+		},
+		{
+			Name:             gui.Tr.PruneAllImages,
+			InternalFunction: gui.handlePruneAllImages,
 		},
 	}
 

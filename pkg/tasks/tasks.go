@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
-	"github.com/sasha-s/go-deadlock"
+	"sync"
 	"github.com/sirupsen/logrus"
 )
 
 type TaskManager struct {
 	currentTask  *Task
-	waitingMutex deadlock.Mutex
-	taskIDMutex  deadlock.Mutex
+	waitingMutex sync.Mutex
+	taskIDMutex  sync.Mutex
 	Log          *logrus.Entry
 	Tr           *i18n.TranslationSet
 	newTaskId    int
@@ -23,7 +23,7 @@ type Task struct {
 	ctx           context.Context
 	cancel        context.CancelFunc
 	stopped       bool
-	stopMutex     deadlock.Mutex
+	stopMutex     sync.Mutex
 	notifyStopped chan struct{}
 	Log           *logrus.Entry
 	f             func(ctx context.Context)

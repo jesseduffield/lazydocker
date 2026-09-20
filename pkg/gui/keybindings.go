@@ -215,6 +215,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "containers",
+			Key:         'S',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleContainerStart,
+			Description: gui.Tr.Start,
+		},
+		{
+			ViewName:    "containers",
 			Key:         'r',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainerRestart,
