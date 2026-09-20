@@ -91,14 +91,27 @@ func getContainerDisplayStatus(guiConfig *config.GuiConfig, c *commands.Containe
 
 // GetDisplayStatus returns the exit code if the container has exited, and the health status if the container is running (and has a health check)
 func getContainerDisplaySubstatus(guiConfig *config.GuiConfig, c *commands.Container) string {
-	if !c.DetailsLoaded() {
-		return ""
-	}
-
 	switch c.Container.State {
 	case "exited":
+		exitCode := ""
+		if c.DetailsLoaded() && c.Details.State != nil {
+			exitCode = strconv.Itoa(c.Details.State.ExitCode)
+		} else {
+			// Parse from summary status string (e.g. "Exited (137) 2 minutes ago")
+			status := c.Container.Status
+			if strings.HasPrefix(status, "Exited (") {
+				if endIdx := strings.Index(status, ")"); endIdx > 8 {
+					exitCode = status[8:endIdx]
+				}
+			}
+		}
+		
+		if exitCode == "" {
+			return ""
+		}
+		
 		return utils.ColoredString(
-			fmt.Sprintf("(%s)", strconv.Itoa(c.Details.State.ExitCode)), getContainerColor(c),
+			fmt.Sprintf("(%s)", exitCode), getContainerColor(c),
 		)
 	case "running":
 		return getHealthStatus(guiConfig, c)
@@ -108,18 +121,26 @@ func getContainerDisplaySubstatus(guiConfig *config.GuiConfig, c *commands.Conta
 }
 
 func getHealthStatus(guiConfig *config.GuiConfig, c *commands.Container) string {
-	if !c.DetailsLoaded() {
-		return ""
+	var status string
+	if c.DetailsLoaded() && c.Details.State != nil && c.Details.State.Health != nil {
+		status = c.Details.State.Health.Status
+	} else {
+		// Fallback to parsing from summary status string (e.g. "Up 2 hours (healthy)")
+		if strings.Contains(c.Container.Status, "(healthy)") {
+			status = "healthy"
+		} else if strings.Contains(c.Container.Status, "(unhealthy)") {
+			status = "unhealthy"
+		} else if strings.Contains(c.Container.Status, "(health: starting)") {
+			status = "starting"
+		} else {
+			return ""
+		}
 	}
 
 	healthStatusColorMap := map[string]color.Attribute{
 		"healthy":   color.FgGreen,
 		"unhealthy": color.FgRed,
 		"starting":  color.FgYellow,
-	}
-
-	if c.Details.State.Health == nil {
-		return ""
 	}
 
 	shortHealthStatusMap := map[string]string{
@@ -137,16 +158,16 @@ func getHealthStatus(guiConfig *config.GuiConfig, c *commands.Container) string 
 	var healthStatus string
 	switch guiConfig.ContainerStatusHealthStyle {
 	case "short":
-		healthStatus = shortHealthStatusMap[c.Details.State.Health.Status]
+		healthStatus = shortHealthStatusMap[status]
 	case "icon":
-		healthStatus = string(iconHealthStatusMap[c.Details.State.Health.Status])
+		healthStatus = string(iconHealthStatusMap[status])
 	case "long":
 		fallthrough
 	default:
-		healthStatus = c.Details.State.Health.Status
+		healthStatus = status
 	}
 
-	if healthStatusColor, ok := healthStatusColorMap[c.Details.State.Health.Status]; ok {
+	if healthStatusColor, ok := healthStatusColorMap[status]; ok {
 		return utils.ColoredString(fmt.Sprintf("(%s)", healthStatus), healthStatusColor)
 	}
 	return ""

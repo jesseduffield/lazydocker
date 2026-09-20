@@ -249,13 +249,7 @@ func (gui *Gui) handleServiceUp(g *gocui.Gui, v *gocui.View) error {
 		return gui.createErrorPanel(gui.Tr.CannotManageNonLocalService)
 	}
 
-	return gui.WithWaitingStatus(gui.Tr.UppingServiceStatus, func() error {
-		if err := service.Up(); err != nil {
-			return gui.createErrorPanel(err.Error())
-		}
-
-		return nil
-	})
+	return gui.runSubprocess(service.UpCmd())
 }
 
 func (gui *Gui) handleServiceRestart(g *gocui.Gui, v *gocui.View) error {

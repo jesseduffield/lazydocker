@@ -351,6 +351,10 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 			LabelColumns: []string{gui.Tr.RemoveWithVolumes, "docker rm --volumes " + ctr.ID[1:10]},
 			OnPress:      func() error { return handleMenuPress(container.RemoveOptions{RemoveVolumes: true}) },
 		},
+		{
+			LabelColumns: []string{gui.Tr.ForceRemove, "docker rm --force " + ctr.ID[1:10]},
+			OnPress:      func() error { return handleMenuPress(container.RemoveOptions{Force: true}) },
+		},
 	}
 
 	return gui.Menu(CreateMenuOptions{
@@ -399,6 +403,20 @@ func (gui *Gui) handleContainerStop(g *gocui.Gui, v *gocui.View) error {
 			return nil
 		})
 	}, nil)
+}
+
+func (gui *Gui) handleContainerStart(g *gocui.Gui, v *gocui.View) error {
+	ctr, err := gui.Panels.Containers.GetSelectedItem()
+	if err != nil {
+		return nil
+	}
+
+	return gui.WithWaitingStatus(gui.Tr.StartingStatus, func() error {
+		if err := ctr.Start(); err != nil {
+			return gui.createErrorPanel(err.Error())
+		}
+		return gui.refreshContainersAndServices()
+	})
 }
 
 func (gui *Gui) handleContainerRestart(g *gocui.Gui, v *gocui.View) error {

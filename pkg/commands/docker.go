@@ -25,7 +25,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
-	"github.com/sasha-s/go-deadlock"
+	"sync"
 	"github.com/sirupsen/logrus"
 )
 
@@ -44,8 +44,8 @@ type DockerCommand struct {
 	// LocalProjectName is the compose project name for the directory where lazydocker was launched.
 	LocalProjectName string
 	ErrorChan        chan error
-	ContainerMutex   deadlock.Mutex
-	ServiceMutex     deadlock.Mutex
+	ContainerMutex   sync.Mutex
+	ServiceMutex     sync.Mutex
 
 	Closers []io.Closer
 }
@@ -76,9 +76,9 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	// When operating on a specific project, include -p flag so that
 	// docker compose targets the correct project.
 	if obj.Service != nil && obj.Service.ProjectName != "" {
-		defaultObj.DockerCompose = fmt.Sprintf("%s -p %s", defaultObj.DockerCompose, obj.Service.ProjectName)
+		defaultObj.DockerCompose = fmt.Sprintf("%s -p %s", defaultObj.DockerCompose, c.OSCommand.Quote(obj.Service.ProjectName))
 	} else if obj.Project != nil && obj.Project.Name != "" {
-		defaultObj.DockerCompose = fmt.Sprintf("%s -p %s", defaultObj.DockerCompose, obj.Project.Name)
+		defaultObj.DockerCompose = fmt.Sprintf("%s -p %s", defaultObj.DockerCompose, c.OSCommand.Quote(obj.Project.Name))
 	}
 
 	return defaultObj
@@ -170,6 +170,9 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 // because the user passed -p. When false, the project/services panels are
 // hidden and all containers are shown in a flat list.
 func (c *DockerCommand) IsProjectScoped() bool {
+	if c.Config.UserConfig.Gui.ProjectAndServicePanelsOutsideCompose {
+		return true
+	}
 	return c.InDockerComposeProject || c.Config.ProjectName != ""
 }
 
@@ -248,20 +251,34 @@ func (c *DockerCommand) RefreshContainersAndServices(currentContainers []*Contai
 	// labels to handle cases where the project name differs from the directory
 	// name (e.g. a `name:` directive in the compose file).
 	if c.LocalProjectName == "" && c.InDockerComposeProject && composeServices != nil {
+		// First try to match by working directory (Docker Compose V2)
 		for _, ctr := range containers {
-			if ctr.ProjectName == "" || ctr.ServiceName == "" {
-				continue
-			}
-			for _, svc := range composeServices {
-				if ctr.ServiceName == svc.Name {
+			if wd, ok := ctr.Container.Labels["com.docker.compose.project.working_dir"]; ok {
+				if wd == c.Config.ProjectDir && ctr.ProjectName != "" {
 					c.LocalProjectName = ctr.ProjectName
 					break
 				}
 			}
-			if c.LocalProjectName != "" {
-				break
+		}
+
+		// Fall back to service name matching (Docker Compose V1)
+		if c.LocalProjectName == "" {
+			for _, ctr := range containers {
+				if ctr.ProjectName == "" || ctr.ServiceName == "" {
+					continue
+				}
+				for _, svc := range composeServices {
+					if ctr.ServiceName == svc.Name {
+						c.LocalProjectName = ctr.ProjectName
+						break
+					}
+				}
+				if c.LocalProjectName != "" {
+					break
+				}
 			}
 		}
+
 		// Fall back to directory name
 		if c.LocalProjectName == "" && c.Config.ProjectDir != "" {
 			c.LocalProjectName = filepath.Base(c.Config.ProjectDir)
