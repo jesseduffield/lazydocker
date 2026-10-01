@@ -89,3 +89,46 @@ func TestIsProjectScoped(t *testing.T) {
 		})
 	}
 }
+
+// TestParseComposeConfigJSON verifies we pull the resolved project name and
+// service list out of `docker compose config --format json` output.
+// Regression context: https://github.com/jesseduffield/lazydocker/issues/842
+func TestParseComposeConfigJSON(t *testing.T) {
+	output := `{"name":"matomo","services":{"db":{"image":"mariadb"},"app":{"image":"matomo"}},"networks":{"default":{}},"volumes":{}}`
+	name, services, err := parseComposeConfigJSON(output)
+	assert.NoError(t, err)
+	assert.Equal(t, "matomo", name)
+	assert.Equal(t, []string{"app", "db"}, services)
+}
+
+func TestParseComposeConfigJSONInvalid(t *testing.T) {
+	_, _, err := parseComposeConfigJSON("not json at all")
+	assert.Error(t, err)
+}
+
+func TestParseComposeConfigJSONEmptyServices(t *testing.T) {
+	name, services, err := parseComposeConfigJSON(`{"name":"lonely","services":{}}`)
+	assert.NoError(t, err)
+	assert.Equal(t, "lonely", name)
+	assert.Empty(t, services)
+}
+
+// TestAssignContainersToServicesPicksOwnProject is a regression test for
+// https://github.com/jesseduffield/lazydocker/issues/842: two compose projects
+// running a service with the same name must not get each other's containers.
+func TestAssignContainersToServicesPicksOwnProject(t *testing.T) {
+	c := &DockerCommand{LocalProjectName: "matomo"}
+
+	services := []*Service{
+		{Name: "app", ProjectName: "matomo"},
+	}
+	foreign := &Container{ID: "foreign-id", ServiceName: "app", ProjectName: "env2"}
+	local := &Container{ID: "local-id", ServiceName: "app", ProjectName: "matomo"}
+	// foreign container first in daemon list order, like the real bug
+	containers := []*Container{foreign, local}
+
+	c.assignContainersToServices(containers, services)
+
+	assert.NotNil(t, services[0].Container)
+	assert.Equal(t, "local-id", services[0].Container.ID)
+}

@@ -243,29 +243,14 @@ func (c *DockerCommand) RefreshContainersAndServices(currentContainers []*Contai
 		}
 	}
 
-	// Determine the local project name before merging services, since
-	// mergeServices needs it. We match compose service names against container
-	// labels to handle cases where the project name differs from the directory
-	// name (e.g. a `name:` directive in the compose file).
-	if c.LocalProjectName == "" && c.InDockerComposeProject && composeServices != nil {
-		for _, ctr := range containers {
-			if ctr.ProjectName == "" || ctr.ServiceName == "" {
-				continue
-			}
-			for _, svc := range composeServices {
-				if ctr.ServiceName == svc.Name {
-					c.LocalProjectName = ctr.ProjectName
-					break
-				}
-			}
-			if c.LocalProjectName != "" {
-				break
-			}
-		}
-		// Fall back to directory name
-		if c.LocalProjectName == "" && c.Config.ProjectDir != "" {
-			c.LocalProjectName = filepath.Base(c.Config.ProjectDir)
-		}
+	// The local project name is resolved by GetServices from compose itself
+	// (see below). If compose did not report one, fall back to the directory
+	// name, which is compose's own last-resort default. We deliberately do NOT
+	// guess it from the daemon-wide container list: when another project runs
+	// a service with the same name, the first container in list order wins and
+	// poisons every local service binding (see #842).
+	if c.LocalProjectName == "" && c.InDockerComposeProject && composeServices != nil && c.Config.ProjectDir != "" {
+		c.LocalProjectName = filepath.Base(c.Config.ProjectDir)
 	}
 
 	// Merge compose services (which include stopped services) with
@@ -436,7 +421,25 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	}
 
 	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
-	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --services", composeCommand))
+
+	// Ask compose itself for the resolved project name. `config --format json`
+	// carries the project name at the top level, resolved exactly the way
+	// compose resolves it at runtime: -p/--project-name, COMPOSE_PROJECT_NAME,
+	// the `name:` directive, then the directory name.
+	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --format json", composeCommand))
+	if err == nil {
+		if projectName, names, jsonErr := parseComposeConfigJSON(output); jsonErr == nil {
+			if projectName != "" {
+				c.LocalProjectName = projectName
+			}
+			return c.buildServices(names), nil
+		}
+	}
+
+	// Fall back to the plain service list (e.g. docker-compose v1, which has
+	// no --format json). The project name stays unset and is resolved by the
+	// caller.
+	output, err = c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --services", composeCommand))
 	if err != nil {
 		return nil, err
 	}
@@ -445,9 +448,32 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	// service1
 	// service2
 
-	lines := utils.SplitLines(output)
-	services := make([]*Service, len(lines))
-	for i, str := range lines {
+	return c.buildServices(utils.SplitLines(output)), nil
+}
+
+// parseComposeConfigJSON extracts the resolved project name and the sorted
+// service names from `docker compose config --format json` output.
+func parseComposeConfigJSON(output string) (string, []string, error) {
+	var parsed struct {
+		Name     string                     `json:"name"`
+		Services map[string]json.RawMessage `json:"services"`
+	}
+	if err := json.Unmarshal([]byte(output), &parsed); err != nil {
+		return "", nil, err
+	}
+	names := make([]string, 0, len(parsed.Services))
+	for name := range parsed.Services {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return parsed.Name, names, nil
+}
+
+// buildServices builds the service list, stamped with the current
+// LocalProjectName.
+func (c *DockerCommand) buildServices(names []string) []*Service {
+	services := make([]*Service, len(names))
+	for i, str := range names {
 		services[i] = &Service{
 			Name:          str,
 			ID:            c.LocalProjectName + "-" + str,
@@ -457,8 +483,7 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 			DockerCommand: c,
 		}
 	}
-
-	return services, nil
+	return services
 }
 
 func (c *DockerCommand) RefreshContainerDetails(containers []*Container) error {
