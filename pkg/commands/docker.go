@@ -47,6 +47,11 @@ type DockerCommand struct {
 	ContainerMutex   deadlock.Mutex
 	ServiceMutex     deadlock.Mutex
 
+	// inspectContainer is the function used to fetch details for a container.
+	// It is a field so that it can be overridden in tests. When nil, the real
+	// docker client is used. It must be set before the DockerCommand is used.
+	inspectContainer func(ctx context.Context, id string) (container.InspectResponse, error)
+
 	Closers []io.Closer
 }
 
@@ -372,9 +377,8 @@ L:
 
 // GetContainers gets the docker containers
 func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Container, error) {
-	c.ContainerMutex.Lock()
-	defer c.ContainerMutex.Unlock()
-
+	// ContainerList is a blocking network round-trip, so it must not be
+	// performed while holding ContainerMutex.
 	containers, err := c.Client.ContainerList(context.Background(), container.ListOptions{All: true})
 	if err != nil {
 		return nil, err
@@ -382,6 +386,10 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 
 	ownContainers := make([]*Container, len(containers))
 
+	// The mutex is only held while reconciling the container list against the
+	// containers we already have; SetContainerDetails takes it on its own when
+	// publishing inspect results below.
+	c.ContainerMutex.Lock()
 	for i, ctr := range containers {
 		var newContainer *Container
 
@@ -423,6 +431,7 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 
 		ownContainers[i] = newContainer
 	}
+	c.ContainerMutex.Unlock()
 
 	c.SetContainerDetails(ownContainers)
 
@@ -462,9 +471,6 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 }
 
 func (c *DockerCommand) RefreshContainerDetails(containers []*Container) error {
-	c.ContainerMutex.Lock()
-	defer c.ContainerMutex.Unlock()
-
 	c.SetContainerDetails(containers)
 
 	return nil
@@ -472,22 +478,52 @@ func (c *DockerCommand) RefreshContainerDetails(containers []*Container) error {
 
 // Attaches the details returned from docker inspect to each of the containers
 // this contains a bit more info than what you get from the go-docker client
+//
+// The docker inspect calls are blocking network round-trips, so they are
+// performed *outside* of ContainerMutex: holding the mutex for the duration of
+// the fan-out (which can take many seconds when the docker socket is slow or
+// unresponsive) starves every other goroutine that needs the mutex and, with
+// go-deadlock enabled, produces a spurious "POTENTIAL DEADLOCK" report that
+// hangs the UI. The mutex is only taken to write the results back.
 func (c *DockerCommand) SetContainerDetails(containers []*Container) {
+	type inspectResult struct {
+		details container.InspectResponse
+		err     error
+	}
+
+	// Fetch details concurrently without holding the lock.
+	results := make([]inspectResult, len(containers))
 	wg := sync.WaitGroup{}
-	for _, ctr := range containers {
-		ctr := ctr
+	for i, ctr := range containers {
+		i, ctr := i, ctr
 		wg.Add(1)
 		go func() {
-			details, err := c.Client.ContainerInspect(context.Background(), ctr.ID)
-			if err != nil {
-				c.Log.Error(err)
-			} else {
-				ctr.Details = details
-			}
-			wg.Done()
+			defer wg.Done()
+			details, err := c.inspect(context.Background(), ctr.ID)
+			results[i] = inspectResult{details: details, err: err}
 		}()
 	}
 	wg.Wait()
+
+	// Take the lock only to publish the results.
+	c.ContainerMutex.Lock()
+	defer c.ContainerMutex.Unlock()
+	for i, ctr := range containers {
+		if results[i].err != nil {
+			c.Log.Error(results[i].err)
+			continue
+		}
+		ctr.Details = results[i].details
+	}
+}
+
+// inspect returns the details for the given container, using the overridable
+// inspectContainer hook when set (tests) and the real docker client otherwise.
+func (c *DockerCommand) inspect(ctx context.Context, id string) (container.InspectResponse, error) {
+	if c.inspectContainer != nil {
+		return c.inspectContainer(ctx, id)
+	}
+	return c.Client.ContainerInspect(ctx, id)
 }
 
 // ViewAllLogs attaches to a subprocess viewing all the logs from docker-compose
