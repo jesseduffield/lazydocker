@@ -377,9 +377,8 @@ L:
 
 // GetContainers gets the docker containers
 func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Container, error) {
-	c.ContainerMutex.Lock()
-	defer c.ContainerMutex.Unlock()
-
+	// ContainerList is a blocking network round-trip, so it must not be
+	// performed while holding ContainerMutex.
 	containers, err := c.Client.ContainerList(context.Background(), container.ListOptions{All: true})
 	if err != nil {
 		return nil, err
@@ -387,6 +386,10 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 
 	ownContainers := make([]*Container, len(containers))
 
+	// The mutex is only held while reconciling the container list against the
+	// containers we already have; SetContainerDetails takes it on its own when
+	// publishing inspect results below.
+	c.ContainerMutex.Lock()
 	for i, ctr := range containers {
 		var newContainer *Container
 
@@ -428,6 +431,7 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 
 		ownContainers[i] = newContainer
 	}
+	c.ContainerMutex.Unlock()
 
 	c.SetContainerDetails(ownContainers)
 

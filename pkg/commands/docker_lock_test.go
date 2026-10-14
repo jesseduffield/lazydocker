@@ -86,3 +86,56 @@ func TestRefreshContainerDetailsDoesNotHoldContainerMutexDuringInspect(t *testin
 		t.Log("details stub returned zero-value InspectResponse (expected)")
 	}
 }
+
+// TestSetContainerDetailsDoesNotHoldContainerMutexDuringInspect locks in the
+// invariant directly on SetContainerDetails: it is safe to call without the
+// caller holding ContainerMutex (GetContainers and RefreshContainerDetails both
+// rely on this) and it does not hold the mutex across the blocking inspect.
+func TestSetContainerDetailsDoesNotHoldContainerMutexDuringInspect(t *testing.T) {
+	const inspectDelay = 400 * time.Millisecond
+
+	log := logrus.New()
+	log.SetLevel(logrus.PanicLevel)
+
+	inspectStarted := make(chan struct{})
+	var startedOnce sync.Once
+	c := &DockerCommand{Log: log.WithField("test", "true")}
+	c.inspectContainer = func(_ context.Context, _ string) (container.InspectResponse, error) {
+		startedOnce.Do(func() { close(inspectStarted) })
+		time.Sleep(inspectDelay)
+		return container.InspectResponse{}, nil
+	}
+
+	containers := []*Container{{ID: "c1"}, {ID: "c2"}}
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		c.SetContainerDetails(containers)
+	}()
+
+	select {
+	case <-inspectStarted:
+	case <-time.After(2 * time.Second):
+		t.Fatal("stubbed ContainerInspect was never called")
+	}
+
+	acquired := make(chan struct{})
+	go func() {
+		c.ContainerMutex.Lock()
+		c.ContainerMutex.Unlock()
+		close(acquired)
+	}()
+
+	select {
+	case <-acquired:
+	case <-time.After(inspectDelay / 2):
+		t.Fatal("SetContainerDetails held ContainerMutex across the blocking ContainerInspect")
+	}
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("SetContainerDetails did not return")
+	}
+}
