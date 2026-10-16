@@ -2,6 +2,7 @@ package gui
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -136,17 +137,43 @@ func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context,
 		}
 	}
 
-	if ctr.Details.Config.Tty {
-		_, err = io.Copy(writer, readCloser)
-		if err != nil {
-			return err
-		}
-	} else {
-		_, err = stdcopy.StdCopy(writer, writer, readCloser)
-		if err != nil {
-			return err
-		}
+	if gui.Config.UserConfig.Logs.PipeThrough != "" {
+		return gui.pipeContainerLogs(ctr, ctx, writer, readCloser)
 	}
 
-	return nil
+	return copyContainerLogs(ctr, writer, readCloser)
+}
+
+// copyContainerLogs writes the container's raw log stream to dst, merging stdout and stderr
+func copyContainerLogs(ctr *commands.Container, dst io.Writer, src io.Reader) error {
+	if ctr.Details.Config.Tty {
+		_, err := io.Copy(dst, src)
+		return err
+	}
+
+	_, err := stdcopy.StdCopy(dst, dst, src)
+	return err
+}
+
+// pipeContainerLogs runs the user's logs.pipeThrough command as a child process, feeds it the container's logs and
+// writes its output to dst instead. It waits for the command to exit so the process is reaped and all its output has
+// been written before returning
+func (gui *Gui) pipeContainerLogs(ctr *commands.Container, ctx context.Context, dst io.Writer, src io.Reader) error {
+	cmd := gui.OSCommand.RunCustomCommandContext(ctx, gui.Config.UserConfig.Logs.PipeThrough)
+	cmd.Stdout = dst
+	cmd.Stderr = dst
+
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return err
+	}
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	err = copyContainerLogs(ctr, stdin, src)
+
+	// stdin must be closed before waiting, so the command sees EOF, flushes and exits
+	return errors.Join(err, stdin.Close(), cmd.Wait())
 }
