@@ -1,7 +1,7 @@
 name: Continuous Integration
 
 env:
-  GO_VERSION: 1.21
+  GO_VERSION: 1.24
 
 on:
   push:
@@ -25,11 +25,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.21.x
+          go-version: 1.24.x
       - name: Cache build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/go-build
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-test
@@ -47,11 +47,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.21.x
+          go-version: 1.24.x
       - name: Cache build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/go-build
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-build
@@ -75,11 +75,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.21.x
+          go-version: 1.24.x
       - name: Cache build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build
@@ -102,11 +102,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.21.x
+          go-version: 1.24.x
       - name: Cache build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/go-build
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-test

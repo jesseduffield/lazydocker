@@ -1,4 +1,4 @@
-package client // import "github.com/docker/docker/client"
+package client
 
 import (
 	"context"
@@ -27,6 +27,6 @@ func (cli *Client) NetworkList(ctx context.Context, options network.ListOptions)
 	if err != nil {
 		return networkResources, err
 	}
-	err = json.NewDecoder(resp.body).Decode(&networkResources)
+	err = json.NewDecoder(resp.Body).Decode(&networkResources)
 	return networkResources, err
 }

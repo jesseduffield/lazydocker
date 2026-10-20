@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	dockerTypes "github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
@@ -30,7 +30,7 @@ func displayContainerImage(container *commands.Container) string {
 }
 
 func displayPorts(c *commands.Container) string {
-	portStrings := lo.Map(c.Container.Ports, func(port dockerTypes.Port, _ int) string {
+	portStrings := lo.Map(c.Container.Ports, func(port container.Port, _ int) string {
 		if port.PublicPort == 0 {
 			return fmt.Sprintf("%d/%s", port.PrivatePort, port.Type)
 		}

@@ -9,19 +9,23 @@ import (
 // Info contains response of Engine API:
 // GET "/info"
 type Info struct {
-	ID                 string
-	Containers         int
-	ContainersRunning  int
-	ContainersPaused   int
-	ContainersStopped  int
-	Images             int
-	Driver             string
-	DriverStatus       [][2]string
-	SystemStatus       [][2]string `json:",omitempty"` // SystemStatus is only propagated by the Swarm standalone API
-	Plugins            PluginsInfo
-	MemoryLimit        bool
-	SwapLimit          bool
-	KernelMemory       bool `json:",omitempty"` // Deprecated: kernel 5.4 deprecated kmem.limit_in_bytes
+	ID                string
+	Containers        int
+	ContainersRunning int
+	ContainersPaused  int
+	ContainersStopped int
+	Images            int
+	Driver            string
+	DriverStatus      [][2]string
+	SystemStatus      [][2]string `json:",omitempty"` // SystemStatus is only propagated by the Swarm standalone API
+	Plugins           PluginsInfo
+	MemoryLimit       bool
+	SwapLimit         bool
+	KernelMemory      bool `json:",omitempty"` // Deprecated: kernel 5.4 deprecated kmem.limit_in_bytes
+	// KernelMemoryLimit is not supported on cgroups v2.
+	//
+	// Deprecated: This field is deprecated and will be removed in the next release.
+	// Starting with kernel 6.12, the kernel has deprecated kernel memory tcp accounting
 	KernelMemoryTCP    bool `json:",omitempty"` // KernelMemoryTCP is not supported on cgroups v2.
 	CPUCfsPeriod       bool `json:"CpuCfsPeriod"`
 	CPUCfsQuota        bool `json:"CpuCfsQuota"`
@@ -29,8 +33,6 @@ type Info struct {
 	CPUSet             bool
 	PidsLimit          bool
 	IPv4Forwarding     bool
-	BridgeNfIptables   bool
-	BridgeNfIP6tables  bool `json:"BridgeNfIp6tables"`
 	Debug              bool
 	NFd                int
 	OomKillDisable     bool
@@ -73,7 +75,9 @@ type Info struct {
 	SecurityOptions     []string
 	ProductLicense      string               `json:",omitempty"`
 	DefaultAddressPools []NetworkAddressPool `json:",omitempty"`
+	FirewallBackend     *FirewallInfo        `json:"FirewallBackend,omitempty"`
 	CDISpecDirs         []string
+	DiscoveredDevices   []DeviceInfo `json:",omitempty"`
 
 	Containerd *ContainerdInfo `json:",omitempty"`
 
@@ -137,12 +141,34 @@ type PluginsInfo struct {
 // Commit holds the Git-commit (SHA1) that a binary was built from, as reported
 // in the version-string of external tools, such as containerd, or runC.
 type Commit struct {
-	ID       string // ID is the actual commit ID of external tool.
-	Expected string // Expected is the commit ID of external tool expected by dockerd as set at build time.
+	// ID is the actual commit ID or version of external tool.
+	ID string
+
+	// Expected is the commit ID of external tool expected by dockerd as set at build time.
+	//
+	// Deprecated: this field is no longer used in API v1.49, but kept for backward-compatibility with older API versions.
+	Expected string `json:",omitempty"`
 }
 
 // NetworkAddressPool is a temp struct used by [Info] struct.
 type NetworkAddressPool struct {
 	Base string
 	Size int
+}
+
+// FirewallInfo describes the firewall backend.
+type FirewallInfo struct {
+	// Driver is the name of the firewall backend driver.
+	Driver string `json:"Driver"`
+	// Info is a list of label/value pairs, containing information related to the firewall.
+	Info [][2]string `json:"Info,omitempty"`
+}
+
+// DeviceInfo represents a discoverable device from a device driver.
+type DeviceInfo struct {
+	// Source indicates the origin device driver.
+	Source string `json:"Source"`
+	// ID is the unique identifier for the device.
+	// Example: CDI FQDN like "vendor.com/gpu=0", or other driver-specific device ID
+	ID string `json:"ID"`
 }

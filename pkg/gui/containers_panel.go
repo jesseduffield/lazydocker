@@ -27,7 +27,7 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 		}
 
 		return !lo.SomeBy(gui.Panels.Services.List.GetAllItems(), func(service *commands.Service) bool {
-			return service.Name == container.ServiceName
+			return service.Name == container.ServiceName && service.ProjectName == container.ProjectName
 		})
 	}
 
@@ -83,15 +83,35 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 			return sortContainers(a, b, gui.Config.UserConfig.Gui.LegacySortContainers)
 		},
 		Filter: func(container *commands.Container) bool {
-			// Note that this is O(N*M) time complexity where N is the number of services
-			// and M is the number of containers. We expect N to be small but M may be large,
-			// so we will need to keep an eye on this.
-			if !gui.Config.UserConfig.Gui.ShowAllContainers && !isStandaloneContainer(container) {
+			if !gui.State.ShowExitedContainers && container.Container.State == "exited" {
 				return false
 			}
 
-			if !gui.State.ShowExitedContainers && container.Container.State == "exited" {
-				return false
+			// When project-scoped, apply project and standalone filtering.
+			// Otherwise all containers are shown in a flat list regardless
+			// of which compose project they belong to.
+			if gui.DockerCommand.IsProjectScoped() {
+				// This check must be inside the IsProjectScoped guard: when
+				// not project-scoped, services are still derived from container
+				// labels, so compose-managed containers from other projects
+				// would be incorrectly hidden.
+				//
+				// Note that this is O(N*M) time complexity where N is the number of services
+				// and M is the number of containers. We expect N to be small but M may be large,
+				// so we will need to keep an eye on this.
+				if !gui.Config.UserConfig.Gui.ShowAllContainers && !isStandaloneContainer(container) {
+					return false
+				}
+
+				// Filter by selected project. Containers with no project (truly
+				// standalone, not from any compose project) are always shown.
+				selectedProject := gui.getSelectedProjectName()
+				if selectedProject == "" {
+					selectedProject = gui.DockerCommand.LocalProjectName
+				}
+				if selectedProject != "" && container.ProjectName != "" && container.ProjectName != selectedProject {
+					return false
+				}
 			}
 
 			return true
@@ -256,7 +276,6 @@ func (gui *Gui) refreshContainersAndServices() error {
 	selectedService, isServiceSelected := gui.Panels.Services.List.TryGet(originalSelectedLineIdx)
 
 	containers, services, err := gui.DockerCommand.RefreshContainersAndServices(
-		gui.Panels.Services.List.GetAllItems(),
 		gui.Panels.Containers.List.GetAllItems(),
 	)
 	if err != nil {
@@ -283,10 +302,8 @@ func (gui *Gui) refreshContainersAndServices() error {
 }
 
 func (gui *Gui) renderContainersAndServices() error {
-	if gui.DockerCommand.InDockerComposeProject {
-		if err := gui.Panels.Services.RerenderList(); err != nil {
-			return err
-		}
+	if err := gui.Panels.Services.RerenderList(); err != nil {
+		return err
 	}
 
 	if err := gui.Panels.Containers.RerenderList(); err != nil {

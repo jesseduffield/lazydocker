@@ -2,14 +2,12 @@
 Package filters provides tools for encoding a mapping of keys to a set of
 multiple values.
 */
-package filters // import "github.com/docker/docker/api/types/filters"
+package filters
 
 import (
 	"encoding/json"
 	"regexp"
 	"strings"
-
-	"github.com/docker/docker/api/types/versions"
 )
 
 // Args stores a mapping of keys to a set of multiple values.
@@ -61,24 +59,6 @@ func ToJSON(a Args) (string, error) {
 	}
 	buf, err := json.Marshal(a)
 	return string(buf), err
-}
-
-// ToParamWithVersion encodes Args as a JSON string. If version is less than 1.22
-// then the encoded format will use an older legacy format where the values are a
-// list of strings, instead of a set.
-//
-// Deprecated: do not use in any new code; use ToJSON instead
-func ToParamWithVersion(version string, a Args) (string, error) {
-	if a.Len() == 0 {
-		return "", nil
-	}
-
-	if version != "" && versions.LessThan(version, "1.22") {
-		buf, err := json.Marshal(convertArgsToSlice(a.fields))
-		return string(buf), err
-	}
-
-	return ToJSON(a)
 }
 
 // FromJSON decodes a JSON encoded string into Args
@@ -196,11 +176,10 @@ func (args Args) Match(field, source string) bool {
 }
 
 // GetBoolOrDefault returns a boolean value of the key if the key is present
-// and is intepretable as a boolean value. Otherwise the default value is returned.
+// and is interpretable as a boolean value. Otherwise the default value is returned.
 // Error is not nil only if the filter values are not valid boolean or are conflicting.
 func (args Args) GetBoolOrDefault(key string, defaultValue bool) (bool, error) {
 	fieldValues, ok := args.fields[key]
-
 	if !ok {
 		return defaultValue, nil
 	}
@@ -211,20 +190,11 @@ func (args Args) GetBoolOrDefault(key string, defaultValue bool) (bool, error) {
 
 	isFalse := fieldValues["0"] || fieldValues["false"]
 	isTrue := fieldValues["1"] || fieldValues["true"]
-
-	conflicting := isFalse && isTrue
-	invalid := !isFalse && !isTrue
-
-	if conflicting || invalid {
+	if isFalse == isTrue {
+		// Either no or conflicting truthy/falsy value were provided
 		return defaultValue, &invalidFilter{key, args.Get(key)}
-	} else if isFalse {
-		return false, nil
-	} else if isTrue {
-		return true, nil
 	}
-
-	// This code shouldn't be reached.
-	return defaultValue, &unreachableCode{Filter: key, Value: args.Get(key)}
+	return isTrue, nil
 }
 
 // ExactMatch returns true if the source matches exactly one of the values.
@@ -325,20 +295,6 @@ func deprecatedArgs(d map[string][]string) map[string]map[string]bool {
 		values := map[string]bool{}
 		for _, vv := range v {
 			values[vv] = true
-		}
-		m[k] = values
-	}
-	return m
-}
-
-func convertArgsToSlice(f map[string]map[string]bool) map[string][]string {
-	m := map[string][]string{}
-	for k, v := range f {
-		values := []string{}
-		for kk := range v {
-			if v[kk] {
-				values = append(values, kk)
-			}
 		}
 		m[k] = values
 	}

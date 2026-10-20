@@ -297,12 +297,12 @@ func (gui *Gui) updateContainerDetails() error {
 
 func (gui *Gui) refresh() {
 	go func() {
-		if err := gui.refreshProject(); err != nil {
+		// Refresh containers/services first, then projects (which depend on
+		// container labels to discover projects).
+		if err := gui.refreshContainersAndServices(); err != nil {
 			gui.Log.Error(err)
 		}
-	}()
-	go func() {
-		if err := gui.refreshContainersAndServices(); err != nil {
+		if err := gui.refreshProject(); err != nil {
 			gui.Log.Error(err)
 		}
 	}()
@@ -459,7 +459,7 @@ func (gui *Gui) ShouldRefresh(key string) bool {
 }
 
 func (gui *Gui) initiallyFocusedViewName() string {
-	if gui.DockerCommand.InDockerComposeProject {
+	if gui.DockerCommand.IsProjectScoped() {
 		return "services"
 	}
 	return "containers"

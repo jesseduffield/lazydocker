@@ -1,210 +1,242 @@
 package types
 
 import (
+	"context"
+
+	"github.com/docker/docker/api/types/build"
+	"github.com/docker/docker/api/types/common"
 	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/api/types/registry"
-	"github.com/docker/docker/api/types/volume"
+	"github.com/docker/docker/api/types/storage"
+	"github.com/docker/docker/api/types/swarm"
 )
 
-// ImagesPruneReport contains the response for Engine API:
-// POST "/images/prune"
+// IDResponse Response to an API call that returns just an Id.
 //
-// Deprecated: use [image.PruneReport].
-type ImagesPruneReport = image.PruneReport
+// Deprecated: use either [container.CommitResponse] or [container.ExecCreateResponse]. It will be removed in the next release.
+type IDResponse = common.IDResponse
 
-// VolumesPruneReport contains the response for Engine API:
-// POST "/volumes/prune".
+// ContainerJSONBase contains response of Engine API GET "/containers/{name:.*}/json"
+// for API version 1.18 and older.
 //
-// Deprecated: use [volume.PruneReport].
-type VolumesPruneReport = volume.PruneReport
+// Deprecated: use [container.InspectResponse] or [container.ContainerJSONBase]. It will be removed in the next release.
+type ContainerJSONBase = container.ContainerJSONBase
 
-// NetworkCreateRequest is the request message sent to the server for network create call.
+// ContainerJSON is the response for the GET "/containers/{name:.*}/json"
+// endpoint.
 //
-// Deprecated: use [network.CreateRequest].
-type NetworkCreateRequest = network.CreateRequest
+// Deprecated: use [container.InspectResponse]. It will be removed in the next release.
+type ContainerJSON = container.InspectResponse
 
-// NetworkCreate is the expected body of the "create network" http request message
+// Container contains response of Engine API:
+// GET "/containers/json"
 //
-// Deprecated: use [network.CreateOptions].
-type NetworkCreate = network.CreateOptions
+// Deprecated: use [container.Summary].
+type Container = container.Summary
 
-// NetworkListOptions holds parameters to filter the list of networks with.
+// ContainerState stores container's running state
 //
-// Deprecated: use [network.ListOptions].
-type NetworkListOptions = network.ListOptions
+// Deprecated: use [container.State].
+type ContainerState = container.State
 
-// NetworkCreateResponse is the response message sent by the server for network create call.
+// NetworkSettings exposes the network settings in the api.
 //
-// Deprecated: use [network.CreateResponse].
-type NetworkCreateResponse = network.CreateResponse
+// Deprecated: use [container.NetworkSettings].
+type NetworkSettings = container.NetworkSettings
 
-// NetworkInspectOptions holds parameters to inspect network.
+// NetworkSettingsBase holds networking state for a container when inspecting it.
 //
-// Deprecated: use [network.InspectOptions].
-type NetworkInspectOptions = network.InspectOptions
+// Deprecated: [container.NetworkSettingsBase] will be removed in v29. Prefer
+// accessing the fields it contains through [container.NetworkSettings].
+type NetworkSettingsBase = container.NetworkSettingsBase //nolint:staticcheck // ignore SA1019: NetworkSettingsBase is deprecated in v28.4.
 
-// NetworkConnect represents the data to be used to connect a container to the network
+// DefaultNetworkSettings holds network information
+// during the 2 release deprecation period.
+// It will be removed in Docker 1.11.
 //
-// Deprecated: use [network.ConnectOptions].
-type NetworkConnect = network.ConnectOptions
+// Deprecated: use [container.DefaultNetworkSettings].
+type DefaultNetworkSettings = container.DefaultNetworkSettings //nolint:staticcheck // ignore SA1019: DefaultNetworkSettings is deprecated in v28.4.
 
-// NetworkDisconnect represents the data to be used to disconnect a container from the network
+// SummaryNetworkSettings provides a summary of container's networks
+// in /containers/json.
 //
-// Deprecated: use [network.DisconnectOptions].
-type NetworkDisconnect = network.DisconnectOptions
+// Deprecated: use [container.NetworkSettingsSummary].
+type SummaryNetworkSettings = container.NetworkSettingsSummary
 
-// EndpointResource contains network resources allocated and used for a container in a network.
-//
-// Deprecated: use [network.EndpointResource].
-type EndpointResource = network.EndpointResource
+// Health states
+const (
+	NoHealthcheck = container.NoHealthcheck // Deprecated: use [container.NoHealthcheck].
+	Starting      = container.Starting      // Deprecated: use [container.Starting].
+	Healthy       = container.Healthy       // Deprecated: use [container.Healthy].
+	Unhealthy     = container.Unhealthy     // Deprecated: use [container.Unhealthy].
+)
 
-// NetworkResource is the body of the "get network" http response message/
+// Health stores information about the container's healthcheck results.
 //
-// Deprecated: use [network.Inspect] or [network.Summary] (for list operations).
-type NetworkResource = network.Inspect
+// Deprecated: use [container.Health].
+type Health = container.Health
 
-// NetworksPruneReport contains the response for Engine API:
-// POST "/networks/prune"
+// HealthcheckResult stores information about a single run of a healthcheck probe.
 //
-// Deprecated: use [network.PruneReport].
-type NetworksPruneReport = network.PruneReport
+// Deprecated: use [container.HealthcheckResult].
+type HealthcheckResult = container.HealthcheckResult
 
-// ExecConfig is a small subset of the Config struct that holds the configuration
-// for the exec feature of docker.
+// MountPoint represents a mount point configuration inside the container.
+// This is used for reporting the mountpoints in use by a container.
 //
-// Deprecated: use [container.ExecOptions].
-type ExecConfig = container.ExecOptions
+// Deprecated: use [container.MountPoint].
+type MountPoint = container.MountPoint
 
-// ExecStartCheck is a temp struct used by execStart
-// Config fields is part of ExecConfig in runconfig package
+// Port An open port on a container
 //
-// Deprecated: use [container.ExecStartOptions] or [container.ExecAttachOptions].
-type ExecStartCheck = container.ExecStartOptions
+// Deprecated: use [container.Port].
+type Port = container.Port
 
-// ContainerExecInspect holds information returned by exec inspect.
+// GraphDriverData Information about the storage driver used to store the container's and
+// image's filesystem.
 //
-// Deprecated: use [container.ExecInspect].
-type ContainerExecInspect = container.ExecInspect
+// Deprecated: use [storage.DriverData].
+type GraphDriverData = storage.DriverData
 
-// ContainersPruneReport contains the response for Engine API:
-// POST "/containers/prune"
+// RootFS returns Image's RootFS description including the layer IDs.
 //
-// Deprecated: use [container.PruneReport].
-type ContainersPruneReport = container.PruneReport
+// Deprecated: use [image.RootFS].
+type RootFS = image.RootFS
 
-// ContainerPathStat is used to encode the header from
-// GET "/containers/{name:.*}/archive"
-// "Name" is the file or directory name.
+// ImageInspect contains response of Engine API:
+// GET "/images/{name:.*}/json"
 //
-// Deprecated: use [container.PathStat].
-type ContainerPathStat = container.PathStat
+// Deprecated: use [image.InspectResponse].
+type ImageInspect = image.InspectResponse
 
-// CopyToContainerOptions holds information
-// about files to copy into a container.
+// RequestPrivilegeFunc is a function interface that clients can supply to
+// retry operations after getting an authorization error.
+// This function returns the registry authentication header value in base64
+// format, or an error if the privilege request fails.
 //
-// Deprecated: use [container.CopyToContainerOptions],
-type CopyToContainerOptions = container.CopyToContainerOptions
+// Deprecated: moved to [github.com/docker/docker/api/types/registry.RequestAuthConfig].
+type RequestPrivilegeFunc func(context.Context) (string, error)
 
-// ContainerStats contains response of Engine API:
-// GET "/stats"
+// SecretCreateResponse contains the information returned to a client
+// on the creation of a new secret.
 //
-// Deprecated: use [container.StatsResponseReader].
-type ContainerStats = container.StatsResponseReader
+// Deprecated: use [swarm.SecretCreateResponse].
+type SecretCreateResponse = swarm.SecretCreateResponse
 
-// ThrottlingData stores CPU throttling stats of one running container.
-// Not used on Windows.
+// SecretListOptions holds parameters to list secrets
 //
-// Deprecated: use [container.ThrottlingData].
-type ThrottlingData = container.ThrottlingData
+// Deprecated: use [swarm.SecretListOptions].
+type SecretListOptions = swarm.SecretListOptions
 
-// CPUUsage stores All CPU stats aggregated since container inception.
+// ConfigCreateResponse contains the information returned to a client
+// on the creation of a new config.
 //
-// Deprecated: use [container.CPUUsage].
-type CPUUsage = container.CPUUsage
+// Deprecated: use [swarm.ConfigCreateResponse].
+type ConfigCreateResponse = swarm.ConfigCreateResponse
 
-// CPUStats aggregates and wraps all CPU related info of container
+// ConfigListOptions holds parameters to list configs
 //
-// Deprecated: use [container.CPUStats].
-type CPUStats = container.CPUStats
+// Deprecated: use [swarm.ConfigListOptions].
+type ConfigListOptions = swarm.ConfigListOptions
 
-// MemoryStats aggregates all memory stats since container inception on Linux.
-// Windows returns stats for commit and private working set only.
+// NodeListOptions holds parameters to list nodes with.
 //
-// Deprecated: use [container.MemoryStats].
-type MemoryStats = container.MemoryStats
+// Deprecated: use [swarm.NodeListOptions].
+type NodeListOptions = swarm.NodeListOptions
 
-// BlkioStatEntry is one small entity to store a piece of Blkio stats
-// Not used on Windows.
+// NodeRemoveOptions holds parameters to remove nodes with.
 //
-// Deprecated: use [container.BlkioStatEntry].
-type BlkioStatEntry = container.BlkioStatEntry
+// Deprecated: use [swarm.NodeRemoveOptions].
+type NodeRemoveOptions = swarm.NodeRemoveOptions
 
-// BlkioStats stores All IO service stats for data read and write.
-// This is a Linux specific structure as the differences between expressing
-// block I/O on Windows and Linux are sufficiently significant to make
-// little sense attempting to morph into a combined structure.
+// TaskListOptions holds parameters to list tasks with.
 //
-// Deprecated: use [container.BlkioStats].
-type BlkioStats = container.BlkioStats
+// Deprecated: use [swarm.TaskListOptions].
+type TaskListOptions = swarm.TaskListOptions
 
-// StorageStats is the disk I/O stats for read/write on Windows.
+// ServiceCreateOptions contains the options to use when creating a service.
 //
-// Deprecated: use [container.StorageStats].
-type StorageStats = container.StorageStats
+// Deprecated: use [swarm.ServiceCreateOptions].
+type ServiceCreateOptions = swarm.ServiceCreateOptions
 
-// NetworkStats aggregates the network stats of one container
+// ServiceUpdateOptions contains the options to be used for updating services.
 //
-// Deprecated: use [container.NetworkStats].
-type NetworkStats = container.NetworkStats
+// Deprecated: use [swarm.ServiceCreateOptions].
+type ServiceUpdateOptions = swarm.ServiceUpdateOptions
 
-// PidsStats contains the stats of a container's pids
-//
-// Deprecated: use [container.PidsStats].
-type PidsStats = container.PidsStats
+const (
+	RegistryAuthFromSpec         = swarm.RegistryAuthFromSpec         // Deprecated: use [swarm.RegistryAuthFromSpec].
+	RegistryAuthFromPreviousSpec = swarm.RegistryAuthFromPreviousSpec // Deprecated: use [swarm.RegistryAuthFromPreviousSpec].
+)
 
-// Stats is Ultimate struct aggregating all types of stats of one container
+// ServiceListOptions holds parameters to list services with.
 //
-// Deprecated: use [container.Stats].
-type Stats = container.Stats
+// Deprecated: use [swarm.ServiceListOptions].
+type ServiceListOptions = swarm.ServiceListOptions
 
-// StatsJSON is newly used Networks
+// ServiceInspectOptions holds parameters related to the "service inspect"
+// operation.
 //
-// Deprecated: use [container.StatsResponse].
-type StatsJSON = container.StatsResponse
+// Deprecated: use [swarm.ServiceInspectOptions].
+type ServiceInspectOptions = swarm.ServiceInspectOptions
 
-// EventsOptions holds parameters to filter events with.
+// SwarmUnlockKeyResponse contains the response for Engine API:
+// GET /swarm/unlockkey
 //
-// Deprecated: use [events.ListOptions].
-type EventsOptions = events.ListOptions
+// Deprecated: use [swarm.UnlockKeyResponse].
+type SwarmUnlockKeyResponse = swarm.UnlockKeyResponse
 
-// ImageSearchOptions holds parameters to search images with.
+// BuildCache contains information about a build cache record.
 //
-// Deprecated: use [registry.SearchOptions].
-type ImageSearchOptions = registry.SearchOptions
+// Deprecated: deprecated in API 1.49. Use [build.CacheRecord] instead.
+type BuildCache = build.CacheRecord
 
-// ImageImportSource holds source information for ImageImport
+// BuildCachePruneOptions hold parameters to prune the build cache
 //
-// Deprecated: use [image.ImportSource].
-type ImageImportSource image.ImportSource
+// Deprecated: use [build.CachePruneOptions].
+type BuildCachePruneOptions = build.CachePruneOptions
 
-// ImageLoadResponse returns information to the client about a load process.
+// BuildCachePruneReport contains the response for Engine API:
+// POST "/build/prune"
 //
-// Deprecated: use [image.LoadResponse].
-type ImageLoadResponse = image.LoadResponse
+// Deprecated: use [build.CachePruneReport].
+type BuildCachePruneReport = build.CachePruneReport
 
-// ContainerNode stores information about the node that a container
-// is running on.  It's only used by the Docker Swarm standalone API.
+// BuildResult contains the image id of a successful build/
 //
-// Deprecated: ContainerNode was used for the classic Docker Swarm standalone API. It will be removed in the next release.
-type ContainerNode struct {
-	ID        string
-	IPAddress string `json:"IP"`
-	Addr      string
-	Name      string
-	Cpus      int
-	Memory    int64
-	Labels    map[string]string
-}
+// Deprecated: use [build.Result].
+type BuildResult = build.Result
+
+// ImageBuildOptions holds the information
+// necessary to build images.
+//
+// Deprecated: use [build.ImageBuildOptions].
+type ImageBuildOptions = build.ImageBuildOptions
+
+// ImageBuildOutput defines configuration for exporting a build result
+//
+// Deprecated: use [build.ImageBuildOutput].
+type ImageBuildOutput = build.ImageBuildOutput
+
+// ImageBuildResponse holds information
+// returned by a server after building
+// an image.
+//
+// Deprecated: use [build.ImageBuildResponse].
+type ImageBuildResponse = build.ImageBuildResponse
+
+// BuilderVersion sets the version of underlying builder to use
+//
+// Deprecated: use [build.BuilderVersion].
+type BuilderVersion = build.BuilderVersion
+
+const (
+	// BuilderV1 is the first generation builder in docker daemon
+	//
+	// Deprecated: use [build.BuilderV1].
+	BuilderV1 = build.BuilderV1
+	// BuilderBuildKit is builder based on moby/buildkit project
+	//
+	// Deprecated: use [build.BuilderBuildKit].
+	BuilderBuildKit = build.BuilderBuildKit
+)

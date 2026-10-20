@@ -120,9 +120,11 @@ func (gui *Gui) focusPointInView(view *gocui.View) {
 		return
 	}
 
-	currentPanel, ok := gui.currentListPanel()
-	if ok {
-		currentPanel.Refocus()
+	for _, panel := range gui.allListPanels() {
+		if panel.GetView() == view {
+			panel.Refocus()
+			return
+		}
 	}
 }
 

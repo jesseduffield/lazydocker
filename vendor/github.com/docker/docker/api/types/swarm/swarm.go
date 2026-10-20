@@ -1,4 +1,4 @@
-package swarm // import "github.com/docker/docker/api/types/swarm"
+package swarm
 
 import (
 	"time"
@@ -122,7 +122,7 @@ type CAConfig struct {
 	SigningCAKey  string `json:",omitempty"`
 
 	// If this value changes, and there is no specified signing cert and key,
-	// then the swarm is forced to generate a new root certificate ane key.
+	// then the swarm is forced to generate a new root certificate and key.
 	ForceRotate uint64 `json:",omitempty"`
 }
 
@@ -234,4 +234,11 @@ type UpdateFlags struct {
 	RotateWorkerToken      bool
 	RotateManagerToken     bool
 	RotateManagerUnlockKey bool
+}
+
+// UnlockKeyResponse contains the response for Engine API:
+// GET /swarm/unlockkey
+type UnlockKeyResponse struct {
+	// UnlockKey is the unlock key in ASCII-armored format.
+	UnlockKey string
 }

@@ -9,7 +9,7 @@ import (
 
 func TestDockerComposeCommandNoFiles(t *testing.T) {
 	composeFiles := []string{}
-	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir", "")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -23,7 +23,7 @@ func TestDockerComposeCommandNoFiles(t *testing.T) {
 
 func TestDockerComposeCommandSingleFile(t *testing.T) {
 	composeFiles := []string{"one.yml"}
-	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir", "")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -37,7 +37,7 @@ func TestDockerComposeCommandSingleFile(t *testing.T) {
 
 func TestDockerComposeCommandMultipleFiles(t *testing.T) {
 	composeFiles := []string{"one.yml", "two.yml", "three.yml"}
-	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir", "")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -52,7 +52,7 @@ func TestDockerComposeCommandMultipleFiles(t *testing.T) {
 func TestWritingToConfigFile(t *testing.T) {
 	// init the AppConfig
 	emptyComposeFiles := []string{}
-	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, emptyComposeFiles, "projectDir")
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, emptyComposeFiles, "projectDir", "")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}

@@ -9,6 +9,8 @@ import (
 	ogLog "log"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -28,7 +30,6 @@ import (
 )
 
 const (
-	APIVersion       = "1.25"
 	dockerHostEnvKey = "DOCKER_HOST"
 )
 
@@ -40,9 +41,11 @@ type DockerCommand struct {
 	Config                 *config.AppConfig
 	Client                 *client.Client
 	InDockerComposeProject bool
-	ErrorChan              chan error
-	ContainerMutex         deadlock.Mutex
-	ServiceMutex           deadlock.Mutex
+	// LocalProjectName is the compose project name for the directory where lazydocker was launched.
+	LocalProjectName string
+	ErrorChan        chan error
+	ContainerMutex   deadlock.Mutex
+	ServiceMutex     deadlock.Mutex
 
 	Closers []io.Closer
 }
@@ -62,13 +65,38 @@ type CommandObject struct {
 	Image         *Image
 	Volume        *Volume
 	Network       *Network
+	Project       *Project
 }
 
 // NewCommandObject takes a command object and returns a default command object with the passed command object merged in
 func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	defaultObj := CommandObject{DockerCompose: c.Config.UserConfig.CommandTemplates.DockerCompose}
 	_ = mergo.Merge(&defaultObj, obj)
+
+	// When operating on a specific project, include -p flag so that
+	// docker compose targets the correct project.
+	if obj.Service != nil && obj.Service.ProjectName != "" {
+		defaultObj.DockerCompose = fmt.Sprintf("%s -p %s", defaultObj.DockerCompose, obj.Service.ProjectName)
+	} else if obj.Project != nil && obj.Project.Name != "" {
+		defaultObj.DockerCompose = fmt.Sprintf("%s -p %s", defaultObj.DockerCompose, obj.Project.Name)
+	}
+
 	return defaultObj
+}
+
+// newDockerClient creates a Docker client with the given host.
+// We avoid using client.FromEnv because it includes WithVersionFromEnv() which
+// sets manualOverride=true when DOCKER_API_VERSION is set, preventing API version
+// negotiation even when WithAPIVersionNegotiation() is specified.
+// Instead, we explicitly configure only what we need, and rely on proper
+// API version negotiation to support older Docker daemons.
+// See https://github.com/jesseduffield/lazydocker/issues/715
+func newDockerClient(dockerHost string) (*client.Client, error) {
+	return client.NewClientWithOpts(
+		client.WithTLSClientConfigFromEnv(),
+		client.WithAPIVersionNegotiation(),
+		client.WithHost(dockerHost),
+	)
 }
 
 // NewDockerCommand it runs docker commands
@@ -97,7 +125,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		dockerHost = dockerHostFromEnv
 	}
 
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithVersion(APIVersion), client.WithHost(dockerHost))
+	cli, err := newDockerClient(dockerHost)
 	if err != nil {
 		ogLog.Fatal(err)
 	}
@@ -126,7 +154,23 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		log.Warn(err.Error())
 	}
 
+	// When the user passes -p outside of a compose directory, treat it as the
+	// local project so the project/services panels still appear and filtering
+	// is applied. Inside a compose dir, LocalProjectName is derived from
+	// container labels later in RefreshContainersAndServices.
+	if !dockerCommand.InDockerComposeProject && config.ProjectName != "" {
+		dockerCommand.LocalProjectName = config.ProjectName
+	}
+
 	return dockerCommand, nil
+}
+
+// IsProjectScoped reports whether lazydocker should be scoped to a single
+// compose project — either because we're inside a compose directory or
+// because the user passed -p. When false, the project/services panels are
+// hidden and all containers are shown in a flat list.
+func (c *DockerCommand) IsProjectScoped() bool {
+	return c.InDockerComposeProject || c.Config.ProjectName != ""
 }
 
 func (c *DockerCommand) setDockerComposeCommand(config *config.AppConfig) {
@@ -179,7 +223,7 @@ func (c *DockerCommand) CreateClientStatMonitor(container *Container) {
 	container.MonitoringStats = false
 }
 
-func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service, currentContainers []*Container) ([]*Container, []*Service, error) {
+func (c *DockerCommand) RefreshContainersAndServices(currentContainers []*Container) ([]*Container, []*Service, error) {
 	c.ServiceMutex.Lock()
 	defer c.ServiceMutex.Unlock()
 
@@ -188,15 +232,46 @@ func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service,
 		return nil, nil, err
 	}
 
-	var services []*Service
-	// we only need to get these services once because they won't change in the runtime of the program
-	if currentServices != nil {
-		services = currentServices
-	} else {
-		services, err = c.GetServices()
+	// Derive services from container labels (covers all projects)
+	services := c.GetServicesFromContainers(containers)
+
+	var composeServices []*Service
+	if c.InDockerComposeProject {
+		composeServices, err = c.GetServices()
 		if err != nil {
-			return nil, nil, err
+			c.Log.Warn("Failed to get compose services: " + err.Error())
 		}
+	}
+
+	// Determine the local project name before merging services, since
+	// mergeServices needs it. We match compose service names against container
+	// labels to handle cases where the project name differs from the directory
+	// name (e.g. a `name:` directive in the compose file).
+	if c.LocalProjectName == "" && c.InDockerComposeProject && composeServices != nil {
+		for _, ctr := range containers {
+			if ctr.ProjectName == "" || ctr.ServiceName == "" {
+				continue
+			}
+			for _, svc := range composeServices {
+				if ctr.ServiceName == svc.Name {
+					c.LocalProjectName = ctr.ProjectName
+					break
+				}
+			}
+			if c.LocalProjectName != "" {
+				break
+			}
+		}
+		// Fall back to directory name
+		if c.LocalProjectName == "" && c.Config.ProjectDir != "" {
+			c.LocalProjectName = filepath.Base(c.Config.ProjectDir)
+		}
+	}
+
+	// Merge compose services (which include stopped services) with
+	// container-derived services from all projects
+	if composeServices != nil {
+		services = c.mergeServices(services, composeServices)
 	}
 
 	c.assignContainersToServices(containers, services)
@@ -204,11 +279,89 @@ func (c *DockerCommand) RefreshContainersAndServices(currentServices []*Service,
 	return containers, services, nil
 }
 
+// GetServicesFromContainers derives services from container labels for all projects
+func (c *DockerCommand) GetServicesFromContainers(containers []*Container) []*Service {
+	// Use project+service as key to avoid duplicates
+	type serviceKey struct {
+		project string
+		service string
+	}
+	seen := make(map[serviceKey]bool)
+	services := make([]*Service, 0, len(containers))
+
+	for _, ctr := range containers {
+		if ctr.ServiceName == "" || ctr.OneOff {
+			continue
+		}
+		key := serviceKey{project: ctr.ProjectName, service: ctr.ServiceName}
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		services = append(services, &Service{
+			Name:          ctr.ServiceName,
+			ID:            ctr.ProjectName + "-" + ctr.ServiceName,
+			ProjectName:   ctr.ProjectName,
+			OSCommand:     c.OSCommand,
+			Log:           c.Log,
+			DockerCommand: c,
+		})
+	}
+
+	return services
+}
+
+// mergeServices merges compose services (which may lack ProjectName) with
+// container-derived services. Compose services take priority because they
+// include services without running containers.
+func (c *DockerCommand) mergeServices(containerServices []*Service, composeServices []*Service) []*Service {
+	// Set project name on compose services
+	for _, svc := range composeServices {
+		if svc.ProjectName == "" {
+			svc.ProjectName = c.LocalProjectName
+		}
+	}
+
+	// Build a set of compose service names for the local project
+	composeServiceNames := make(map[string]bool)
+	for _, svc := range composeServices {
+		composeServiceNames[svc.Name] = true
+	}
+
+	// Start with compose services, then add container-derived services
+	// that aren't already covered by compose (i.e. from other projects)
+	result := make([]*Service, 0, len(composeServices)+len(containerServices))
+	result = append(result, composeServices...)
+
+	for _, svc := range containerServices {
+		if svc.ProjectName == c.LocalProjectName && composeServiceNames[svc.Name] {
+			continue // already covered by compose service
+		}
+		result = append(result, svc)
+	}
+
+	return result
+}
+
+// GetProjectNames returns all unique project names from containers
+func (c *DockerCommand) GetProjectNames(containers []*Container) []string {
+	seen := make(map[string]bool)
+	var names []string
+	for _, ctr := range containers {
+		if ctr.ProjectName != "" && !seen[ctr.ProjectName] {
+			seen[ctr.ProjectName] = true
+			names = append(names, ctr.ProjectName)
+		}
+	}
+	sort.Strings(names)
+	return names
+}
+
 func (c *DockerCommand) assignContainersToServices(containers []*Container, services []*Service) {
 L:
 	for _, service := range services {
 		for _, ctr := range containers {
-			if !ctr.OneOff && ctr.ServiceName == service.Name {
+			if !ctr.OneOff && ctr.ServiceName == service.Name && ctr.ProjectName == service.ProjectName {
 				service.Container = ctr
 				continue L
 			}
@@ -257,7 +410,11 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 		if name, ok := ctr.Labels["name"]; ok {
 			newContainer.Name = name
 		} else {
-			newContainer.Name = strings.TrimLeft(ctr.Names[0], "/")
+			if len(ctr.Names) > 0 {
+				newContainer.Name = strings.TrimLeft(ctr.Names[0], "/")
+			} else {
+				newContainer.Name = ctr.ID
+			}
 		}
 		newContainer.ServiceName = ctr.Labels["com.docker.compose.service"]
 		newContainer.ProjectName = ctr.Labels["com.docker.compose.project"]
@@ -293,7 +450,8 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	for i, str := range lines {
 		services[i] = &Service{
 			Name:          str,
-			ID:            str,
+			ID:            c.LocalProjectName + "-" + str,
+			ProjectName:   c.LocalProjectName,
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,
 			DockerCommand: c,
@@ -333,11 +491,11 @@ func (c *DockerCommand) SetContainerDetails(containers []*Container) {
 }
 
 // ViewAllLogs attaches to a subprocess viewing all the logs from docker-compose
-func (c *DockerCommand) ViewAllLogs() (*exec.Cmd, error) {
+func (c *DockerCommand) ViewAllLogs(project *Project) (*exec.Cmd, error) {
 	cmd := c.OSCommand.ExecutableFromString(
 		utils.ApplyTemplate(
 			c.OSCommand.Config.UserConfig.CommandTemplates.ViewAllLogs,
-			c.NewCommandObject(CommandObject{}),
+			c.NewCommandObject(CommandObject{Project: project}),
 		),
 	)
 
@@ -348,10 +506,15 @@ func (c *DockerCommand) ViewAllLogs() (*exec.Cmd, error) {
 
 // DockerComposeConfig returns the result of 'docker-compose config'
 func (c *DockerCommand) DockerComposeConfig() string {
+	return c.DockerComposeConfigForProject(nil)
+}
+
+// DockerComposeConfigForProject returns the result of 'docker-compose config' for a specific project
+func (c *DockerCommand) DockerComposeConfigForProject(project *Project) string {
 	output, err := c.OSCommand.RunCommandWithOutput(
 		utils.ApplyTemplate(
 			c.OSCommand.Config.UserConfig.CommandTemplates.DockerComposeConfig,
-			c.NewCommandObject(CommandObject{}),
+			c.NewCommandObject(CommandObject{Project: project}),
 		),
 	)
 	if err != nil {

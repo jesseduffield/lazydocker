@@ -120,6 +120,8 @@ func (gui *Gui) createAllViews() error {
 
 	gui.Views.Project.Title = gui.Tr.ProjectTitle
 	gui.Views.Project.TitlePrefix = "[1]"
+	gui.Views.Project.Highlight = true
+	gui.Views.Project.SelBgColor = selectedLineBgColor
 
 	gui.Views.Services.Highlight = true
 	gui.Views.Services.Title = gui.Tr.ServicesTitle
@@ -128,7 +130,7 @@ func (gui *Gui) createAllViews() error {
 
 	gui.Views.Containers.Highlight = true
 	gui.Views.Containers.SelBgColor = selectedLineBgColor
-	if gui.Config.UserConfig.Gui.ShowAllContainers || !gui.DockerCommand.InDockerComposeProject {
+	if gui.Config.UserConfig.Gui.ShowAllContainers || !gui.DockerCommand.IsProjectScoped() {
 		gui.Views.Containers.Title = gui.Tr.ContainersTitle
 	} else {
 		gui.Views.Containers.Title = gui.Tr.StandaloneContainersTitle

@@ -1,4 +1,4 @@
-package client // import "github.com/docker/docker/client"
+package client
 
 import (
 	"context"
@@ -11,25 +11,24 @@ import (
 
 // NetworksPrune requests the daemon to delete unused networks
 func (cli *Client) NetworksPrune(ctx context.Context, pruneFilters filters.Args) (network.PruneReport, error) {
-	var report network.PruneReport
-
 	if err := cli.NewVersionError(ctx, "1.25", "network prune"); err != nil {
-		return report, err
+		return network.PruneReport{}, err
 	}
 
 	query, err := getFiltersQuery(pruneFilters)
 	if err != nil {
-		return report, err
+		return network.PruneReport{}, err
 	}
 
-	serverResp, err := cli.post(ctx, "/networks/prune", query, nil, nil)
-	defer ensureReaderClosed(serverResp)
+	resp, err := cli.post(ctx, "/networks/prune", query, nil, nil)
+	defer ensureReaderClosed(resp)
 	if err != nil {
-		return report, err
+		return network.PruneReport{}, err
 	}
 
-	if err := json.NewDecoder(serverResp.body).Decode(&report); err != nil {
-		return report, fmt.Errorf("Error retrieving network prune report: %v", err)
+	var report network.PruneReport
+	if err := json.NewDecoder(resp.Body).Decode(&report); err != nil {
+		return network.PruneReport{}, fmt.Errorf("Error retrieving network prune report: %v", err)
 	}
 
 	return report, nil
