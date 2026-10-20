@@ -223,8 +223,6 @@ yay -S lazydocker
         echo "alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'" >> ~/.zshrc
         ```
 
-
-
 For development, you can build the image using:
 
 ```sh
@@ -240,6 +238,16 @@ docker build -t lazyteam/lazydocker \
 If you encounter a compatibility issue with Docker bundled binary, try rebuilding
 the image with the build argument `--build-arg DOCKER_VERSION="v$(docker -v | cut -d" " -f3 | rev | cut -c 2- | rev)"`
 so that the bundled docker binary matches your host docker binary version.
+
+### `.deb` Package
+
+You can also install `lazydocker` using a `.deb` package. This works on any deb-based distribution, including Ubuntu.
+
+Download the latest `.deb` package from the [releases page](https://github.com/jesseduffield/lazydocker/releases) and install it with `apt`:
+
+```sh
+sudo apt install ./lazydocker_<version>_amd64.deb
+```
 
 ### Manual
 
