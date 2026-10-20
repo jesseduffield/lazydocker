@@ -55,9 +55,6 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-  - builds:
-      - deb
-    format: deb
 
 checksum:
   name_template: "checksums.txt"
@@ -88,7 +85,11 @@ brews:
 
 nfpms:
   - id: deb
+    builds:
+      - deb
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}"
     package_name: lazydocker
+    section: utils
     license: MIT
     maintainer: "Jesse Duffield <jesse@duffield.com>"
     vendor: "Jesse Duffield"
@@ -96,9 +97,10 @@ nfpms:
     description: "A simple terminal UI for docker, written in Go"
     formats:
       - deb
-    dependencies:
-      - docker
-      - docker-compose
+    recommends:
+      - docker.io | docker-ce
+    suggests:
+      - docker-compose-v2 | docker-compose
 
 #snapcrafts:
 #  - builds:
