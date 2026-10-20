@@ -134,12 +134,18 @@ type ContainerStats struct {
 
 // CalculateContainerCPUPercentage calculates the cpu usage of the container as a percent of total CPU usage
 // to calculate CPU usage, we take the increase in CPU time from the container since the last poll, divide that by the total increase in CPU time since the last poll, times by the number of cores, and times by 100 to get a percentage
-// I'm not entirely sure why we need to multiply by the number of cores, but the numbers work
+// we need to multiply by the number of cores because the system CPU time is summed across all cores, so this way one fully busy core reads as 100%, matching `docker stats`
 func (s *ContainerStats) CalculateContainerCPUPercentage() float64 {
 	cpuUsageDelta := s.CPUStats.CPUUsage.TotalUsage - s.PrecpuStats.CPUUsage.TotalUsage
 	cpuTotalUsageDelta := s.CPUStats.SystemCPUUsage - s.PrecpuStats.SystemCPUUsage
 
-	value := float64(cpuUsageDelta*100) / float64(cpuTotalUsageDelta)
+	// percpu_usage is not reported on cgroup v2, so we use online_cpus and only fall back to percpu_usage for older daemons
+	numberOfCores := s.CPUStats.OnlineCpus
+	if numberOfCores == 0 {
+		numberOfCores = len(s.CPUStats.CPUUsage.PercpuUsage)
+	}
+
+	value := float64(cpuUsageDelta*100) * float64(numberOfCores) / float64(cpuTotalUsageDelta)
 	if math.IsNaN(value) {
 		return 0
 	}
@@ -147,8 +153,17 @@ func (s *ContainerStats) CalculateContainerCPUPercentage() float64 {
 }
 
 // CalculateContainerMemoryUsage calculates the memory usage of the container as a percent of total available memory
+// like `docker stats`, we don't count the inactive page cache as used memory, given the kernel can reclaim it
 func (s *ContainerStats) CalculateContainerMemoryUsage() float64 {
-	value := float64(s.MemoryStats.Usage*100) / float64(s.MemoryStats.Limit)
+	usage := s.MemoryStats.Usage
+	// total_inactive_file is reported on cgroup v1, inactive_file on cgroup v2
+	if inactiveFile := s.MemoryStats.Stats.TotalInactiveFile; inactiveFile > 0 && inactiveFile < usage {
+		usage -= inactiveFile
+	} else if inactiveFile := s.MemoryStats.Stats.InactiveFile; inactiveFile > 0 && inactiveFile < usage {
+		usage -= inactiveFile
+	}
+
+	value := float64(usage*100) / float64(s.MemoryStats.Limit)
 	if math.IsNaN(value) {
 		return 0
 	}
