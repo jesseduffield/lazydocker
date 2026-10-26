@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"runtime"
 	"time"
 )
 
@@ -21,11 +22,12 @@ type CmdKiller interface {
 type SSHHandler struct {
 	oSCommand CmdKiller
 
-	dialContext func(ctx context.Context, network, addr string) (io.Closer, error)
-	startCmd    func(*exec.Cmd) error
-	tempDir     func(dir string, pattern string) (name string, err error)
-	getenv      func(key string) string
-	setenv      func(key, value string) error
+	dialContext  func(ctx context.Context, network, addr string) (io.Closer, error)
+	startCmd     func(*exec.Cmd) error
+	tempDir      func(dir string, pattern string) (name string, err error)
+	findFreePort func() (int, error)
+	getenv       func(key string) string
+	setenv       func(key, value string) error
 }
 
 func NewSSHHandler(oSCommand CmdKiller) *SSHHandler {
@@ -37,8 +39,17 @@ func NewSSHHandler(oSCommand CmdKiller) *SSHHandler {
 		},
 		startCmd: func(cmd *exec.Cmd) error { return cmd.Start() },
 		tempDir:  os.MkdirTemp,
-		getenv:   os.Getenv,
-		setenv:   os.Setenv,
+		findFreePort: func() (int, error) {
+			listener, err := net.Listen("tcp", "localhost:0")
+			if err != nil {
+				return 0, err
+			}
+			port := listener.Addr().(*net.TCPAddr).Port
+			listener.Close()
+			return port, nil
+		},
+		getenv: os.Getenv,
+		setenv: os.Setenv,
 	}
 }
 
@@ -85,8 +96,17 @@ func (t *tunneledDockerHost) Close() error {
 	return t.oSCommand.Kill(t.cmd)
 }
 
+const socketTunnelTimeout = 8 * time.Second
+
 func (self *SSHHandler) createDockerHostTunnel(ctx context.Context, remoteHost string) (*tunneledDockerHost, error) {
-	socketDir, err := self.tempDir("/tmp", "lazydocker-sshtunnel-")
+	if runtime.GOOS == "windows" {
+		return self.createDockerHostTunnelTCP(ctx, remoteHost)
+	}
+	return self.createDockerHostTunnelUnix(ctx, remoteHost)
+}
+
+func (self *SSHHandler) createDockerHostTunnelUnix(ctx context.Context, remoteHost string) (*tunneledDockerHost, error) {
+	socketDir, err := self.tempDir(os.TempDir(), "lazydocker-sshtunnel-")
 	if err != nil {
 		return nil, fmt.Errorf("create ssh tunnel tmp file: %w", err)
 	}
@@ -99,11 +119,10 @@ func (self *SSHHandler) createDockerHostTunnel(ctx context.Context, remoteHost s
 
 	// set a reasonable timeout, then wait for the socket to dial successfully
 	// before attempting to create a new docker client
-	const socketTunnelTimeout = 8 * time.Second
 	ctx, cancel := context.WithTimeout(ctx, socketTunnelTimeout)
 	defer cancel()
 
-	err = self.retrySocketDial(ctx, localSocket)
+	err = self.retrySocketDial(ctx, "unix", localSocket)
 	if err != nil {
 		return nil, fmt.Errorf("ssh tunneled socket never became available: %w", err)
 	}
@@ -119,7 +138,7 @@ func (self *SSHHandler) createDockerHostTunnel(ctx context.Context, remoteHost s
 
 // Attempt to dial the socket until it becomes available.
 // The retry loop will continue until the parent context is canceled.
-func (self *SSHHandler) retrySocketDial(ctx context.Context, socketPath string) error {
+func (self *SSHHandler) retrySocketDial(ctx context.Context, network, address string) error {
 	t := time.NewTicker(1 * time.Second)
 	defer t.Stop()
 
@@ -130,7 +149,7 @@ func (self *SSHHandler) retrySocketDial(ctx context.Context, socketPath string) 
 		case <-t.C:
 		}
 		// attempt to dial the socket, exit on success
-		err := self.tryDial(ctx, socketPath)
+		err := self.tryDial(ctx, network, address)
 		if err != nil {
 			continue
 		}
@@ -138,9 +157,9 @@ func (self *SSHHandler) retrySocketDial(ctx context.Context, socketPath string) 
 	}
 }
 
-// Try to dial the specified unix socket, immediately close the connection if successfully created.
-func (self *SSHHandler) tryDial(ctx context.Context, socketPath string) error {
-	conn, err := self.dialContext(ctx, "unix", socketPath)
+// Try to dial the specified socket, immediately close the connection if successfully created.
+func (self *SSHHandler) tryDial(ctx context.Context, network, address string) error {
+	conn, err := self.dialContext(ctx, network, address)
 	if err != nil {
 		return err
 	}
@@ -156,4 +175,34 @@ func (self *SSHHandler) tunnelSSH(ctx context.Context, host, localSocket string)
 		return nil, err
 	}
 	return cmd, nil
+}
+
+func (self *SSHHandler) createDockerHostTunnelTCP(ctx context.Context, remoteHost string) (*tunneledDockerHost, error) {
+	port, err := self.findFreePort()
+	if err != nil {
+		return nil, fmt.Errorf("find free port for ssh tunnel: %w", err)
+	}
+
+	localAddr := fmt.Sprintf("localhost:%d", port)
+
+	cmd, err := self.tunnelSSH(ctx, remoteHost, localAddr)
+	if err != nil {
+		return nil, fmt.Errorf("tunnel docker host over ssh: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, socketTunnelTimeout)
+	defer cancel()
+
+	err = self.retrySocketDial(ctx, "tcp", localAddr)
+	if err != nil {
+		self.oSCommand.Kill(cmd)
+		return nil, fmt.Errorf("ssh tunneled socket never became available: %w", err)
+	}
+
+	newDockerHostURL := url.URL{Scheme: "tcp", Host: localAddr}
+	return &tunneledDockerHost{
+		socketPath: newDockerHostURL.String(),
+		cmd:        cmd,
+		oSCommand:  self.oSCommand,
+	}, nil
 }
