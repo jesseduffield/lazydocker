@@ -60,6 +60,9 @@ type UserConfig struct {
 	// Replacements determines how we render an item's info
 	Replacements Replacements `yaml:"replacements,omitempty"`
 
+	// Swarm configures swarm mode
+	Swarm SwarmConfig `yaml:"swarm,omitempty"`
+
 	// For demo purposes: any list item with one of these strings as a substring
 	// will be filtered out and not displayed.
 	// Not documented because it's subject to change
@@ -303,6 +306,24 @@ type CustomCommands struct {
 	Networks []CustomCommand `yaml:"networks,omitempty"`
 }
 
+// SwarmConfig configures swarm mode. The projects panel has a tab for each
+// swarm: the one of the docker daemon lazydocker talks to (if it's a swarm
+// manager), and those configured here.
+type SwarmConfig struct {
+	// Hosts are remote swarms to manage
+	Hosts []SwarmHost `yaml:"hosts,omitempty"`
+}
+
+// SwarmHost is a remote swarm
+type SwarmHost struct {
+	// Name is shown in the swarm's tab. Defaults to the host.
+	Name string `yaml:"name,omitempty"`
+
+	// Host is the docker host of one of the swarm's managers, e.g.
+	// 'ssh://user@manager' or 'tcp://manager:2376'
+	Host string `yaml:"host"`
+}
+
 // Replacements contains the stuff relating to rendering a container's info
 type Replacements struct {
 	// ImageNamePrefixes tells us how to replace a prefix in the Docker image name
@@ -489,6 +510,9 @@ type AppConfig struct {
 	ConfigDir   string
 	ProjectDir  string
 	ProjectName string
+	// SwarmHost is the swarm to start in (--swarm-host): the name of a
+	// configured swarm, or a docker host
+	SwarmHost string
 }
 
 // NewAppConfig makes a new app config

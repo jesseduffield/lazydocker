@@ -111,7 +111,7 @@ func (self *SideListPanel[T]) HandleSelect() error {
 		}
 
 		if self.NoItemsMessage != "" {
-			self.Gui.NewSimpleRenderStringTask(func() string { return self.NoItemsMessage })
+			return self.Gui.QueueTask(self.Gui.NewSimpleRenderStringTask(func() string { return self.NoItemsMessage }))
 		}
 
 		return nil

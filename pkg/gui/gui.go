@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/docker/docker/api/types/events"
@@ -28,6 +29,8 @@ type Gui struct {
 	g             *gocui.Gui
 	Log           *logrus.Entry
 	DockerCommand *commands.DockerCommand
+	// the default docker host's swarm, followed by the configured ones
+	Swarms        []*commands.SwarmCommand
 	OSCommand     *commands.OSCommand
 	State         guiState
 	Config        *config.AppConfig
@@ -42,6 +45,10 @@ type Gui struct {
 	// file refreshes
 	PauseBackgroundThreads bool
 
+	// set once the resources of the swarm we're showing have been loaded (or
+	// failed to)
+	swarmLoaded atomic.Bool
+
 	Mutexes
 
 	Panels Panels
@@ -55,6 +62,15 @@ type Panels struct {
 	Volumes    *panels.SideListPanel[*commands.Volume]
 	Networks   *panels.SideListPanel[*commands.Network]
 	Menu       *panels.SideListPanel[*types.MenuItem]
+
+	SwarmServices *panels.SideListPanel[*commands.SwarmService]
+	SwarmStacks   *panels.SideListPanel[*commands.SwarmStack]
+	SwarmTasks    *panels.SideListPanel[*commands.SwarmTask]
+	SwarmNodes    *panels.SideListPanel[*commands.SwarmNode]
+	SwarmVolumes  *panels.SideListPanel[*commands.SwarmVolume]
+	SwarmNetworks *panels.SideListPanel[*commands.SwarmNetwork]
+	SwarmSecrets  *panels.SideListPanel[*commands.SwarmSecret]
+	SwarmConfigs  *panels.SideListPanel[*commands.SwarmConfig]
 }
 
 type Mutexes struct {
@@ -81,6 +97,14 @@ type guiState struct {
 
 	// if true, we show containers with an 'exited' status in the containers panel
 	ShowExitedContainers bool
+
+	// the swarm whose resources the side panels show. nil to show the local
+	// docker resources
+	Swarm *commands.SwarmCommand
+
+	// if true, we show shut down / failed tasks in the swarm tasks panel,
+	// not just the current ones
+	ShowSwarmTaskHistory bool
 
 	ScreenMode WindowMaximisation
 
@@ -125,7 +149,7 @@ func getScreenMode(config *config.AppConfig) WindowMaximisation {
 }
 
 // NewGui builds a new gui handler
-func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
+func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, swarms []*commands.SwarmCommand, initialSwarm *commands.SwarmCommand, oSCommand *commands.OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*Gui, error) {
 	initialState := guiState{
 		Platform: *oSCommand.Platform,
 		Panels: &panelStates{
@@ -136,12 +160,15 @@ func NewGui(log *logrus.Entry, dockerCommand *commands.DockerCommand, oSCommand 
 		ViewStack: []string{},
 
 		ShowExitedContainers: true,
-		ScreenMode:           getScreenMode(config),
+		// if you pass --swarm-host, you're here for that swarm
+		Swarm:      initialSwarm,
+		ScreenMode: getScreenMode(config),
 	}
 
 	gui := &Gui{
 		Log:           log,
 		DockerCommand: dockerCommand,
+		Swarms:        swarms,
 		OSCommand:     oSCommand,
 		State:         initialState,
 		Config:        config,
@@ -198,6 +225,9 @@ func (gui *Gui) Run() error {
 	if !gui.Config.UserConfig.Gui.IgnoreMouseEvents {
 		g.Mouse = true
 	}
+
+	// only the swarm views have a footer (showing the remote swarm host)
+	g.ShowListFooter = true
 
 	gui.g = g // TODO: always use gui.g rather than passing g around everywhere
 
@@ -270,6 +300,11 @@ func (gui *Gui) Run() error {
 		gui.goEvery(time.Millisecond*1000, gui.checkForContextChange)
 		// we need to regularly re-render these because their stats will be changed in the background
 		gui.goEvery(time.Millisecond*1000, gui.renderContainersAndServices)
+		if gui.State.Swarm != nil {
+			go gui.animateSwarmConnecting(gui.State.Swarm)
+		}
+		// swarm has no events for task state changes, so we poll
+		gui.goEvery(swarmRefreshInterval, gui.refreshSwarm)
 	}()
 
 	err = g.MainLoop()
@@ -288,6 +323,15 @@ func (gui *Gui) setPanels() {
 		Volumes:    gui.getVolumesPanel(),
 		Networks:   gui.getNetworksPanel(),
 		Menu:       gui.getMenuPanel(),
+
+		SwarmServices: gui.getSwarmServicesPanel(),
+		SwarmStacks:   gui.getSwarmStacksPanel(),
+		SwarmTasks:    gui.getSwarmTasksPanel(),
+		SwarmNodes:    gui.getSwarmNodesPanel(),
+		SwarmVolumes:  gui.getSwarmVolumesPanel(),
+		SwarmNetworks: gui.getSwarmNetworksPanel(),
+		SwarmSecrets:  gui.getSwarmSecretsPanel(),
+		SwarmConfigs:  gui.getSwarmConfigsPanel(),
 	}
 }
 
@@ -459,6 +503,9 @@ func (gui *Gui) ShouldRefresh(key string) bool {
 }
 
 func (gui *Gui) initiallyFocusedViewName() string {
+	if gui.isSwarmMode() {
+		return "swarmServices"
+	}
 	if gui.DockerCommand.IsProjectScoped() {
 		return "services"
 	}

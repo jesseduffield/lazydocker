@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/fatih/color"
@@ -33,6 +34,16 @@ type Views struct {
 	Images     *gocui.View
 	Volumes    *gocui.View
 	Networks   *gocui.View
+
+	// swarm views, each in the window of its local counterpart
+	SwarmServices *gocui.View
+	SwarmStacks   *gocui.View
+	SwarmTasks    *gocui.View
+	SwarmNodes    *gocui.View
+	SwarmVolumes  *gocui.View
+	SwarmNetworks *gocui.View
+	SwarmSecrets  *gocui.View
+	SwarmConfigs  *gocui.View
 
 	// main panel
 	Main *gocui.View
@@ -72,6 +83,14 @@ func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
 		{viewPtr: &gui.Views.Images, name: "images", autoPosition: true},
 		{viewPtr: &gui.Views.Volumes, name: "volumes", autoPosition: true},
 		{viewPtr: &gui.Views.Networks, name: "networks", autoPosition: true},
+		{viewPtr: &gui.Views.SwarmServices, name: "swarmServices", autoPosition: true},
+		{viewPtr: &gui.Views.SwarmStacks, name: "swarmStacks", autoPosition: true},
+		{viewPtr: &gui.Views.SwarmTasks, name: "swarmTasks", autoPosition: true},
+		{viewPtr: &gui.Views.SwarmNodes, name: "swarmNodes", autoPosition: true},
+		{viewPtr: &gui.Views.SwarmVolumes, name: "swarmVolumes", autoPosition: true},
+		{viewPtr: &gui.Views.SwarmNetworks, name: "swarmNetworks", autoPosition: true},
+		{viewPtr: &gui.Views.SwarmSecrets, name: "swarmSecrets", autoPosition: true},
+		{viewPtr: &gui.Views.SwarmConfigs, name: "swarmConfigs", autoPosition: true},
 
 		{viewPtr: &gui.Views.Main, name: "main", autoPosition: true},
 
@@ -151,6 +170,27 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Networks.Title = gui.Tr.NetworksTitle
 	gui.Views.Networks.TitlePrefix = "[6]"
 	gui.Views.Networks.SelBgColor = selectedLineBgColor
+
+	// in window order, i.e. what keys 1 to 8 focus
+	swarmViews := []struct {
+		view  *gocui.View
+		title string
+	}{
+		{gui.Views.SwarmStacks, gui.Tr.SwarmTitle},
+		{gui.Views.SwarmServices, gui.Tr.ServicesTitle},
+		{gui.Views.SwarmTasks, gui.Tr.SwarmTasksTitle},
+		{gui.Views.SwarmNodes, gui.Tr.SwarmNodesTitle},
+		{gui.Views.SwarmVolumes, gui.Tr.VolumesTitle},
+		{gui.Views.SwarmNetworks, gui.Tr.NetworksTitle},
+		{gui.Views.SwarmSecrets, gui.Tr.SwarmSecretsTitle},
+		{gui.Views.SwarmConfigs, gui.Tr.SwarmConfigsTitle},
+	}
+	for idx, swarmView := range swarmViews {
+		swarmView.view.Highlight = true
+		swarmView.view.SelBgColor = selectedLineBgColor
+		swarmView.view.Title = swarmView.title
+		swarmView.view.TitlePrefix = fmt.Sprintf("[%d]", idx+1)
+	}
 
 	gui.Views.Options.Frame = false
 	gui.Views.Options.FgColor = gui.GetOptionsPanelTextColor()

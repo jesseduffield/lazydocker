@@ -8,6 +8,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>e</kbd>: verander de lazydocker configuratie
   <kbd>o</kbd>: open de lazydocker configuratie
   <kbd>m</kbd>: bekijk logs
+  <kbd><</kbd>: wissel tussen lokaal en swarm
+  <kbd>></kbd>: wissel tussen lokaal en swarm
   <kbd>enter</kbd>: focus hoofdpaneel
   <kbd>[</kbd>: vorige tab
   <kbd>]</kbd>: volgende tab
@@ -111,4 +113,109 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>4</kbd>: focus images panel
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
+  <kbd>7</kbd>: focus secrets-paneel (swarm)
+  <kbd>8</kbd>: focus configs-paneel (swarm)
+</pre>
+
+## Swarm Diensten
+
+<pre>
+  <kbd>m</kbd>: bekijk logs
+  <kbd>s</kbd>: stop (schaal naar 0)
+  <kbd>u</kbd>: start (herstel replica's)
+  <kbd>S</kbd>: schaal
+  <kbd>r</kbd>: herstart (geleidelijk, geforceerde update)
+  <kbd>U</kbd>: werk image bij
+  <kbd>R</kbd>: zet terug naar vorige specificatie
+  <kbd>d</kbd>: verwijder dienst
+  <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Stacks
+
+<pre>
+  <kbd>n</kbd>: deploy/werk stack bij vanuit compose-bestand
+  <kbd>s</kbd>: stop stack (schaal alle diensten naar 0)
+  <kbd>u</kbd>: start stack (herstel replica's)
+  <kbd>d</kbd>: verwijder stack
+  <kbd><</kbd>: wissel tussen lokaal en swarm
+  <kbd>></kbd>: wissel tussen lokaal en swarm
+  <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Taken
+
+<pre>
+  <kbd>m</kbd>: bekijk logs
+  <kbd>e</kbd>: toon/verberg takengeschiedenis
+  <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Nodes
+
+<pre>
+  <kbd>a</kbd>: stel beschikbaarheid in
+  <kbd>p</kbd>: promoveer/degradeer
+  <kbd>d</kbd>: verwijder node
+  <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Networks
+
+<pre>
+  <kbd>n</kbd>: maak overlay-netwerk aan
+  <kbd>a</kbd>: koppel aan dienst
+  <kbd>D</kbd>: ontkoppel van dienst
+  <kbd>d</kbd>: verwijder
+  <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Secrets
+
+<pre>
+  <kbd>n</kbd>: maak secret aan
+  <kbd>a</kbd>: koppel aan dienst
+  <kbd>D</kbd>: ontkoppel van dienst
+  <kbd>d</kbd>: verwijder
+  <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Configs
+
+<pre>
+  <kbd>n</kbd>: maak config aan
+  <kbd>a</kbd>: koppel aan dienst
+  <kbd>D</kbd>: ontkoppel van dienst
+  <kbd>d</kbd>: verwijder
+  <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Volumes
+
+<pre>
+  <kbd>enter</kbd>: focus hoofdpaneel
+  <kbd>[</kbd>: vorige tab
+  <kbd>]</kbd>: volgende tab
+  <kbd>/</kbd>: filter list
 </pre>

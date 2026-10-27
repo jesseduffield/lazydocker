@@ -77,6 +77,7 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 		},
 		NoItemsMessage: gui.Tr.NoContainers,
 		Gui:            gui.intoInterface(),
+		Hide:           gui.isSwarmMode,
 		// sortedContainers returns containers sorted by state if c.SortContainersByState is true (follows 1- running, 2- exited, 3- created)
 		// and sorted by name if c.SortContainersByState is false
 		Sort: func(a *commands.Container, b *commands.Container) bool {

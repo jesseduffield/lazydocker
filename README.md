@@ -279,6 +279,7 @@ everything is one keypress away (or one click away! Mouse support FTW):
 - restarting/removing/rebuilding containers/services
 - viewing the ancestor layers of a given image
 - pruning containers, images, or volumes that are hogging up disk space
+- managing docker swarms (the local one, or remote ones configured in [`swarm.hosts`](docs/Config.md) or passed with `--swarm-host ssh://user@manager`) by switching the side panels from Local to a swarm in the `[1]` panel: scaling/stopping/restarting/rolling back services, following service and task logs, draining/promoting nodes, deploying/removing stacks, creating overlay networks, secrets and configs and attaching them to services, and seeing which volumes services use
 
 ## Contributing
 

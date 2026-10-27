@@ -8,6 +8,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>e</kbd>: bearbeite lazydocker Konfiguration
   <kbd>o</kbd>: öffne lazydocker Konfiguration
   <kbd>m</kbd>: zeige Protokolle
+  <kbd><</kbd>: wechsle zwischen lokal und Swarm
+  <kbd>></kbd>: wechsle zwischen lokal und Swarm
   <kbd>enter</kbd>: fokussieren aufs Hauptpanel
   <kbd>[</kbd>: vorheriges Tab
   <kbd>]</kbd>: nächstes Tab
@@ -111,4 +113,109 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>4</kbd>: focus images panel
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
+  <kbd>7</kbd>: fokussiere Secrets-Panel (Swarm)
+  <kbd>8</kbd>: fokussiere Configs-Panel (Swarm)
+</pre>
+
+## Swarm Dienste
+
+<pre>
+  <kbd>m</kbd>: zeige Protokolle
+  <kbd>s</kbd>: anhalten (auf 0 skalieren)
+  <kbd>u</kbd>: starten (Replikate wiederherstellen)
+  <kbd>S</kbd>: skalieren
+  <kbd>r</kbd>: neustarten (rollierend, erzwungenes Update)
+  <kbd>U</kbd>: aktualisiere Image
+  <kbd>R</kbd>: auf vorherige Spezifikation zurücksetzen
+  <kbd>d</kbd>: entferne Dienst
+  <kbd>enter</kbd>: fokussieren aufs Hauptpanel
+  <kbd>[</kbd>: vorheriges Tab
+  <kbd>]</kbd>: nächstes Tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Stacks
+
+<pre>
+  <kbd>n</kbd>: Stack aus Compose-Datei bereitstellen/aktualisieren
+  <kbd>s</kbd>: Stack anhalten (alle Dienste auf 0 skalieren)
+  <kbd>u</kbd>: Stack starten (Replikate wiederherstellen)
+  <kbd>d</kbd>: entferne Stack
+  <kbd><</kbd>: wechsle zwischen lokal und Swarm
+  <kbd>></kbd>: wechsle zwischen lokal und Swarm
+  <kbd>enter</kbd>: fokussieren aufs Hauptpanel
+  <kbd>[</kbd>: vorheriges Tab
+  <kbd>]</kbd>: nächstes Tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Tasks
+
+<pre>
+  <kbd>m</kbd>: zeige Protokolle
+  <kbd>e</kbd>: Task-Verlauf ein-/ausblenden
+  <kbd>enter</kbd>: fokussieren aufs Hauptpanel
+  <kbd>[</kbd>: vorheriges Tab
+  <kbd>]</kbd>: nächstes Tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Knoten
+
+<pre>
+  <kbd>a</kbd>: Verfügbarkeit setzen
+  <kbd>p</kbd>: befördern/zurückstufen
+  <kbd>d</kbd>: entferne Knoten
+  <kbd>enter</kbd>: fokussieren aufs Hauptpanel
+  <kbd>[</kbd>: vorheriges Tab
+  <kbd>]</kbd>: nächstes Tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Netzwerk
+
+<pre>
+  <kbd>n</kbd>: Overlay-Netzwerk erstellen
+  <kbd>a</kbd>: an Dienst anhängen
+  <kbd>D</kbd>: von Dienst lösen
+  <kbd>d</kbd>: entfernen
+  <kbd>enter</kbd>: fokussieren aufs Hauptpanel
+  <kbd>[</kbd>: vorheriges Tab
+  <kbd>]</kbd>: nächstes Tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Secrets
+
+<pre>
+  <kbd>n</kbd>: Secret erstellen
+  <kbd>a</kbd>: an Dienst anhängen
+  <kbd>D</kbd>: von Dienst lösen
+  <kbd>d</kbd>: entfernen
+  <kbd>enter</kbd>: fokussieren aufs Hauptpanel
+  <kbd>[</kbd>: vorheriges Tab
+  <kbd>]</kbd>: nächstes Tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Configs
+
+<pre>
+  <kbd>n</kbd>: Config erstellen
+  <kbd>a</kbd>: an Dienst anhängen
+  <kbd>D</kbd>: von Dienst lösen
+  <kbd>d</kbd>: entfernen
+  <kbd>enter</kbd>: fokussieren aufs Hauptpanel
+  <kbd>[</kbd>: vorheriges Tab
+  <kbd>]</kbd>: nächstes Tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Volumes
+
+<pre>
+  <kbd>enter</kbd>: fokussieren aufs Hauptpanel
+  <kbd>[</kbd>: vorheriges Tab
+  <kbd>]</kbd>: nächstes Tab
+  <kbd>/</kbd>: filter list
 </pre>

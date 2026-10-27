@@ -8,6 +8,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>e</kbd>: 编辑lazydocker配置
   <kbd>o</kbd>: 打开lazydocker配置
   <kbd>m</kbd>: 查看日志
+  <kbd><</kbd>: 在本地和 Swarm 之间切换
+  <kbd>></kbd>: 在本地和 Swarm 之间切换
   <kbd>enter</kbd>: 聚焦主面板
   <kbd>[</kbd>: 上一个选项卡
   <kbd>]</kbd>: 下一个选项卡
@@ -111,4 +113,109 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>4</kbd>: focus images panel
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
+  <kbd>7</kbd>: 聚焦密钥面板（Swarm）
+  <kbd>8</kbd>: 聚焦配置面板（Swarm）
+</pre>
+
+## Swarm 服务
+
+<pre>
+  <kbd>m</kbd>: 查看日志
+  <kbd>s</kbd>: 停止（缩容至 0）
+  <kbd>u</kbd>: 启动（恢复副本数）
+  <kbd>S</kbd>: 伸缩
+  <kbd>r</kbd>: 重启（滚动，强制更新）
+  <kbd>U</kbd>: 更新镜像
+  <kbd>R</kbd>: 回滚到上一版本
+  <kbd>d</kbd>: 移除服务
+  <kbd>enter</kbd>: 聚焦主面板
+  <kbd>[</kbd>: 上一个选项卡
+  <kbd>]</kbd>: 下一个选项卡
+  <kbd>/</kbd>: 过滤列表
+</pre>
+
+## Swarm 堆栈
+
+<pre>
+  <kbd>n</kbd>: 从 compose 文件部署/更新堆栈
+  <kbd>s</kbd>: 停止堆栈（将所有服务缩容至 0）
+  <kbd>u</kbd>: 启动堆栈（恢复副本数）
+  <kbd>d</kbd>: 移除堆栈
+  <kbd><</kbd>: 在本地和 Swarm 之间切换
+  <kbd>></kbd>: 在本地和 Swarm 之间切换
+  <kbd>enter</kbd>: 聚焦主面板
+  <kbd>[</kbd>: 上一个选项卡
+  <kbd>]</kbd>: 下一个选项卡
+  <kbd>/</kbd>: 过滤列表
+</pre>
+
+## Swarm 任务
+
+<pre>
+  <kbd>m</kbd>: 查看日志
+  <kbd>e</kbd>: 显示/隐藏任务历史
+  <kbd>enter</kbd>: 聚焦主面板
+  <kbd>[</kbd>: 上一个选项卡
+  <kbd>]</kbd>: 下一个选项卡
+  <kbd>/</kbd>: 过滤列表
+</pre>
+
+## Swarm 节点
+
+<pre>
+  <kbd>a</kbd>: 设置可用性
+  <kbd>p</kbd>: 升级/降级
+  <kbd>d</kbd>: 移除节点
+  <kbd>enter</kbd>: 聚焦主面板
+  <kbd>[</kbd>: 上一个选项卡
+  <kbd>]</kbd>: 下一个选项卡
+  <kbd>/</kbd>: 过滤列表
+</pre>
+
+## Swarm 网络
+
+<pre>
+  <kbd>n</kbd>: 创建 overlay 网络
+  <kbd>a</kbd>: 附加到服务
+  <kbd>D</kbd>: 从服务分离
+  <kbd>d</kbd>: 移除
+  <kbd>enter</kbd>: 聚焦主面板
+  <kbd>[</kbd>: 上一个选项卡
+  <kbd>]</kbd>: 下一个选项卡
+  <kbd>/</kbd>: 过滤列表
+</pre>
+
+## Swarm 密钥
+
+<pre>
+  <kbd>n</kbd>: 创建密钥
+  <kbd>a</kbd>: 附加到服务
+  <kbd>D</kbd>: 从服务分离
+  <kbd>d</kbd>: 移除
+  <kbd>enter</kbd>: 聚焦主面板
+  <kbd>[</kbd>: 上一个选项卡
+  <kbd>]</kbd>: 下一个选项卡
+  <kbd>/</kbd>: 过滤列表
+</pre>
+
+## Swarm 配置
+
+<pre>
+  <kbd>n</kbd>: 创建配置
+  <kbd>a</kbd>: 附加到服务
+  <kbd>D</kbd>: 从服务分离
+  <kbd>d</kbd>: 移除
+  <kbd>enter</kbd>: 聚焦主面板
+  <kbd>[</kbd>: 上一个选项卡
+  <kbd>]</kbd>: 下一个选项卡
+  <kbd>/</kbd>: 过滤列表
+</pre>
+
+## Swarm 卷
+
+<pre>
+  <kbd>enter</kbd>: 聚焦主面板
+  <kbd>[</kbd>: 上一个选项卡
+  <kbd>]</kbd>: 下一个选项卡
+  <kbd>/</kbd>: 过滤列表
 </pre>

@@ -37,6 +37,7 @@ func (gui *Gui) getVolumesPanel() *panels.SideListPanel[*commands.Volume] {
 		},
 		NoItemsMessage: gui.Tr.NoVolumes,
 		Gui:            gui.intoInterface(),
+		Hide:           gui.isSwarmMode,
 		// we're sorting these volumes based on whether they have labels defined,
 		// because those are the ones you typically care about.
 		// Within that, we also sort them alphabetically

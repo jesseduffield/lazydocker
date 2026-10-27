@@ -37,6 +37,7 @@ func (gui *Gui) getNetworksPanel() *panels.SideListPanel[*commands.Network] {
 		},
 		NoItemsMessage: gui.Tr.NoNetworks,
 		Gui:            gui.intoInterface(),
+		Hide:           gui.isSwarmMode,
 		// we're sorting these networks based on whether they have labels defined,
 		// because those are the ones you typically care about.
 		// Within that, we also sort them alphabetically

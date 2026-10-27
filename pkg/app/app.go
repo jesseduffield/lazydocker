@@ -48,7 +48,11 @@ func NewApp(config *config.AppConfig) (*App, error) {
 		return app, err
 	}
 	app.closers = append(app.closers, app.DockerCommand)
-	app.Gui, err = gui.NewGui(app.Log, app.DockerCommand, app.OSCommand, app.Tr, config, app.ErrorChan)
+	swarms, initialSwarm, err := commands.NewSwarmCommands(app.OSCommand, app.Tr, app.Config, app.DockerCommand.Client)
+	if err != nil {
+		return app, err
+	}
+	app.Gui, err = gui.NewGui(app.Log, app.DockerCommand, swarms, initialSwarm, app.OSCommand, app.Tr, config, app.ErrorChan)
 	if err != nil {
 		return app, err
 	}

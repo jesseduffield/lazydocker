@@ -58,8 +58,9 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 			// containers to show only those belonging to the selected project.
 			return gui.renderContainersAndServices()
 		},
+		// also shown when there's a swarm, to switch between local and swarms
 		Hide: func() bool {
-			return !gui.DockerCommand.IsProjectScoped()
+			return gui.isSwarmMode() || (!gui.DockerCommand.IsProjectScoped() && len(gui.visibleSwarms()) == 0)
 		},
 	}
 }

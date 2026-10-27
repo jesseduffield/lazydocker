@@ -8,6 +8,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>e</kbd>: lazzydocker ayarlarını düzenle
   <kbd>o</kbd>: lazydocker ayarlarını aç
   <kbd>m</kbd>: kayıt defterini görüntüle
+  <kbd><</kbd>: yerel ve swarm arasında geçiş yap
+  <kbd>></kbd>: yerel ve swarm arasında geçiş yap
   <kbd>enter</kbd>: ana panele odaklan
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
@@ -111,4 +113,109 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>4</kbd>: focus images panel
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
+  <kbd>7</kbd>: gizli veriler paneline odaklan (swarm)
+  <kbd>8</kbd>: yapılandırmalar paneline odaklan (swarm)
+</pre>
+
+## Swarm Servisler
+
+<pre>
+  <kbd>m</kbd>: kayıt defterini görüntüle
+  <kbd>s</kbd>: durdur (0'a ölçekle)
+  <kbd>u</kbd>: başlat (replikaları geri yükle)
+  <kbd>S</kbd>: ölçekle
+  <kbd>r</kbd>: yeniden başlat (kademeli, zorunlu güncelleme)
+  <kbd>U</kbd>: imajı güncelle
+  <kbd>R</kbd>: önceki yapılandırmaya geri al
+  <kbd>d</kbd>: servisi kaldır
+  <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Yığınlar
+
+<pre>
+  <kbd>n</kbd>: compose dosyasından yığını dağıt/güncelle
+  <kbd>s</kbd>: yığını durdur (tüm servisleri 0'a ölçekle)
+  <kbd>u</kbd>: yığını başlat (replikaları geri yükle)
+  <kbd>d</kbd>: yığını kaldır
+  <kbd><</kbd>: yerel ve swarm arasında geçiş yap
+  <kbd>></kbd>: yerel ve swarm arasında geçiş yap
+  <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Görevler
+
+<pre>
+  <kbd>m</kbd>: kayıt defterini görüntüle
+  <kbd>e</kbd>: görev geçmişini göster/gizle
+  <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Düğümler
+
+<pre>
+  <kbd>a</kbd>: kullanılabilirliği ayarla
+  <kbd>p</kbd>: terfi ettir/düşür
+  <kbd>d</kbd>: düğümü kaldır
+  <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Ağları
+
+<pre>
+  <kbd>n</kbd>: overlay ağı oluştur
+  <kbd>a</kbd>: servise ekle
+  <kbd>D</kbd>: servisten ayır
+  <kbd>d</kbd>: kaldır
+  <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Gizli Veriler
+
+<pre>
+  <kbd>n</kbd>: gizli veri oluştur
+  <kbd>a</kbd>: servise ekle
+  <kbd>D</kbd>: servisten ayır
+  <kbd>d</kbd>: kaldır
+  <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Yapılandırmalar
+
+<pre>
+  <kbd>n</kbd>: yapılandırma oluştur
+  <kbd>a</kbd>: servise ekle
+  <kbd>D</kbd>: servisten ayır
+  <kbd>d</kbd>: kaldır
+  <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Alanlar
+
+<pre>
+  <kbd>enter</kbd>: ana panele odaklan
+  <kbd>[</kbd>: önceki sekme
+  <kbd>]</kbd>: sonraki sekme
+  <kbd>/</kbd>: filter list
 </pre>

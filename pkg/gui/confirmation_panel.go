@@ -35,6 +35,7 @@ func (gui *Gui) closeConfirmationPrompt() error {
 	}
 	gui.g.DeleteViewKeybindings("confirmation")
 	gui.Views.Confirmation.Visible = false
+	gui.Views.Confirmation.Mask = 0
 	return nil
 }
 
@@ -69,6 +70,8 @@ func (gui *Gui) createPromptPanel(title string, handleConfirm func(*gocui.Gui, *
 		return err
 	}
 	gui.Views.Confirmation.Editable = true
+	gui.Views.Confirmation.TextArea.Clear()
+	gui.Views.Confirmation.Clear()
 	return gui.setKeyBindings(gui.g, handleConfirm, nil)
 }
 

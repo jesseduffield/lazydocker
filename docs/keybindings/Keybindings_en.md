@@ -8,6 +8,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>e</kbd>: edit lazydocker config
   <kbd>o</kbd>: open lazydocker config
   <kbd>m</kbd>: view logs
+  <kbd><</kbd>: switch between local and swarms
+  <kbd>></kbd>: switch between local and swarms
   <kbd>enter</kbd>: focus main panel
   <kbd>[</kbd>: previous tab
   <kbd>]</kbd>: next tab
@@ -111,4 +113,109 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>4</kbd>: focus images panel
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
+  <kbd>7</kbd>: focus secrets panel (swarm)
+  <kbd>8</kbd>: focus configs panel (swarm)
+</pre>
+
+## Swarm Services
+
+<pre>
+  <kbd>m</kbd>: view logs
+  <kbd>s</kbd>: stop (scale to 0)
+  <kbd>u</kbd>: start (restore replicas)
+  <kbd>S</kbd>: scale
+  <kbd>r</kbd>: restart (rolling, force update)
+  <kbd>U</kbd>: update image
+  <kbd>R</kbd>: rollback to previous spec
+  <kbd>d</kbd>: remove service
+  <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: previous tab
+  <kbd>]</kbd>: next tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Stacks
+
+<pre>
+  <kbd>n</kbd>: deploy/update stack from compose file
+  <kbd>s</kbd>: stop stack (scale all services to 0)
+  <kbd>u</kbd>: start stack (restore replicas)
+  <kbd>d</kbd>: remove stack
+  <kbd><</kbd>: switch between local and swarms
+  <kbd>></kbd>: switch between local and swarms
+  <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: previous tab
+  <kbd>]</kbd>: next tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Tasks
+
+<pre>
+  <kbd>m</kbd>: view logs
+  <kbd>e</kbd>: show/hide task history
+  <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: previous tab
+  <kbd>]</kbd>: next tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Nodes
+
+<pre>
+  <kbd>a</kbd>: set availability
+  <kbd>p</kbd>: promote/demote
+  <kbd>d</kbd>: remove node
+  <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: previous tab
+  <kbd>]</kbd>: next tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Networks
+
+<pre>
+  <kbd>n</kbd>: create overlay network
+  <kbd>a</kbd>: attach to service
+  <kbd>D</kbd>: detach from service
+  <kbd>d</kbd>: remove
+  <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: previous tab
+  <kbd>]</kbd>: next tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Secrets
+
+<pre>
+  <kbd>n</kbd>: create secret
+  <kbd>a</kbd>: attach to service
+  <kbd>D</kbd>: detach from service
+  <kbd>d</kbd>: remove
+  <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: previous tab
+  <kbd>]</kbd>: next tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Configs
+
+<pre>
+  <kbd>n</kbd>: create config
+  <kbd>a</kbd>: attach to service
+  <kbd>D</kbd>: detach from service
+  <kbd>d</kbd>: remove
+  <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: previous tab
+  <kbd>]</kbd>: next tab
+  <kbd>/</kbd>: filter list
+</pre>
+
+## Swarm Volumes
+
+<pre>
+  <kbd>enter</kbd>: focus main panel
+  <kbd>[</kbd>: previous tab
+  <kbd>]</kbd>: next tab
+  <kbd>/</kbd>: filter list
 </pre>

@@ -64,6 +64,9 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 
 	appStatus := gui.statusManager.getStatusString()
 
+	// whether there's a swarm can change at any time
+	gui.updateModeTabs()
+
 	viewDimensions := gui.getWindowDimensions(gui.getInformationContent(), appStatus)
 	// we assume that the view has already been created.
 	setViewFromDimensions := func(viewName string, windowName string) (*gocui.View, error) {

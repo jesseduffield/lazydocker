@@ -8,6 +8,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>e</kbd>: editar configuração do lazydocker
   <kbd>o</kbd>: abrir configuração do lazydocker
   <kbd>m</kbd>: ver logs
+  <kbd><</kbd>: alternar entre local e swarm
+  <kbd>></kbd>: alternar entre local e swarm
   <kbd>enter</kbd>: focar no painel principal
   <kbd>[</kbd>: aba anterior
   <kbd>]</kbd>: próxima aba
@@ -111,4 +113,109 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>4</kbd>: focus images panel
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
+  <kbd>7</kbd>: focar painel de segredos (swarm)
+  <kbd>8</kbd>: focar painel de configs (swarm)
+</pre>
+
+## Swarm Serviços
+
+<pre>
+  <kbd>m</kbd>: ver logs
+  <kbd>s</kbd>: parar (escalar para 0)
+  <kbd>u</kbd>: iniciar (restaurar réplicas)
+  <kbd>S</kbd>: escalar
+  <kbd>r</kbd>: reiniciar (gradual, atualização forçada)
+  <kbd>U</kbd>: atualizar imagem
+  <kbd>R</kbd>: reverter para a especificação anterior
+  <kbd>d</kbd>: remover serviço
+  <kbd>enter</kbd>: focar no painel principal
+  <kbd>[</kbd>: aba anterior
+  <kbd>]</kbd>: próxima aba
+  <kbd>/</kbd>: filtrar lista
+</pre>
+
+## Swarm Stacks
+
+<pre>
+  <kbd>n</kbd>: implantar/atualizar stack a partir de arquivo compose
+  <kbd>s</kbd>: parar stack (escalar todos os serviços para 0)
+  <kbd>u</kbd>: iniciar stack (restaurar réplicas)
+  <kbd>d</kbd>: remover stack
+  <kbd><</kbd>: alternar entre local e swarm
+  <kbd>></kbd>: alternar entre local e swarm
+  <kbd>enter</kbd>: focar no painel principal
+  <kbd>[</kbd>: aba anterior
+  <kbd>]</kbd>: próxima aba
+  <kbd>/</kbd>: filtrar lista
+</pre>
+
+## Swarm Tarefas
+
+<pre>
+  <kbd>m</kbd>: ver logs
+  <kbd>e</kbd>: mostrar/ocultar histórico de tarefas
+  <kbd>enter</kbd>: focar no painel principal
+  <kbd>[</kbd>: aba anterior
+  <kbd>]</kbd>: próxima aba
+  <kbd>/</kbd>: filtrar lista
+</pre>
+
+## Swarm Nós
+
+<pre>
+  <kbd>a</kbd>: definir disponibilidade
+  <kbd>p</kbd>: promover/rebaixar
+  <kbd>d</kbd>: remover nó
+  <kbd>enter</kbd>: focar no painel principal
+  <kbd>[</kbd>: aba anterior
+  <kbd>]</kbd>: próxima aba
+  <kbd>/</kbd>: filtrar lista
+</pre>
+
+## Swarm Redes
+
+<pre>
+  <kbd>n</kbd>: criar rede overlay
+  <kbd>a</kbd>: anexar a serviço
+  <kbd>D</kbd>: desanexar de serviço
+  <kbd>d</kbd>: remover
+  <kbd>enter</kbd>: focar no painel principal
+  <kbd>[</kbd>: aba anterior
+  <kbd>]</kbd>: próxima aba
+  <kbd>/</kbd>: filtrar lista
+</pre>
+
+## Swarm Segredos
+
+<pre>
+  <kbd>n</kbd>: criar segredo
+  <kbd>a</kbd>: anexar a serviço
+  <kbd>D</kbd>: desanexar de serviço
+  <kbd>d</kbd>: remover
+  <kbd>enter</kbd>: focar no painel principal
+  <kbd>[</kbd>: aba anterior
+  <kbd>]</kbd>: próxima aba
+  <kbd>/</kbd>: filtrar lista
+</pre>
+
+## Swarm Configs
+
+<pre>
+  <kbd>n</kbd>: criar config
+  <kbd>a</kbd>: anexar a serviço
+  <kbd>D</kbd>: desanexar de serviço
+  <kbd>d</kbd>: remover
+  <kbd>enter</kbd>: focar no painel principal
+  <kbd>[</kbd>: aba anterior
+  <kbd>]</kbd>: próxima aba
+  <kbd>/</kbd>: filtrar lista
+</pre>
+
+## Swarm Volumes
+
+<pre>
+  <kbd>enter</kbd>: focar no painel principal
+  <kbd>[</kbd>: aba anterior
+  <kbd>]</kbd>: próxima aba
+  <kbd>/</kbd>: filtrar lista
 </pre>

@@ -42,6 +42,7 @@ func (gui *Gui) getImagesPanel() *panels.SideListPanel[*commands.Image] {
 		},
 		NoItemsMessage: gui.Tr.NoImages,
 		Gui:            gui.intoInterface(),
+		Hide:           gui.isSwarmMode,
 		Sort: func(a *commands.Image, b *commands.Image) bool {
 			if a.Name == noneLabel && b.Name != noneLabel {
 				return false

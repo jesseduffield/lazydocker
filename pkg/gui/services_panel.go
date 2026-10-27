@@ -90,7 +90,7 @@ func (gui *Gui) getServicesPanel() *panels.SideListPanel[*commands.Service] {
 			return presentation.GetServiceDisplayStrings(&gui.Config.UserConfig.Gui, service)
 		},
 		Hide: func() bool {
-			return !gui.DockerCommand.IsProjectScoped()
+			return gui.isSwarmMode() || !gui.DockerCommand.IsProjectScoped()
 		},
 	}
 }
