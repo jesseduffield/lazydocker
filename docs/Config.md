@@ -94,11 +94,8 @@ stats:
       statPath: DerivedStats.MemoryPercentage
       color: green
 swarm:
-  # remote swarms to manage, each with the docker host of one of its managers
-  # (ssh hosts can be aliases from ~/.ssh/config, e.g. ssh://alias). Each one
-  # gets a tab in the [1] panel, next to 'Local' (and 'Swarm' if the docker
-  # daemon lazydocker talks to is itself a swarm manager). Start in a swarm
-  # with --swarm-host <name>, or pass any host: --swarm-host ssh://user@manager
+  # remote swarms to manage, address needs to be manager
+  # (ssh hosts can be aliases from ~/.ssh/config, e.g. ssh://alias).
   hosts: []
   # - name: prod
   #   host: ssh://deploy@prod-manager

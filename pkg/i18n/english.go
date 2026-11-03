@@ -152,6 +152,7 @@ type TranslationSet struct {
 	SwarmSecretsTitle             string
 	SwarmConfigsTitle             string
 	SwarmContentTitle             string
+	SwarmNodeInfoTitle            string
 	SwarmNotAManager              string
 	SwarmNoServices               string
 	SwarmNoStacks                 string
@@ -368,6 +369,7 @@ func englishSet() TranslationSet {
 		SwarmSecretsTitle:             "Secrets",
 		SwarmConfigsTitle:             "Configs",
 		SwarmContentTitle:             "Content",
+		SwarmNodeInfoTitle:            "Info",
 		SwarmNotAManager:              "%s is not a swarm manager",
 		SwarmNoServices:               "No swarm services",
 		SwarmNoStacks:                 "No stacks",

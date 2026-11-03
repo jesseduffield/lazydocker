@@ -10,12 +10,14 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types/swarm"
+	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
 	"github.com/jesseduffield/lazydocker/pkg/gui/types"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
+	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
 
@@ -91,6 +93,7 @@ func (gui *Gui) getSwarmNodesPanel() *panels.SideListPanel[*commands.SwarmNode] 
 		less:    func(a, b *commands.SwarmNode) bool { return a.Hostname() < b.Hostname() },
 		tabs: []swarmTab[*commands.SwarmNode]{
 			{key: "tasks", title: gui.Tr.SwarmTasksTitle, live: func(n *commands.SwarmNode) string { return swarmTasksTable(n.Tasks, false) }},
+			{key: "info", title: gui.Tr.SwarmNodeInfoTitle, live: swarmNodeInfo},
 			{key: "config", title: gui.Tr.ConfigTitle, live: func(n *commands.SwarmNode) string { return swarmYaml(n.Node) }},
 		},
 	})
@@ -143,6 +146,9 @@ func (gui *Gui) getSwarmSecretsPanel() *panels.SideListPanel[*commands.SwarmSecr
 		cells:   presentation.GetSwarmSecretDisplayStrings,
 		less:    func(a, b *commands.SwarmSecret) bool { return a.Name < b.Name },
 		tabs: []swarmTab[*commands.SwarmSecret]{
+			{key: "services", title: gui.Tr.ServicesTitle, live: func(s *commands.SwarmSecret) string {
+				return swarmTable(s.UsedBy, presentation.GetSwarmServiceDisplayStrings)
+			}},
 			{key: "config", title: gui.Tr.ConfigTitle, live: func(s *commands.SwarmSecret) string { return swarmYaml(s.Secret) }},
 		},
 	})
@@ -157,6 +163,9 @@ func (gui *Gui) getSwarmConfigsPanel() *panels.SideListPanel[*commands.SwarmConf
 		less:    func(a, b *commands.SwarmConfig) bool { return a.Name < b.Name },
 		tabs: []swarmTab[*commands.SwarmConfig]{
 			{key: "content", title: gui.Tr.SwarmContentTitle, live: func(c *commands.SwarmConfig) string { return string(c.Config.Spec.Data) }},
+			{key: "services", title: gui.Tr.ServicesTitle, live: func(c *commands.SwarmConfig) string {
+				return swarmTable(c.UsedBy, presentation.GetSwarmServiceDisplayStrings)
+			}},
 			{key: "config", title: gui.Tr.ConfigTitle, live: func(c *commands.SwarmConfig) string { return swarmYaml(c.Config) }},
 		},
 	})
@@ -177,6 +186,27 @@ func swarmTasksTable(swarmTasks []*commands.SwarmTask, includeHistory bool) stri
 	swarmTasks = lo.Filter(swarmTasks, func(t *commands.SwarmTask, _ int) bool { return includeHistory || t.IsCurrent() })
 	sort.SliceStable(swarmTasks, func(i, j int) bool { return swarmTaskLess(swarmTasks[i], swarmTasks[j]) })
 	return swarmTable(swarmTasks, presentation.GetSwarmTaskDisplayStrings)
+}
+
+// swarmNodeInfo summarises the node's platform, resources and labels
+func swarmNodeInfo(node *commands.SwarmNode) string {
+	desc := node.Node.Description
+	padding := 16
+	output := ""
+	output += utils.WithPadding("Address: ", padding) + node.Node.Status.Addr + "\n"
+	output += utils.WithPadding("Platform: ", padding) + desc.Platform.OS + "/" + desc.Platform.Architecture + "\n"
+	output += utils.WithPadding("CPUs: ", padding) + strconv.FormatFloat(float64(desc.Resources.NanoCPUs)/1e9, 'f', -1, 64) + "\n"
+	output += utils.WithPadding("Memory: ", padding) + utils.FormatBinaryBytes(int(desc.Resources.MemoryBytes)) + "\n"
+	if status := node.Node.ManagerStatus; status != nil {
+		manager := string(status.Reachability) + ", " + status.Addr
+		if status.Reachability != swarm.ReachabilityReachable {
+			manager = utils.ColoredString(manager, color.FgRed)
+		}
+		output += utils.WithPadding("Manager: ", padding) + manager + "\n"
+	}
+	output += utils.WithPadding("Labels: ", padding) + utils.FormatMap(padding, node.Node.Spec.Labels)
+	output += utils.WithPadding("Engine Labels: ", padding) + utils.FormatMap(padding, desc.Engine.Labels)
+	return output
 }
 
 // withSelected turns a handler for the selected item into a keybinding handler
