@@ -80,6 +80,7 @@ type TranslationSet struct {
 	NoVolumes                   string
 	NoNetworks                  string
 	NoServices                  string
+	NoProjects                  string
 	RemoveImage                 string
 	RemoveVolume                string
 	RemoveNetwork               string
@@ -141,7 +142,8 @@ type TranslationSet struct {
 	FocusSwarmConfigs string
 
 	LocalTitle                    string
-	SwitchLocalSwarm              string
+	PreviousSwarmTab              string
+	NextSwarmTab                  string
 	SwarmSelectStack              string
 	SwarmConnecting               string
 	SwarmConnectingPanel          string
@@ -154,7 +156,6 @@ type TranslationSet struct {
 	SwarmContentTitle             string
 	SwarmNodeInfoTitle            string
 	SwarmNotAManager              string
-	SwarmNoServices               string
 	SwarmNoStacks                 string
 	SwarmNoTasks                  string
 	SwarmNoNodes                  string
@@ -195,7 +196,6 @@ type TranslationSet struct {
 	SwarmPromote                  string
 	SwarmDemote                   string
 	SwarmRemoveNode               string
-	SwarmForceRemove              string
 	SwarmCreateNetwork            string
 	SwarmCreateSecret             string
 	SwarmCreateConfig             string
@@ -324,6 +324,7 @@ func englishSet() TranslationSet {
 		NoVolumes:    "No volumes",
 		NoNetworks:   "No networks",
 		NoServices:   "No services",
+		NoProjects:   "No projects",
 
 		ConfirmQuit:                 "Are you sure you want to quit?",
 		ConfirmUpProject:            "Are you sure you want to 'up' your docker compose project?",
@@ -347,10 +348,10 @@ func englishSet() TranslationSet {
 		LcPrevScreenMode: "prev screen mode",
 		FilterPrompt:     "filter",
 
-		FocusProjects:   "focus projects panel",
+		FocusProjects:   "focus projects panel (swarm: stacks)",
 		FocusServices:   "focus services panel",
-		FocusContainers: "focus containers panel",
-		FocusImages:     "focus images panel",
+		FocusContainers: "focus containers panel (swarm: tasks)",
+		FocusImages:     "focus images panel (swarm: nodes)",
 		FocusVolumes:    "focus volumes panel",
 		FocusNetworks:   "focus networks panel",
 
@@ -358,7 +359,8 @@ func englishSet() TranslationSet {
 		FocusSwarmConfigs: "focus configs panel (swarm)",
 
 		LocalTitle:                    "Local",
-		SwitchLocalSwarm:              "switch between local and swarms",
+		PreviousSwarmTab:              "previous tab (local/swarms)",
+		NextSwarmTab:                  "next tab (local/swarms)",
 		SwarmSelectStack:              "Select a stack first: this action does not apply to all services at once.",
 		SwarmConnecting:               "connecting to swarm at %s",
 		SwarmConnectingPanel:          "connecting...",
@@ -371,7 +373,6 @@ func englishSet() TranslationSet {
 		SwarmContentTitle:             "Content",
 		SwarmNodeInfoTitle:            "Info",
 		SwarmNotAManager:              "%s is not a swarm manager",
-		SwarmNoServices:               "No swarm services",
 		SwarmNoStacks:                 "No stacks",
 		SwarmNoTasks:                  "No tasks",
 		SwarmNoNodes:                  "No nodes",
@@ -395,10 +396,10 @@ func englishSet() TranslationSet {
 		SwarmRollingBackStatus:        "rolling back",
 		SwarmCreatingStatus:           "creating",
 		SwarmDeployStack:              "deploy/update stack from compose file",
-		SwarmStopStack:                "stop stack (scale all services to 0)",
+		SwarmStopStack:                "stop stack (scale replicated services to 0)",
 		SwarmStartStack:               "start stack (restore replicas)",
 		SwarmRemoveStack:              "remove stack",
-		SwarmConfirmStopStack:         "Are you sure you want to stop all services of stack %s (scale them to 0)?",
+		SwarmConfirmStopStack:         "Are you sure you want to stop stack %s? Its replicated services will be scaled to 0; global services keep running.",
 		SwarmConfirmRemove:            "Are you sure you want to remove %s?",
 		SwarmConfirmRemoveStack:       "Are you sure you want to remove stack %s? This removes its services, networks, secrets and configs.",
 		SwarmDeployFilePrompt:         "Compose file(s) to deploy (comma separated)",
@@ -412,7 +413,6 @@ func englishSet() TranslationSet {
 		SwarmPromote:                  "promote to manager",
 		SwarmDemote:                   "demote to worker",
 		SwarmRemoveNode:               "remove node",
-		SwarmForceRemove:              "force remove",
 		SwarmCreateNetwork:            "create overlay network",
 		SwarmCreateSecret:             "create secret",
 		SwarmCreateConfig:             "create config",

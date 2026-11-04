@@ -15,11 +15,6 @@ import (
 )
 
 func GetSwarmServiceDisplayStrings(service *commands.SwarmService) []string {
-	status := ""
-	if service.IsUpdating() {
-		status = utils.ColoredString(string(service.Service.UpdateStatus.State), color.FgYellow)
-	}
-
 	running, desired := service.Replicas()
 	ports := []string{}
 	for _, port := range service.Service.Endpoint.Ports {
@@ -31,7 +26,7 @@ func GetSwarmServiceDisplayStrings(service *commands.SwarmService) []string {
 	return []string{
 		coloredReplicas(running, desired),
 		service.Name,
-		status,
+		coloredUpdateState(service.Service.UpdateStatus),
 		utils.ColoredString(service.Mode(), color.FgBlue),
 		utils.ColoredString(service.Image(), color.FgMagenta),
 		utils.ColoredString(strings.Join(ports, ", "), color.FgYellow),
@@ -127,6 +122,22 @@ func coloredTaskState(task *commands.SwarmTask) string {
 		return utils.ColoredString(str, color.FgGreen)
 	default:
 		return utils.ColoredString(str, color.FgYellow)
+	}
+}
+
+// coloredUpdateState shows a rolling update or rollback that's in progress, or
+// paused because tasks failed (docker's default update failure action)
+func coloredUpdateState(update *swarm.UpdateStatus) string {
+	if update == nil {
+		return ""
+	}
+	switch update.State {
+	case swarm.UpdateStateUpdating, swarm.UpdateStateRollbackStarted:
+		return utils.ColoredString(string(update.State), color.FgYellow)
+	case swarm.UpdateStatePaused, swarm.UpdateStateRollbackPaused:
+		return utils.ColoredString(string(update.State), color.FgRed)
+	default:
+		return ""
 	}
 }
 

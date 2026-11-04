@@ -8,8 +8,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>e</kbd>: edit lazydocker config
   <kbd>o</kbd>: open lazydocker config
   <kbd>m</kbd>: view logs
-  <kbd><</kbd>: switch between local and swarms
-  <kbd>></kbd>: switch between local and swarms
+  <kbd><</kbd>: previous tab (local/swarms)
+  <kbd>></kbd>: next tab (local/swarms)
   <kbd>enter</kbd>: focus main panel
   <kbd>[</kbd>: previous tab
   <kbd>]</kbd>: next tab
@@ -107,10 +107,10 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>+</kbd>: next screen mode (normal/half/fullscreen)
   <kbd>_</kbd>: prev screen mode
-  <kbd>1</kbd>: focus projects panel
+  <kbd>1</kbd>: focus projects panel (swarm: stacks)
   <kbd>2</kbd>: focus services panel
-  <kbd>3</kbd>: focus containers panel
-  <kbd>4</kbd>: focus images panel
+  <kbd>3</kbd>: focus containers panel (swarm: tasks)
+  <kbd>4</kbd>: focus images panel (swarm: nodes)
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
   <kbd>7</kbd>: focus secrets panel (swarm)
@@ -138,11 +138,11 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>n</kbd>: deploy/update stack from compose file
-  <kbd>s</kbd>: stop stack (scale all services to 0)
+  <kbd>s</kbd>: stop stack (scale replicated services to 0)
   <kbd>u</kbd>: start stack (restore replicas)
   <kbd>d</kbd>: remove stack
-  <kbd><</kbd>: switch between local and swarms
-  <kbd>></kbd>: switch between local and swarms
+  <kbd><</kbd>: previous tab (local/swarms)
+  <kbd>></kbd>: next tab (local/swarms)
   <kbd>enter</kbd>: focus main panel
   <kbd>[</kbd>: previous tab
   <kbd>]</kbd>: next tab

@@ -320,7 +320,8 @@ type SwarmHost struct {
 	Name string `yaml:"name,omitempty"`
 
 	// Host is the docker host of one of the swarm's managers, e.g.
-	// 'ssh://user@manager' or 'tcp://manager:2376'
+	// 'ssh://user@manager' or 'tcp://manager:2376' (like lazydocker's own
+	// connection, tcp hosts use TLS if DOCKER_CERT_PATH is set)
 	Host string `yaml:"host"`
 }
 

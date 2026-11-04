@@ -8,8 +8,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>e</kbd>: modifier la configuration lazydocker
   <kbd>o</kbd>: ouvrir la configuration lazydocker
   <kbd>m</kbd>: voir les enregistrements
-  <kbd><</kbd>: basculer entre local et swarm
-  <kbd>></kbd>: basculer entre local et swarm
+  <kbd><</kbd>: onglet précédent (local/swarms)
+  <kbd>></kbd>: onglet suivant (local/swarms)
   <kbd>enter</kbd>: focus panneau principal
   <kbd>[</kbd>: onglet précédent
   <kbd>]</kbd>: onglet suivant
@@ -107,10 +107,10 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>+</kbd>: next screen mode (normal/half/fullscreen)
   <kbd>_</kbd>: prev screen mode
-  <kbd>1</kbd>: focus projects panel
+  <kbd>1</kbd>: focus projects panel (swarm: stacks)
   <kbd>2</kbd>: focus services panel
-  <kbd>3</kbd>: focus containers panel
-  <kbd>4</kbd>: focus images panel
+  <kbd>3</kbd>: focus containers panel (swarm: tasks)
+  <kbd>4</kbd>: focus images panel (swarm: nodes)
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
   <kbd>7</kbd>: focus sur le panneau secrets (swarm)
@@ -138,11 +138,11 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>n</kbd>: déployer/mettre à jour la stack depuis un fichier compose
-  <kbd>s</kbd>: arrêter la stack (réduire tous les services à 0)
+  <kbd>s</kbd>: arrêter la stack (réduire les services répliqués à 0)
   <kbd>u</kbd>: démarrer la stack (restaurer les réplicas)
   <kbd>d</kbd>: supprimer la stack
-  <kbd><</kbd>: basculer entre local et swarm
-  <kbd>></kbd>: basculer entre local et swarm
+  <kbd><</kbd>: onglet précédent (local/swarms)
+  <kbd>></kbd>: onglet suivant (local/swarms)
   <kbd>enter</kbd>: focus panneau principal
   <kbd>[</kbd>: onglet précédent
   <kbd>]</kbd>: onglet suivant

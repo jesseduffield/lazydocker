@@ -8,8 +8,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>e</kbd>: edytuj konfigurację
   <kbd>o</kbd>: otwórz konfigurację
   <kbd>m</kbd>: pokaż logi
-  <kbd><</kbd>: przełącz między lokalnym a swarm
-  <kbd>></kbd>: przełącz między lokalnym a swarm
+  <kbd><</kbd>: poprzednia zakładka (lokalnie/swarmy)
+  <kbd>></kbd>: następna zakładka (lokalnie/swarmy)
   <kbd>enter</kbd>: skup na głównym panelu
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka
@@ -107,10 +107,10 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>+</kbd>: next screen mode (normal/half/fullscreen)
   <kbd>_</kbd>: prev screen mode
-  <kbd>1</kbd>: focus projects panel
+  <kbd>1</kbd>: focus projects panel (swarm: stacks)
   <kbd>2</kbd>: focus services panel
-  <kbd>3</kbd>: focus containers panel
-  <kbd>4</kbd>: focus images panel
+  <kbd>3</kbd>: focus containers panel (swarm: tasks)
+  <kbd>4</kbd>: focus images panel (swarm: nodes)
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
   <kbd>7</kbd>: skup na panelu sekretów (swarm)
@@ -138,11 +138,11 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>n</kbd>: wdróż/zaktualizuj stack z pliku compose
-  <kbd>s</kbd>: zatrzymaj stack (skaluj wszystkie serwisy do 0)
+  <kbd>s</kbd>: zatrzymaj stack (skaluj replikowane serwisy do 0)
   <kbd>u</kbd>: uruchom stack (przywróć repliki)
   <kbd>d</kbd>: usuń stack
-  <kbd><</kbd>: przełącz między lokalnym a swarm
-  <kbd>></kbd>: przełącz między lokalnym a swarm
+  <kbd><</kbd>: poprzednia zakładka (lokalnie/swarmy)
+  <kbd>></kbd>: następna zakładka (lokalnie/swarmy)
   <kbd>enter</kbd>: skup na głównym panelu
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka

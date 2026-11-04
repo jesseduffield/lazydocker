@@ -2,7 +2,9 @@ package gui
 
 import (
 	"bytes"
+	"sort"
 	"testing"
+	"time"
 
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
@@ -62,6 +64,45 @@ func TestSwarmLogWriter(t *testing.T) {
 			assert.Equal(t, s.expected, utils.Decolorise(out.String()))
 		})
 	}
+}
+
+func TestSwarmTable(t *testing.T) {
+	emptyRed := "\x1b[31m\x1b[0m"
+	rows := [][]string{
+		{"a", "x", ""},
+		{"bbb", "y", emptyRed},
+		{"cc", "z", "error"},
+	}
+	// empty last cells, coloured or not, leave no padding behind
+	expected := "a   x\nbbb y" + emptyRed + "\ncc  z error"
+	assert.Equal(t, expected, swarmTable(rows, func(row []string) []string { return row }))
+}
+
+func TestSwarmTaskLess(t *testing.T) {
+	task := func(service string, slot int, node string, timestamp time.Time) *commands.SwarmTask {
+		return &commands.SwarmTask{
+			ServiceName: service,
+			Task:        swarm.Task{Slot: slot, NodeID: node, Status: swarm.TaskStatus{Timestamp: timestamp}},
+		}
+	}
+	earlier := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	later := earlier.Add(time.Hour)
+
+	expected := []*commands.SwarmTask{
+		// services by name, slots numerically (10 after 2, not after 1)
+		task("api", 1, "n1", earlier),
+		// a slot's current task before the one it replaced
+		task("api", 2, "n2", later),
+		task("api", 2, "n1", earlier),
+		task("api", 10, "n1", earlier),
+		// a global service has a task per node rather than slots
+		task("log-agent", 0, "n1", earlier),
+		task("log-agent", 0, "n2", earlier),
+	}
+
+	shuffled := []*commands.SwarmTask{expected[3], expected[5], expected[2], expected[0], expected[4], expected[1]}
+	sort.SliceStable(shuffled, func(i, j int) bool { return swarmTaskLess(shuffled[i], shuffled[j]) })
+	assert.Equal(t, expected, shuffled)
 }
 
 func TestSwarmNodeInfo(t *testing.T) {

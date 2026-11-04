@@ -1,9 +1,11 @@
 package commands
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 
@@ -63,10 +65,9 @@ func (s *SwarmService) IsTTY() bool {
 	return s.Service.Spec.TaskTemplate.ContainerSpec != nil && s.Service.Spec.TaskTemplate.ContainerSpec.TTY
 }
 
-// IsUpdating reports whether a rolling update/rollback is in progress
-func (s *SwarmService) IsUpdating() bool {
-	status := s.Service.UpdateStatus
-	return status != nil && (status.State == swarm.UpdateStateUpdating || status.State == swarm.UpdateStateRollbackStarted)
+// Logs streams the service's logs. The caller must close the reader.
+func (s *SwarmService) Logs(ctx context.Context) (io.ReadCloser, error) {
+	return s.Swarm.Client.ServiceLogs(ctx, s.ID, s.Swarm.logsOptions())
 }
 
 // UsesSecret reports whether the service references the given secret
@@ -86,6 +87,11 @@ func (s *SwarmService) UsesNetwork(n *SwarmNetwork) bool {
 	return lo.SomeBy(s.Service.Spec.TaskTemplate.Networks, n.isTarget)
 }
 
+// errNoChange is returned by an update's mutate function to skip the update.
+// Docker would apply an unchanged spec anyway, replacing the previous spec
+// that Rollback restores and resuming a paused update.
+var errNoChange = errors.New("no change")
+
 // update fetches the latest version of the service, applies mutate to its spec
 // and sends the update
 func (s *SwarmService) update(mutate func(spec *swarm.ServiceSpec) error, options swarm.ServiceUpdateOptions) error {
@@ -97,6 +103,9 @@ func (s *SwarmService) update(mutate func(spec *swarm.ServiceSpec) error, option
 
 	spec := service.Spec
 	if err := mutate(&spec); err != nil {
+		if errors.Is(err, errNoChange) {
+			return nil
+		}
 		return err
 	}
 
@@ -105,20 +114,29 @@ func (s *SwarmService) update(mutate func(spec *swarm.ServiceSpec) error, option
 }
 
 // updateReplicas sets the replica count of a replicated service to whatever
-// getReplicas returns, given the current count
-func (s *SwarmService) updateReplicas(getReplicas func(spec *swarm.ServiceSpec, current uint64) uint64) error {
+// getReplicas returns, given the current count and the count it had before it
+// was last scaled to 0, which we keep in a label for Start to restore
+func (s *SwarmService) updateReplicas(getReplicas func(current, previous uint64) uint64) error {
 	return s.update(func(spec *swarm.ServiceSpec) error {
 		if spec.Mode.Replicated == nil {
 			return fmt.Errorf(s.Swarm.Tr.SwarmCannotScaleNonReplicated, s.Name, s.Mode())
 		}
-		current := uint64(0)
-		if spec.Mode.Replicated.Replicas != nil {
-			current = *spec.Mode.Replicated.Replicas
+		current := lo.FromPtr(spec.Mode.Replicated.Replicas)
+		previous, _ := strconv.ParseUint(spec.Labels[PreviousReplicasLabel], 10, 64)
+		replicas := getReplicas(current, previous)
+		if replicas == current {
+			// e.g. starting a running service
+			return errNoChange
 		}
-		replicas := getReplicas(spec, current)
 		spec.Mode.Replicated.Replicas = &replicas
-		if replicas > 0 {
+		switch {
+		case replicas > 0:
 			delete(spec.Labels, PreviousReplicasLabel)
+		case current > 0:
+			if spec.Labels == nil {
+				spec.Labels = map[string]string{}
+			}
+			spec.Labels[PreviousReplicasLabel] = strconv.FormatUint(current, 10)
 		}
 		return nil
 	}, swarm.ServiceUpdateOptions{})
@@ -126,35 +144,18 @@ func (s *SwarmService) updateReplicas(getReplicas func(spec *swarm.ServiceSpec, 
 
 // Scale sets the number of replicas
 func (s *SwarmService) Scale(replicas uint64) error {
-	return s.updateReplicas(func(*swarm.ServiceSpec, uint64) uint64 { return replicas })
+	return s.updateReplicas(func(uint64, uint64) uint64 { return replicas })
 }
 
-// Stop scales the service to 0, remembering the current replica count in a
-// label so that Start can restore it
+// Stop scales the service to 0
 func (s *SwarmService) Stop() error {
-	return s.updateReplicas(func(spec *swarm.ServiceSpec, current uint64) uint64 {
-		if current > 0 {
-			if spec.Labels == nil {
-				spec.Labels = map[string]string{}
-			}
-			spec.Labels[PreviousReplicasLabel] = strconv.FormatUint(current, 10)
-		}
-		return 0
-	})
+	return s.Scale(0)
 }
 
 // Start scales a stopped service back to the replica count it had before
 // being stopped (or 1 if we don't know)
 func (s *SwarmService) Start() error {
-	return s.updateReplicas(func(spec *swarm.ServiceSpec, current uint64) uint64 {
-		if current > 0 {
-			return current
-		}
-		if previous, err := strconv.ParseUint(spec.Labels[PreviousReplicasLabel], 10, 64); err == nil && previous > 0 {
-			return previous
-		}
-		return 1
-	})
+	return s.updateReplicas(func(current, previous uint64) uint64 { return cmp.Or(current, previous, 1) })
 }
 
 // ForceUpdate restarts all of the service's tasks (rolling, respecting the
@@ -187,9 +188,17 @@ func (s *SwarmService) updateContainerSpec(mutate func(spec *swarm.ContainerSpec
 	}, swarm.ServiceUpdateOptions{})
 }
 
-// UpdateImage sets a new image for the service, triggering a rolling update
+// UpdateImage sets a new image for the service, triggering a rolling update.
+// Like `docker service update --image`, the image is pinned to the digest the
+// registry has for it, so that every node runs the same image.
 func (s *SwarmService) UpdateImage(image string) error {
-	return s.updateContainerSpec(func(spec *swarm.ContainerSpec) { spec.Image = image })
+	return s.update(func(spec *swarm.ServiceSpec) error {
+		if spec.TaskTemplate.ContainerSpec == nil {
+			return errors.New("service has no container spec")
+		}
+		spec.TaskTemplate.ContainerSpec.Image = image
+		return nil
+	}, swarm.ServiceUpdateOptions{QueryRegistry: true})
 }
 
 // AttachSecret mounts a secret into the service's containers at
@@ -252,6 +261,7 @@ type SwarmTask struct {
 	ServiceName string
 	Stack       string
 	NodeName    string
+	Swarm       *SwarmCommand
 }
 
 // Name returns the task's name the way docker displays it: <service>.<slot>
@@ -274,6 +284,11 @@ func (t *SwarmTask) IsTTY() bool {
 	return t.Task.Spec.ContainerSpec != nil && t.Task.Spec.ContainerSpec.TTY
 }
 
+// Logs streams the task's logs. The caller must close the reader.
+func (t *SwarmTask) Logs(ctx context.Context) (io.ReadCloser, error) {
+	return t.Swarm.Client.TaskLogs(ctx, t.ID, t.Swarm.logsOptions())
+}
+
 // SwarmNode : a swarm node
 type SwarmNode struct {
 	ID    string
@@ -290,9 +305,9 @@ func (n *SwarmNode) Hostname() string {
 	return n.ID
 }
 
-// Update fetches the latest version of the node, applies mutate to its spec
-// (e.g. to change its availability or role) and sends the update
-func (n *SwarmNode) Update(mutate func(spec *swarm.NodeSpec)) error {
+// update fetches the latest version of the node, applies mutate to its spec
+// and sends the update
+func (n *SwarmNode) update(mutate func(spec *swarm.NodeSpec)) error {
 	ctx := context.Background()
 	node, _, err := n.Swarm.Client.NodeInspectWithRaw(ctx, n.ID)
 	if err != nil {
@@ -301,6 +316,16 @@ func (n *SwarmNode) Update(mutate func(spec *swarm.NodeSpec)) error {
 	spec := node.Spec
 	mutate(&spec)
 	return n.Swarm.Client.NodeUpdate(ctx, n.ID, node.Version, spec)
+}
+
+// SetAvailability sets whether the node runs tasks: active, pause or drain
+func (n *SwarmNode) SetAvailability(availability swarm.NodeAvailability) error {
+	return n.update(func(spec *swarm.NodeSpec) { spec.Availability = availability })
+}
+
+// SetRole promotes the node to a manager or demotes it to a worker
+func (n *SwarmNode) SetRole(role swarm.NodeRole) error {
+	return n.update(func(spec *swarm.NodeSpec) { spec.Role = role })
 }
 
 // Remove removes the node from the swarm
@@ -374,6 +399,7 @@ type SwarmStack struct {
 	// empty for the entry that stands for all services
 	Name     string
 	Services []*SwarmService
+	Swarm    *SwarmCommand
 }
 
 // IsAll reports whether this is the entry standing for all services, rather
@@ -411,4 +437,11 @@ func (s *SwarmStack) forEachReplicatedService(f func(*SwarmService) error) error
 		}
 	}
 	return errors.Join(errs...)
+}
+
+// Remove removes the stack's services, networks, secrets and configs. Like
+// deploying, that's left to the docker CLI. --detach=false makes it wait for
+// the stack's tasks to stop.
+func (s *SwarmStack) Remove() error {
+	return s.Swarm.OSCommand.RunPreparedCommand(s.Swarm.NewCmd("stack", "rm", "--detach=false", s.Name))
 }

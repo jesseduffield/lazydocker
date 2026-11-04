@@ -29,7 +29,7 @@ type Gui struct {
 	g             *gocui.Gui
 	Log           *logrus.Entry
 	DockerCommand *commands.DockerCommand
-	// the default docker host's swarm, followed by the configured ones
+	// the default docker host's swarm, followed by the remote ones
 	Swarms        []*commands.SwarmCommand
 	OSCommand     *commands.OSCommand
 	State         guiState
@@ -99,7 +99,8 @@ type guiState struct {
 	ShowExitedContainers bool
 
 	// the swarm whose resources the side panels show. nil to show the local
-	// docker resources
+	// docker resources. It's only written on the gocui main loop (keybinding
+	// handlers and gui.Update); background goroutines only read it.
 	Swarm *commands.SwarmCommand
 
 	// if true, we show shut down / failed tasks in the swarm tasks panel,
@@ -226,7 +227,7 @@ func (gui *Gui) Run() error {
 		g.Mouse = true
 	}
 
-	// only the swarm views have a footer (showing the remote swarm host)
+	// only the swarm stacks view has a footer (showing the remote swarm host)
 	g.ShowListFooter = true
 
 	gui.g = g // TODO: always use gui.g rather than passing g around everywhere
@@ -301,10 +302,12 @@ func (gui *Gui) Run() error {
 		// we need to regularly re-render these because their stats will be changed in the background
 		gui.goEvery(time.Millisecond*1000, gui.renderContainersAndServices)
 		if gui.State.Swarm != nil {
-			go gui.animateSwarmConnecting(gui.State.Swarm)
+			gui.showSwarmConnecting(gui.State.Swarm)
 		}
-		// swarm has no events for task state changes, so we poll
-		gui.goEvery(swarmRefreshInterval, gui.refreshSwarm)
+		// separate loops, so that a slow local docker host can't hold up the
+		// refreshes of a remote swarm we're showing
+		go gui.poll(swarmRefreshInterval, gui.refreshSwarm)
+		go gui.poll(swarmRefreshInterval, gui.checkLocalSwarm)
 	}()
 
 	err = g.MainLoop()
@@ -371,7 +374,9 @@ func (gui *Gui) listenForEvents(ctx context.Context, refresh func()) {
 	errorCount := 0
 
 	onError := func(err error) {
-		if err != nil {
+		// while we show a swarm, its panels show its own connection errors, and
+		// the local docker host may not even be running (e.g. with --swarm-host)
+		if err != nil && gui.State.Swarm == nil {
 			gui.ErrorChan <- errors.Errorf("Docker event stream returned error: %s\nRetry count: %d", err.Error(), errorCount)
 		}
 		errorCount++
@@ -396,7 +401,9 @@ outer:
 				// event any time soon.
 
 				// Assuming the confirmation prompt currently holds the given error
-				_ = gui.closeConfirmationPrompt()
+				if gui.State.Swarm == nil {
+					_ = gui.closeConfirmationPrompt()
+				}
 				refresh()
 				errorCount = 0
 			}

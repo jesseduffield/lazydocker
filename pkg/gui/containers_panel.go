@@ -3,6 +3,7 @@ package gui
 import (
 	"context"
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -77,7 +78,6 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 		},
 		NoItemsMessage: gui.Tr.NoContainers,
 		Gui:            gui.intoInterface(),
-		Hide:           gui.isSwarmMode,
 		// sortedContainers returns containers sorted by state if c.SortContainersByState is true (follows 1- running, 2- exited, 3- created)
 		// and sorted by name if c.SortContainersByState is false
 		Sort: func(a *commands.Container, b *commands.Container) bool {
@@ -449,7 +449,9 @@ func (gui *Gui) handleContainerViewLogs(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	gui.renderLogsToStdout(ctr)
+	gui.renderLogsToStdout(func(ctx context.Context, out io.Writer) error {
+		return gui.writeContainerLogs(ctr, ctx, out)
+	})
 
 	return nil
 }

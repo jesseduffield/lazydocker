@@ -8,8 +8,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>e</kbd>: 编辑lazydocker配置
   <kbd>o</kbd>: 打开lazydocker配置
   <kbd>m</kbd>: 查看日志
-  <kbd><</kbd>: 在本地和 Swarm 之间切换
-  <kbd>></kbd>: 在本地和 Swarm 之间切换
+  <kbd><</kbd>: 上一个选项卡（本地/Swarm）
+  <kbd>></kbd>: 下一个选项卡（本地/Swarm）
   <kbd>enter</kbd>: 聚焦主面板
   <kbd>[</kbd>: 上一个选项卡
   <kbd>]</kbd>: 下一个选项卡
@@ -107,10 +107,10 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>+</kbd>: 下一个屏幕模式（正常/半屏/全屏）
   <kbd>_</kbd>: 上一个屏幕模式
-  <kbd>1</kbd>: focus projects panel
+  <kbd>1</kbd>: focus projects panel (swarm: stacks)
   <kbd>2</kbd>: focus services panel
-  <kbd>3</kbd>: focus containers panel
-  <kbd>4</kbd>: focus images panel
+  <kbd>3</kbd>: focus containers panel (swarm: tasks)
+  <kbd>4</kbd>: focus images panel (swarm: nodes)
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
   <kbd>7</kbd>: 聚焦密钥面板（Swarm）
@@ -138,11 +138,11 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>n</kbd>: 从 compose 文件部署/更新堆栈
-  <kbd>s</kbd>: 停止堆栈（将所有服务缩容至 0）
+  <kbd>s</kbd>: 停止堆栈（将副本服务缩容至 0）
   <kbd>u</kbd>: 启动堆栈（恢复副本数）
   <kbd>d</kbd>: 移除堆栈
-  <kbd><</kbd>: 在本地和 Swarm 之间切换
-  <kbd>></kbd>: 在本地和 Swarm 之间切换
+  <kbd><</kbd>: 上一个选项卡（本地/Swarm）
+  <kbd>></kbd>: 下一个选项卡（本地/Swarm）
   <kbd>enter</kbd>: 聚焦主面板
   <kbd>[</kbd>: 上一个选项卡
   <kbd>]</kbd>: 下一个选项卡

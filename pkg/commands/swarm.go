@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"os/exec"
 	"sort"
@@ -73,12 +72,12 @@ type SwarmState struct {
 // host does not block startup.
 func NewSwarmCommands(osCommand *OSCommand, tr *i18n.TranslationSet, appConfig *config.AppConfig, defaultClient *client.Client) ([]*SwarmCommand, *SwarmCommand, error) {
 	newCommand := func(name string, host string) *SwarmCommand {
-		cmd := &SwarmCommand{OSCommand: osCommand, Tr: tr, Config: appConfig, Client: defaultClient, Name: name, Host: host}
-		cmd.lastError.Store("")
-		return cmd
+		return &SwarmCommand{OSCommand: osCommand, Tr: tr, Config: appConfig, Name: name, Host: host}
 	}
 
-	swarms := []*SwarmCommand{newCommand(tr.SwarmTitle, "")}
+	local := newCommand(tr.SwarmTitle, "")
+	local.Client = defaultClient
+	swarms := []*SwarmCommand{local}
 	for _, swarmHost := range appConfig.UserConfig.Swarm.Hosts {
 		host := strings.TrimSpace(swarmHost.Host)
 		if host == "" {
@@ -98,38 +97,44 @@ func NewSwarmCommands(osCommand *OSCommand, tr *i18n.TranslationSet, appConfig *
 		}
 	}
 
-	for _, swarm := range swarms[1:] {
-		if err := swarm.connectRemote(); err != nil {
-			return nil, nil, err
+	for _, remote := range swarms[1:] {
+		cli, err := newSwarmClient(remote.Host)
+		if err != nil {
+			return nil, nil, fmt.Errorf("could not create docker client for swarm host %s: %w", remote.Host, err)
 		}
+		remote.Client = cli
 	}
 
 	return swarms, initial, nil
 }
 
-// connectRemote creates the client for a remote swarm
-func (c *SwarmCommand) connectRemote() error {
+// newSwarmClient creates the client for a remote swarm's docker host
+func newSwarmClient(host string) (*client.Client, error) {
 	// for ssh:// hosts this tunnels through `ssh <host> docker system
 	// dial-stdio`, like the docker CLI does. BatchMode stops ssh from prompting
 	// for a password, which would mess up the TUI.
-	helper, err := connhelper.GetConnectionHelperWithSSHOpts(c.Host, []string{"-o", "BatchMode=yes"})
+	helper, err := connhelper.GetConnectionHelperWithSSHOpts(host, []string{"-o", "BatchMode=yes"})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if helper == nil {
-		c.Client, err = newDockerClient(c.Host)
-	} else {
-		c.Client, err = client.NewClientWithOpts(
-			client.WithHTTPClient(&http.Client{Transport: &http.Transport{DialContext: helper.Dialer}}),
-			client.WithHost(helper.Host),
-			client.WithDialContext(helper.Dialer),
-			client.WithAPIVersionNegotiation(),
-		)
+		return newDockerClient(host)
 	}
-	if err != nil {
-		return fmt.Errorf("could not create docker client for swarm host %s: %w", c.Host, err)
+	return client.NewClientWithOpts(
+		client.WithHTTPClient(&http.Client{Transport: &http.Transport{DialContext: helper.Dialer}}),
+		client.WithHost(helper.Host),
+		client.WithDialContext(helper.Dialer),
+		client.WithAPIVersionNegotiation(),
+	)
+}
+
+// Close closes the connection to a remote swarm. The local swarm shares
+// lazydocker's main docker client, which isn't ours to close.
+func (c *SwarmCommand) Close() error {
+	if !c.IsRemote() {
+		return nil
 	}
-	return nil
+	return c.Client.Close()
 }
 
 // IsRemote reports whether swarm management uses its own connection
@@ -146,16 +151,18 @@ func (c *SwarmCommand) Enabled() bool {
 
 // LastError returns the error from the most recent refresh, if any
 func (c *SwarmCommand) LastError() string {
-	return c.lastError.Load().(string)
+	msg, _ := c.lastError.Load().(string)
+	return msg
 }
 
-// Refresh fetches all swarm resources. If the daemon is not a swarm manager it
-// returns an empty state.
+// Refresh fetches all swarm resources, and remembers whether that failed for
+// LastError. The local docker host not being a swarm manager isn't a failure:
+// the state is just empty then.
 func (c *SwarmCommand) Refresh() (*SwarmState, error) {
 	state, err := c.refresh()
 	if err != nil {
 		c.lastError.Store(err.Error())
-		return &SwarmState{}, err
+		return nil, err
 	}
 	c.lastError.Store("")
 	return state, nil
@@ -170,6 +177,16 @@ func (c *SwarmCommand) UpdateIsManager() {
 }
 
 func (c *SwarmCommand) updateIsManager(ctx context.Context) error {
+	// the Swarm header of /_ping spares us the much slower /info, but engines
+	// before 23.0 (API 1.42) don't send it
+	ping, err := c.Client.Ping(ctx)
+	if err != nil {
+		return err
+	}
+	if ping.SwarmStatus != nil {
+		c.isManager.Store(ping.SwarmStatus.ControlAvailable)
+		return nil
+	}
 	info, err := c.Client.Info(ctx)
 	if err != nil {
 		return err
@@ -224,7 +241,15 @@ func (c *SwarmCommand) refresh() (*SwarmState, error) {
 	return c.buildState(services, tasks, nodes, volumes.Volumes, networks, secrets, configs), nil
 }
 
-func (c *SwarmCommand) buildState(services []swarm.Service, tasks []swarm.Task, nodes []swarm.Node, volumes []*volume.Volume, networks []network.Summary, secrets []swarm.Secret, configs []swarm.Config) *SwarmState {
+func (c *SwarmCommand) buildState(
+	services []swarm.Service,
+	tasks []swarm.Task,
+	nodes []swarm.Node,
+	volumes []*volume.Volume,
+	networks []network.Summary,
+	secrets []swarm.Secret,
+	configs []swarm.Config,
+) *SwarmState {
 	state := &SwarmState{}
 
 	nodesByID := map[string]*SwarmNode{}
@@ -234,6 +259,9 @@ func (c *SwarmCommand) buildState(services []swarm.Service, tasks []swarm.Task, 
 		state.Nodes = append(state.Nodes, node)
 	}
 
+	// sorted by name, and so is every list of services built from them (a
+	// stack's, or those using a volume, network, secret or config)
+	sort.Slice(services, func(i, j int) bool { return services[i].Spec.Name < services[j].Spec.Name })
 	servicesByID := map[string]*SwarmService{}
 	stacksByName := map[string]*SwarmStack{}
 	for _, s := range services {
@@ -244,23 +272,20 @@ func (c *SwarmCommand) buildState(services []swarm.Service, tasks []swarm.Task, 
 		if service.Stack != "" {
 			stack, ok := stacksByName[service.Stack]
 			if !ok {
-				stack = &SwarmStack{Name: service.Stack}
+				stack = &SwarmStack{Name: service.Stack, Swarm: c}
 				stacksByName[service.Stack] = stack
 				state.Stacks = append(state.Stacks, stack)
 			}
 			stack.Services = append(stack.Services, service)
 		}
 	}
-	for _, stack := range state.Stacks {
-		sort.Slice(stack.Services, func(i, j int) bool { return stack.Services[i].Name < stack.Services[j].Name })
-	}
-	// like a compose project, the selected stack filters the services and
-	// tasks panels; this entry shows all of them, including those not
-	// deployed as part of a stack
-	state.Stacks = append([]*SwarmStack{{Services: state.Services}}, state.Stacks...)
+	// like a compose project, the selected stack filters the services, tasks,
+	// volumes and networks panels; this entry shows all of them, including
+	// those not deployed as part of a stack
+	state.Stacks = append([]*SwarmStack{{Services: state.Services, Swarm: c}}, state.Stacks...)
 
 	for _, t := range tasks {
-		task := &SwarmTask{ID: t.ID, Task: t}
+		task := &SwarmTask{ID: t.ID, Task: t, Swarm: c}
 		if service, ok := servicesByID[t.ServiceID]; ok {
 			task.ServiceName = service.Name
 			task.Stack = service.Stack
@@ -311,31 +336,19 @@ func (c *SwarmCommand) buildState(services []swarm.Service, tasks []swarm.Task, 
 
 	for _, n := range networks {
 		swarmNetwork := &SwarmNetwork{ID: n.ID, Name: n.Name, Stack: n.Labels[StackNamespaceLabel], Network: n, Swarm: c}
-		for _, service := range state.Services {
-			if service.UsesNetwork(swarmNetwork) {
-				swarmNetwork.UsedBy = append(swarmNetwork.UsedBy, service)
-			}
-		}
+		swarmNetwork.UsedBy = lo.Filter(state.Services, func(service *SwarmService, _ int) bool { return service.UsesNetwork(swarmNetwork) })
 		state.Networks = append(state.Networks, swarmNetwork)
 	}
 
 	for _, s := range secrets {
 		secret := &SwarmSecret{ID: s.ID, Name: s.Spec.Name, Secret: s, Swarm: c}
-		for _, service := range state.Services {
-			if service.UsesSecret(s.ID) {
-				secret.UsedBy = append(secret.UsedBy, service)
-			}
-		}
+		secret.UsedBy = lo.Filter(state.Services, func(service *SwarmService, _ int) bool { return service.UsesSecret(s.ID) })
 		state.Secrets = append(state.Secrets, secret)
 	}
 
 	for _, cf := range configs {
 		cfg := &SwarmConfig{ID: cf.ID, Name: cf.Spec.Name, Config: cf, Swarm: c}
-		for _, service := range state.Services {
-			if service.UsesConfig(cf.ID) {
-				cfg.UsedBy = append(cfg.UsedBy, service)
-			}
-		}
+		cfg.UsedBy = lo.Filter(state.Services, func(service *SwarmService, _ int) bool { return service.UsesConfig(cf.ID) })
 		state.Configs = append(state.Configs, cfg)
 	}
 
@@ -362,8 +375,8 @@ func (c *SwarmCommand) CreateConfig(name string, data []byte) error {
 }
 
 // NewCmd builds a docker CLI command targeting the swarm we're managing. We
-// use the CLI only where the API isn't enough: stack deploy/rm (compose file
-// parsing) and following logs full-screen.
+// use the CLI only where the API isn't enough: stack deploy (compose file
+// parsing) and rm.
 func (c *SwarmCommand) NewCmd(args ...string) *exec.Cmd {
 	cmd := c.OSCommand.NewCmd("docker", args...)
 	if c.IsRemote() {
@@ -372,11 +385,10 @@ func (c *SwarmCommand) NewCmd(args ...string) *exec.Cmd {
 	return cmd
 }
 
-// Logs streams the logs of a service or, if task is true, of a single
-// task. The caller must close the reader.
-func (c *SwarmCommand) Logs(ctx context.Context, id string, task bool) (io.ReadCloser, error) {
+// logsOptions returns the options for following a service's or task's logs
+func (c *SwarmCommand) logsOptions() container.LogsOptions {
 	logsConfig := c.Config.UserConfig.Logs
-	options := container.LogsOptions{
+	return container.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Follow:     true,
@@ -386,8 +398,4 @@ func (c *SwarmCommand) Logs(ctx context.Context, id string, task bool) (io.ReadC
 		// tells us which task/node each line came from, so we can prefix it
 		Details: true,
 	}
-	if task {
-		return c.Client.TaskLogs(ctx, id, options)
-	}
-	return c.Client.ServiceLogs(ctx, id, options)
 }

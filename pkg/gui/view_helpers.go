@@ -371,15 +371,19 @@ func (gui *Gui) currentListPanel() (panels.ISideListPanel, bool) {
 	return nil, false
 }
 
-func (gui *Gui) allSidePanels() []panels.ISideListPanel {
-	return append([]panels.ISideListPanel{
+func (gui *Gui) localSidePanels() []panels.ISideListPanel {
+	return []panels.ISideListPanel{
 		gui.Panels.Projects,
 		gui.Panels.Services,
 		gui.Panels.Containers,
 		gui.Panels.Images,
 		gui.Panels.Volumes,
 		gui.Panels.Networks,
-	}, gui.swarmSidePanels()...)
+	}
+}
+
+func (gui *Gui) allSidePanels() []panels.ISideListPanel {
+	return append(gui.localSidePanels(), gui.swarmSidePanels()...)
 }
 
 func (gui *Gui) allListPanels() []panels.ISideListPanel {

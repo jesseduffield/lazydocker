@@ -83,9 +83,14 @@ func main() {
 	appConfig.SwarmHost = swarmHost
 
 	app, err := app.NewApp(appConfig)
-	if err == nil {
-		err = app.Run()
+	if err != nil {
+		// e.g. a misconfigured swarm: like the config errors above, that's for
+		// the user to fix rather than a bug to report
+		app.Close()
+		log.Fatal(err.Error())
 	}
+
+	err = app.Run()
 	app.Close()
 
 	if err != nil {

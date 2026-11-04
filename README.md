@@ -267,9 +267,17 @@ echo "alias lzd='lazydocker'" >> ~/.zshrc
 - List of keybindings
   [here](/docs/keybindings).
 
-If you want to manage a remote Docker Swarm without configuration, 
-you can just pass the `--swarm-host` argument.
-For example: `lazydocker --swarm-host ssh://<your-remote-host>`
+### Docker Swarm
+
+If the docker host you are connected to is a swarm manager, the projects panel gets a tab for the swarm.
+To manage a remote swarm, add one of its managers to the `swarm.hosts` config option (see [Config.md](/docs/Config.md)),
+or pass it directly: `lazydocker --swarm-host ssh://user@manager`
+(ssh must authenticate without a password prompt, e.g. via an ssh-agent).
+
+
+![managing a swarm](/docs/resources/swarm-demo.gif)
+
+Stacks are deployed with `--with-registry-auth`, which sends your local registry credentials to the swarm so that its nodes can pull private images.
 
 ## Cool features
 
@@ -286,7 +294,7 @@ everything is one keypress away (or one click away! Mouse support FTW):
 - managing docker swarms (local and remote!)
   - scaling/stopping/restarting/rolling back services
   - draining/promoting nodes
-  - deploying/removing stacks 
+  - deploying/removing stacks
   - creating overlay networks, secrets and configs
 
 ## Contributing

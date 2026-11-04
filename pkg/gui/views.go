@@ -35,7 +35,8 @@ type Views struct {
 	Volumes    *gocui.View
 	Networks   *gocui.View
 
-	// swarm views, each in the window of its local counterpart
+	// swarm views, each shown in place of its local counterpart (secrets and
+	// configs have none)
 	SwarmServices *gocui.View
 	SwarmStacks   *gocui.View
 	SwarmTasks    *gocui.View

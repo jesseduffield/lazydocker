@@ -130,7 +130,12 @@ func (gui *Gui) infoSectionChildren(informationStr string, appStatus string) []*
 }
 
 func (gui *Gui) sideViewNames() []string {
-	visibleSidePanels := lo.Filter(gui.allSidePanels(), func(panel panels.ISideListPanel, _ int) bool {
+	sidePanels := gui.localSidePanels()
+	if gui.isSwarmMode() {
+		sidePanels = gui.swarmSidePanels()
+	}
+
+	visibleSidePanels := lo.Filter(sidePanels, func(panel panels.ISideListPanel, _ int) bool {
 		return !panel.IsHidden()
 	})
 

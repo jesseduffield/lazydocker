@@ -94,8 +94,11 @@ stats:
       statPath: DerivedStats.MemoryPercentage
       color: green
 swarm:
-  # remote swarms to manage, address needs to be manager
-  # (ssh hosts can be aliases from ~/.ssh/config, e.g. ssh://alias).
+  # Remote swarms to manage. The host must be one of the swarm's managers. Ssh
+  # hosts must authenticate without prompting (e.g. via an ssh-agent); aliases
+  # from ~/.ssh/config work, e.g. ssh://alias. Like lazydocker's own connection,
+  # tcp hosts use TLS if DOCKER_CERT_PATH is set (verifying the server if
+  # DOCKER_TLS_VERIFY is set too).
   hosts: []
   # - name: prod
   #   host: ssh://deploy@prod-manager

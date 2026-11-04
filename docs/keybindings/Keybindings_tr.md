@@ -8,8 +8,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>e</kbd>: lazzydocker ayarlarını düzenle
   <kbd>o</kbd>: lazydocker ayarlarını aç
   <kbd>m</kbd>: kayıt defterini görüntüle
-  <kbd><</kbd>: yerel ve swarm arasında geçiş yap
-  <kbd>></kbd>: yerel ve swarm arasında geçiş yap
+  <kbd><</kbd>: önceki sekme (yerel/swarm)
+  <kbd>></kbd>: sonraki sekme (yerel/swarm)
   <kbd>enter</kbd>: ana panele odaklan
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
@@ -107,10 +107,10 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>+</kbd>: next screen mode (normal/half/fullscreen)
   <kbd>_</kbd>: prev screen mode
-  <kbd>1</kbd>: focus projects panel
+  <kbd>1</kbd>: focus projects panel (swarm: stacks)
   <kbd>2</kbd>: focus services panel
-  <kbd>3</kbd>: focus containers panel
-  <kbd>4</kbd>: focus images panel
+  <kbd>3</kbd>: focus containers panel (swarm: tasks)
+  <kbd>4</kbd>: focus images panel (swarm: nodes)
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
   <kbd>7</kbd>: gizli veriler paneline odaklan (swarm)
@@ -138,11 +138,11 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>n</kbd>: compose dosyasından yığını dağıt/güncelle
-  <kbd>s</kbd>: yığını durdur (tüm servisleri 0'a ölçekle)
+  <kbd>s</kbd>: yığını durdur (replikalı servisleri 0'a ölçekle)
   <kbd>u</kbd>: yığını başlat (replikaları geri yükle)
   <kbd>d</kbd>: yığını kaldır
-  <kbd><</kbd>: yerel ve swarm arasında geçiş yap
-  <kbd>></kbd>: yerel ve swarm arasında geçiş yap
+  <kbd><</kbd>: önceki sekme (yerel/swarm)
+  <kbd>></kbd>: sonraki sekme (yerel/swarm)
   <kbd>enter</kbd>: ana panele odaklan
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
