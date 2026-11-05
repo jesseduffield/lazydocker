@@ -42,7 +42,7 @@ func (gui *Gui) swarmSidePanels() []panels.ISideListPanel {
 }
 
 // localSwarm is the swarm of the docker host lazydocker is connected to, as
-// opposed to the remote swarms from the config
+// opposed to the remote swarms of other docker contexts
 func (gui *Gui) localSwarm() *commands.SwarmCommand {
 	return gui.Swarms[0]
 }

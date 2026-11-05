@@ -269,10 +269,16 @@ echo "alias lzd='lazydocker'" >> ~/.zshrc
 
 ### Docker Swarm
 
-If the docker host you are connected to is a swarm manager, the projects panel gets a tab for the swarm.
-To manage a remote swarm, add one of its managers to the `swarm.hosts` config option (see [Config.md](/docs/Config.md)),
-or pass it directly: `lazydocker --swarm-host ssh://user@manager`
-(ssh must authenticate without a password prompt, e.g. via an ssh-agent).
+Every [docker context](https://docs.docker.com/engine/manage-resources/contexts/) (whose host is a swarm manager),
+will be shown as a separate tab.    
+Creating a context can be done with standard docker tooling:
+
+```sh
+docker context create prod --docker host=ssh://user@manager
+```
+
+It is also possible to directly access a specific manager node via SSH, without setting up a docke context:
+`lazydocker --swarm-host ssh://user@manager`.
 
 
 ![managing a swarm](/docs/resources/swarm-demo.gif)

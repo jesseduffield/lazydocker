@@ -93,17 +93,6 @@ stats:
     - caption: Memory (%)
       statPath: DerivedStats.MemoryPercentage
       color: green
-swarm:
-  # Remote swarms to manage. The host must be one of the swarm's managers. Ssh
-  # hosts must authenticate without prompting (e.g. via an ssh-agent); aliases
-  # from ~/.ssh/config work, e.g. ssh://alias. Like lazydocker's own connection,
-  # tcp hosts use TLS if DOCKER_CERT_PATH is set (verifying the server if
-  # DOCKER_TLS_VERIFY is set too).
-  hosts: []
-  # - name: prod
-  #   host: ssh://deploy@prod-manager
-  # - name: staging
-  #   host: tcp://staging-manager:2376
 ```
 
 ## To see what all of the config options mean, and what other options you can set, see [here](https://godoc.org/github.com/jesseduffield/lazydocker/pkg/config)

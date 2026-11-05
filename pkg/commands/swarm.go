@@ -11,7 +11,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	cliconfig "github.com/docker/cli/cli/config"
 	"github.com/docker/cli/cli/connhelper"
+	ddocker "github.com/docker/cli/cli/context/docker"
+	ctxstore "github.com/docker/cli/cli/context/store"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
@@ -34,8 +37,8 @@ const (
 )
 
 // SwarmCommand talks to a swarm manager: either the docker daemon the rest of
-// lazydocker uses, or a remote one (e.g. ssh://user@manager) from the
-// swarm.hosts config option or the --swarm-host flag.
+// lazydocker uses, or a remote one from a docker context or the --swarm-host
+// flag.
 type SwarmCommand struct {
 	OSCommand *OSCommand
 	Tr        *i18n.TranslationSet
@@ -44,6 +47,9 @@ type SwarmCommand struct {
 
 	// Name is shown in the swarm's tab
 	Name string
+
+	// Context is the docker context of a remote swarm, if it comes from one
+	Context string
 
 	// Host is the docker host of a remote swarm. Empty if we're re-using
 	// lazydocker's main docker connection.
@@ -65,60 +71,109 @@ type SwarmState struct {
 	Stacks   []*SwarmStack
 }
 
-// NewSwarmCommands returns a SwarmCommand for the default docker connection,
-// followed by one per configured swarm (plus one for the --swarm-host flag if
-// it isn't a configured swarm), and the swarm to start in (nil for local).
-// Connecting happens lazily on the first request, so an unreachable swarm
-// host does not block startup.
-func NewSwarmCommands(osCommand *OSCommand, tr *i18n.TranslationSet, appConfig *config.AppConfig, defaultClient *client.Client) ([]*SwarmCommand, *SwarmCommand, error) {
+// NewSwarmCommands returns the swarms that can get a tab, and the swarm to
+// start in (nil for local):
+//   - the swarm of lazydocker's main docker connection (to defaultHost)
+//   - one per docker context, except the context of the main connection
+//   - one for the --swarm-host flag (an ssh host), unless a docker context has
+//     the same host
+//
+// Connecting happens lazily on the first request, so an unreachable swarm host
+// does not block startup.
+func NewSwarmCommands(osCommand *OSCommand, tr *i18n.TranslationSet, appConfig *config.AppConfig, defaultClient *client.Client, defaultHost string) ([]*SwarmCommand, *SwarmCommand, error) {
+	return newSwarmCommands(osCommand, tr, appConfig, defaultClient, defaultHost, newContextStore(cliconfig.ContextStoreDir()))
+}
+
+func newSwarmCommands(osCommand *OSCommand, tr *i18n.TranslationSet, appConfig *config.AppConfig, defaultClient *client.Client, defaultHost string, contextStore *ctxstore.ContextStore) ([]*SwarmCommand, *SwarmCommand, error) {
 	newCommand := func(name string, host string) *SwarmCommand {
 		return &SwarmCommand{OSCommand: osCommand, Tr: tr, Config: appConfig, Name: name, Host: host}
 	}
+	swarmHostFlag := strings.TrimSpace(appConfig.SwarmHost)
 
 	local := newCommand(tr.SwarmTitle, "")
 	local.Client = defaultClient
 	swarms := []*SwarmCommand{local}
-	for _, swarmHost := range appConfig.UserConfig.Swarm.Hosts {
-		host := strings.TrimSpace(swarmHost.Host)
-		if host == "" {
-			return nil, nil, fmt.Errorf("swarm %q in swarm.hosts has no host", swarmHost.Name)
-		}
-		name := cmp.Or(strings.TrimSpace(swarmHost.Name), host)
-		swarms = append(swarms, newCommand(name, host))
-	}
 
-	var initial *SwarmCommand
-	if flag := strings.TrimSpace(appConfig.SwarmHost); flag != "" {
-		var ok bool
-		initial, ok = lo.Find(swarms[1:], func(c *SwarmCommand) bool { return c.Name == flag || c.Host == flag })
-		if !ok {
-			initial = newCommand(flag, flag)
-			swarms = append(swarms, initial)
-		}
+	dockerContexts, err := contextStore.List()
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not list docker contexts: %w", err)
 	}
-
-	for _, remote := range swarms[1:] {
-		cli, err := newSwarmClient(remote.Host)
+	for _, dockerContext := range dockerContexts {
+		endpoint, err := ddocker.EndpointFromContext(dockerContext)
 		if err != nil {
-			return nil, nil, fmt.Errorf("could not create docker client for swarm host %s: %w", remote.Host, err)
+			// not a docker engine context
+			continue
 		}
-		remote.Client = cli
+		// like the docker CLI, an empty host means the default one
+		endpoint.Host = cmp.Or(endpoint.Host, defaultDockerHost)
+
+		// the main connection's swarm is the local one
+		if endpoint.Host == defaultHost {
+			continue
+		}
+
+		swarm := newCommand(dockerContext.Name, endpoint.Host)
+		swarm.Context = dockerContext.Name
+		swarm.Client, err = newContextClient(contextStore, dockerContext.Name, endpoint)
+		if err != nil {
+			return nil, nil, fmt.Errorf("could not create docker client for docker context %s: %w", dockerContext.Name, err)
+		}
+		swarms = append(swarms, swarm)
+	}
+
+	if swarmHostFlag == "" {
+		return swarms, nil, nil
+	}
+	if !isSSHHost(swarmHostFlag) {
+		return nil, nil, fmt.Errorf("--swarm-host %s is not an ssh host, e.g. ssh://user@manager", swarmHostFlag)
+	}
+
+	// if a docker context has the same host, we use its swarm rather than
+	// adding the same swarm twice
+	initial, found := lo.Find(swarms[1:], func(swarm *SwarmCommand) bool {
+		return swarm.Host == swarmHostFlag
+	})
+	if !found {
+		initial = newCommand(swarmHostFlag, swarmHostFlag)
+		initial.Client, err = newSSHClient(swarmHostFlag)
+		if err != nil {
+			return nil, nil, fmt.Errorf("invalid --swarm-host %s: %w", swarmHostFlag, err)
+		}
+		swarms = append(swarms, initial)
 	}
 
 	return swarms, initial, nil
 }
 
-// newSwarmClient creates the client for a remote swarm's docker host
-func newSwarmClient(host string) (*client.Client, error) {
-	// for ssh:// hosts this tunnels through `ssh <host> docker system
-	// dial-stdio`, like the docker CLI does. BatchMode stops ssh from prompting
-	// for a password, which would mess up the TUI.
-	helper, err := connhelper.GetConnectionHelperWithSSHOpts(host, []string{"-o", "BatchMode=yes"})
+// newContextClient creates the client for a docker context's endpoint. Unlike
+// ssh hosts, tcp hosts use the context's TLS config.
+func newContextClient(contextStore *ctxstore.ContextStore, contextName string, endpointMeta ddocker.EndpointMeta) (*client.Client, error) {
+	if isSSHHost(endpointMeta.Host) {
+		return newSSHClient(endpointMeta.Host)
+	}
+
+	endpoint, err := ddocker.WithTLSData(contextStore, contextName, endpointMeta)
 	if err != nil {
 		return nil, err
 	}
-	if helper == nil {
-		return newDockerClient(host)
+	clientOpts, err := endpoint.ClientOpts()
+	if err != nil {
+		return nil, err
+	}
+	return client.NewClientWithOpts(clientOpts...)
+}
+
+func isSSHHost(host string) bool {
+	return strings.HasPrefix(host, "ssh://")
+}
+
+// newSSHClient creates the client for an ssh:// docker host. Like the docker
+// CLI does, it tunnels through `ssh <host> docker system dial-stdio`. BatchMode
+// stops ssh from prompting for a password, which would mess up the TUI.
+func newSSHClient(host string) (*client.Client, error) {
+	helper, err := connhelper.GetConnectionHelperWithSSHOpts(host, []string{"-o", "BatchMode=yes"})
+	if err != nil {
+		return nil, err
 	}
 	return client.NewClientWithOpts(
 		client.WithHTTPClient(&http.Client{Transport: &http.Transport{DialContext: helper.Dialer}}),
@@ -142,9 +197,10 @@ func (c *SwarmCommand) IsRemote() bool {
 	return c.Host != ""
 }
 
-// Enabled reports whether the swarm gets a tab: either we're talking to a
-// swarm manager, or it's a remote swarm (which gets a tab even if
-// unreachable, so the error is visible).
+// Enabled reports whether the swarm gets a tab: either it's a remote swarm, or
+// we're talking to a swarm manager. Remote swarms get a tab right away, before
+// we have connected: if they turn out to be unreachable or not a swarm
+// manager, their panels show the error.
 func (c *SwarmCommand) Enabled() bool {
 	return c.IsRemote() || c.isManager.Load()
 }
@@ -378,11 +434,15 @@ func (c *SwarmCommand) CreateConfig(name string, data []byte) error {
 // use the CLI only where the API isn't enough: stack deploy (compose file
 // parsing) and rm.
 func (c *SwarmCommand) NewCmd(args ...string) *exec.Cmd {
-	cmd := c.OSCommand.NewCmd("docker", args...)
-	if c.IsRemote() {
-		cmd.Env = append(cmd.Env, "DOCKER_HOST="+c.Host)
+	// both flags take precedence over DOCKER_HOST, which lazydocker may have
+	// set for its own connection
+	if c.Context != "" {
+		// the context also brings its TLS config
+		args = append([]string{"--context", c.Context}, args...)
+	} else if c.IsRemote() {
+		args = append([]string{"--host", c.Host}, args...)
 	}
-	return cmd
+	return c.OSCommand.NewCmd("docker", args...)
 }
 
 // logsOptions returns the options for following a service's or task's logs

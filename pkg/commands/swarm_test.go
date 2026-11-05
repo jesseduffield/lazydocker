@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	ddocker "github.com/docker/cli/cli/context/docker"
+	ctxstore "github.com/docker/cli/cli/context/store"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/swarm"
@@ -124,47 +126,127 @@ func TestSwarmBuildState(t *testing.T) {
 	assert.Empty(t, state.Networks[1].UsedBy)
 }
 
-func TestNewSwarmCommands(t *testing.T) {
-	hosts := []config.SwarmHost{
-		{Name: "prod", Host: "tcp://prod:2376"},
-		{Host: "tcp://staging:2376"},
+// newTestContextStore returns a docker context store with a context per name,
+// connecting to the given host
+func newTestContextStore(t *testing.T, hostsByContextName map[string]string) *ctxstore.ContextStore {
+	contextStore := newContextStore(t.TempDir())
+	for name, host := range hostsByContextName {
+		assert.NoError(t, contextStore.CreateOrUpdate(ctxstore.Metadata{
+			Name:      name,
+			Endpoints: map[string]interface{}{ddocker.DockerEndpoint: ddocker.EndpointMeta{Host: host}},
+		}))
 	}
+	return contextStore
+}
+
+func newTestSwarmCommands(contextStore *ctxstore.ContextStore, defaultHost string, swarmHostFlag string) ([]*SwarmCommand, *SwarmCommand, error) {
+	appConfig := &config.AppConfig{UserConfig: &config.UserConfig{}, SwarmHost: swarmHostFlag}
+	return newSwarmCommands(NewDummyOSCommand(), &i18n.TranslationSet{SwarmTitle: "Swarm"}, appConfig, nil, defaultHost, contextStore)
+}
+
+func swarmNames(swarms []*SwarmCommand) []string {
+	return lo.Map(swarms, func(swarm *SwarmCommand, _ int) string { return swarm.Name })
+}
+
+func TestNewSwarmCommands(t *testing.T) {
+	contextStore := newTestContextStore(t, map[string]string{
+		// lazydocker's main connection
+		"current": "tcp://current:2376",
+		"prod":    "tcp://prod:2376",
+		"staging": "ssh://deploy@staging",
+		// the default docker host
+		"empty": "",
+	})
 
 	scenarios := []struct {
 		testName        string
-		swarmHost       string
+		swarmHostFlag   string
 		expectedNames   []string
 		expectedInitial string
 	}{
-		{testName: "no flag starts in local mode", expectedNames: []string{"Swarm", "prod", "tcp://staging:2376"}},
-		{testName: "flag names a configured swarm", swarmHost: "prod", expectedNames: []string{"Swarm", "prod", "tcp://staging:2376"}, expectedInitial: "prod"},
-		{testName: "flag is a configured host", swarmHost: "tcp://prod:2376", expectedNames: []string{"Swarm", "prod", "tcp://staging:2376"}, expectedInitial: "prod"},
-		{testName: "flag is another host", swarmHost: "tcp://other:2376", expectedNames: []string{"Swarm", "prod", "tcp://staging:2376", "tcp://other:2376"}, expectedInitial: "tcp://other:2376"},
+		{testName: "no flag starts in local mode", expectedNames: []string{"Swarm", "empty", "prod", "staging"}},
+		{testName: "flag is a context's host", swarmHostFlag: "ssh://deploy@staging", expectedNames: []string{"Swarm", "empty", "prod", "staging"}, expectedInitial: "staging"},
+		{testName: "flag is another host", swarmHostFlag: "ssh://deploy@other", expectedNames: []string{"Swarm", "empty", "prod", "staging", "ssh://deploy@other"}, expectedInitial: "ssh://deploy@other"},
 	}
 
 	for _, s := range scenarios {
 		t.Run(s.testName, func(t *testing.T) {
-			appConfig := &config.AppConfig{UserConfig: &config.UserConfig{Swarm: config.SwarmConfig{Hosts: hosts}}, SwarmHost: s.swarmHost}
-			swarms, initial, err := NewSwarmCommands(nil, &i18n.TranslationSet{SwarmTitle: "Swarm"}, appConfig, nil)
+			swarms, initial, err := newTestSwarmCommands(contextStore, "tcp://current:2376", s.swarmHostFlag)
 			assert.NoError(t, err)
 
-			assert.Equal(t, s.expectedNames, lo.Map(swarms, func(c *SwarmCommand, _ int) string { return c.Name }))
+			assert.Equal(t, s.expectedNames, swarmNames(swarms))
 			assert.False(t, swarms[0].IsRemote())
+			for _, swarm := range swarms[1:] {
+				assert.True(t, swarm.IsRemote())
+				assert.NotNil(t, swarm.Client)
+				// remote swarms have a tab before we have connected
+				assert.True(t, swarm.Enabled())
+			}
 			if s.expectedInitial == "" {
 				assert.Nil(t, initial)
 			} else {
 				assert.Equal(t, s.expectedInitial, initial.Name)
-				assert.True(t, initial.Enabled())
 			}
 		})
 	}
 
-	_, _, err := NewSwarmCommands(nil, &i18n.TranslationSet{}, &config.AppConfig{UserConfig: &config.UserConfig{Swarm: config.SwarmConfig{Hosts: []config.SwarmHost{{Name: "broken"}}}}}, nil)
-	assert.Error(t, err)
+	t.Run("main connection is the default docker host", func(t *testing.T) {
+		swarms, _, err := newTestSwarmCommands(contextStore, defaultDockerHost, "")
+		assert.NoError(t, err)
 
-	// says which host is invalid
-	_, _, err = NewSwarmCommands(nil, &i18n.TranslationSet{}, &config.AppConfig{UserConfig: &config.UserConfig{Swarm: config.SwarmConfig{Hosts: []config.SwarmHost{{Host: "ssh://manager?x=1"}}}}}, nil)
-	assert.ErrorContains(t, err, "ssh://manager?x=1")
+		assert.Equal(t, []string{"Swarm", "current", "prod", "staging"}, swarmNames(swarms))
+		assert.Equal(t, "prod", swarms[2].Context)
+		assert.Equal(t, "tcp://prod:2376", swarms[2].Host)
+	})
+}
+
+func TestNewSwarmCommandsErrors(t *testing.T) {
+	t.Run("context with an invalid host", func(t *testing.T) {
+		contextStore := newTestContextStore(t, map[string]string{"broken": "ssh://manager?x=1"})
+		_, _, err := newTestSwarmCommands(contextStore, defaultDockerHost, "")
+		assert.ErrorContains(t, err, "docker context broken")
+	})
+
+	t.Run("context with invalid TLS data", func(t *testing.T) {
+		contextStore := newTestContextStore(t, map[string]string{"badtls": "tcp://badtls:2376"})
+		assert.NoError(t, contextStore.ResetEndpointTLSMaterial("badtls", ddocker.DockerEndpoint, &ctxstore.EndpointTLSData{
+			Files: map[string][]byte{"ca.pem": []byte("not a certificate")},
+		}))
+		_, _, err := newTestSwarmCommands(contextStore, defaultDockerHost, "")
+		assert.ErrorContains(t, err, "ca.pem")
+	})
+
+	t.Run("flag is not an ssh host", func(t *testing.T) {
+		// not even the name or host of a docker context
+		contextStore := newTestContextStore(t, map[string]string{"prod": "tcp://prod:2376"})
+		for _, swarmHostFlag := range []string{"prod", "tcp://prod:2376"} {
+			_, _, err := newTestSwarmCommands(contextStore, defaultDockerHost, swarmHostFlag)
+			assert.ErrorContains(t, err, swarmHostFlag+" is not an ssh host")
+		}
+	})
+
+	t.Run("flag is an invalid ssh host", func(t *testing.T) {
+		contextStore := newTestContextStore(t, map[string]string{})
+		_, _, err := newTestSwarmCommands(contextStore, defaultDockerHost, "ssh://other?x=1")
+		assert.ErrorContains(t, err, "ssh://other?x=1")
+	})
+}
+
+func TestSwarmNewCmd(t *testing.T) {
+	osCommand := NewDummyOSCommand()
+
+	// the local swarm uses lazydocker's own connection
+	local := &SwarmCommand{OSCommand: osCommand}
+	cmd := local.NewCmd("stack", "ls")
+	assert.Equal(t, []string{"docker", "stack", "ls"}, cmd.Args)
+
+	fromContext := &SwarmCommand{OSCommand: osCommand, Context: "prod", Host: "tcp://prod:2376"}
+	cmd = fromContext.NewCmd("stack", "ls")
+	assert.Equal(t, []string{"docker", "--context", "prod", "stack", "ls"}, cmd.Args)
+
+	fromFlag := &SwarmCommand{OSCommand: osCommand, Host: "ssh://deploy@prod"}
+	cmd = fromFlag.NewCmd("stack", "ls")
+	assert.Equal(t, []string{"docker", "--host", "ssh://deploy@prod", "stack", "ls"}, cmd.Args)
 }
 
 // the digest our fake docker API resolves every image to

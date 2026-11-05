@@ -48,7 +48,7 @@ func NewApp(config *config.AppConfig) (*App, error) {
 		return app, err
 	}
 	app.closers = append(app.closers, app.DockerCommand)
-	swarms, initialSwarm, err := commands.NewSwarmCommands(app.OSCommand, app.Tr, app.Config, app.DockerCommand.Client)
+	swarms, initialSwarm, err := commands.NewSwarmCommands(app.OSCommand, app.Tr, app.Config, app.DockerCommand.Client, app.DockerCommand.Host)
 	if err != nil {
 		return app, err
 	}

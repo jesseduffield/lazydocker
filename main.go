@@ -54,7 +54,7 @@ func main() {
 	flaggy.Bool(&debuggingFlag, "d", "debug", "a boolean")
 	flaggy.StringSlice(&composeFiles, "f", "file", "Specify alternate compose files")
 	flaggy.String(&projectName, "p", "project", "Specify a docker compose project name")
-	flaggy.String(&swarmHost, "", "swarm-host", "Start in a swarm: the name of one configured in swarm.hosts, or the docker host of a swarm manager, e.g. ssh://user@manager")
+	flaggy.String(&swarmHost, "", "swarm-host", "Start in a swarm: the ssh host of one of its managers, e.g. ssh://user@manager")
 	flaggy.SetVersion(info)
 
 	flaggy.Parse()
@@ -84,7 +84,7 @@ func main() {
 
 	app, err := app.NewApp(appConfig)
 	if err != nil {
-		// e.g. a misconfigured swarm: like the config errors above, that's for
+		// e.g. an invalid --swarm-host: like the config errors above, that's for
 		// the user to fix rather than a bug to report
 		app.Close()
 		log.Fatal(err.Error())
