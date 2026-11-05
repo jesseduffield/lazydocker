@@ -130,7 +130,12 @@ func (gui *Gui) infoSectionChildren(informationStr string, appStatus string) []*
 }
 
 func (gui *Gui) sideViewNames() []string {
-	visibleSidePanels := lo.Filter(gui.allSidePanels(), func(panel panels.ISideListPanel, _ int) bool {
+	sidePanels := gui.localSidePanels()
+	if gui.isSwarmMode() {
+		sidePanels = gui.swarmSidePanels()
+	}
+
+	visibleSidePanels := lo.Filter(sidePanels, func(panel panels.ISideListPanel, _ int) bool {
 		return !panel.IsHidden()
 	})
 
@@ -175,10 +180,10 @@ func (gui *Gui) sidePanelChildren(width int, height int) []*boxlayout.Box {
 			return defaultBox
 		}
 
-		// The project panel is compact (Size: 3) when not focused, but expands
-		// when focused to show the list of projects. This only applies when the
-		// project panel is actually visible (i.e. we are inside a compose project).
-		if len(sideWindowNames) > 0 && sideWindowNames[0] == "project" {
+		// The project panel (or in swarm mode, the stacks panel) is compact
+		// (Size: 3) when not focused, but expands when focused to show the list
+		// of projects. This only applies when the panel is actually visible.
+		if len(sideWindowNames) > 0 && (sideWindowNames[0] == "project" || sideWindowNames[0] == "swarmStacks") {
 			projectBox := &boxlayout.Box{
 				Window: sideWindowNames[0],
 				Size:   3,

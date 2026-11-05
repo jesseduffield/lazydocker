@@ -110,8 +110,13 @@ func (self *SideListPanel[T]) HandleSelect() error {
 			return err
 		}
 
-		if self.NoItemsMessage != "" {
-			self.Gui.NewSimpleRenderStringTask(func() string { return self.NoItemsMessage })
+		// via ShouldRefresh like renderContext, so that once the list has items
+		// again, the selected item gets rendered again
+		if self.NoItemsMessage != "" && self.Gui.ShouldRefresh(self.View.Name()+"-no-items") {
+			// the tabs are those of whichever panel rendered last, and clicking
+			// one would apply its index to this panel
+			self.Gui.GetMainView().Tabs = nil
+			return self.Gui.QueueTask(self.Gui.NewSimpleRenderStringTask(func() string { return self.NoItemsMessage }))
 		}
 
 		return nil

@@ -535,13 +535,17 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	}
 
 	bindings = append(bindings, []*Binding{
-		{Handler: gui.handleGoTo(gui.Panels.Projects.View), Key: '1', Description: gui.Tr.FocusProjects},
-		{Handler: gui.handleGoTo(gui.Panels.Services.View), Key: '2', Description: gui.Tr.FocusServices},
-		{Handler: gui.handleGoTo(gui.Panels.Containers.View), Key: '3', Description: gui.Tr.FocusContainers},
-		{Handler: gui.handleGoTo(gui.Panels.Images.View), Key: '4', Description: gui.Tr.FocusImages},
-		{Handler: gui.handleGoTo(gui.Panels.Volumes.View), Key: '5', Description: gui.Tr.FocusVolumes},
-		{Handler: gui.handleGoTo(gui.Panels.Networks.View), Key: '6', Description: gui.Tr.FocusNetworks},
+		{Handler: gui.handleGoTo(gui.Views.Project, gui.Views.SwarmStacks), Key: '1', Description: gui.Tr.FocusProjects},
+		{Handler: gui.handleGoTo(gui.Views.Services, gui.Views.SwarmServices), Key: '2', Description: gui.Tr.FocusServices},
+		{Handler: gui.handleGoTo(gui.Views.Containers, gui.Views.SwarmTasks), Key: '3', Description: gui.Tr.FocusContainers},
+		{Handler: gui.handleGoTo(gui.Views.Images, gui.Views.SwarmNodes), Key: '4', Description: gui.Tr.FocusImages},
+		{Handler: gui.handleGoTo(gui.Views.Volumes, gui.Views.SwarmVolumes), Key: '5', Description: gui.Tr.FocusVolumes},
+		{Handler: gui.handleGoTo(gui.Views.Networks, gui.Views.SwarmNetworks), Key: '6', Description: gui.Tr.FocusNetworks},
+		{Handler: gui.handleGoTo(nil, gui.Views.SwarmSecrets), Key: '7', Description: gui.Tr.FocusSwarmSecrets},
+		{Handler: gui.handleGoTo(nil, gui.Views.SwarmConfigs), Key: '8', Description: gui.Tr.FocusSwarmConfigs},
 	}...)
+
+	bindings = append(bindings, gui.swarmKeybindings()...)
 
 	for _, panel := range gui.allListPanels() {
 		setUpDownClickBindings(panel.GetView().Name(), panel.HandlePrevLine, panel.HandleNextLine, panel.HandleClick)
@@ -601,6 +605,12 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
 
 	if err := g.SetTabClickBinding("main", gui.onMainTabClick); err != nil {
 		return err
+	}
+
+	for _, viewName := range []string{"project", "swarmStacks"} {
+		if err := g.SetTabClickBinding(viewName, gui.selectModeTab); err != nil {
+			return err
+		}
 	}
 
 	return nil

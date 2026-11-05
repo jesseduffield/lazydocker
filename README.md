@@ -267,6 +267,24 @@ echo "alias lzd='lazydocker'" >> ~/.zshrc
 - List of keybindings
   [here](/docs/keybindings).
 
+### Docker Swarm
+
+Every [docker context](https://docs.docker.com/engine/manage-resources/contexts/) (whose host is a swarm manager),
+will be shown as a separate tab.    
+Creating a context can be done with standard docker tooling:
+
+```sh
+docker context create prod --docker host=ssh://user@manager
+```
+
+It is also possible to directly access a specific manager node via SSH, without setting up a docke context:
+`lazydocker --swarm-host ssh://user@manager`.
+
+
+![managing a swarm](/docs/resources/swarm-demo.gif)
+
+Stacks are deployed with `--with-registry-auth`, which sends your local registry credentials to the swarm so that its nodes can pull private images.
+
 ## Cool features
 
 everything is one keypress away (or one click away! Mouse support FTW):
@@ -279,6 +297,11 @@ everything is one keypress away (or one click away! Mouse support FTW):
 - restarting/removing/rebuilding containers/services
 - viewing the ancestor layers of a given image
 - pruning containers, images, or volumes that are hogging up disk space
+- managing docker swarms (local and remote!)
+  - scaling/stopping/restarting/rolling back services
+  - draining/promoting nodes
+  - deploying/removing stacks
+  - creating overlay networks, secrets and configs
 
 ## Contributing
 
