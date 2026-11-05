@@ -35,7 +35,6 @@ func (gui *Gui) closeConfirmationPrompt() error {
 	}
 	gui.g.DeleteViewKeybindings("confirmation")
 	gui.Views.Confirmation.Visible = false
-	gui.Views.Confirmation.Mask = 0
 	return nil
 }
 

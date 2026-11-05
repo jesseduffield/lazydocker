@@ -29,7 +29,7 @@ func (gui *Gui) handleSwarmSecretCreateMenu(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	return gui.swarmCreateMenu(gui.Tr.SwarmCreateSecret, true, swarm.CreateSecret)
+	return gui.swarmCreateMenu(gui.Tr.SwarmCreateSecret, swarm.CreateSecret)
 }
 
 // the secret is mounted into the service's containers at /run/secrets/<name>,

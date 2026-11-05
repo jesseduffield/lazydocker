@@ -30,7 +30,7 @@ func (gui *Gui) handleSwarmConfigCreateMenu(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	return gui.swarmCreateMenu(gui.Tr.SwarmCreateConfig, false, swarm.CreateConfig)
+	return gui.swarmCreateMenu(gui.Tr.SwarmCreateConfig, swarm.CreateConfig)
 }
 
 // the config is mounted into the service's containers at the path being

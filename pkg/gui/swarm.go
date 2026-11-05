@@ -386,21 +386,16 @@ func expandHomeDir(path string) string {
 
 // swarmCreateMenu creates a secret or config, named and with its content
 // either typed in or read from a local file
-func (gui *Gui) swarmCreateMenu(title string, isSecret bool, create func(name string, data []byte) error) error {
+func (gui *Gui) swarmCreateMenu(title string, create func(name string, data []byte) error) error {
 	createWith := func(name string, data []byte) error {
 		return gui.runSwarmAction(gui.Tr.SwarmCreatingStatus, func() error { return create(name, data) })
 	}
 
 	fromValue := func() error {
 		return gui.createSwarmPrompt(gui.Tr.SwarmNamePrompt, "", func(name string) error {
-			err := gui.createSwarmPrompt(gui.Tr.SwarmValuePrompt, "", func(value string) error {
+			return gui.createSwarmPrompt(gui.Tr.SwarmValuePrompt, "", func(value string) error {
 				return createWith(name, []byte(value))
 			})
-			if isSecret {
-				// the prompt is open now; closing it resets the mask
-				gui.Views.Confirmation.Mask = '*'
-			}
-			return err
 		})
 	}
 

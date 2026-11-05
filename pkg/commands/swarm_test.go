@@ -129,6 +129,8 @@ func TestSwarmBuildState(t *testing.T) {
 // newTestContextStore returns a docker context store with a context per name,
 // connecting to the given host
 func newTestContextStore(t *testing.T, hostsByContextName map[string]string) *ctxstore.ContextStore {
+	t.Helper()
+
 	contextStore := newContextStore(t.TempDir())
 	for name, host := range hostsByContextName {
 		assert.NoError(t, contextStore.CreateOrUpdate(ctxstore.Metadata{
