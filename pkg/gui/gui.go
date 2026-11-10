@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/docker/docker/api/types/events"
@@ -36,6 +37,10 @@ type Gui struct {
 	taskManager   *tasks.TaskManager
 	ErrorChan     chan error
 	Views         Views
+
+	// refreshRunner coalesces overlapping refreshes (see refresh).
+	// The zero value is ready to use.
+	refreshRunner coalescingRunner
 
 	// if we've suspended the gui (e.g. because we've switched to a subprocess)
 	// we typically want to pause some things that are running like background
@@ -295,8 +300,24 @@ func (gui *Gui) updateContainerDetails() error {
 	return gui.DockerCommand.RefreshContainerDetails(gui.Panels.Containers.List.GetAllItems())
 }
 
+// refresh reloads containers, projects, volumes, networks and images. It is
+// triggered on every Docker event, so overlapping refreshes are coalesced:
+// while one refresh is in flight, further triggers are merged into a single
+// follow-up refresh instead of starting parallel refreshes. The 50ms
+// throttle bounds the rate of refreshes, but only this bound on concurrency
+// stops the in-flight requests from growing without bound when the daemon
+// cannot keep up (see https://github.com/jesseduffield/lazydocker/issues/849).
 func (gui *Gui) refresh() {
+	gui.refreshRunner.Run(gui.refreshOnce)
+}
+
+// refreshOnce runs one full refresh, waiting for every panel reload to finish
+// before returning so the coalescing runner knows when the refresh is done.
+func (gui *Gui) refreshOnce() {
+	var wg sync.WaitGroup
+	wg.Add(4)
 	go func() {
+		defer wg.Done()
 		// Refresh containers/services first, then projects (which depend on
 		// container labels to discover projects).
 		if err := gui.refreshContainersAndServices(); err != nil {
@@ -307,20 +328,24 @@ func (gui *Gui) refresh() {
 		}
 	}()
 	go func() {
+		defer wg.Done()
 		if err := gui.reloadVolumes(); err != nil {
 			gui.Log.Error(err)
 		}
 	}()
 	go func() {
+		defer wg.Done()
 		if err := gui.reloadNetworks(); err != nil {
 			gui.Log.Error(err)
 		}
 	}()
 	go func() {
+		defer wg.Done()
 		if err := gui.reloadImages(); err != nil {
 			gui.Log.Error(err)
 		}
 	}()
+	wg.Wait()
 }
 
 func (gui *Gui) listenForEvents(ctx context.Context, refresh func()) {
