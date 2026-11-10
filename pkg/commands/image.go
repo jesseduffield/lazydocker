@@ -92,7 +92,13 @@ func (i *Image) RenderHistory() (string, error) {
 
 // RefreshImages returns a slice of docker images
 func (c *DockerCommand) RefreshImages() ([]*Image, error) {
-	images, err := c.Client.ImageList(context.Background(), image.ListOptions{})
+	// Bound how long a single image list call may take: without a timeout a
+	// slow daemon lets image list calls pile up without bound.
+	// See https://github.com/jesseduffield/lazydocker/issues/849
+	ctx, cancel := context.WithTimeout(context.Background(), dockerRequestTimeout)
+	defer cancel()
+
+	images, err := c.Client.ImageList(ctx, image.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
