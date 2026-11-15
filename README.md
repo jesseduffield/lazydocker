@@ -2,29 +2,6 @@
 <sup>Special thanks to:</sup>
 <br>
 <br>
-<a href="https://www.warp.dev/?utm_source=github&utm_medium=referral&utm_campaign=lazydocker_20231023">
-  <div>
-    <img src="https://github.com/warpdotdev/brand-assets/blob/main/Github/Sponsor/Warp-Github-LG-02.png?raw=true" width="400" alt="Warp">
-  </div>
-  <b>Warp, the intelligent terminal</b>
-  <br>
-  <b>Available for MacOS and Linux</b>
-  <br>
-  <div>
-    <sup>Visit warp.dev to learn more.</sup>
-  </div>
-</a>
-<br>
-<hr>
-<a href="https://tuple.app/lazydocker">
-  <div>
-    <img src="assets/tuple.png" width="400" alt="Tuple">
-  </div>
-  <b>Tuple, the premier screen sharing app for developers on macOS and Windows.</b>
-</a>
-<br>
-<hr>
-<br>
 <a href="https://www.subble.com/jobs/engineer">
   <div>
     <img src="assets/subble-job-ad.jpg" width="400" alt="Subble">
