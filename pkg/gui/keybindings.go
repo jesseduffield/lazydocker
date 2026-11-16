@@ -389,6 +389,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
+			ViewName:    "images",
+			Key:         'p',
+			Modifier:    gocui.ModNone,
+			Handler:     wrappedHandler(gui.handleDockerHubSearch),
+			Description: gui.Tr.DockerHubSearch,
+		},
+		{
 			ViewName:    "volumes",
 			Key:         'c',
 			Modifier:    gocui.ModNone,

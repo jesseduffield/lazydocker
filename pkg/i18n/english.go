@@ -136,6 +136,12 @@ type TranslationSet struct {
 	FocusImages     string
 	FocusVolumes    string
 	FocusNetworks   string
+
+	DockerHubSearch      string
+	DockerHubSearchTitle string
+	DockerHubNoResults   string
+	PullImage            string
+	PullingImageStatus   string
 }
 
 func englishSet() TranslationSet {
@@ -279,5 +285,11 @@ func englishSet() TranslationSet {
 		FocusImages:     "focus images panel",
 		FocusVolumes:    "focus volumes panel",
 		FocusNetworks:   "focus networks panel",
+
+		DockerHubSearch:      "search Docker Hub",
+		DockerHubSearchTitle: "Search Docker Hub:",
+		DockerHubNoResults:   "No results found on Docker Hub",
+		PullImage:            "pull image from Docker Hub",
+		PullingImageStatus:   "pulling image",
 	}
 }
