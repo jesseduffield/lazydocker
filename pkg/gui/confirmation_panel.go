@@ -69,6 +69,7 @@ func (gui *Gui) createPromptPanel(title string, handleConfirm func(*gocui.Gui, *
 		return err
 	}
 	gui.Views.Confirmation.Editable = true
+	gui.Views.Confirmation.ClearTextArea()
 	return gui.setKeyBindings(gui.g, handleConfirm, nil)
 }
 
@@ -121,6 +122,10 @@ func (gui *Gui) createPopupPanel(title, prompt string, handleConfirm, handleClos
 }
 
 func (gui *Gui) setKeyBindings(g *gocui.Gui, handleConfirm, handleClose func(*gocui.Gui, *gocui.View) error) error {
+	// a popup that lost the focus without being closed (e.g. via the number
+	// keys) still has its bindings, which would otherwise come first
+	g.DeleteViewKeybindings("confirmation")
+
 	// would use a loop here but because the function takes an interface{} and slices of interfaces require even more boilerplate
 	if err := g.SetKeybinding("confirmation", gocui.KeyEnter, gocui.ModNone, gui.wrappedConfirmationFunction(handleConfirm)); err != nil {
 		return err

@@ -3,6 +3,7 @@ package gui
 import (
 	"context"
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -448,7 +449,9 @@ func (gui *Gui) handleContainerViewLogs(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	gui.renderLogsToStdout(ctr)
+	gui.renderLogsToStdout(func(ctx context.Context, out io.Writer) error {
+		return gui.writeContainerLogs(ctr, ctx, out)
+	})
 
 	return nil
 }

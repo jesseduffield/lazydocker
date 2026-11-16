@@ -80,6 +80,7 @@ type TranslationSet struct {
 	NoVolumes                   string
 	NoNetworks                  string
 	NoServices                  string
+	NoProjects                  string
 	RemoveImage                 string
 	RemoveVolume                string
 	RemoveNetwork               string
@@ -136,6 +137,79 @@ type TranslationSet struct {
 	FocusImages     string
 	FocusVolumes    string
 	FocusNetworks   string
+
+	FocusSwarmSecrets string
+	FocusSwarmConfigs string
+
+	LocalTitle                    string
+	PreviousSwarmTab              string
+	NextSwarmTab                  string
+	SwarmSelectStack              string
+	SwarmConnecting               string
+	SwarmConnectingPanel          string
+	SwarmTitle                    string
+	SwarmStacksTitle              string
+	SwarmTasksTitle               string
+	SwarmNodesTitle               string
+	SwarmSecretsTitle             string
+	SwarmConfigsTitle             string
+	SwarmContentTitle             string
+	SwarmNodeInfoTitle            string
+	SwarmNotAManager              string
+	SwarmNoStacks                 string
+	SwarmNoTasks                  string
+	SwarmNoNodes                  string
+	SwarmNoSecrets                string
+	SwarmNoConfigs                string
+	SwarmCannotScaleNonReplicated string
+	SwarmStopService              string
+	SwarmStartService             string
+	SwarmScaleService             string
+	SwarmRestartService           string
+	SwarmUpdateImage              string
+	SwarmRollbackService          string
+	SwarmRemoveService            string
+	SwarmConfirmStopService       string
+	SwarmConfirmRestartService    string
+	SwarmConfirmRollbackService   string
+	SwarmConfirmRemoveService     string
+	SwarmScalePrompt              string
+	SwarmUpdateImagePrompt        string
+	SwarmUpdatingStatus           string
+	SwarmRollingBackStatus        string
+	SwarmCreatingStatus           string
+	SwarmDeployStack              string
+	SwarmStopStack                string
+	SwarmStartStack               string
+	SwarmRemoveStack              string
+	SwarmConfirmStopStack         string
+	SwarmConfirmRemove            string
+	SwarmConfirmRemoveStack       string
+	SwarmDeployFilePrompt         string
+	SwarmDeployNamePrompt         string
+	SwarmToggleTaskHistory        string
+	SwarmSetAvailability          string
+	SwarmAvailabilityActive       string
+	SwarmAvailabilityPause        string
+	SwarmAvailabilityDrain        string
+	SwarmChangeRole               string
+	SwarmPromote                  string
+	SwarmDemote                   string
+	SwarmRemoveNode               string
+	SwarmCreateNetwork            string
+	SwarmCreateSecret             string
+	SwarmCreateConfig             string
+	SwarmCreateFromValue          string
+	SwarmCreateFromFile           string
+	SwarmNamePrompt               string
+	SwarmValuePrompt              string
+	SwarmFilePathPrompt           string
+	SwarmAttachToService          string
+	SwarmDetachFromService        string
+	SwarmAttachTo                 string
+	SwarmDetachFrom               string
+	SwarmSecretTargetPrompt       string
+	SwarmConfigTargetPrompt       string
 }
 
 func englishSet() TranslationSet {
@@ -250,6 +324,7 @@ func englishSet() TranslationSet {
 		NoVolumes:    "No volumes",
 		NoNetworks:   "No networks",
 		NoServices:   "No services",
+		NoProjects:   "No projects",
 
 		ConfirmQuit:                 "Are you sure you want to quit?",
 		ConfirmUpProject:            "Are you sure you want to 'up' your docker compose project?",
@@ -273,11 +348,84 @@ func englishSet() TranslationSet {
 		LcPrevScreenMode: "prev screen mode",
 		FilterPrompt:     "filter",
 
-		FocusProjects:   "focus projects panel",
+		FocusProjects:   "focus projects panel (swarm: stacks)",
 		FocusServices:   "focus services panel",
-		FocusContainers: "focus containers panel",
-		FocusImages:     "focus images panel",
+		FocusContainers: "focus containers panel (swarm: tasks)",
+		FocusImages:     "focus images panel (swarm: nodes)",
 		FocusVolumes:    "focus volumes panel",
 		FocusNetworks:   "focus networks panel",
+
+		FocusSwarmSecrets: "focus secrets panel (swarm)",
+		FocusSwarmConfigs: "focus configs panel (swarm)",
+
+		LocalTitle:                    "Local",
+		PreviousSwarmTab:              "previous tab (local/swarms)",
+		NextSwarmTab:                  "next tab (local/swarms)",
+		SwarmSelectStack:              "Select a stack first: this action does not apply to all services at once.",
+		SwarmConnecting:               "connecting to swarm at %s",
+		SwarmConnectingPanel:          "connecting...",
+		SwarmTitle:                    "Swarm",
+		SwarmStacksTitle:              "Stacks",
+		SwarmTasksTitle:               "Tasks",
+		SwarmNodesTitle:               "Nodes",
+		SwarmSecretsTitle:             "Secrets",
+		SwarmConfigsTitle:             "Configs",
+		SwarmContentTitle:             "Content",
+		SwarmNodeInfoTitle:            "Info",
+		SwarmNotAManager:              "%s is not a swarm manager",
+		SwarmNoStacks:                 "No stacks",
+		SwarmNoTasks:                  "No tasks",
+		SwarmNoNodes:                  "No nodes",
+		SwarmNoSecrets:                "No secrets",
+		SwarmNoConfigs:                "No configs",
+		SwarmCannotScaleNonReplicated: "cannot scale service %s: only replicated services can be scaled (mode: %s)",
+		SwarmStopService:              "stop (scale to 0)",
+		SwarmStartService:             "start (restore replicas)",
+		SwarmScaleService:             "scale",
+		SwarmRestartService:           "restart (rolling, force update)",
+		SwarmUpdateImage:              "update image",
+		SwarmRollbackService:          "rollback to previous spec",
+		SwarmRemoveService:            "remove service",
+		SwarmConfirmStopService:       "Are you sure you want to stop %s? It will be scaled to 0 replicas, and starting it again will restore the current replica count.",
+		SwarmConfirmRestartService:    "Are you sure you want to restart all tasks of %s? This performs a rolling update according to the service's update config.",
+		SwarmConfirmRollbackService:   "Are you sure you want to roll back %s to its previous spec?",
+		SwarmConfirmRemoveService:     "Are you sure you want to remove service %s?",
+		SwarmScalePrompt:              "Number of replicas for %s",
+		SwarmUpdateImagePrompt:        "New image for %s",
+		SwarmUpdatingStatus:           "updating",
+		SwarmRollingBackStatus:        "rolling back",
+		SwarmCreatingStatus:           "creating",
+		SwarmDeployStack:              "deploy/update stack from compose file",
+		SwarmStopStack:                "stop stack (scale replicated services to 0)",
+		SwarmStartStack:               "start stack (restore replicas)",
+		SwarmRemoveStack:              "remove stack",
+		SwarmConfirmStopStack:         "Are you sure you want to stop stack %s? Its replicated services will be scaled to 0; global services keep running.",
+		SwarmConfirmRemove:            "Are you sure you want to remove %s?",
+		SwarmConfirmRemoveStack:       "Are you sure you want to remove stack %s? This removes its services, networks, secrets and configs.",
+		SwarmDeployFilePrompt:         "Compose file(s) to deploy (comma separated)",
+		SwarmDeployNamePrompt:         "Stack name",
+		SwarmToggleTaskHistory:        "show/hide task history",
+		SwarmSetAvailability:          "set availability",
+		SwarmAvailabilityActive:       "active (schedule tasks)",
+		SwarmAvailabilityPause:        "pause (keep tasks, schedule no new ones)",
+		SwarmAvailabilityDrain:        "drain (move tasks to other nodes)",
+		SwarmChangeRole:               "promote/demote",
+		SwarmPromote:                  "promote to manager",
+		SwarmDemote:                   "demote to worker",
+		SwarmRemoveNode:               "remove node",
+		SwarmCreateNetwork:            "create overlay network",
+		SwarmCreateSecret:             "create secret",
+		SwarmCreateConfig:             "create config",
+		SwarmCreateFromValue:          "from value",
+		SwarmCreateFromFile:           "from file",
+		SwarmNamePrompt:               "Name",
+		SwarmValuePrompt:              "Value",
+		SwarmFilePathPrompt:           "Path of the file",
+		SwarmAttachToService:          "attach to service",
+		SwarmDetachFromService:        "detach from service",
+		SwarmAttachTo:                 "Attach %s to",
+		SwarmDetachFrom:               "Detach %s from",
+		SwarmSecretTargetPrompt:       "File name in /run/secrets/",
+		SwarmConfigTargetPrompt:       "Path in the container",
 	}
 }

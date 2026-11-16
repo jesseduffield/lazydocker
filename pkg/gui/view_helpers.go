@@ -12,8 +12,17 @@ import (
 	"github.com/spkg/bom"
 )
 
-func (gui *Gui) handleGoTo(view *gocui.View) func(g *gocui.Gui, v *gocui.View) error {
+// handleGoTo focuses localView, or swarmView when in swarm mode. Either may be
+// nil if the mode has no such panel.
+func (gui *Gui) handleGoTo(localView *gocui.View, swarmView *gocui.View) func(g *gocui.Gui, v *gocui.View) error {
 	return func(g *gocui.Gui, v *gocui.View) error {
+		view := localView
+		if gui.isSwarmMode() {
+			view = swarmView
+		}
+		if view == nil {
+			return nil
+		}
 		gui.resetMainView()
 		return gui.switchFocus(view)
 	}
@@ -362,7 +371,7 @@ func (gui *Gui) currentListPanel() (panels.ISideListPanel, bool) {
 	return nil, false
 }
 
-func (gui *Gui) allSidePanels() []panels.ISideListPanel {
+func (gui *Gui) localSidePanels() []panels.ISideListPanel {
 	return []panels.ISideListPanel{
 		gui.Panels.Projects,
 		gui.Panels.Services,
@@ -371,6 +380,10 @@ func (gui *Gui) allSidePanels() []panels.ISideListPanel {
 		gui.Panels.Volumes,
 		gui.Panels.Networks,
 	}
+}
+
+func (gui *Gui) allSidePanels() []panels.ISideListPanel {
+	return append(gui.localSidePanels(), gui.swarmSidePanels()...)
 }
 
 func (gui *Gui) allListPanels() []panels.ISideListPanel {

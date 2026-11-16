@@ -489,6 +489,9 @@ type AppConfig struct {
 	ConfigDir   string
 	ProjectDir  string
 	ProjectName string
+	// SwarmHost is the swarm to start in (--swarm-host): the ssh host of one of
+	// its managers
+	SwarmHost string
 }
 
 // NewAppConfig makes a new app config

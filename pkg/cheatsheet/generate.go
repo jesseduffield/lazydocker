@@ -97,6 +97,15 @@ func getBindingSections(mApp *app.App) []*bindingSection {
 			"images":     mApp.Tr.ImagesTitle,
 			"volumes":    mApp.Tr.VolumesTitle,
 			"networks":   mApp.Tr.NetworksTitle,
+
+			"swarmStacks":   mApp.Tr.SwarmTitle + " " + mApp.Tr.SwarmStacksTitle,
+			"swarmServices": mApp.Tr.SwarmTitle + " " + mApp.Tr.ServicesTitle,
+			"swarmTasks":    mApp.Tr.SwarmTitle + " " + mApp.Tr.SwarmTasksTitle,
+			"swarmNodes":    mApp.Tr.SwarmTitle + " " + mApp.Tr.SwarmNodesTitle,
+			"swarmVolumes":  mApp.Tr.SwarmTitle + " " + mApp.Tr.VolumesTitle,
+			"swarmNetworks": mApp.Tr.SwarmTitle + " " + mApp.Tr.NetworksTitle,
+			"swarmSecrets":  mApp.Tr.SwarmTitle + " " + mApp.Tr.SwarmSecretsTitle,
+			"swarmConfigs":  mApp.Tr.SwarmTitle + " " + mApp.Tr.SwarmConfigsTitle,
 		}
 
 		bindingSections = addBinding(titleMap[viewName], bindingSections, binding)

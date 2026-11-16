@@ -48,6 +48,10 @@ type DockerCommand struct {
 	ServiceMutex     deadlock.Mutex
 
 	Closers []io.Closer
+
+	// Host is the docker host we connect to, as determined from DOCKER_HOST or
+	// the docker context (i.e. before tunnelling ssh hosts)
+	Host string
 }
 
 var _ io.Closer = &DockerCommand{}
@@ -119,13 +123,15 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 	}
 
 	// Retrieve the docker host from the environment which could have been set by
-	// the `SSHHandler.HandleSSHDockerHost()` and override `dockerHost`.
+	// the `SSHHandler.HandleSSHDockerHost()` and connect to that instead of
+	// `dockerHost`.
+	clientHost := dockerHost
 	dockerHostFromEnv := os.Getenv(dockerHostEnvKey)
 	if dockerHostFromEnv != "" {
-		dockerHost = dockerHostFromEnv
+		clientHost = dockerHostFromEnv
 	}
 
-	cli, err := newDockerClient(dockerHost)
+	cli, err := newDockerClient(clientHost)
 	if err != nil {
 		ogLog.Fatal(err)
 	}
@@ -136,6 +142,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		Tr:                     tr,
 		Config:                 config,
 		Client:                 cli,
+		Host:                   dockerHost,
 		ErrorChan:              errorChan,
 		InDockerComposeProject: true,
 		Closers:                []io.Closer{tunnelCloser},
@@ -523,6 +530,15 @@ func (c *DockerCommand) DockerComposeConfigForProject(project *Project) string {
 	return output
 }
 
+// newContextStore opens the store of docker contexts (as managed by `docker
+// context`) in the given directory
+func newContextStore(dir string) *ctxstore.ContextStore {
+	return ctxstore.New(dir, ctxstore.NewConfig(
+		func() interface{} { return &ddocker.EndpointMeta{} },
+		ctxstore.EndpointTypeGetter(ddocker.DockerEndpoint, func() interface{} { return &ddocker.EndpointMeta{} }),
+	))
+}
+
 // determineDockerHost tries to the determine the docker host that we should connect to
 // in the following order of decreasing precedence:
 //   - value of "DOCKER_HOST" environment variable
@@ -552,12 +568,7 @@ func determineDockerHost() (string, error) {
 		return defaultDockerHost, nil
 	}
 
-	storeConfig := ctxstore.NewConfig(
-		func() interface{} { return &ddocker.EndpointMeta{} },
-		ctxstore.EndpointTypeGetter(ddocker.DockerEndpoint, func() interface{} { return &ddocker.EndpointMeta{} }),
-	)
-
-	st := ctxstore.New(cliconfig.ContextStoreDir(), storeConfig)
+	st := newContextStore(cliconfig.ContextStoreDir())
 	md, err := st.GetMetadata(currentContext)
 	if err != nil {
 		return "", err

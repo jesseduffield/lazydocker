@@ -63,7 +63,7 @@ func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, ctx 
 	}
 }
 
-func (gui *Gui) renderLogsToStdout(container *commands.Container) {
+func (gui *Gui) renderLogsToStdout(writeLogs func(ctx context.Context, out io.Writer) error) {
 	stop := make(chan os.Signal, 1)
 	defer signal.Stop(stop)
 
@@ -79,15 +79,23 @@ func (gui *Gui) renderLogsToStdout(container *commands.Container) {
 		return
 	}
 
+	gui.PauseBackgroundThreads = true
+
 	defer func() {
 		if err := gui.g.Resume(); err != nil {
 			gui.Log.Error(err)
 		}
+
+		gui.PauseBackgroundThreads = false
 	}()
 
-	if err := gui.writeContainerLogs(container, ctx, os.Stdout); err != nil {
+	if err := writeLogs(ctx, os.Stdout); err != nil {
 		gui.Log.Error(err)
-		return
+		if ctx.Err() != nil {
+			// interrupted with ctrl+c: straight back to the gui
+			return
+		}
+		fmt.Fprintln(os.Stdout, utils.ColoredString(err.Error(), color.FgRed))
 	}
 
 	gui.promptToReturn()
