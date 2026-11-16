@@ -33,6 +33,21 @@ const (
 	dockerHostEnvKey = "DOCKER_HOST"
 )
 
+// dockerRequestTimeout bounds how long a single docker API call made during
+// a refresh (image list, container inspect) may take. Without a timeout a
+// slow daemon lets calls pile up without bound: the 50ms refresh throttle
+// bounds the rate of refreshes, not the number of requests in flight.
+// See https://github.com/jesseduffield/lazydocker/issues/849
+//
+// It is a variable (rather than a constant) so tests can shorten it.
+var dockerRequestTimeout = 30 * time.Second
+
+// maxConcurrentContainerInspects bounds how many ContainerInspect calls
+// SetContainerDetails may have in flight at once. Without this bound a
+// refresh fans out into one in-flight inspect per container.
+// See https://github.com/jesseduffield/lazydocker/issues/849
+const maxConcurrentContainerInspects = 8
+
 // DockerCommand is our main docker interface
 type DockerCommand struct {
 	Log                    *logrus.Entry
@@ -473,18 +488,29 @@ func (c *DockerCommand) RefreshContainerDetails(containers []*Container) error {
 // Attaches the details returned from docker inspect to each of the containers
 // this contains a bit more info than what you get from the go-docker client
 func (c *DockerCommand) SetContainerDetails(containers []*Container) {
+	// Bound the number of concurrent inspects: without this, a refresh fans
+	// out into one in-flight request per container, and overlapping refreshes
+	// pile those up without bound against the daemon.
+	// See https://github.com/jesseduffield/lazydocker/issues/849
+	sem := make(chan struct{}, maxConcurrentContainerInspects)
 	wg := sync.WaitGroup{}
 	for _, ctr := range containers {
 		ctr := ctr
 		wg.Add(1)
 		go func() {
-			details, err := c.Client.ContainerInspect(context.Background(), ctr.ID)
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			ctx, cancel := context.WithTimeout(context.Background(), dockerRequestTimeout)
+			defer cancel()
+
+			details, err := c.Client.ContainerInspect(ctx, ctr.ID)
 			if err != nil {
 				c.Log.Error(err)
 			} else {
 				ctr.Details = details
 			}
-			wg.Done()
 		}()
 	}
 	wg.Wait()
