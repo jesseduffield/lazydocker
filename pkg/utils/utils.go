@@ -410,3 +410,76 @@ func marshalIntoFormat(data interface{}, format string) ([]byte, error) {
 		return nil, errors.New(fmt.Sprintf("Unsupported detailization format: %s", format))
 	}
 }
+
+// FormatBigMetric takes a big metric and formats it into a human readable string with the appropriate unit.
+// For example, if you give it 1000000 with a base unit of bytes, it will return "1.000 MB".
+// If you give it 1000000000 with a base unit of nanoseconds, it will return "1.000 s"
+func FormatBigMetric(number int64, baseUnitName string) string {
+	memoryUnits := []string{"KB", "MB", "GB", "TB"}
+	cpuUnits := []string{"µs", "ms", "s", "m", "h"}
+	var unit int64
+	if baseUnitName == "bytes" {
+		unit = 1024
+	} else {
+		unit = 1000
+	}
+	if number < unit {
+		return fmt.Sprintf("%d", number)
+	}
+	div, exp := int64(unit), 1
+	for n := number / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	switch baseUnitName {
+	case "bytes":
+		return fmt.Sprintf("%.3f%s", float64(number)/float64(div), memoryUnits[exp-1])
+	case "nanoseconds":
+		return fmt.Sprintf("%.3f%s", float64(number)/float64(div), cpuUnits[exp-1])
+	default:
+		return fmt.Sprintf("%d", number)
+	}
+}
+
+// SetObjectFieldByPath takes an object, a path to a field in that object, and a value,
+// and sets the field at that path to the value.
+// For example, if you have an object {"a": {"b": {"c": 1}}}, a path of "a.b.c", and a value of 2,
+// it will set the object to {"a": {"b": {"c": 2}}}
+func SetObjectFieldByPath(object *map[string]interface{}, path string, value interface{}) error {
+	re := regexp.MustCompile(`^\.`)
+	if !re.MatchString(path) && path != "" {
+		return fmt.Errorf("Invalid path format %s, path should start with a dot", path)
+	}
+
+	targetObject := map[string]interface{}{}
+	currentObject := *object
+	targetObject = copyMapByPath(currentObject, targetObject, path, value)
+	*object = targetObject
+	return nil
+}
+
+// copyMapByPath is a helper function for SetObjectFieldByPath
+// that recursively copies an object while setting the value at the right path
+func copyMapByPath(currentObject map[string]interface{}, targetObject map[string]interface{}, path string, value interface{}) map[string]interface{} {
+	if path == "" {
+		return currentObject
+	}
+	keyPathSlice := strings.Split(path, ".")[1:]
+	currentKeys := make([]string, 0, len(currentObject))
+	for k := range currentObject {
+		currentKeys = append(currentKeys, k)
+	}
+	for _, key := range currentKeys {
+		if key != keyPathSlice[0] {
+			targetObject[key] = currentObject[key]
+		} else {
+			if len(keyPathSlice) == 1 {
+				targetObject[key] = value
+			} else {
+				nextObject := currentObject[key].(map[string]interface{})
+				targetObject[key] = copyMapByPath(nextObject, map[string]interface{}{}, "."+strings.Join(keyPathSlice[1:], "."), value)
+			}
+		}
+	}
+	return targetObject
+}

@@ -1,0 +1,122 @@
+{
+  "ClientStats": {
+    "blkio_stats": {
+      "io_merged_recursive": null,
+      "io_queue_recursive": null,
+      "io_service_bytes_recursive": [
+        {
+          "major": 253,
+          "minor": 0,
+          "op": "read",
+          "value": 0
+        },
+        {
+          "major": 253,
+          "minor": 0,
+          "op": "write",
+          "value": 12288
+        }
+      ],
+      "io_service_time_recursive": null,
+      "io_serviced_recursive": null,
+      "io_time_recursive": null,
+      "io_wait_time_recursive": null,
+      "sectors_recursive": null
+    },
+    "cpu_stats": {
+      "cpu_usage": {
+        "percpu_usage": null,
+        "total_usage": 30283000,
+        "usage_in_kernelmode": 15664000,
+        "usage_in_usermode": 14619000
+      },
+      "online_cpus": 2,
+      "system_cpu_usage": 25994230660000000,
+      "throttling_data": {
+        "periods": 0,
+        "throttled_periods": 0,
+        "throttled_time": 0
+      }
+    },
+    "id": "c7dc2bd078294bd06166be7c1cf680cb3ba968a04669b014b2b99666e08c8d57",
+    "memory_stats": {
+      "limit": 2051391488,
+      "max_usage": 0,
+      "stats": {
+        "active_anon": 2695168,
+        "active_file": 0,
+        "cache": 0,
+        "dirty": 0,
+        "hierarchical_memory_limit": 0,
+        "hierarchical_memsw_limit": 0,
+        "inactive_anon": 0,
+        "inactive_file": 69632,
+        "mapped_file": 0,
+        "pgfault": 4656,
+        "pgmajfault": 0,
+        "pgpgin": 0,
+        "pgpgout": 0,
+        "rss": 0,
+        "rss_huge": 0,
+        "total_active_anon": 0,
+        "total_active_file": 0,
+        "total_cache": 0,
+        "total_dirty": 0,
+        "total_inactive_anon": 0,
+        "total_inactive_file": 0,
+        "total_mapped_file": 0,
+        "total_pgfault": 0,
+        "total_pgmajfault": 0,
+        "total_pgpgin": 0,
+        "total_pgpgout": 0,
+        "total_rss": 0,
+        "total_rss_huge": 0,
+        "total_unevictable": 0,
+        "total_writeback": 0,
+        "unevictable": 0,
+        "writeback": 0
+      },
+      "usage": 3465216
+    },
+    "name": "/hungry_margulis",
+    "networks": {
+      "eth0": {
+        "rx_bytes": 112796,
+        "rx_dropped": 0,
+        "rx_errors": 0,
+        "rx_packets": 1610,
+        "tx_bytes": 0,
+        "tx_dropped": 0,
+        "tx_errors": 0,
+        "tx_packets": 0
+      }
+    },
+    "num_procs": 0,
+    "pids_stats": {
+      "current": 3
+    },
+    "precpu_stats": {
+      "cpu_usage": {
+        "percpu_usage": null,
+        "total_usage": 30283000,
+        "usage_in_kernelmode": 15664000,
+        "usage_in_usermode": 14619000
+      },
+      "online_cpus": 2,
+      "system_cpu_usage": 25994228620000000,
+      "throttling_data": {
+        "periods": 0,
+        "throttled_periods": 0,
+        "throttled_time": 0
+      }
+    },
+    "preread": "2026-07-24T21:52:31.132423289Z",
+    "read": "2026-07-24T21:52:32.151677303Z",
+    "storage_stats": {}
+  },
+  "DerivedStats": {
+    "CPUPercentage": 0,
+    "MemoryPercentage": 0.16892026803613217
+  },
+  "RecordedAt": "2026-07-24T22:52:32.092566+01:00"
+}
