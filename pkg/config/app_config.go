@@ -341,9 +341,14 @@ type CustomCommand struct {
 }
 
 type LogsConfig struct {
-	Timestamps bool   `yaml:"timestamps,omitempty"`
-	Since      string `yaml:"since,omitempty"`
-	Tail       string `yaml:"tail,omitempty"`
+	Timestamps bool `yaml:"timestamps,omitempty"`
+	// TimestampFormat is a Go time layout (e.g. '15:04:05.00') used to
+	// reformat the timestamps Docker prepends to log lines. It only has an
+	// effect when Timestamps is true. When empty, Docker's default RFC3339
+	// representation is shown as-is.
+	TimestampFormat string `yaml:"timestampFormat,omitempty"`
+	Since           string `yaml:"since,omitempty"`
+	Tail            string `yaml:"tail,omitempty"`
 }
 
 // GetDefaultConfig returns the application default configuration NOTE (to

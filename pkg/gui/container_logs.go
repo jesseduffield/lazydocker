@@ -105,12 +105,14 @@ func (gui *Gui) promptToReturn() {
 }
 
 func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context, writer io.Writer) error {
+	logsConfig := gui.Config.UserConfig.Logs
+
 	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, ctr.ID, container.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
-		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
-		Since:      gui.Config.UserConfig.Logs.Since,
-		Tail:       gui.Config.UserConfig.Logs.Tail,
+		Timestamps: logsConfig.Timestamps,
+		Since:      logsConfig.Since,
+		Tail:       logsConfig.Tail,
 		Follow:     true,
 	})
 	if err != nil {
@@ -136,6 +138,12 @@ func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context,
 		}
 	}
 
+	var timestampWriter *timestampReformattingWriter
+	if logsConfig.Timestamps && logsConfig.TimestampFormat != "" {
+		timestampWriter = newTimestampReformattingWriter(writer, logsConfig.TimestampFormat)
+		writer = timestampWriter
+	}
+
 	if ctr.Details.Config.Tty {
 		_, err = io.Copy(writer, readCloser)
 		if err != nil {
@@ -146,6 +154,10 @@ func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context,
 		if err != nil {
 			return err
 		}
+	}
+
+	if timestampWriter != nil {
+		return timestampWriter.Flush()
 	}
 
 	return nil

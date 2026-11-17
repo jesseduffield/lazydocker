@@ -62,6 +62,12 @@ gui:
   containerStatusHealthStyle: "long"
 logs:
   timestamps: false
+  # Reformat the timestamps Docker prepends to log lines. Only applies when
+  # timestamps is true. Uses Go's time layout syntax; e.g. '15:04:05.00' shows
+  # only the time with two decimal places, and '2006-01-02 15:04:05' drops the
+  # fractional seconds entirely. Leave empty to show Docker's default RFC3339
+  # representation.
+  timestampFormat: ''
   since: '60m' # set to '' to show all logs
   tail: '' # set to 200 to show last 200 lines of logs
 commandTemplates:
@@ -94,6 +100,22 @@ stats:
       statPath: DerivedStats.MemoryPercentage
       color: green
 ```
+
+## Log Timestamps
+
+Docker can prepend a timestamp to every log line (`logs.timestamps: true`). To
+shorten it, set `logs.timestampFormat` to a [Go time layout](https://pkg.go.dev/time#pkg-constants).
+`timestampFormat` only applies when `timestamps` is `true`.
+
+```yaml
+logs:
+  timestamps: true
+  timestampFormat: '15:04:05.00' # e.g. 20:30:14.16
+```
+
+Go layouts truncate rather than round fractional seconds, so `.00` cuts the
+nanoseconds down to two decimal places. Use `'2006-01-02 15:04:05'` to drop the
+fractional part entirely.
 
 ## To see what all of the config options mean, and what other options you can set, see [here](https://godoc.org/github.com/jesseduffield/lazydocker/pkg/config)
 
