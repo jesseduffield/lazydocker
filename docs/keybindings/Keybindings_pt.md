@@ -32,6 +32,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: aba anterior
   <kbd>]</kbd>: próxima aba
   <kbd>/</kbd>: filtrar lista
+  <kbd>f</kbd>: filtrar lista
 </pre>
 
 ## Serviços
@@ -56,6 +57,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: aba anterior
   <kbd>]</kbd>: próxima aba
   <kbd>/</kbd>: filtrar lista
+  <kbd>f</kbd>: filtrar lista
 </pre>
 
 ## Imagens
@@ -68,6 +70,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: aba anterior
   <kbd>]</kbd>: próxima aba
   <kbd>/</kbd>: filtrar lista
+  <kbd>f</kbd>: filtrar lista
 </pre>
 
 ## Volumes
@@ -80,6 +83,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: aba anterior
   <kbd>]</kbd>: próxima aba
   <kbd>/</kbd>: filtrar lista
+  <kbd>f</kbd>: filtrar lista
 </pre>
 
 ## Redes
@@ -92,6 +96,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: aba anterior
   <kbd>]</kbd>: próxima aba
   <kbd>/</kbd>: filtrar lista
+  <kbd>f</kbd>: filtrar lista
 </pre>
 
 ## Principal

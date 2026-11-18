@@ -32,6 +32,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Servisler
@@ -56,6 +57,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Imajlar
@@ -68,6 +70,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Alanlar
@@ -80,6 +83,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Ağları
@@ -92,6 +96,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>[</kbd>: önceki sekme
   <kbd>]</kbd>: sonraki sekme
   <kbd>/</kbd>: filter list
+  <kbd>f</kbd>: filter list
 </pre>
 
 ## Ana
