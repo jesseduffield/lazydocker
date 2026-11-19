@@ -423,7 +423,10 @@ func (gui *Gui) handleDonate(g *gocui.Gui, v *gocui.View) error {
 	if cx > len(gui.Tr.Donate) {
 		return nil
 	}
-	return gui.OSCommand.OpenLink("https://github.com/sponsors/jesseduffield")
+	if err := gui.OSCommand.OpenLink("https://github.com/sponsors/jesseduffield"); err != nil {
+		return gui.createErrorPanel(err.Error())
+	}
+	return nil
 }
 
 func (gui *Gui) editFile(filename string) error {
