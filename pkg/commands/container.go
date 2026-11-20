@@ -12,7 +12,7 @@ import (
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
-	"github.com/sasha-s/go-deadlock"
+	"sync"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 )
@@ -37,7 +37,7 @@ type Container struct {
 	DockerCommand   LimitedDockerCommand
 	Tr              *i18n.TranslationSet
 
-	StatsMutex deadlock.Mutex
+	StatsMutex sync.Mutex
 }
 
 // Remove removes the container

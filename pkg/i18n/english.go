@@ -87,6 +87,7 @@ type TranslationSet struct {
 	RemoveWithoutPruneWithForce string
 	RemoveWithForce             string
 	PruneImages                 string
+	PruneAllImages              string
 	PruneContainers             string
 	PruneVolumes                string
 	PruneNetworks               string
@@ -94,6 +95,7 @@ type TranslationSet struct {
 	ConfirmStopContainers       string
 	ConfirmRemoveContainers     string
 	ConfirmPruneImages          string
+	ConfirmPruneAllImages       string
 	ConfirmPruneVolumes         string
 	ConfirmPruneNetworks        string
 	PruningStatus               string
@@ -207,7 +209,8 @@ func englishSet() TranslationSet {
 		PruneContainers:             "prune exited containers",
 		PruneVolumes:                "prune unused volumes",
 		PruneNetworks:               "prune unused networks",
-		PruneImages:                 "prune unused images",
+		PruneImages:                 "prune dangling images",
+		PruneAllImages:              "prune ALL unused images (not just dangling)",
 		StopAllContainers:           "stop all containers",
 		RemoveAllContainers:         "remove all containers (forced)",
 		ViewRestartOptions:          "view restart options",
@@ -255,10 +258,11 @@ func englishSet() TranslationSet {
 		ConfirmUpProject:            "Are you sure you want to 'up' your docker compose project?",
 		MustForceToRemoveContainer:  "You cannot remove a running container unless you force it. Do you want to force it?",
 		NotEnoughSpace:              "Not enough space to render panels",
-		ConfirmPruneImages:          "Are you sure you want to prune all unused images?",
-		ConfirmPruneContainers:      "Are you sure you want to prune all stopped containers?",
+		ConfirmPruneContainers:      "Are you sure you want to prune all exited containers?",
 		ConfirmStopContainers:       "Are you sure you want to stop all containers?",
 		ConfirmRemoveContainers:     "Are you sure you want to remove all containers?",
+		ConfirmPruneImages:          "Are you sure you want to prune all dangling images?",
+		ConfirmPruneAllImages:       "Are you sure you want to prune ALL unused images?",
 		ConfirmPruneVolumes:         "Are you sure you want to prune all unused volumes?",
 		ConfirmPruneNetworks:        "Are you sure you want to prune all unused networks?",
 		StopService:                 "Are you sure you want to stop this service's containers?",

@@ -35,6 +35,15 @@ func (s *Service) Up() error {
 	return s.runCommand(s.OSCommand.Config.UserConfig.CommandTemplates.UpService)
 }
 
+// UpCmd returns the command to up the service
+func (s *Service) UpCmd() *exec.Cmd {
+	command := utils.ApplyTemplate(
+		s.OSCommand.Config.UserConfig.CommandTemplates.UpService,
+		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
+	)
+	return s.OSCommand.ExecutableFromString(command)
+}
+
 // Restart restarts the service
 func (s *Service) Restart() error {
 	return s.runCommand(s.OSCommand.Config.UserConfig.CommandTemplates.RestartService)

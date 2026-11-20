@@ -136,8 +136,16 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 	return ownImages, nil
 }
 
-// PruneImages prunes images
+// PruneImages prunes dangling images
 func (c *DockerCommand) PruneImages() error {
 	_, err := c.Client.ImagesPrune(context.Background(), filters.Args{})
+	return err
+}
+
+// PruneUnusedImages prunes all unused images (not just dangling)
+func (c *DockerCommand) PruneUnusedImages() error {
+	pruneFilters := filters.NewArgs()
+	pruneFilters.Add("dangling", "false")
+	_, err := c.Client.ImagesPrune(context.Background(), pruneFilters)
 	return err
 }

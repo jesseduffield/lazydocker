@@ -2,7 +2,6 @@ module github.com/jesseduffield/lazydocker
 
 go 1.22
 
-toolchain go1.23.6
 
 require (
 	github.com/OpenPeeDeeP/xdg v0.2.1-0.20190312153938-4ba9e1eb294c
@@ -25,7 +24,6 @@ require (
 	github.com/mgutz/str v1.2.0
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/samber/lo v1.31.0
-	github.com/sasha-s/go-deadlock v0.3.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spkg/bom v0.0.0-20160624110644-59b7046e48ad
 	github.com/stretchr/testify v1.9.0

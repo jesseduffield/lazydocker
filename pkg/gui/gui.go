@@ -19,7 +19,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/gui/types"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
-	"github.com/sasha-s/go-deadlock"
+	"sync"
 	"github.com/sirupsen/logrus"
 )
 
@@ -58,8 +58,8 @@ type Panels struct {
 }
 
 type Mutexes struct {
-	SubprocessMutex deadlock.Mutex
-	ViewStackMutex  deadlock.Mutex
+	SubprocessMutex sync.Mutex
+	ViewStackMutex  sync.Mutex
 }
 
 type mainPanelState struct {

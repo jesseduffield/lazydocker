@@ -105,6 +105,10 @@ type GuiConfig struct {
 	// of clutter
 	ShowAllContainers bool `yaml:"showAllContainers,omitempty"`
 
+	// ProjectAndServicePanelsOutsideCompose determines if project and service panels 
+	// should be shown even when lazydocker is started outside of a docker-compose directory.
+	ProjectAndServicePanelsOutsideCompose bool `yaml:"projectAndServicePanelsOutsideCompose,omitempty"`
+
 	// ReturnImmediately determines whether you get the 'press enter to return to
 	// lazydocker' message after a subprocess has completed. You would set this to
 	// true if you often want to see the output of subprocesses before returning
