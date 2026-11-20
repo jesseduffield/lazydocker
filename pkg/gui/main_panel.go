@@ -111,3 +111,12 @@ func (gui *Gui) handleMainClick() error {
 
 	return gui.switchFocus(gui.Views.Main)
 }
+
+func (gui *Gui) handleClearMain() error {
+	if gui.popupPanelFocused() {
+		return nil
+	}
+
+	gui.clearMainView()
+	return nil
+}
