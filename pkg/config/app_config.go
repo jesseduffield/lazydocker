@@ -341,9 +341,10 @@ type CustomCommand struct {
 }
 
 type LogsConfig struct {
-	Timestamps bool   `yaml:"timestamps,omitempty"`
-	Since      string `yaml:"since,omitempty"`
-	Tail       string `yaml:"tail,omitempty"`
+	Timestamps  bool   `yaml:"timestamps,omitempty"`
+	Since       string `yaml:"since,omitempty"`
+	Tail        string `yaml:"tail,omitempty"`
+	PipeThrough string `yaml:"pipeThrough,omitempty"`
 }
 
 // GetDefaultConfig returns the application default configuration NOTE (to

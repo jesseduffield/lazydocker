@@ -1,10 +1,13 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -300,6 +303,48 @@ func TestOSCommandCreateTempFile(t *testing.T) {
 	for _, s := range scenarios {
 		t.Run(s.testName, func(t *testing.T) {
 			s.test(NewDummyOSCommand().CreateTempFile(s.filename, s.content))
+		})
+	}
+}
+
+func TestOSCommandRunCustomCommandContext(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("commands in this test need a unix shell")
+	}
+
+	type scenario struct {
+		testName string
+		command  string
+		timeout  time.Duration
+		test     func([]byte, error)
+	}
+
+	scenarios := []scenario{
+		{
+			testName: "runs the command through the shell",
+			command:  "echo hello | tr a-z A-Z",
+			timeout:  5 * time.Second,
+			test: func(output []byte, err error) {
+				assert.NoError(t, err)
+				assert.EqualValues(t, "HELLO\n", string(output))
+			},
+		},
+		{
+			testName: "kills the command when the context is cancelled",
+			command:  "sleep 10",
+			timeout:  100 * time.Millisecond,
+			test: func(output []byte, err error) {
+				assert.EqualError(t, err, "signal: killed")
+			},
+		},
+	}
+
+	for _, s := range scenarios {
+		t.Run(s.testName, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
+			defer cancel()
+
+			s.test(NewDummyOSCommand().RunCustomCommandContext(ctx, s.command).Output())
 		})
 	}
 }

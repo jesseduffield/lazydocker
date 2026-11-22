@@ -305,6 +305,13 @@ func (c *OSCommand) RunCustomCommand(command string) *exec.Cmd {
 	return c.NewCmd(c.Platform.shell, c.Platform.shellArg, command)
 }
 
+// RunCustomCommandContext is like RunCustomCommand but the command is killed when ctx is cancelled
+func (c *OSCommand) RunCustomCommandContext(ctx context.Context, command string) *exec.Cmd {
+	cmd := exec.CommandContext(ctx, c.Platform.shell, c.Platform.shellArg, command)
+	cmd.Env = os.Environ()
+	return cmd
+}
+
 // PipeCommands runs a heap of commands and pipes their inputs/outputs together like A | B | C
 func (c *OSCommand) PipeCommands(commandStrings ...string) error {
 	cmds := make([]*exec.Cmd, len(commandStrings))
