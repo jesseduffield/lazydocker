@@ -366,7 +366,7 @@ func GetDefaultConfig() UserConfig {
 				ActiveBorderColor:   []string{"green", "bold"},
 				InactiveBorderColor: []string{"default"},
 				SelectedLineBgColor: []string{"blue"},
-				OptionsTextColor:    []string{"blue"},
+				OptionsTextColor:    []string{"cyan"},
 			},
 			ShowAllContainers:          false,
 			ReturnImmediately:          false,
