@@ -49,6 +49,19 @@ func TestDockerComposeCommandMultipleFiles(t *testing.T) {
 	}
 }
 
+func TestConfigDirUsesLazydockerConfigDir(t *testing.T) {
+	expected := t.TempDir()
+	legacy := t.TempDir()
+
+	t.Setenv("LAZYDOCKER_CONFIG_DIR", expected)
+	t.Setenv("CONFIG_DIR", legacy)
+
+	actual := configDir("lazydocker")
+	if actual != expected {
+		t.Fatalf("Expected %s but got %s", expected, actual)
+	}
+}
+
 func TestWritingToConfigFile(t *testing.T) {
 	// init the AppConfig
 	emptyComposeFiles := []string{}
