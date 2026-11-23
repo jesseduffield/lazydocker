@@ -68,10 +68,21 @@ type UserConfig struct {
 
 // ThemeConfig is for setting the colors of panels and some text.
 type ThemeConfig struct {
-	ActiveBorderColor   []string `yaml:"activeBorderColor,omitempty"`
+	// Border color of the focused panel.
+	ActiveBorderColor []string `yaml:"activeBorderColor,omitempty"`
+	// Border color of unfocused panels.
 	InactiveBorderColor []string `yaml:"inactiveBorderColor,omitempty"`
+	// Background color of the selected line.
 	SelectedLineBgColor []string `yaml:"selectedLineBgColor,omitempty"`
-	OptionsTextColor    []string `yaml:"optionsTextColor,omitempty"`
+	// Optional foreground color of the selected line. Unset (default) keeps
+	// the classic look. When set, the whole selected line renders uniformly
+	// in this colour: plain text stays bold and per-cell colours (e.g.
+	// status colours) are overridden. Pair it with SelectedLineBgColor to
+	// fit your terminal's palette. Ignored when SelectedLineBgColor contains
+	// "reverse".
+	SelectedLineFgColor []string `yaml:"selectedLineFgColor,omitempty"`
+	// Color of the keybinding hints in the bottom line.
+	OptionsTextColor []string `yaml:"optionsTextColor,omitempty"`
 }
 
 // GuiConfig is for configuring visual things like colors and whether we show or

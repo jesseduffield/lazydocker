@@ -479,12 +479,28 @@ func (v *View) setRune(x, y int, ch rune, fgColor, bgColor Attribute) error {
 		}
 
 		if ry >= rangeSelectStart && ry <= rangeSelectEnd {
-			// this ensures we use the bright variant of a colour upon highlight
-			fgColorComponent := fgColor & ^AttrAll
-			if fgColorComponent >= AttrIsValidColor && fgColorComponent < AttrIsValidColor+8 {
-				fgColor += 8
+			// reverse means "swap with the terminal's own colours": any explicit
+			// foreground would be swapped along with it and land on a
+			// terminal-theme-dependent colour, so keep the legacy path
+			reverseSelection := v.SelFgColor&AttrReverse != 0 || v.SelBgColor&AttrReverse != 0
+			if v.SelFgColor != ColorDefault && !reverseSelection {
+				// uniform selected line: every cell takes the selected foreground
+				// (e.g. dark text on a bright selection background), discarding
+				// its own colour; plain-text cells keep the bold emphasis while
+				// coloured cells (e.g. status colours) render regular weight
+				if fgColor&AttrColorBits == ColorDefault {
+					fgColor = v.SelFgColor | AttrBold
+				} else {
+					fgColor = v.SelFgColor
+				}
+			} else {
+				// this ensures we use the bright variant of a colour upon highlight
+				fgColorComponent := fgColor & ^AttrAll
+				if fgColorComponent >= AttrIsValidColor && fgColorComponent < AttrIsValidColor+8 {
+					fgColor += 8
+				}
+				fgColor = fgColor | AttrBold
 			}
-			fgColor = fgColor | AttrBold
 			bgColor = bgColor | v.SelBgColor
 		}
 	}

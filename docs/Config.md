@@ -42,6 +42,14 @@ gui:
       - white
     selectedLineBgColor:
       - blue
+    # Optional foreground for the selected line. Unset (default) keeps the
+    # classic look. When set, the whole line renders uniformly in this colour:
+    # plain text stays bold and per-cell colours (e.g. status colours) are
+    # overridden. Pair it with selectedLineBgColor to fit your terminal's
+    # palette, e.g. black on a bright background or white on a dark one.
+    # Ignored when selectedLineBgColor contains "reverse".
+    # selectedLineFgColor:
+    #   - black
     optionsTextColor:
       - blue
   returnImmediately: false
