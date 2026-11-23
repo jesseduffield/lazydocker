@@ -444,6 +444,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:  gui.scrollLeftMain,
 		},
 		{
+			ViewName:    "main",
+			Key:         '/',
+			Modifier:    gocui.ModNone,
+			Handler:     wrappedHandler(gui.handleOpenLogsFilter),
+			Description: gui.Tr.LcFilterLogs,
+		},
+		{
 			ViewName: "main",
 			Key:      gocui.KeyArrowRight,
 			Modifier: gocui.ModNone,
@@ -472,6 +479,18 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Key:      gocui.KeyEsc,
 			Modifier: gocui.ModNone,
 			Handler:  wrappedHandler(gui.escapeFilterPrompt),
+		},
+		{
+			ViewName: "logsfilter",
+			Key:      gocui.KeyEnter,
+			Modifier: gocui.ModNone,
+			Handler:  wrappedHandler(gui.commitLogsFilter),
+		},
+		{
+			ViewName: "logsfilter",
+			Key:      gocui.KeyEsc,
+			Modifier: gocui.ModNone,
+			Handler:  wrappedHandler(gui.escapeLogsFilterPrompt),
 		},
 		{
 			ViewName: "",
