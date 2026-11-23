@@ -22,6 +22,11 @@ import (
 	"github.com/jesseduffield/yaml"
 )
 
+const (
+	CPUCaption    = "CPU (%)"
+	MemoryCaption = "Memory (%)"
+)
+
 // UserConfig holds all of the user-configurable options
 type UserConfig struct {
 	// Gui is for configuring visual things like colors and whether we show or
@@ -460,12 +465,12 @@ func GetDefaultConfig() UserConfig {
 			MaxDuration: duration,
 			Graphs: []GraphConfig{
 				{
-					Caption:  "CPU (%)",
+					Caption:  CPUCaption,
 					StatPath: "DerivedStats.CPUPercentage",
 					Color:    "cyan",
 				},
 				{
-					Caption:  "Memory (%)",
+					Caption:  MemoryCaption,
 					StatPath: "DerivedStats.MemoryPercentage",
 					Color:    "green",
 				},
