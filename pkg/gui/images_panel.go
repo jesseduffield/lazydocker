@@ -219,3 +219,29 @@ func (gui *Gui) handleImagesBulkCommand(g *gocui.Gui, v *gocui.View) error {
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }
+
+func (gui *Gui) handleImagesTagCommand(g *gocui.Gui, v *gocui.View) error {
+	image, err := gui.Panels.Images.GetSelectedItem()
+	if err != nil {
+		return nil
+	}
+
+	return gui.createPromptPanel(gui.Tr.NewTagCommand, image.String(), func(g *gocui.Gui, v *gocui.View) error {
+		newTag := gui.trimmedContent(v)
+
+		var cmd string
+		// if the user has provided a tag with a colon, we assume they've provided a full tag
+		if strings.Contains(newTag, ":") {
+			cmd = "docker tag " + image.String() + " " + newTag
+		} else {
+			cmd = "docker tag " + image.String() + " " + image.Name + ":" + newTag
+		}
+
+		err := gui.runSubprocess(gui.OSCommand.RunCustomCommand(cmd))
+		if err != nil {
+			return gui.createErrorPanel(err.Error())
+		}
+
+		return gui.reloadImages()
+	})
+}
