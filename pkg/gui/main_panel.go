@@ -98,6 +98,15 @@ func (gui *Gui) handleExitMain(g *gocui.Gui, v *gocui.View) error {
 	return gui.returnFocus()
 }
 
+func (gui *Gui) handleClearMain() error {
+	if gui.popupPanelFocused() {
+		return nil
+	}
+
+	gui.Views.Main.Clear()
+	return nil
+}
+
 func (gui *Gui) handleMainClick() error {
 	if gui.popupPanelFocused() {
 		return nil
