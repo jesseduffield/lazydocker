@@ -32,10 +32,14 @@ func GetServiceDisplayStrings(guiConfig *config.GuiConfig, service *commands.Ser
 	}
 
 	container := service.Container
+	serviceName := service.Name
+	if container != nil && container.Name != "" {
+		serviceName = service.Name + " (" + container.Name + ")"
+	}
 	return []string{
 		getContainerDisplayStatus(guiConfig, container),
 		getContainerDisplaySubstatus(guiConfig, container),
-		service.Name,
+		serviceName,
 		getDisplayCPUPerc(container),
 		utils.ColoredString(displayPorts(container), color.FgYellow),
 		utils.ColoredString(displayContainerImage(container), color.FgMagenta),
