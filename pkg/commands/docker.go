@@ -178,7 +178,11 @@ func (c *DockerCommand) setDockerComposeCommand(config *config.AppConfig) {
 		return
 	}
 
-	// it's possible that a user is still using docker-compose, so we'll check if 'docker comopose' is available, and if not, we'll fall back to 'docker-compose'
+	if os.Getenv(dockerHostEnvKey) != "" {
+		return
+	}
+
+	// it's possible that a user is still using docker-compose, so we'll check if 'docker compose' is available, and if not, we'll fall back to 'docker-compose'
 	err := c.OSCommand.RunCommand("docker compose version")
 	if err != nil {
 		config.UserConfig.CommandTemplates.DockerCompose = "docker-compose"

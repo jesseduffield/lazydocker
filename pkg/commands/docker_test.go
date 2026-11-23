@@ -2,6 +2,7 @@ package commands
 
 import (
 	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/docker/docker/client"
@@ -88,4 +89,20 @@ func TestIsProjectScoped(t *testing.T) {
 			assert.Equal(t, tc.want, c.IsProjectScoped())
 		})
 	}
+}
+
+func TestSetDockerComposeCommandKeepsDefaultForRemoteDockerHost(t *testing.T) {
+	t.Setenv(dockerHostEnvKey, "ssh://example.com")
+
+	userConfig := config.GetDefaultConfig()
+	appConfig := &config.AppConfig{UserConfig: &userConfig}
+	osCommand := NewOSCommand(NewDummyLog(), appConfig)
+	osCommand.SetCommand(func(string, ...string) *exec.Cmd {
+		return exec.Command("sh", "-c", "exit 1")
+	})
+
+	dockerCommand := &DockerCommand{OSCommand: osCommand}
+	dockerCommand.setDockerComposeCommand(appConfig)
+
+	assert.Equal(t, "docker compose", appConfig.UserConfig.CommandTemplates.DockerCompose)
 }
