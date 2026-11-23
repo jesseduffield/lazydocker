@@ -78,7 +78,7 @@ func (gui *Gui) volumeConfigStr(volume *commands.Volume) string {
 	}
 
 	if volume.Volume.UsageData != nil {
-		output += utils.WithPadding("RefCount: ", padding) + fmt.Sprintf("%d", volume.Volume.UsageData.RefCount) + "\n"
+		output += "\n" + utils.WithPadding("RefCount: ", padding) + fmt.Sprintf("%d", volume.Volume.UsageData.RefCount) + "\n"
 		output += utils.WithPadding("Size: ", padding) + utils.FormatBinaryBytes(int(volume.Volume.UsageData.Size)) + "\n"
 	}
 
