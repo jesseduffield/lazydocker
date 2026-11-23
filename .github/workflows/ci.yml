@@ -23,13 +23,13 @@ jobs:
       GOFLAGS: -mod=vendor
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
           go-version: 1.24.x
       - name: Cache build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/go-build
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-test
@@ -45,13 +45,13 @@ jobs:
       GOARCH: amd64
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
           go-version: 1.24.x
       - name: Cache build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/go-build
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-build
@@ -73,13 +73,13 @@ jobs:
       GOARCH: amd64
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
           go-version: 1.24.x
       - name: Cache build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cache/go-build
@@ -100,20 +100,20 @@ jobs:
       GOFLAGS: -mod=vendor
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
           go-version: 1.24.x
       - name: Cache build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/go-build
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-test
           restore-keys: |
             ${{runner.os}}-go-
       - name: Lint
-        uses: golangci/golangci-lint-action@v3.1.0
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
       - name: Format code
