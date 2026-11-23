@@ -89,3 +89,51 @@ func TestIsProjectScoped(t *testing.T) {
 		})
 	}
 }
+
+func TestGetComposeProjectNameDoesNotDependOnContainers(t *testing.T) {
+	composeCommand := NewDummyOSCommand()
+	composeCommand.Config.UserConfig = &config.UserConfig{}
+	composeCommand.Config.UserConfig.CommandTemplates.DockerCompose = "printf '{\"name\":\"docker1\"}'"
+	dockerCommand := &DockerCommand{
+		Log:       NewDummyLog(),
+		OSCommand: composeCommand,
+		Config:    composeCommand.Config,
+	}
+
+	// A container from another project may expose the same service name. The
+	// local project must come from Compose config, not from container ordering.
+	containers := []*Container{{ProjectName: "docker2", ServiceName: "web"}}
+	assert.Len(t, dockerCommand.GetServicesFromContainers(containers), 1)
+
+	projectName, err := dockerCommand.getComposeProjectName()
+
+	assert.NoError(t, err)
+	assert.Equal(t, "docker1", projectName)
+}
+
+func TestGetComposeProjectNameRejectsInvalidConfig(t *testing.T) {
+	tests := []struct {
+		name   string
+		output string
+	}{
+		{name: "invalid json", output: "not-json"},
+		{name: "missing name", output: `{}`},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			composeCommand := NewDummyOSCommand()
+			composeCommand.Config.UserConfig = &config.UserConfig{}
+			composeCommand.Config.UserConfig.CommandTemplates.DockerCompose = "printf '%s' '" + test.output + "'"
+			dockerCommand := &DockerCommand{
+				Log:       NewDummyLog(),
+				OSCommand: composeCommand,
+				Config:    composeCommand.Config,
+			}
+
+			_, err := dockerCommand.getComposeProjectName()
+
+			assert.Error(t, err)
+		})
+	}
+}

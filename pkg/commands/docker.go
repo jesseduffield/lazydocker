@@ -138,6 +138,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		Client:                 cli,
 		ErrorChan:              errorChan,
 		InDockerComposeProject: true,
+		LocalProjectName:      config.ProjectName,
 		Closers:                []io.Closer{tunnelCloser},
 	}
 
@@ -154,15 +155,38 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		log.Warn(err.Error())
 	}
 
-	// When the user passes -p outside of a compose directory, treat it as the
-	// local project so the project/services panels still appear and filtering
-	// is applied. Inside a compose dir, LocalProjectName is derived from
-	// container labels later in RefreshContainersAndServices.
-	if !dockerCommand.InDockerComposeProject && config.ProjectName != "" {
-		dockerCommand.LocalProjectName = config.ProjectName
+	// Resolve the local project from Compose before inspecting containers. This
+	// keeps identical service names in other projects from determining which
+	// project this instance belongs to.
+	if dockerCommand.InDockerComposeProject && dockerCommand.LocalProjectName == "" {
+		if projectName, err := dockerCommand.getComposeProjectName(); err == nil {
+			dockerCommand.LocalProjectName = projectName
+		} else {
+			log.Warn("Failed to determine local Compose project name: " + err.Error())
+		}
 	}
 
 	return dockerCommand, nil
+}
+
+func (c *DockerCommand) getComposeProjectName() (string, error) {
+	composeCommand := c.Config.UserConfig.CommandTemplates.DockerCompose
+	output, err := c.OSCommand.RunCommandWithOutput(fmt.Sprintf("%s config --format json", composeCommand))
+	if err != nil {
+		return "", err
+	}
+
+	var composeConfig struct {
+		Name string `json:"name"`
+	}
+	if err := json.Unmarshal([]byte(output), &composeConfig); err != nil {
+		return "", err
+	}
+	if composeConfig.Name == "" {
+		return "", fmt.Errorf("Compose config did not contain a project name")
+	}
+
+	return composeConfig.Name, nil
 }
 
 // IsProjectScoped reports whether lazydocker should be scoped to a single
