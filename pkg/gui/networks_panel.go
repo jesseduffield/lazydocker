@@ -64,9 +64,10 @@ func (gui *Gui) networkConfigStr(network *commands.Network) string {
 	output += utils.WithPadding("Ingress: ", padding) + strconv.FormatBool(network.Network.Ingress) + "\n"
 
 	output += utils.WithPadding("Containers: ", padding)
-	if len(network.Network.Containers) > 0 {
+	inspected, err := network.Inspect()
+	if err == nil && len(inspected.Containers) > 0 {
 		output += "\n"
-		for _, v := range network.Network.Containers {
+		for _, v := range inspected.Containers {
 			output += utils.FormatMapItem(padding, v.Name, v.EndpointID)
 		}
 	} else {
