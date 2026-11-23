@@ -66,24 +66,34 @@ func TestNewDockerClientVersionNegotiation(t *testing.T) {
 // TestIsProjectScoped covers the predicate that drives whether the
 // project/services panels appear and whether the containers panel filters by
 // project. The "outside compose dir + -p" case is the regression we fixed
-// after PR #776 silently disabled it.
+// after PR #776 silently disabled it. forceProjectView restores multi-project
+// panels when launched outside a compose directory (issue #800).
 func TestIsProjectScoped(t *testing.T) {
 	cases := []struct {
 		name                   string
 		inDockerComposeProject bool
 		projectName            string
+		forceProjectView       bool
 		want                   bool
 	}{
-		{"inside compose dir, no -p", true, "", true},
-		{"inside compose dir, with -p", true, "myproject", true},
-		{"outside compose dir, no -p", false, "", false},
-		{"outside compose dir, with -p", false, "myproject", true},
+		{"inside compose dir, no -p", true, "", false, true},
+		{"inside compose dir, with -p", true, "myproject", false, true},
+		{"outside compose dir, no -p", false, "", false, false},
+		{"outside compose dir, with -p", false, "myproject", false, true},
+		{"outside compose dir, forceProjectView", false, "", true, true},
+		{"outside compose dir, forceProjectView and -p", false, "myproject", true, true},
+		{"inside compose dir, forceProjectView", true, "", true, true},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			c := &DockerCommand{
 				InDockerComposeProject: tc.inDockerComposeProject,
-				Config:                 &config.AppConfig{ProjectName: tc.projectName},
+				Config: &config.AppConfig{
+					ProjectName: tc.projectName,
+					UserConfig: &config.UserConfig{
+						Gui: config.GuiConfig{ForceProjectView: tc.forceProjectView},
+					},
+				},
 			}
 			assert.Equal(t, tc.want, c.IsProjectScoped())
 		})

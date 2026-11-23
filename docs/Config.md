@@ -46,6 +46,8 @@ gui:
       - blue
   returnImmediately: false
   wrapMainPanel: true
+  # Show Projects/Services panels even when not launched from a compose directory
+  forceProjectView: false
   # Side panel width as a ratio of the screen's width
   sidePanelWidth: 0.333
   # Determines whether we show the bottom line (the one containing keybinding
