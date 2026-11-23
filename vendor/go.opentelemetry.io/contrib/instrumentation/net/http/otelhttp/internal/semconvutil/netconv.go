@@ -195,11 +195,20 @@ func splitHostPort(hostport string) (host string, port int) {
 	if err != nil {
 		return
 	}
-	return host, int(p)
+	return host, int(p) // nolint: gosec  // Bitsize checked to be 16 above.
 }
 
 func netProtocol(proto string) (name string, version string) {
 	name, version, _ = strings.Cut(proto, "/")
-	name = strings.ToLower(name)
+	switch name {
+	case "HTTP":
+		name = "http"
+	case "QUIC":
+		name = "quic"
+	case "SPDY":
+		name = "spdy"
+	default:
+		name = strings.ToLower(name)
+	}
 	return name, version
 }

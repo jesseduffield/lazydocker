@@ -1,10 +1,10 @@
 package context
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/docker/cli/cli/context/store"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -45,14 +45,14 @@ func (data *TLSData) ToStoreTLSData() *store.EndpointTLSData {
 func LoadTLSData(s store.Reader, contextName, endpointName string) (*TLSData, error) {
 	tlsFiles, err := s.ListTLSFiles(contextName)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to retrieve TLS files for context %q", contextName)
+		return nil, fmt.Errorf("failed to retrieve TLS files for context %q: %w", contextName, err)
 	}
 	if epTLSFiles, ok := tlsFiles[endpointName]; ok {
 		var tlsData TLSData
 		for _, f := range epTLSFiles {
 			data, err := s.GetTLSData(contextName, endpointName, f)
 			if err != nil {
-				return nil, errors.Wrapf(err, "failed to retrieve TLS data (%s) for context %q", f, contextName)
+				return nil, fmt.Errorf("failed to retrieve TLS data (%s) for context %q: %w", f, contextName, err)
 			}
 			switch f {
 			case caKey:
