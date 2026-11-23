@@ -28,7 +28,7 @@ func (gui *Gui) getMenuPanel() *panels.SideListPanel[*types.MenuItem] {
 			return gui.resizePopupPanel(gui.Views.Menu)
 		},
 		// so that we can avoid some UI trickiness, the menu will not have filtering
-		// abillity yet. To support it, we would need to have filter state against
+		// ability yet. To support it, we would need to have filter state against
 		// each panel (e.g. for when you filter the images panel, then bring up
 		// the options menu, then try to filter that too.
 		DisableFilter: true,

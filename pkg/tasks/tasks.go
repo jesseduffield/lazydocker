@@ -133,7 +133,7 @@ func (t *TaskManager) NewTickerTask(duration time.Duration, before func(ctx cont
 				t.Log.Info("exiting ticker task due to notifyStopped channel")
 				return
 			case <-ctx.Done():
-				t.Log.Info("exiting ticker task due to stopped cahnnel")
+				t.Log.Info("exiting ticker task due to stopped channel")
 				return
 			case <-tickChan.C:
 				t.Log.Info("running ticker task again")
