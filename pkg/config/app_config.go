@@ -220,6 +220,9 @@ type CommandTemplatesConfig struct {
 
 	// ServiceTop is the command for viewing the processes under a given service
 	ServiceTop string `yaml:"serviceTop,omitempty"`
+
+	// List of shells that, in given order, will be tried when attaching to a container.
+	PreferredExecShells []string `yaml:"preferedExecShell,omitempty"`
 }
 
 // OSConfig contains config on the level of the os
@@ -402,6 +405,7 @@ func GetDefaultConfig() UserConfig {
 			DockerComposeConfig:      "{{ .DockerCompose }} config",
 			CheckDockerComposeConfig: "{{ .DockerCompose }} config --quiet",
 			ServiceTop:               "{{ .DockerCompose }} top {{ .Service.Name }}",
+			PreferredExecShells:      []string{},
 		},
 		CustomCommands: CustomCommands{
 			Containers: []CustomCommand{},
