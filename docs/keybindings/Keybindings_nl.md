@@ -25,6 +25,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>a</kbd>: verbinden
   <kbd>m</kbd>: bekijk logs
   <kbd>E</kbd>: exec shell
+  <kbd>t</kbd>: cycle how many log lines are shown
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>b</kbd>: view bulk commands
   <kbd>w</kbd>: open in browser (first port is http)
@@ -45,6 +46,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>S</kbd>: start
   <kbd>a</kbd>: verbinden
   <kbd>m</kbd>: bekijk logs
+  <kbd>t</kbd>: cycle how many log lines are shown
   <kbd>U</kbd>: up project
   <kbd>D</kbd>: down project
   <kbd>R</kbd>: bekijk herstart opties
