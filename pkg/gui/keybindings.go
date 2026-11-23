@@ -462,6 +462,20 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:  gui.scrollRightMain,
 		},
 		{
+			ViewName:    "main",
+			Key:         'g',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.gotoTopMain,
+			Description: gui.Tr.GotoTop,
+		},
+		{
+			ViewName:    "main",
+			Key:         'G',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.gotoBottomMain,
+			Description: gui.Tr.GotoBottom,
+		},
+		{
 			ViewName: "filter",
 			Key:      gocui.KeyEnter,
 			Modifier: gocui.ModNone,

@@ -63,6 +63,8 @@ type TranslationSet struct {
 	Recreate                    string
 	PreviousContext             string
 	NextContext                 string
+	GotoTop                     string
+	GotoBottom                  string
 	Attach                      string
 	ViewLogs                    string
 	UpProject                   string
@@ -194,6 +196,8 @@ func englishSet() TranslationSet {
 		Recreate:                    "recreate",
 		PreviousContext:             "previous tab",
 		NextContext:                 "next tab",
+		GotoTop:                     "scroll to top",
+		GotoBottom:                  "scroll to bottom",
 		Attach:                      "attach",
 		ViewLogs:                    "view logs",
 		UpProject:                   "up project",

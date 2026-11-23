@@ -230,6 +230,8 @@ func (gui *Gui) renderPanelOptions() error {
 		return gui.renderMenuOptions()
 	case "confirmation":
 		return gui.renderConfirmationOptions()
+	case "main":
+		return gui.renderMainOptions()
 	}
 	return gui.renderGlobalOptions()
 }

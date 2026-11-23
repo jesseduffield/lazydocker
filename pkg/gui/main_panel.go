@@ -2,9 +2,32 @@ package gui
 
 import (
 	"math"
+	"time"
 
 	"github.com/jesseduffield/gocui"
 )
+
+// gPressTimeout is the window within which two consecutive 'g' presses are
+// treated as the vim-style "gg" command to jump to the top of the main panel.
+const gPressTimeout = 250 * time.Millisecond
+
+// isDoublePress reports whether `now` follows `previous` closely enough to be
+// considered the second half of a double key press.
+func isDoublePress(previous, now time.Time, timeout time.Duration) bool {
+	return !previous.IsZero() && now.Sub(previous) <= timeout
+}
+
+// gotoBottomOriginY returns the vertical origin that scrolls the main panel to
+// its final line. When scrollPastBottom is false the last page of content is
+// kept on screen rather than scrolling it off the top.
+func gotoBottomOriginY(totalLines, viewHeight int, scrollPastBottom bool) int {
+	reservedLines := 0
+	if !scrollPastBottom {
+		reservedLines = viewHeight
+	}
+
+	return int(math.Max(0, float64(totalLines-reservedLines)))
+}
 
 func (gui *Gui) scrollUpMain() error {
 	mainView := gui.Views.Main
@@ -71,6 +94,33 @@ func (gui *Gui) jumpToTopMain(g *gocui.Gui, v *gocui.View) error {
 	_ = gui.Views.Main.SetOrigin(0, 0)
 	_ = gui.Views.Main.SetCursor(0, 0)
 	return nil
+}
+
+// gotoTopMain implements the vim-style "gg" command: the first 'g' arms the
+// sequence and the second 'g' pressed within gPressTimeout jumps to the top of
+// the main panel.
+func (gui *Gui) gotoTopMain(g *gocui.Gui, v *gocui.View) error {
+	now := time.Now()
+	if !isDoublePress(gui.State.lastGPressedAt, now, gPressTimeout) {
+		gui.State.lastGPressedAt = now
+		return nil
+	}
+
+	gui.State.lastGPressedAt = time.Time{}
+	return gui.jumpToTopMain(g, v)
+}
+
+// gotoBottomMain implements the vim-style "G" command, jumping to the bottom of
+// the main panel.
+func (gui *Gui) gotoBottomMain(g *gocui.Gui, v *gocui.View) error {
+	mainView := gui.Views.Main
+	mainView.Autoscroll = false
+
+	_, viewHeight := mainView.Size()
+	ox, _ := mainView.Origin()
+	newOy := gotoBottomOriginY(mainView.ViewLinesHeight(), viewHeight, gui.Config.UserConfig.Gui.ScrollPastBottom)
+
+	return mainView.SetOrigin(ox, newOy)
 }
 
 func (gui *Gui) onMainTabClick(tabIndex int) error {
