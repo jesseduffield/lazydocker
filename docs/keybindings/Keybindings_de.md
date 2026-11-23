@@ -24,6 +24,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>r</kbd>: neustarten
   <kbd>a</kbd>: anbinden
   <kbd>m</kbd>: zeige Protokolle
+  <kbd>C</kbd>: Protokolle kopieren
   <kbd>E</kbd>: exec shell
   <kbd>c</kbd>: führe vordefinierten benutzerdefinierten Befehl aus
   <kbd>b</kbd>: view bulk commands
@@ -45,6 +46,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>S</kbd>: start
   <kbd>a</kbd>: anbinden
   <kbd>m</kbd>: zeige Protokolle
+  <kbd>C</kbd>: Protokolle kopieren
   <kbd>U</kbd>: up project
   <kbd>D</kbd>: down project
   <kbd>R</kbd>: zeige Neustartoptionen
@@ -98,6 +100,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>esc</kbd>: zurück
+  <kbd>C</kbd>: Inhalt kopieren
 </pre>
 
 ## Global

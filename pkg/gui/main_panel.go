@@ -98,6 +98,19 @@ func (gui *Gui) handleExitMain(g *gocui.Gui, v *gocui.View) error {
 	return gui.returnFocus()
 }
 
+func (gui *Gui) handleCopyMainContent(g *gocui.Gui, v *gocui.View) error {
+	content := gui.trimmedContent(v)
+	if content == "" {
+		return nil
+	}
+
+	if err := gui.OSCommand.CopyToClipboard([]byte(content)); err != nil {
+		return gui.createErrorPanel(err.Error())
+	}
+
+	return nil
+}
+
 func (gui *Gui) handleMainClick() error {
 	if gui.popupPanelFocused() {
 		return nil

@@ -58,6 +58,8 @@ func chineseSet() TranslationSet {
 		NextContext:       "下一个选项卡",
 		// Attach: "连接/附加",
 		ViewLogs:                    "查看日志",
+		CopyLogs:                    "复制日志",
+		CopyContent:                 "复制内容",
 		UpProject:                   "创建并启动容器",
 		DownProject:                 "停止并移除容器",
 		RemoveImage:                 "移除镜像",

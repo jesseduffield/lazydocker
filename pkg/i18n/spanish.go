@@ -53,6 +53,8 @@ func spanishSet() TranslationSet {
 		PreviousContext:             "anterior pestaña",
 		NextContext:                 "siguiente pestaña",
 		ViewLogs:                    "ver logs",
+		CopyLogs:                    "copiar logs",
+		CopyContent:                 "copiar contenido",
 		UpProject:                   "levantar proyecto",
 		DownProject:                 "dar de baja el proyecto",
 		RemoveImage:                 "limpiar imagen",

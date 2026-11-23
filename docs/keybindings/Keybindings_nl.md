@@ -24,6 +24,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>r</kbd>: herstart
   <kbd>a</kbd>: verbinden
   <kbd>m</kbd>: bekijk logs
+  <kbd>C</kbd>: kopieer logs
   <kbd>E</kbd>: exec shell
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
   <kbd>b</kbd>: view bulk commands
@@ -45,6 +46,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>S</kbd>: start
   <kbd>a</kbd>: verbinden
   <kbd>m</kbd>: bekijk logs
+  <kbd>C</kbd>: kopieer logs
   <kbd>U</kbd>: up project
   <kbd>D</kbd>: down project
   <kbd>R</kbd>: bekijk herstart opties
@@ -98,6 +100,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>esc</kbd>: terug
+  <kbd>C</kbd>: kopieer inhoud
 </pre>
 
 ## Globaal

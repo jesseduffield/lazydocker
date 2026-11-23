@@ -236,6 +236,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "containers",
+			Key:         'C',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleContainerCopyLogs,
+			Description: gui.Tr.CopyLogs,
+		},
+		{
+			ViewName:    "containers",
 			Key:         'E',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersExecShell,
@@ -317,6 +324,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceRenderLogsToMain,
 			Description: gui.Tr.ViewLogs,
+		},
+		{
+			ViewName:    "services",
+			Key:         'C',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServiceCopyLogs,
+			Description: gui.Tr.CopyLogs,
 		},
 		{
 			ViewName:    "services",
@@ -438,6 +452,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.Return,
 		},
 		{
+			ViewName:    "main",
+			Key:         'C',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleCopyMainContent,
+			Description: gui.Tr.CopyContent,
+		},
+		{
 			ViewName: "main",
 			Key:      gocui.KeyArrowLeft,
 			Modifier: gocui.ModNone,
@@ -550,7 +571,8 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 	setUpDownClickBindings("main", gui.scrollUpMain, gui.scrollDownMain, gui.handleMainClick)
 
 	for _, panel := range gui.allSidePanels() {
-		bindings = append(bindings,
+		bindings = append(
+			bindings,
 			&Binding{
 				ViewName:    panel.GetView().Name(),
 				Key:         gocui.KeyEnter,

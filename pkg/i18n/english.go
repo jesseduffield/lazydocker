@@ -65,6 +65,8 @@ type TranslationSet struct {
 	NextContext                 string
 	Attach                      string
 	ViewLogs                    string
+	CopyLogs                    string
+	CopyContent                 string
 	UpProject                   string
 	DownProject                 string
 	ServicesTitle               string
@@ -196,6 +198,8 @@ func englishSet() TranslationSet {
 		NextContext:                 "next tab",
 		Attach:                      "attach",
 		ViewLogs:                    "view logs",
+		CopyLogs:                    "copy logs",
+		CopyContent:                 "copy content",
 		UpProject:                   "up project",
 		DownProject:                 "down project",
 		RemoveImage:                 "remove image",

@@ -190,6 +190,11 @@ type CommandTemplatesConfig struct {
 	// performance.
 	ViewServiceLogs string `yaml:"viewServiceLogs,omitempty"`
 
+	// GetServiceLogs is for when you want to grab a snapshot of a service's
+	// recent logs (e.g. to copy them to the clipboard) rather than following
+	// them as a subprocess.
+	GetServiceLogs string `yaml:"getServiceLogs,omitempty"`
+
 	// RebuildService is the command for rebuilding a service. Defaults to
 	// something along the lines of `{{ .DockerCompose }} up --build {{
 	// .Service.Name }}`
@@ -397,6 +402,7 @@ func GetDefaultConfig() UserConfig {
 			StopService:              "{{ .DockerCompose }} stop {{ .Service.Name }}",
 			ServiceLogs:              "{{ .DockerCompose }} logs --since=60m --follow {{ .Service.Name }}",
 			ViewServiceLogs:          "{{ .DockerCompose }} logs --follow {{ .Service.Name }}",
+			GetServiceLogs:           "{{ .DockerCompose }} logs --tail=300 {{ .Service.Name }}",
 			AllLogs:                  "{{ .DockerCompose }} logs --tail=300 --follow",
 			ViewAllLogs:              "{{ .DockerCompose }} logs",
 			DockerComposeConfig:      "{{ .DockerCompose }} config",

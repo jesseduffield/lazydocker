@@ -108,6 +108,14 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 	return cmd, nil
 }
 
+// GetLogs returns a snapshot of the container's recent logs, unlike the
+// streaming logs used when rendering to the main panel
+func (c *Container) GetLogs() ([]byte, error) {
+	// TODO: use SDK
+	cmd := c.OSCommand.NewCmd("docker", "logs", "--tail=300", c.ID)
+	return cmd.CombinedOutput()
+}
+
 // Top returns process information
 func (c *Container) Top(ctx context.Context) (container.TopResponse, error) {
 	detail, err := c.Inspect()

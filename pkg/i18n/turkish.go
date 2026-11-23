@@ -42,6 +42,8 @@ func turkishSet() TranslationSet {
 		NextContext:        "sonraki sekme",
 		Attach:             "bağlan/iliştir",
 		ViewLogs:           "kayıt defterini görüntüle",
+		CopyLogs:           "kayıt defterini kopyala",
+		CopyContent:        "içeriği kopyala",
 		RemoveImage:        "imajı kaldır",
 		RemoveVolume:       "alanı kaldır",
 		RemoveNetwork:      "ağı kaldır",

@@ -453,6 +453,24 @@ func (gui *Gui) handleContainerViewLogs(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+func (gui *Gui) handleContainerCopyLogs(g *gocui.Gui, v *gocui.View) error {
+	ctr, err := gui.Panels.Containers.GetSelectedItem()
+	if err != nil {
+		return nil
+	}
+
+	output, err := ctr.GetLogs()
+	if err != nil {
+		return gui.createErrorPanel(err.Error())
+	}
+
+	if err := gui.OSCommand.CopyToClipboard(output); err != nil {
+		return gui.createErrorPanel(err.Error())
+	}
+
+	return nil
+}
+
 func (gui *Gui) handleContainersExecShell(g *gocui.Gui, v *gocui.View) error {
 	ctr, err := gui.Panels.Containers.GetSelectedItem()
 	if err != nil {

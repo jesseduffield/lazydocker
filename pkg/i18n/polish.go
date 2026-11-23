@@ -42,6 +42,8 @@ func polishSet() TranslationSet {
 		NextContext:        "następna zakładka",
 		Attach:             "przyczep",
 		ViewLogs:           "pokaż logi",
+		CopyLogs:           "kopiuj logi",
+		CopyContent:        "kopiuj zawartość",
 		RemoveImage:        "usuń obraz",
 		RemoveVolume:       "usuń wolumen",
 		RemoveNetwork:      "usuń sieci",
