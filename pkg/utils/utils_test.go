@@ -319,3 +319,111 @@ quux:
 		}
 	}
 }
+
+func TestFormatBinaryBytes(t *testing.T) {
+	type scenario struct {
+		input    int
+		expected string
+	}
+
+	scenarios := []scenario{
+		{0, "0B"},
+		{-1, "-1.00B"},
+		{1, "1.00B"},
+		{1023, "1023.00B"},
+		{1024, "1024.00B"},
+		{1025, "1.00kiB"},
+		{1048575, "1024.00kiB"},
+		{1048576, "1024.00kiB"},
+		{1048577, "1.00MiB"},
+		{1073741824, "1024.00MiB"},
+		{1073741825, "1.00GiB"},
+	}
+
+	for _, s := range scenarios {
+		assert.Equal(t, s.expected, FormatBinaryBytes(s.input))
+	}
+}
+
+func TestFormatDecimalBytes(t *testing.T) {
+	type scenario struct {
+		input    int
+		expected string
+	}
+
+	scenarios := []scenario{
+		{0, "0B"},
+		{-1, "-1.00B"},
+		{1, "1.00B"},
+		{999, "999.00B"},
+		{1000, "1000.00B"},
+		{1001, "1.00kB"},
+		{999999, "1000.00kB"},
+		{1000000, "1000.00kB"},
+		{1000001, "1.00MB"},
+		{1000000000, "1000.00MB"},
+		{1000000001, "1.00GB"},
+	}
+
+	for _, s := range scenarios {
+		assert.Equal(t, s.expected, FormatDecimalBytes(s.input))
+	}
+}
+
+func TestApplyTemplate(t *testing.T) {
+	type scenario struct {
+		str      string
+		object   interface{}
+		expected string
+	}
+
+	scenarios := []scenario{
+		{
+			"{{.Name}}",
+			struct{ Name string }{"test"},
+			"test",
+		},
+		{
+			"",
+			struct{ Name string }{"test"},
+			"",
+		},
+		{
+			"{{.Value}}",
+			struct{ Value int }{42},
+			"42",
+		},
+		{
+			"hello {{.Name}}",
+			struct{ Name string }{"world"},
+			"hello world",
+		},
+	}
+
+	for _, s := range scenarios {
+		assert.Equal(t, s.expected, ApplyTemplate(s.str, s.object))
+	}
+}
+
+func TestMax(t *testing.T) {
+	type scenario struct {
+		x        int
+		y        int
+		expected int
+	}
+
+	scenarios := []scenario{
+		{1, 2, 2},
+		{2, 1, 2},
+		{1, 1, 1},
+		{-1, 1, 1},
+		{-1, -2, -1},
+		{0, 0, 0},
+		{0, 5, 5},
+		{5, 0, 5},
+	}
+
+	for _, s := range scenarios {
+		assert.Equal(t, s.expected, Max(s.x, s.y))
+	}
+}
