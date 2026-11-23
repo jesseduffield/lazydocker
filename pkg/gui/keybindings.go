@@ -3,6 +3,7 @@ package gui
 import (
 	"fmt"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/jesseduffield/gocui"
 )
 
@@ -74,6 +75,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier: gocui.ModNone,
 			Handler:  gui.quit,
 		},
+
 		{
 			ViewName: "",
 			Key:      gocui.KeyPgup,
@@ -236,6 +238,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "containers",
+			Key:         'l',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleContainerViewLogsExternal,
+			Description: "View logs with external pager",
+		},
+		{
+			ViewName:    "containers",
 			Key:         'E',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersExecShell,
@@ -317,6 +326,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleServiceRenderLogsToMain,
 			Description: gui.Tr.ViewLogs,
+		},
+		{
+			ViewName:    "services",
+			Key:         'l',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleServiceViewLogsExternal,
+			Description: "View logs with external pager",
 		},
 		{
 			ViewName:    "services",
@@ -436,6 +452,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleExitMain,
 			Description: gui.Tr.Return,
+		},
+		{
+			ViewName:    "main",
+			Key:         'l',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleMainViewLogsExternal,
+			Description: "View logs with external pager",
 		},
 		{
 			ViewName: "main",
@@ -587,7 +610,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		}
 	}
 
-	return bindings
+	return translateKeybindingsToKorean(bindings)
 }
 
 func (gui *Gui) keybindings(g *gocui.Gui) error {
@@ -610,4 +633,87 @@ func wrappedHandler(f func() error) func(*gocui.Gui, *gocui.View) error {
 	return func(g *gocui.Gui, v *gocui.View) error {
 		return f()
 	}
+}
+
+type koreanKey struct {
+	key      rune
+	modifier gocui.Modifier
+}
+
+var englishToKorean = map[rune]koreanKey{
+	// Lowercase
+	'q': {key: 'ㅂ', modifier: gocui.ModNone},
+	'w': {key: 'ㅈ', modifier: gocui.ModNone},
+	'e': {key: 'ㄷ', modifier: gocui.ModNone},
+	'r': {key: 'ㄱ', modifier: gocui.ModNone},
+	't': {key: 'ㅅ', modifier: gocui.ModNone},
+	'y': {key: 'ㅛ', modifier: gocui.ModNone},
+	'u': {key: 'ㅕ', modifier: gocui.ModNone},
+	'i': {key: 'ㅑ', modifier: gocui.ModNone},
+	'o': {key: 'ㅐ', modifier: gocui.ModNone},
+	'p': {key: 'ㅔ', modifier: gocui.ModNone},
+	'a': {key: 'ㅁ', modifier: gocui.ModNone},
+	's': {key: 'ㄴ', modifier: gocui.ModNone},
+	'd': {key: 'ㅇ', modifier: gocui.ModNone},
+	'f': {key: 'ㄹ', modifier: gocui.ModNone},
+	'g': {key: 'ㅎ', modifier: gocui.ModNone},
+	'h': {key: 'ㅗ', modifier: gocui.ModNone},
+	'j': {key: 'ㅓ', modifier: gocui.ModNone},
+	'k': {key: 'ㅏ', modifier: gocui.ModNone},
+	'l': {key: 'ㅣ', modifier: gocui.ModNone},
+	'z': {key: 'ㅋ', modifier: gocui.ModNone},
+	'x': {key: 'ㅌ', modifier: gocui.ModNone},
+	'c': {key: 'ㅊ', modifier: gocui.ModNone},
+	'v': {key: 'ㅍ', modifier: gocui.ModNone},
+	'b': {key: 'ㅠ', modifier: gocui.ModNone},
+	'n': {key: 'ㅜ', modifier: gocui.ModNone},
+	'm': {key: 'ㅡ', modifier: gocui.ModNone},
+
+	// Uppercase (Double Consonants - ModNone)
+	'Q': {key: 'ㅃ', modifier: gocui.ModNone},
+	'W': {key: 'ㅉ', modifier: gocui.ModNone},
+	'E': {key: 'ㄸ', modifier: gocui.ModNone},
+	'R': {key: 'ㄲ', modifier: gocui.ModNone},
+	'T': {key: 'ㅆ', modifier: gocui.ModNone},
+	'O': {key: 'ㅒ', modifier: gocui.ModNone},
+	'P': {key: 'ㅖ', modifier: gocui.ModNone},
+
+	// Uppercase (No Double Consonant - ModShift)
+	'A': {key: 'ㅁ', modifier: gocui.Modifier(tcell.ModShift)},
+	'S': {key: 'ㄴ', modifier: gocui.Modifier(tcell.ModShift)},
+	'D': {key: 'ㅇ', modifier: gocui.Modifier(tcell.ModShift)},
+	'F': {key: 'ㄹ', modifier: gocui.Modifier(tcell.ModShift)},
+	'G': {key: 'ㅎ', modifier: gocui.Modifier(tcell.ModShift)},
+	'H': {key: 'ㅗ', modifier: gocui.Modifier(tcell.ModShift)},
+	'J': {key: 'ㅓ', modifier: gocui.Modifier(tcell.ModShift)},
+	'K': {key: 'ㅏ', modifier: gocui.Modifier(tcell.ModShift)},
+	'L': {key: 'ㅣ', modifier: gocui.Modifier(tcell.ModShift)},
+	'Z': {key: 'ㅋ', modifier: gocui.Modifier(tcell.ModShift)},
+	'X': {key: 'ㅌ', modifier: gocui.Modifier(tcell.ModShift)},
+	'C': {key: 'ㅊ', modifier: gocui.Modifier(tcell.ModShift)},
+	'V': {key: 'ㅍ', modifier: gocui.Modifier(tcell.ModShift)},
+	'B': {key: 'ㅠ', modifier: gocui.Modifier(tcell.ModShift)},
+	'N': {key: 'ㅜ', modifier: gocui.Modifier(tcell.ModShift)},
+	'M': {key: 'ㅡ', modifier: gocui.Modifier(tcell.ModShift)},
+	'Y': {key: 'ㅛ', modifier: gocui.Modifier(tcell.ModShift)},
+	'U': {key: 'ㅕ', modifier: gocui.Modifier(tcell.ModShift)},
+	'I': {key: 'ㅑ', modifier: gocui.Modifier(tcell.ModShift)},
+}
+
+func translateKeybindingsToKorean(bindings []*Binding) []*Binding {
+	var translated []*Binding
+	for _, binding := range bindings {
+		if r, ok := binding.Key.(rune); ok {
+			if kor, exists := englishToKorean[r]; exists {
+				translated = append(translated, &Binding{
+					ViewName:    binding.ViewName,
+					Handler:     binding.Handler,
+					Key:         kor.key,
+					Modifier:    binding.Modifier | kor.modifier,
+					Description: binding.Description,
+				})
+			}
+		}
+	}
+	return append(bindings, translated...)
 }

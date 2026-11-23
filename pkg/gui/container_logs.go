@@ -1,16 +1,20 @@
 package gui
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
+	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
@@ -136,17 +140,156 @@ func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context,
 		}
 	}
 
+	stdoutWriter := NewLogWriter(writer, false)
+	stderrWriter := NewLogWriter(writer, true)
+	defer stdoutWriter.Close()
+	defer stderrWriter.Close()
+
 	if ctr.Details.Config.Tty {
-		_, err = io.Copy(writer, readCloser)
+		_, err = io.Copy(stdoutWriter, readCloser)
 		if err != nil {
 			return err
 		}
 	} else {
-		_, err = stdcopy.StdCopy(writer, writer, readCloser)
+		_, err = stdcopy.StdCopy(stdoutWriter, stderrWriter, readCloser)
 		if err != nil {
 			return err
 		}
 	}
 
+	return nil
+}
+
+type LogWriter struct {
+	writer     io.Writer
+	lineBuffer []byte
+	isStderr   bool
+}
+
+func NewLogWriter(writer io.Writer, isStderr bool) *LogWriter {
+	return &LogWriter{
+		writer:     writer,
+		lineBuffer: make([]byte, 0),
+		isStderr:   isStderr,
+	}
+}
+
+func (lw *LogWriter) Write(p []byte) (n int, err error) {
+	n = len(p)
+	lw.lineBuffer = append(lw.lineBuffer, p...)
+
+	for {
+		idx := bytes.IndexByte(lw.lineBuffer, '\n')
+		if idx == -1 {
+			break
+		}
+
+		line := string(lw.lineBuffer[:idx])
+		lw.lineBuffer = lw.lineBuffer[idx+1:]
+
+		colorised := utils.ColoriseLog(line)
+		if lw.isStderr {
+			colorised = "\x1b[31;1m" + colorised + "\x1b[0m"
+		}
+
+		_, err = fmt.Fprintln(lw.writer, colorised)
+		if err != nil {
+			return n, err
+		}
+	}
+	return n, nil
+}
+
+func (lw *LogWriter) Close() error {
+	if len(lw.lineBuffer) > 0 {
+		line := string(lw.lineBuffer)
+		colorised := utils.ColoriseLog(line)
+		if lw.isStderr {
+			colorised = "\x1b[31;1m" + colorised + "\x1b[0m"
+		}
+		_, err := fmt.Fprint(lw.writer, colorised)
+		return err
+	}
+	return nil
+}
+
+func (gui *Gui) handleContainerViewLogsExternal(g *gocui.Gui, v *gocui.View) error {
+	ctr, err := gui.Panels.Containers.GetSelectedItem()
+	if err != nil {
+		return nil
+	}
+	return gui.handleViewLogsExternal(ctr)
+}
+
+func (gui *Gui) handleMainViewLogsExternal(g *gocui.Gui, v *gocui.View) error {
+	currentSideViewName := gui.currentSideViewName()
+	if currentSideViewName == "containers" {
+		return gui.handleContainerViewLogsExternal(g, v)
+	} else if currentSideViewName == "services" {
+		return gui.handleServiceViewLogsExternal(g, v)
+	}
+	return nil
+}
+
+func (gui *Gui) handleViewLogsExternal(container *commands.Container) error {
+	pager := gui.Config.UserConfig.Logs.Pager
+	if pager == "" {
+		return gui.createErrorPanel("No external pager configured. Please set 'logs.pager' in config.yml")
+	}
+
+	tmpFile, err := os.CreateTemp("", "lazydocker-*.log")
+	if err != nil {
+		return gui.createErrorPanel(err.Error())
+	}
+	tmpPath := tmpFile.Name()
+	defer func() {
+		tmpFile.Close()
+		_ = os.Remove(tmpPath)
+	}()
+
+	stop := make(chan os.Signal, 1)
+	defer signal.Stop(stop)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go func() {
+		signal.Notify(stop, os.Interrupt)
+		<-stop
+		cancel()
+	}()
+
+	// Start writing container logs to the temporary file in background
+	go func() {
+		_ = gui.writeContainerLogs(container, ctx, tmpFile)
+	}()
+
+	// Wait briefly for some logs to be written so the pager has content on start
+	time.Sleep(200 * time.Millisecond)
+
+	if err := gui.g.Suspend(); err != nil {
+		gui.Log.Error(err)
+		return err
+	}
+
+	defer func() {
+		if err := gui.g.Resume(); err != nil {
+			gui.Log.Error(err)
+		}
+	}()
+
+	var cmdStr string
+	if strings.Contains(pager, "{{filename}}") {
+		cmdStr = strings.ReplaceAll(pager, "{{filename}}", tmpPath)
+	} else {
+		cmdStr = pager + " " + tmpPath
+	}
+
+	cmd := exec.CommandContext(ctx, "sh", "-c", cmdStr)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	_ = cmd.Run()
 	return nil
 }
