@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -32,6 +33,16 @@ import (
 const (
 	dockerHostEnvKey = "DOCKER_HOST"
 )
+
+// composeProjectNameRe matches the character class the Compose spec requires
+// for a project name. Any value that doesn't match this (for example a raw
+// Docker label set outside of docker-compose) must not be used to build a
+// docker-compose command line.
+var composeProjectNameRe = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]*$`)
+
+func isValidComposeProjectName(name string) bool {
+	return composeProjectNameRe.MatchString(name)
+}
 
 // DockerCommand is our main docker interface
 type DockerCommand struct {
@@ -74,10 +85,13 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	_ = mergo.Merge(&defaultObj, obj)
 
 	// When operating on a specific project, include -p flag so that
-	// docker compose targets the correct project.
-	if obj.Service != nil && obj.Service.ProjectName != "" {
+	// docker compose targets the correct project. The project name may
+	// originate from a Docker label (see RefreshContainersAndServices), which
+	// unlike a compose-file-derived name has no format guarantee, so it must
+	// be validated before it can be used to build a command line.
+	if obj.Service != nil && obj.Service.ProjectName != "" && isValidComposeProjectName(obj.Service.ProjectName) {
 		defaultObj.DockerCompose = fmt.Sprintf("%s -p %s", defaultObj.DockerCompose, obj.Service.ProjectName)
-	} else if obj.Project != nil && obj.Project.Name != "" {
+	} else if obj.Project != nil && obj.Project.Name != "" && isValidComposeProjectName(obj.Project.Name) {
 		defaultObj.DockerCompose = fmt.Sprintf("%s -p %s", defaultObj.DockerCompose, obj.Project.Name)
 	}
 
@@ -249,7 +263,7 @@ func (c *DockerCommand) RefreshContainersAndServices(currentContainers []*Contai
 	// name (e.g. a `name:` directive in the compose file).
 	if c.LocalProjectName == "" && c.InDockerComposeProject && composeServices != nil {
 		for _, ctr := range containers {
-			if ctr.ProjectName == "" || ctr.ServiceName == "" {
+			if ctr.ProjectName == "" || ctr.ServiceName == "" || !isValidComposeProjectName(ctr.ProjectName) {
 				continue
 			}
 			for _, svc := range composeServices {
