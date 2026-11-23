@@ -10,7 +10,13 @@ import (
 func (gui *Gui) getBindings(v *gocui.View) []*Binding {
 	var bindingsGlobal, bindingsPanel []*Binding
 
-	bindings := gui.GetInitialKeybindings()
+	opts := gui.KeybindingOpts()
+	bindings, err := gui.GetInitialKeybindings(opts)
+	if err != nil {
+		// If keybindings fail to load, return empty slice
+		// Error will be logged/displayed elsewhere during startup
+		return []*Binding{}
+	}
 
 	for _, binding := range bindings {
 		if binding.GetKey() != "" && binding.Description != "" {
