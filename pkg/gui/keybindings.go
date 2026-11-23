@@ -369,6 +369,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "images",
+			Key:         'I',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleSearchImages,
+			Description: gui.Tr.SearchImages,
+		},
+		{
+			ViewName:    "images",
 			Key:         'c',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleImagesCustomCommand,

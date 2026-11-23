@@ -2,15 +2,25 @@ package commands
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"io"
 	"strings"
 
+	cliconfig "github.com/docker/cli/cli/config"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	dockerHubRegistryAddress = "https://index.docker.io/v1/"
+	imageSearchResultLimit   = 50
 )
 
 // Image : A docker Image
@@ -134,6 +144,78 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 	}
 
 	return ownImages, nil
+}
+
+// SearchImages searches Docker Hub for images matching the supplied term.
+func (c *DockerCommand) SearchImages(ctx context.Context, term string) ([]registry.SearchResult, error) {
+	registryAuth, err := dockerHubRegistryAuth()
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Client.ImageSearch(ctx, term, registry.SearchOptions{
+		Limit:        imageSearchResultLimit,
+		RegistryAuth: registryAuth,
+	})
+}
+
+// PullImage pulls an image into the local Docker daemon and consumes the full
+// response stream so that errors reported by the registry are not missed.
+func (c *DockerCommand) PullImage(reference string) error {
+	registryAuth, err := dockerHubRegistryAuth()
+	if err != nil {
+		return err
+	}
+
+	reader, err := c.Client.ImagePull(context.Background(), reference, image.PullOptions{
+		RegistryAuth: registryAuth,
+	})
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+
+	return consumeImagePullResponse(reader)
+}
+
+func dockerHubRegistryAuth() (string, error) {
+	configFile, err := cliconfig.Load(cliconfig.Dir())
+	if err != nil {
+		return "", err
+	}
+
+	authConfig, err := configFile.GetAuthConfig(dockerHubRegistryAddress)
+	if err != nil {
+		return "", err
+	}
+
+	return registry.EncodeAuthConfig(registry.AuthConfig(authConfig))
+}
+
+func consumeImagePullResponse(reader io.Reader) error {
+	decoder := json.NewDecoder(reader)
+	for {
+		var message struct {
+			Error       string `json:"error"`
+			ErrorDetail struct {
+				Message string `json:"message"`
+			} `json:"errorDetail"`
+		}
+
+		if err := decoder.Decode(&message); err != nil {
+			if errors.Is(err, io.EOF) {
+				return nil
+			}
+			return err
+		}
+
+		if message.ErrorDetail.Message != "" {
+			return errors.New(message.ErrorDetail.Message)
+		}
+		if message.Error != "" {
+			return errors.New(message.Error)
+		}
+	}
 }
 
 // PruneImages prunes images
