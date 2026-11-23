@@ -32,6 +32,7 @@ func polishSet() TranslationSet {
 		Cancel:             "anuluj",
 		Remove:             "usuń",
 		ForceRemove:        "usuń siłą",
+		ForceRemoveWithVolumes: "usuń siłą z wolumenami",
 		RemoveWithVolumes:  "usuń z wolumenami",
 		RemoveService:      "usuń kontenery",
 		Stop:               "zatrzymaj",

@@ -35,6 +35,7 @@ type TranslationSet struct {
 	HideStopped                 string
 	ForceRemove                 string
 	RemoveWithVolumes           string
+	ForceRemoveWithVolumes      string
 	MustForceToRemoveContainer  string
 	Confirm                     string
 	Return                      string
@@ -181,6 +182,7 @@ func englishSet() TranslationSet {
 		Remove:                      "remove",
 		HideStopped:                 "hide/show stopped containers",
 		ForceRemove:                 "force remove",
+		ForceRemoveWithVolumes:      "force remove with volumes",
 		RemoveWithVolumes:           "remove with volumes",
 		RemoveService:               "remove containers",
 		UpService:                   "up service",

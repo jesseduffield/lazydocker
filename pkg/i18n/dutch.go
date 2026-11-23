@@ -33,6 +33,7 @@ func dutchSet() TranslationSet {
 		Remove:             "verwijder",
 		HideStopped:        "verberg gestopte containers",
 		ForceRemove:        "geforceerd verwijderen",
+		ForceRemoveWithVolumes: "geforceerd verwijderen met volumes",
 		RemoveWithVolumes:  "verwijder met volumes",
 		RemoveService:      "verwijder containers",
 		Stop:               "stop",

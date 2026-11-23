@@ -43,6 +43,7 @@ func portugueseSet() TranslationSet {
 		Remove:                      "remover",
 		HideStopped:                 "ocultar/mostrar contêineres parados",
 		ForceRemove:                 "forçar remoção",
+		ForceRemoveWithVolumes:      "forçar remoção com volumes",
 		RemoveWithVolumes:           "remover com volumes",
 		RemoveService:               "remover contêineres",
 		UpService:                   "subir serviço",

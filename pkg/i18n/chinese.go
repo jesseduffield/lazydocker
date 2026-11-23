@@ -43,6 +43,7 @@ func chineseSet() TranslationSet {
 		Remove:            "移除",
 		HideStopped:       "隐藏/显示已停止的容器",
 		ForceRemove:       "强制移除",
+		ForceRemoveWithVolumes: "强制移除并删除卷",
 		RemoveWithVolumes: "移除并删除卷",
 		RemoveService:     "移除容器",
 		UpService:         "启动服务",
