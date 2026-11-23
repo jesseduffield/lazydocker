@@ -1,6 +1,8 @@
 package presentation
 
 import (
+	"fmt"
+
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
@@ -32,10 +34,15 @@ func GetServiceDisplayStrings(guiConfig *config.GuiConfig, service *commands.Ser
 	}
 
 	container := service.Container
+	displayName := service.Name
+	if container.Name != "" && container.Name != service.Name {
+		displayName = fmt.Sprintf("%s (%s)", service.Name, container.Name)
+	}
+
 	return []string{
 		getContainerDisplayStatus(guiConfig, container),
 		getContainerDisplaySubstatus(guiConfig, container),
-		service.Name,
+		displayName,
 		getDisplayCPUPerc(container),
 		utils.ColoredString(displayPorts(container), color.FgYellow),
 		utils.ColoredString(displayContainerImage(container), color.FgMagenta),
