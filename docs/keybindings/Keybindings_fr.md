@@ -52,6 +52,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>b</kbd>: voir les commandes groupées
   <kbd>E</kbd>: exécuter le shell
   <kbd>w</kbd>: ouvrir dans le navigateur (le premier port est http)
+  <kbd>P</kbd>: tirer le projet
   <kbd>enter</kbd>: focus panneau principal
   <kbd>[</kbd>: onglet précédent
   <kbd>]</kbd>: onglet suivant
@@ -64,6 +65,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>c</kbd>: exécuter une commande prédéfinie
   <kbd>d</kbd>: supprimer l'image
   <kbd>b</kbd>: voir les commandes groupées
+  <kbd>p</kbd>: pull image
   <kbd>enter</kbd>: focus panneau principal
   <kbd>[</kbd>: onglet précédent
   <kbd>]</kbd>: onglet suivant

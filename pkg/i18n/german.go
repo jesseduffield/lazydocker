@@ -42,6 +42,7 @@ func germanSet() TranslationSet {
 		NextContext:        "nächstes Tab",
 		Attach:             "anbinden",
 		ViewLogs:           "zeige Protokolle",
+		PullProject:        "Projekt pullen",
 		RemoveImage:        "entferne Image",
 		RemoveVolume:       "entferne Volume",
 		RemoveNetwork:      "entferne Netzwerk",

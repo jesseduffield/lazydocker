@@ -81,6 +81,9 @@ type TranslationSet struct {
 	NoNetworks                  string
 	NoServices                  string
 	RemoveImage                 string
+	Pull                        string
+	PullImage                   string
+	PullProject                 string
 	RemoveVolume                string
 	RemoveNetwork               string
 	RemoveWithoutPrune          string
@@ -199,6 +202,9 @@ func englishSet() TranslationSet {
 		UpProject:                   "up project",
 		DownProject:                 "down project",
 		RemoveImage:                 "remove image",
+		Pull:                        "pull",
+		PullImage:                   "pull image",
+		PullProject:                 "pull project",
 		RemoveVolume:                "remove volume",
 		RemoveNetwork:               "remove network",
 		RemoveWithoutPrune:          "remove without deleting untagged parents",

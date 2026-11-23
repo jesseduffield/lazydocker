@@ -52,6 +52,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>b</kbd>: 查看批量命令
   <kbd>E</kbd>: 执行shell
   <kbd>w</kbd>: 在浏览器中打开(第一个端口为http)
+  <kbd>P</kbd>: 拉取项目
   <kbd>enter</kbd>: 聚焦主面板
   <kbd>[</kbd>: 上一个选项卡
   <kbd>]</kbd>: 下一个选项卡
@@ -64,6 +65,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>c</kbd>: 运行预定义的自定义命令
   <kbd>d</kbd>: 移除镜像
   <kbd>b</kbd>: 查看批量命令
+  <kbd>p</kbd>: pull image
   <kbd>enter</kbd>: 聚焦主面板
   <kbd>[</kbd>: 上一个选项卡
   <kbd>]</kbd>: 下一个选项卡

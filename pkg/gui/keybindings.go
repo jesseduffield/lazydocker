@@ -509,6 +509,20 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:     wrappedHandler(gui.prevScreenMode),
 			Description: gui.Tr.LcPrevScreenMode,
 		},
+		{
+			ViewName:    "services",
+			Key:         'P',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleProjectPull,
+			Description: gui.Tr.PullProject,
+		},
+		{
+			ViewName:    "images",
+			Key:         'p',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleImagePull,
+			Description: gui.Tr.PullImage,
+		},
 	}
 
 	for _, panel := range gui.allSidePanels() {

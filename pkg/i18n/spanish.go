@@ -55,6 +55,7 @@ func spanishSet() TranslationSet {
 		ViewLogs:                    "ver logs",
 		UpProject:                   "levantar proyecto",
 		DownProject:                 "dar de baja el proyecto",
+		PullProject:                 "jalar el proyecto",
 		RemoveImage:                 "limpiar imagen",
 		RemoveVolume:                "limpiar volúmen",
 		RemoveNetwork:               "limpiar red",

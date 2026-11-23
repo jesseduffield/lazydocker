@@ -166,6 +166,9 @@ type CommandTemplatesConfig struct {
 	// downs and removes volumes
 	DownWithVolumes string `yaml:"downWithVolumes,omitempty"`
 
+	// pulls all the latest images for the services
+	Pull string `yaml:"pull,omitempty"`
+
 	// DockerCompose is for your docker-compose command. You may want to combine a
 	// few different docker-compose.yml files together, in which case you can set
 	// this to "docker compose -f foo/docker-compose.yml -f
@@ -391,6 +394,7 @@ func GetDefaultConfig() UserConfig {
 			Up:                       "{{ .DockerCompose }} up -d",
 			Down:                     "{{ .DockerCompose }} down",
 			DownWithVolumes:          "{{ .DockerCompose }} down --volumes",
+			Pull:                     "{{ .DockerCompose }} pull",
 			UpService:                "{{ .DockerCompose }} up -d {{ .Service.Name }}",
 			RebuildService:           "{{ .DockerCompose }} up -d --build {{ .Service.Name }}",
 			RecreateService:          "{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}",
