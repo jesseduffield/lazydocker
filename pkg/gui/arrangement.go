@@ -175,20 +175,25 @@ func (gui *Gui) sidePanelChildren(width int, height int) []*boxlayout.Box {
 			return defaultBox
 		}
 
-		// The project panel is compact (Size: 3) when not focused, but expands
-		// when focused to show the list of projects. This only applies when the
-		// project panel is actually visible (i.e. we are inside a compose project).
+		// The project panel sizes to fit its rows (so profiles are visible
+		// without having to click in). Capped so a project with many profiles
+		// can't crowd out the other side panels. Routed through accordionBox
+		// so it follows the same focus-expansion rule as the other panels
+		// (only expands on focus when Gui.ExpandFocusedSidePanel is set).
+		// This only applies when the project panel is actually visible
+		// (i.e. we are inside a compose project).
 		if len(sideWindowNames) > 0 && sideWindowNames[0] == "project" {
-			projectBox := &boxlayout.Box{
+			const maxProjectPanelSize = 8
+			size := gui.Panels.Projects.List.Len() + 2
+			if size < 3 {
+				size = 3
+			} else if size > maxProjectPanelSize {
+				size = maxProjectPanelSize
+			}
+			projectBox := accordionBox(&boxlayout.Box{
 				Window: sideWindowNames[0],
-				Size:   3,
-			}
-			if currentWindow == sideWindowNames[0] {
-				projectBox = &boxlayout.Box{
-					Window: sideWindowNames[0],
-					Weight: 2,
-				}
-			}
+				Size:   size,
+			})
 
 			return append([]*boxlayout.Box{
 				projectBox,

@@ -166,6 +166,11 @@ type CommandTemplatesConfig struct {
 	// downs and removes volumes
 	DownWithVolumes string `yaml:"downWithVolumes,omitempty"`
 
+	// Restart restarts the whole project. When a profile is selected in the
+	// project panel, `--profile <name>` is appended automatically via the
+	// CommandObject injection in NewCommandObject.
+	Restart string `yaml:"restart,omitempty"`
+
 	// DockerCompose is for your docker-compose command. You may want to combine a
 	// few different docker-compose.yml files together, in which case you can set
 	// this to "docker compose -f foo/docker-compose.yml -f
@@ -391,6 +396,7 @@ func GetDefaultConfig() UserConfig {
 			Up:                       "{{ .DockerCompose }} up -d",
 			Down:                     "{{ .DockerCompose }} down",
 			DownWithVolumes:          "{{ .DockerCompose }} down --volumes",
+			Restart:                  "{{ .DockerCompose }} restart",
 			UpService:                "{{ .DockerCompose }} up -d {{ .Service.Name }}",
 			RebuildService:           "{{ .DockerCompose }} up -d --build {{ .Service.Name }}",
 			RecreateService:          "{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}",

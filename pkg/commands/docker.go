@@ -47,6 +47,19 @@ type DockerCommand struct {
 	ContainerMutex   deadlock.Mutex
 	ServiceMutex     deadlock.Mutex
 
+	// Profile discovery cache. Populated lazily; never invalidated within a
+	// session — compose file changes are rare and the user can restart
+	// lazydocker. Mirrors the existing GetServices() pattern.
+	profileMutex   deadlock.Mutex
+	profilesCached bool
+	profiles       []string
+	profileSvcs    map[string][]string
+
+	// runOutput is an injection seam for tests. Production code leaves it
+	// nil and falls through to OSCommand.RunCommandWithOutput. Tests can
+	// set this to return canned output without spinning up a real shell.
+	runOutput func(string) (string, error)
+
 	Closers []io.Closer
 }
 
@@ -66,6 +79,7 @@ type CommandObject struct {
 	Volume        *Volume
 	Network       *Network
 	Project       *Project
+	Profile       string
 }
 
 // NewCommandObject takes a command object and returns a default command object with the passed command object merged in
@@ -77,8 +91,23 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	// docker compose targets the correct project.
 	if obj.Service != nil && obj.Service.ProjectName != "" {
 		defaultObj.DockerCompose = fmt.Sprintf("%s -p %s", defaultObj.DockerCompose, obj.Service.ProjectName)
-	} else if obj.Project != nil && obj.Project.Name != "" {
+	} else if obj.Project != nil && obj.Project.Name != "" && !obj.Project.IsProfile {
 		defaultObj.DockerCompose = fmt.Sprintf("%s -p %s", defaultObj.DockerCompose, obj.Project.Name)
+	}
+
+	// Profile pseudo-projects always belong to the local project, so emit
+	// `-p <LocalProjectName> --profile <name>`. Allow the caller to supply
+	// the profile name either via the explicit Profile field or via a
+	// Project{IsProfile: true} pseudo-project.
+	profile := obj.Profile
+	if profile == "" && obj.Project != nil && obj.Project.IsProfile {
+		profile = obj.Project.Name
+	}
+	if profile != "" {
+		if c.LocalProjectName != "" && !strings.Contains(defaultObj.DockerCompose, " -p ") {
+			defaultObj.DockerCompose = fmt.Sprintf("%s -p %s", defaultObj.DockerCompose, c.LocalProjectName)
+		}
+		defaultObj.DockerCompose = fmt.Sprintf("%s --profile %s", defaultObj.DockerCompose, profile)
 	}
 
 	return defaultObj
@@ -490,12 +519,14 @@ func (c *DockerCommand) SetContainerDetails(containers []*Container) {
 	wg.Wait()
 }
 
-// ViewAllLogs attaches to a subprocess viewing all the logs from docker-compose
-func (c *DockerCommand) ViewAllLogs(project *Project) (*exec.Cmd, error) {
+// ViewAllLogs attaches to a subprocess viewing all the logs from docker-compose.
+// The caller supplies a CommandObject so it can request a profile-scoped view
+// (`{Profile: name}`) or a plain project view (`{Project: project}`).
+func (c *DockerCommand) ViewAllLogs(obj CommandObject) (*exec.Cmd, error) {
 	cmd := c.OSCommand.ExecutableFromString(
 		utils.ApplyTemplate(
 			c.OSCommand.Config.UserConfig.CommandTemplates.ViewAllLogs,
-			c.NewCommandObject(CommandObject{Project: project}),
+			c.NewCommandObject(obj),
 		),
 	)
 
@@ -521,6 +552,94 @@ func (c *DockerCommand) DockerComposeConfigForProject(project *Project) string {
 		output = err.Error()
 	}
 	return output
+}
+
+// DockerComposeConfigForProfile renders the resolved compose YAML with a
+// specific profile activated. The existing DockerComposeConfig template is
+// reused; NewCommandObject appends `--profile <name>`.
+func (c *DockerCommand) DockerComposeConfigForProfile(profile string) string {
+	output, err := c.OSCommand.RunCommandWithOutput(
+		utils.ApplyTemplate(
+			c.OSCommand.Config.UserConfig.CommandTemplates.DockerComposeConfig,
+			c.NewCommandObject(CommandObject{Profile: profile}),
+		),
+	)
+	if err != nil {
+		output = err.Error()
+	}
+	return output
+}
+
+// runCmdOutput is the injection seam used by the profile-discovery methods.
+func (c *DockerCommand) runCmdOutput(command string) (string, error) {
+	if c.runOutput != nil {
+		return c.runOutput(command)
+	}
+	return c.OSCommand.RunCommandWithOutput(command)
+}
+
+// GetProfiles returns the docker-compose profiles declared in the local
+// compose project. Cached per session. Returns nil when not in a compose
+// project. Soft-fails: an error from the underlying compose call is logged
+// once and the cache is marked populated with an empty list, so the UI
+// degrades to "no profile rows".
+func (c *DockerCommand) GetProfiles() ([]string, error) {
+	c.profileMutex.Lock()
+	defer c.profileMutex.Unlock()
+	if c.profilesCached {
+		return c.profiles, nil
+	}
+	c.profilesCached = true
+	if !c.InDockerComposeProject {
+		return nil, nil
+	}
+	composeCmd := c.Config.UserConfig.CommandTemplates.DockerCompose
+	output, err := c.runCmdOutput(fmt.Sprintf("%s config --profiles", composeCmd))
+	if err != nil {
+		c.Log.Warn("Failed to list compose profiles: " + err.Error())
+		return nil, nil
+	}
+	seen := map[string]bool{}
+	for _, line := range utils.SplitLines(strings.TrimSpace(output)) {
+		line = strings.TrimSpace(line)
+		if line == "" || seen[line] {
+			continue
+		}
+		seen[line] = true
+		c.profiles = append(c.profiles, line)
+	}
+	sort.Strings(c.profiles)
+	return c.profiles, nil
+}
+
+// GetProfileServices returns the service names that activate when the given
+// profile is enabled (per docker compose semantics: default services + that
+// profile's services). Cached per profile for the session.
+func (c *DockerCommand) GetProfileServices(profile string) ([]string, error) {
+	c.profileMutex.Lock()
+	defer c.profileMutex.Unlock()
+	if c.profileSvcs == nil {
+		c.profileSvcs = map[string][]string{}
+	}
+	if svcs, ok := c.profileSvcs[profile]; ok {
+		return svcs, nil
+	}
+	composeCmd := c.Config.UserConfig.CommandTemplates.DockerCompose
+	output, err := c.runCmdOutput(fmt.Sprintf("%s --profile %s config --services", composeCmd, profile))
+	if err != nil {
+		// Cache the empty slice so we don't re-shell every refresh tick.
+		c.profileSvcs[profile] = []string{}
+		return nil, err
+	}
+	lines := []string{}
+	for _, line := range utils.SplitLines(strings.TrimSpace(output)) {
+		if line = strings.TrimSpace(line); line != "" {
+			lines = append(lines, line)
+		}
+	}
+	sort.Strings(lines)
+	c.profileSvcs[profile] = lines
+	return lines, nil
 }
 
 // determineDockerHost tries to the determine the docker host that we should connect to

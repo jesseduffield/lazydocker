@@ -67,6 +67,21 @@ type TranslationSet struct {
 	ViewLogs                    string
 	UpProject                   string
 	DownProject                 string
+	RestartProject              string
+
+	// Profile-related strings for docker-compose profile pseudo-projects in
+	// the project panel. Selecting a profile and triggering Up/Down/Restart
+	// shells out with `--profile <name>` instead of bare project commands.
+	ProfileLabel            string
+	UpProfile               string
+	DownProfile             string
+	RestartProfile          string
+	ConfirmUpProfile        string
+	ConfirmDownProfile      string
+	ConfirmRestartProfile   string
+	UppingProfileStatus     string
+	DowningProfileStatus    string
+	RestartingProfileStatus string
 	ServicesTitle               string
 	ContainersTitle             string
 	StandaloneContainersTitle   string
@@ -198,6 +213,14 @@ func englishSet() TranslationSet {
 		ViewLogs:                    "view logs",
 		UpProject:                   "up project",
 		DownProject:                 "down project",
+		RestartProject:              "restart project",
+		ProfileLabel:                "profile",
+		UpProfile:                   "up profile",
+		DownProfile:                 "down profile",
+		RestartProfile:              "restart profile",
+		UppingProfileStatus:         "upping profile",
+		DowningProfileStatus:        "downing profile",
+		RestartingProfileStatus:     "restarting profile",
 		RemoveImage:                 "remove image",
 		RemoveVolume:                "remove volume",
 		RemoveNetwork:               "remove network",
@@ -253,6 +276,9 @@ func englishSet() TranslationSet {
 
 		ConfirmQuit:                 "Are you sure you want to quit?",
 		ConfirmUpProject:            "Are you sure you want to 'up' your docker compose project?",
+		ConfirmUpProfile:            "Are you sure you want to 'up' this docker compose profile?",
+		ConfirmDownProfile:          "Are you sure you want to 'down' this docker compose profile?",
+		ConfirmRestartProfile:       "Are you sure you want to 'restart' this docker compose profile?",
 		MustForceToRemoveContainer:  "You cannot remove a running container unless you force it. Do you want to force it?",
 		NotEnoughSpace:              "Not enough space to render panels",
 		ConfirmPruneImages:          "Are you sure you want to prune all unused images?",
