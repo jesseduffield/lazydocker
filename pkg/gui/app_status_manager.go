@@ -37,6 +37,23 @@ func (m *statusManager) addWaitingStatus(name string) {
 	m.statuses = append([]appStatus{newStatus}, m.statuses...)
 }
 
+// addMessage adds a transient message status that will be removed after the given duration.
+func (m *statusManager) addMessage(name string, duration time.Duration) {
+	m.removeStatus(name)
+	newStatus := appStatus{
+		name:       name,
+		statusType: "message",
+		duration:   int(duration / time.Millisecond),
+	}
+	m.statuses = append([]appStatus{newStatus}, m.statuses...)
+
+	// schedule removal after duration
+	go func() {
+		time.Sleep(duration)
+		m.removeStatus(name)
+	}()
+}
+
 func (m *statusManager) getStatusString() string {
 	if len(m.statuses) == 0 {
 		return ""
@@ -79,4 +96,31 @@ func (gui *Gui) WithWaitingStatus(name string, f func() error) error {
 	}()
 
 	return nil
+}
+
+// AddMessage shows a transient message in the appStatus area for the given duration.
+func (gui *Gui) AddMessage(name string, duration time.Duration) {
+	if gui.statusManager == nil {
+		return
+	}
+	gui.statusManager.addMessage(name, duration)
+	// ensure the UI is updated immediately
+	go func() {
+		// repeatedly render until the message expires so layout picks it up
+		ticker := time.NewTicker(time.Millisecond * 50)
+		defer ticker.Stop()
+		start := time.Now()
+		for range ticker.C {
+			if time.Since(start) > duration+time.Millisecond*100 {
+				return
+			}
+			appStatus := gui.statusManager.getStatusString()
+			if appStatus == "" {
+				return
+			}
+			if err := gui.renderString(gui.g, "appStatus", appStatus); err != nil {
+				gui.Log.Warn(err)
+			}
+		}
+	}()
 }

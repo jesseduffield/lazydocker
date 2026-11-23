@@ -93,5 +93,10 @@ func turkishSet() TranslationSet {
 		StopContainer:               "Bu konteyneri durdurmak istediğinize emin misiniz?",
 		PressEnterToReturn:          "lazydocker' a geri dönmek için enter tuşuna basın ( Bu uyarı, `gui.return Immediately: true` ayarıyla devre dışı bırakılabilir)",
 		DetachFromContainerShortCut: "Varsayılan olarak, kaptan ayırmak için ctrl-p ve ardından ctrl-q tuşlarına basın",
+
+		// copy action defaults
+		CopyContainerID: "Konteyner kimliğini kopyala",
+		CopyImageName:   "Görüntü adını kopyala",
+		CopiedFmt:       "Kopyalandı: %s",
 	}
 }

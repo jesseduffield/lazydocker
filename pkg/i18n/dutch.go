@@ -94,5 +94,10 @@ func dutchSet() TranslationSet {
 		StopContainer:               "Weet je zeker dat je deze container wil stoppen?",
 		PressEnterToReturn:          "Druk op enter om terug te gaan naar lazydocker (Deze popup kan uit gezet worden door in de config dit neer te zetten `gui.returnImmediately: true`)",
 		DetachFromContainerShortCut: "Als u wilt loskoppelen van de container, drukt u standaard op ctrl-p en vervolgens op ctrl-q",
+
+		// copy action defaults
+		CopyContainerID: "Kopieer container-id",
+		CopyImageName:   "Kopieer image-naam",
+		CopiedFmt:       "Gekopieerd: %s",
 	}
 }

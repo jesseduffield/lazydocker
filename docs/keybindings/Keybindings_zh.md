@@ -26,6 +26,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>m</kbd>: 查看日志
   <kbd>E</kbd>: 执行shell
   <kbd>c</kbd>: 运行预定义的自定义命令
+  <kbd>y</kbd>: 复制容器 ID
   <kbd>b</kbd>: 查看批量命令
   <kbd>w</kbd>: 在浏览器中打开(第一个端口为http)
   <kbd>enter</kbd>: 聚焦主面板
@@ -62,6 +63,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>c</kbd>: 运行预定义的自定义命令
+  <kbd>y</kbd>: 复制镜像名称
   <kbd>d</kbd>: 移除镜像
   <kbd>b</kbd>: 查看批量命令
   <kbd>enter</kbd>: 聚焦主面板

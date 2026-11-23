@@ -124,6 +124,11 @@ func spanishSet() TranslationSet {
 		No:  "no",
 		Yes: "sí",
 
+		// copy action defaults
+		CopyContainerID: "Copiar ID del contenedor",
+		CopyImageName:   "Copiar nombre de la imagen",
+		CopiedFmt:       "Copiado: %s",
+
 		FilterPrompt: "filtrar",
 	}
 }

@@ -250,6 +250,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		},
 		{
 			ViewName:    "containers",
+			Key:         'y',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleCopyContainerID,
+			Description: gui.Tr.CopyContainerID,
+		},
+		{
+			ViewName:    "containers",
 			Key:         'b',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleContainersBulkCommand,
@@ -373,6 +380,13 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.handleImagesCustomCommand,
 			Description: gui.Tr.RunCustomCommand,
+		},
+		{
+			ViewName:    "images",
+			Key:         'y',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleCopyImageName,
+			Description: gui.Tr.CopyImageName,
 		},
 		{
 			ViewName:    "images",

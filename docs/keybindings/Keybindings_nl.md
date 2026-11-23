@@ -26,6 +26,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>m</kbd>: bekijk logs
   <kbd>E</kbd>: exec shell
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
+  <kbd>y</kbd>: Kopieer container-id
   <kbd>b</kbd>: view bulk commands
   <kbd>w</kbd>: open in browser (first port is http)
   <kbd>enter</kbd>: focus hoofdpaneel
@@ -62,6 +63,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 
 <pre>
   <kbd>c</kbd>: draai een vooraf bedacht aangepaste opdracht
+  <kbd>y</kbd>: Kopieer image-naam
   <kbd>d</kbd>: verwijder image
   <kbd>b</kbd>: view bulk commands
   <kbd>enter</kbd>: focus hoofdpaneel
