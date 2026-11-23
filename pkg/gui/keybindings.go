@@ -210,8 +210,8 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			ViewName:    "containers",
 			Key:         's',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.handleContainerStop,
-			Description: gui.Tr.Stop,
+			Handler:     gui.handleContainerStartStop,
+			Description: gui.Tr.StartStop,
 		},
 		{
 			ViewName:    "containers",
