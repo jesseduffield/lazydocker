@@ -142,6 +142,9 @@ type GuiConfig struct {
 	// Window border style.
 	// One of 'rounded' (default) | 'single' | 'double' | 'hidden'
 	Border string `yaml:"border"`
+
+	// When true, sorts Environment Variables
+	SortEnv bool `yaml:"sortEnv"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
@@ -377,6 +380,7 @@ func GetDefaultConfig() UserConfig {
 			ExpandFocusedSidePanel:     false,
 			ScreenMode:                 "normal",
 			ContainerStatusHealthStyle: "long",
+			SortEnv:                    false,
 		},
 		ConfirmOnQuit: false,
 		Logs: LogsConfig{

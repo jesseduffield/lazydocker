@@ -60,6 +60,7 @@ gui:
   # containers panel. "long": full words (default), "short": one or two characters,
   # "icon": unicode emoji.
   containerStatusHealthStyle: "long"
+  sortEnv: false
 logs:
   timestamps: false
   since: '60m' # set to '' to show all logs
