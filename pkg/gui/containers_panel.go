@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+    "slices"
 	"time"
 
 	"github.com/docker/docker/api/types/container"
@@ -154,6 +155,10 @@ func (gui *Gui) containerEnv(container *commands.Container) string {
 	if len(container.Details.Config.Env) == 0 {
 		return gui.Tr.NothingToDisplay
 	}
+    containerEnv := container.Details.Config.Env
+    if gui.Config.UserConfig.Gui.SortEnv {
+        slices.Sort(containerEnv)
+    }
 
 	envVarsList := lo.Map(container.Details.Config.Env, func(envVar string, _ int) []string {
 		splitEnv := strings.SplitN(envVar, "=", 2)
